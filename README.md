@@ -62,6 +62,8 @@ export const app = router(
 )
 ```
 
+See `examples/counter.ts` for the smallest signal patch flow and `examples/search.ts` for query decoding + direct HTML patch responses.
+
 ## Open questions
 
 - Should JSX remain a thin alternative over the builder, or should the builder stay the primary API?

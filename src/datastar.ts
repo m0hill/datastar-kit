@@ -196,19 +196,23 @@ const fetchOptionsToJs = (options: FetchOptions): string => {
   return `{${entries.map(([key, value]) => `${key}: ${toJs(value)}`).join(", ")}}`
 }
 
-export const fetchAction = (method: HttpMethod, url: string, options?: FetchOptions): Expr<void> => {
+export type UrlInput = string | Expr<string>
+
+const urlToJs = (url: UrlInput): string => typeof url === "string" ? JSON.stringify(url) : url.toDatastarExpression()
+
+export const fetchAction = (method: HttpMethod, url: UrlInput, options?: FetchOptions): Expr<void> => {
   if (options === undefined || Object.keys(options).length === 0) {
-    return raw(`@${method}(${JSON.stringify(url)})`)
+    return raw(`@${method}(${urlToJs(url)})`)
   }
 
-  return raw(`@${method}(${JSON.stringify(url)}, ${fetchOptionsToJs(options)})`)
+  return raw(`@${method}(${urlToJs(url)}, ${fetchOptionsToJs(options)})`)
 }
 
-export const get = (url: string, options?: FetchOptions): Expr<void> => fetchAction("get", url, options)
-export const post = (url: string, options?: FetchOptions): Expr<void> => fetchAction("post", url, options)
-export const put = (url: string, options?: FetchOptions): Expr<void> => fetchAction("put", url, options)
-export const patch = (url: string, options?: FetchOptions): Expr<void> => fetchAction("patch", url, options)
-export const del = (url: string, options?: FetchOptions): Expr<void> => fetchAction("delete", url, options)
+export const get = (url: UrlInput, options?: FetchOptions): Expr<void> => fetchAction("get", url, options)
+export const post = (url: UrlInput, options?: FetchOptions): Expr<void> => fetchAction("post", url, options)
+export const put = (url: UrlInput, options?: FetchOptions): Expr<void> => fetchAction("put", url, options)
+export const patch = (url: UrlInput, options?: FetchOptions): Expr<void> => fetchAction("patch", url, options)
+export const del = (url: UrlInput, options?: FetchOptions): Expr<void> => fetchAction("delete", url, options)
 
 export class AttributeConflictError extends Error {
   readonly _tag = "AttributeConflictError"
