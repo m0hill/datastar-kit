@@ -101,6 +101,29 @@ describe("Node runtime adapter", () => {
     await expect(reader!.read()).resolves.toEqual({ done: true, value: undefined })
   })
 
+  it("flushes streaming headers before the first body chunk", async () => {
+    let release!: () => void
+    const firstEvent = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    async function* events(): AsyncIterable<string> {
+      await firstEvent
+      yield "event: ready\n\n"
+    }
+
+    const origin = await listen(router(route("GET", "/events", () => Effect.succeed(eventStreamResponse(events())))))
+    const response = await fetch(`${origin}/events`)
+    const reader = response.body?.getReader()
+
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
+    expect(reader).toBeDefined()
+
+    release()
+    const first = await reader!.read()
+    expect(first.done).toBe(false)
+    expect(new TextDecoder().decode(first.value)).toBe("event: ready\n\n")
+  })
+
   it("allows custom failure responses", async () => {
     const app = router(route("GET", "/boom", () => Effect.fail("boom")))
     server = createServer(createNodeListener(app, { onError: () => textResponse("handled", { status: 418 }) }))

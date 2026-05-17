@@ -102,6 +102,7 @@ export const writeWebResponse = async (target: ServerResponse, response: Respons
     return
   }
 
+  target.flushHeaders()
   const reader = response.body.getReader()
   try {
     while (true) {
