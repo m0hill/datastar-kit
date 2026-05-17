@@ -119,3 +119,4 @@ Reference-only material outside `ts-star`:
 - Kept expression combinators at score 87. Next iteration adds a fuller search example combining dynamic Datastar action URLs, query decoding, and direct HTML patch responses.
 - Kept search example at score 92. Next iteration replaces raw template literal URLs with a small `queryUrl` helper for encoded dynamic Datastar action URLs.
 - Kept `queryUrl` at score 96. Next iteration adds a live counter example using `Broadcaster` and `liveElementsResponse` to validate realtime composition in an example without introducing a sync engine.
+- Kept live counter example at score 100. It exposed a public index problem: `export * as Handler` collided with the exported `Handler` type. Next iteration renames the namespace export to `Handlers` and verifies type import from the package root.

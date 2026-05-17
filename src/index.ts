@@ -1,6 +1,6 @@
 export * as Client from "./client.js"
 export * as Datastar from "./datastar.js"
-export * as Handler from "./handler.js"
+export * as Handlers from "./handler.js"
 export * as Html from "./html.js"
 export * as Jsx from "./jsx.js"
 export * as Node from "./node.js"
