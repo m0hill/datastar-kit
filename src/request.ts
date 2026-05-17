@@ -16,6 +16,20 @@ export const DATASTAR_REQUEST_HEADER = "datastar-request"
 export const isDatastarRequest = (request: Request): boolean =>
   request.headers.get(DATASTAR_REQUEST_HEADER)?.toLowerCase() === "true"
 
+export const waitForAbortSignal = (signal: AbortSignal): Effect.Effect<void> => {
+  if (signal.aborted) {
+    return Effect.void
+  }
+
+  return Effect.async<void>((resume) => {
+    const onAbort = () => resume(Effect.void)
+    signal.addEventListener("abort", onAbort, { once: true })
+    return Effect.sync(() => signal.removeEventListener("abort", onAbort))
+  })
+}
+
+export const waitForRequestAbort = (request: Request): Effect.Effect<void> => waitForAbortSignal(request.signal)
+
 const methodsWithQuerySignals = new Set(["GET", "DELETE"])
 
 export const rawSignalsFromRequest = (request: Request): Effect.Effect<string, never> =>
