@@ -130,3 +130,4 @@ Reference-only material outside `ts-star`:
 - Kept ignore helpers at score 121. Next iteration improves response DX by allowing `htmlResponse` and `htmlPatchResponse` to accept rendered HTML nodes, reducing manual `render(...)` calls in app code.
 - Kept HTML node response rendering at score 124. Next iteration adds `htmlDocument` to avoid hand-written doctypes/full-page strings in examples.
 - Kept `htmlDocument` at score 126. Next iteration adds a small `serve` helper for `node:http` so prototypes/examples can run without hand-writing server bootstrap every time.
+- Kept Node serve helper at score 128. Next iteration adds a scoped server helper with `Effect.acquireRelease` for idiomatic lifecycle management in tests/apps.

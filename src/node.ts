@@ -1,4 +1,5 @@
 import * as Effect from "effect/Effect"
+import type * as Scope from "effect/Scope"
 import { createServer, type IncomingMessage, type RequestListener, type Server, type ServerResponse } from "node:http"
 import type { AddressInfo } from "node:net"
 import type { Handler } from "./handler.js"
@@ -135,6 +136,12 @@ export const closeServer = (server: Server): Effect.Effect<void, Error> =>
         server.close((error) => error === undefined ? resolve() : reject(error))
       })
   )
+
+export const serveScoped = (
+  app: Handler<unknown, any>,
+  options: ServeOptions = {}
+): Effect.Effect<Server, Error, Scope.Scope> =>
+  Effect.acquireRelease(serve(app, options), (server) => Effect.orDie(closeServer(server)))
 
 export const serverOrigin = (server: Server): string => {
   const address = server.address() as AddressInfo
