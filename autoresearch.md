@@ -103,3 +103,4 @@ Reference-only material outside `ts-star`:
 - Kept SDK fixture/type-safety expansion at score 23. Learned execute-script has special `mode append` then `selector body` line ordering; remove-signals is a patch-signals event with `null` leaves.
 - Current iteration explores the thinnest possible Effect handler/router layer: exact routes, `withSignals`, and Web `Request`/`Response` only. Avoiding params/middleware for now.
 - Kept thin handler/router layer at score 28 after fixing typecheck issues (`RouteMethod` name and direct `Headers` use). Next iteration adds Node runtime adapter so the same handler can run under `node:http`.
+- Kept Node adapter at score 33. Real `node:http` + `fetch` tests validate Web Request/Response conversion, POST Datastar signal body decoding, 404s, and error handling. Next iteration explores optional realtime/CQRS primitives without making them framework-wide.
