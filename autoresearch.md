@@ -112,3 +112,4 @@ Reference-only material outside `ts-star`:
 - Kept signal validation at score 57. Next iteration adds Datastar client asset helpers to make self-hosting `datastar.js` explicit and testable, matching the project note that this script is sent to the browser/client.
 - Kept Datastar client asset helpers at score 62. Next iteration adds direct Datastar action response helpers for `text/html`, `application/json`, and `text/javascript`, because Datastar supports these in addition to SSE streams.
 - Kept direct response helpers at score 66. Next iteration hardens request edge cases and adds `isDatastarRequest` for the documented `Datastar-Request: true` header.
+- Kept request edge-case hardening at score 71. Next iteration adds query parameter decoding with Effect Schema; route params are intentionally deferred to avoid router complexity.

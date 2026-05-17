@@ -42,3 +42,28 @@ export const readSignals = <A, I, R>(
     Effect.flatMap(parseSignalsJson),
     Effect.flatMap(Schema.decodeUnknown(schema))
   )
+
+export type QueryValue = string | ReadonlyArray<string>
+export type QueryObject = Readonly<Record<string, QueryValue>>
+
+export const queryFromRequest = (request: Request): QueryObject => {
+  const result: Record<string, QueryValue> = {}
+
+  new URL(request.url).searchParams.forEach((value, key) => {
+    const existing = result[key]
+    if (existing === undefined) {
+      result[key] = value
+    } else {
+      const existingValues = typeof existing === "string" ? [existing] : existing
+      result[key] = [...existingValues, value]
+    }
+  })
+
+  return result
+}
+
+export const readQuery = <A, I, R>(
+  request: Request,
+  schema: Schema.Schema<A, I, R>
+): Effect.Effect<A, ParseResult.ParseError, R> =>
+  Schema.decodeUnknown(schema)(queryFromRequest(request))
