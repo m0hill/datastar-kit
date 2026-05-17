@@ -85,8 +85,8 @@ export const scriptResponse = (script: string, options: ScriptResponseOptions = 
   return new Response(script, { headers })
 }
 
-export const patchElementsResponse = (elements: string, options?: PatchElementsOptions): Response =>
-  sseResponse(patchElements(elements, options))
+export const patchElementsResponse = (elements: HtmlContent, options?: PatchElementsOptions): Response =>
+  sseResponse(patchElements(renderHtmlContent(elements), options))
 
 export const patchSignalsResponse = (signals: JsonObject | string, options?: PatchSignalsOptions): Response =>
   sseResponse(patchSignals(signals, options))
