@@ -402,6 +402,14 @@ export const preserveAttr = (...names: ReadonlyArray<string>): Attributes => ({
   "data-preserve-attr": names.join(" ")
 })
 
+export const ignore = (options: { readonly self?: boolean } = {}): Attributes => ({
+  [options.self === true ? "data-ignore__self" : "data-ignore"]: true
+})
+
+export const ignoreMorph = (): Attributes => ({
+  "data-ignore-morph": true
+})
+
 export const init = (expression: ExprInput<unknown>): Attributes => ({
   "data-init": toJs(expression)
 })

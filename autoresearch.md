@@ -126,3 +126,4 @@ Reference-only material outside `ts-star`:
 - Kept object-form attrs/classes at score 110. Next iteration adds `dataStyle`/`dataStyles` helpers to cover Datastar's style binding family with the same single-key/object-form pattern.
 - Kept data-style helper family at score 112. Next iteration fills a gap around `data-on-signal-patch-filter`, composing it with existing signal patch listeners.
 - Kept signal patch filter helper at score 114. Next iteration covers a few remaining low-level Datastar attributes (`data-ref`, `data-json-signals`, `data-preserve-attr`) without adding new architecture.
+- Kept ref/jsonSignals/preserveAttr helpers at score 118. Next iteration adds tiny `data-ignore`/`data-ignore-morph` helpers, then should probably stop expanding the attribute surface and focus on docs/examples.
