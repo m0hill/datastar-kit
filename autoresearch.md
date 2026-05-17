@@ -104,3 +104,4 @@ Reference-only material outside `ts-star`:
 - Current iteration explores the thinnest possible Effect handler/router layer: exact routes, `withSignals`, and Web `Request`/`Response` only. Avoiding params/middleware for now.
 - Kept thin handler/router layer at score 28 after fixing typecheck issues (`RouteMethod` name and direct `Headers` use). Next iteration adds Node runtime adapter so the same handler can run under `node:http`.
 - Kept Node adapter at score 33. Real `node:http` + `fetch` tests validate Web Request/Response conversion, POST Datastar signal body decoding, 404s, and error handling. Next iteration explores optional realtime/CQRS primitives without making them framework-wide.
+- Kept realtime helpers at score 38. In-process `Broadcaster` + AsyncIterable SSE mapping proves optional CQRS/live-update shape without a sync engine. Next iteration adds README/example to clarify the discovered architecture.
