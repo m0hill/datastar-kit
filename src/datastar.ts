@@ -163,6 +163,20 @@ export interface FetchOptions {
 
 export const regex = (pattern: string, flags = ""): Expr<RegExp> => raw(`/${pattern}/${flags}`)
 
+export const not = (expression: ExprInput<unknown>): Expr<boolean> => raw(`!(${toJs(expression)})`)
+
+export const and = (...expressions: ReadonlyArray<ExprInput<unknown>>): Expr<boolean> =>
+  expressions.length === 0 ? raw("true") : raw(expressions.map((expression) => `(${toJs(expression)})`).join(" && "))
+
+export const or = (...expressions: ReadonlyArray<ExprInput<unknown>>): Expr<boolean> =>
+  expressions.length === 0 ? raw("false") : raw(expressions.map((expression) => `(${toJs(expression)})`).join(" || "))
+
+export const ternary = <T>(
+  condition: ExprInput<unknown>,
+  whenTrue: ExprInput<T>,
+  whenFalse: ExprInput<T>
+): Expr<T> => raw(`(${toJs(condition)} ? ${toJs(whenTrue)} : ${toJs(whenFalse)})`)
+
 const fetchOptionsToJs = (options: FetchOptions): string => {
   const entries: Array<[string, ExprInput<unknown>]> = []
 

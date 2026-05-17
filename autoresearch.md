@@ -115,3 +115,4 @@ Reference-only material outside `ts-star`:
 - Kept request edge-case hardening at score 71. Next iteration adds query parameter decoding with Effect Schema; route params are intentionally deferred to avoid router complexity.
 - Kept query decoding at score 76. Next iteration adds route composition helpers (`prefixRoutes`, `concatRoutes`) rather than path params, preserving the exact-route model while improving app assembly.
 - Kept route prefixing at score 78. `concatRoutes` was discarded because it widened route types to `any`; route groups can be spread directly. Next iteration adds strict attribute merging for cases where silent overrides would hide Datastar attr collisions.
+- Kept strict attribute merge at score 82. Next iteration adds small expression combinators (`not`, `and`, `or`, `ternary`) to reduce raw JavaScript strings while keeping the expression DSL minimal.
