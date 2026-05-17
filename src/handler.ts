@@ -26,6 +26,21 @@ export const route = <E, R>(method: RouteMethod, path: string, routeHandler: Han
   handler: routeHandler
 })
 
+const joinPaths = (prefix: string, path: string): string => {
+  const normalizedPrefix = prefix === "/" ? "" : prefix.replace(/\/+$/, "")
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`
+  return `${normalizedPrefix}${normalizedPath}` || "/"
+}
+
+export const prefixRoutes = <Routes extends ReadonlyArray<Route<any, any>>>(
+  prefix: string,
+  ...routes: Routes
+): Routes =>
+  routes.map((candidate) => ({
+    ...candidate,
+    path: joinPaths(prefix, candidate.path)
+  })) as unknown as Routes
+
 export const textResponse = (body: string, init?: ResponseInit): Response => {
   const headers = new Headers(init?.headers)
 

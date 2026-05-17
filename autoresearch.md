@@ -113,3 +113,4 @@ Reference-only material outside `ts-star`:
 - Kept Datastar client asset helpers at score 62. Next iteration adds direct Datastar action response helpers for `text/html`, `application/json`, and `text/javascript`, because Datastar supports these in addition to SSE streams.
 - Kept direct response helpers at score 66. Next iteration hardens request edge cases and adds `isDatastarRequest` for the documented `Datastar-Request: true` header.
 - Kept request edge-case hardening at score 71. Next iteration adds query parameter decoding with Effect Schema; route params are intentionally deferred to avoid router complexity.
+- Kept query decoding at score 76. Next iteration adds route composition helpers (`prefixRoutes`, `concatRoutes`) rather than path params, preserving the exact-route model while improving app assembly.
