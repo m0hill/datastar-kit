@@ -9,6 +9,25 @@ export type ExprInput<T> = Expr<T> | T
 
 type Jsonish = string | number | boolean | null | readonly Jsonish[] | { readonly [key: string]: Jsonish | Expr<unknown> }
 
+export class SignalNameError extends Error {
+  readonly _tag = "SignalNameError"
+
+  constructor(readonly signalName: string) {
+    super(`Invalid Datastar signal name: ${JSON.stringify(signalName)}`)
+  }
+}
+
+const signalSegmentPattern = /^_?[A-Za-z][A-Za-z0-9_]*$/
+
+export const isSignalName = (name: string): boolean =>
+  name.length > 0 && name.split(".").every((segment) => signalSegmentPattern.test(segment))
+
+export const assertSignalName = (name: string): void => {
+  if (!isSignalName(name)) {
+    throw new SignalNameError(name)
+  }
+}
+
 class RawExpr<T = unknown> implements Expr<T> {
   readonly _tag = "Expr"
 
@@ -26,7 +45,9 @@ class RawExpr<T = unknown> implements Expr<T> {
 export class Signal<T, Name extends string = string> implements Expr<T> {
   readonly _tag = "Expr"
 
-  constructor(readonly name: Name) {}
+  constructor(readonly name: Name) {
+    assertSignalName(name)
+  }
 
   toDatastarExpression(): string {
     return `$${this.name}`
@@ -341,6 +362,19 @@ export const dataClass = (name: string, expression: ExprInput<unknown>): Attribu
   [`data-class:${name}`]: toJs(expression)
 })
 
-export const dataSignals = (values: Readonly<Record<string, Jsonish>>, options: { readonly ifMissing?: boolean } = {}): Attributes => ({
-  [options.ifMissing === true ? "data-signals__ifmissing" : "data-signals"]: toJs(values)
-})
+const assertSignalObjectKeys = (values: Readonly<Record<string, Jsonish | Expr<unknown>>>): void => {
+  for (const [key, value] of Object.entries(values)) {
+    assertSignalName(key)
+
+    if (typeof value === "object" && value !== null && !Array.isArray(value) && !isExpr(value)) {
+      assertSignalObjectKeys(value as Readonly<Record<string, Jsonish | Expr<unknown>>>)
+    }
+  }
+}
+
+export const dataSignals = (values: Readonly<Record<string, Jsonish>>, options: { readonly ifMissing?: boolean } = {}): Attributes => {
+  assertSignalObjectKeys(values)
+  return {
+    [options.ifMissing === true ? "data-signals__ifmissing" : "data-signals"]: toJs(values)
+  }
+}

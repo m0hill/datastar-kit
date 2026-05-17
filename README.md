@@ -7,7 +7,7 @@ This is intentionally small. The current shape favors explicit backend-driven HT
 ## Current architecture
 
 - `src/sse.ts` — pure Datastar SSE event encoding (`patchElements`, `patchSignals`, `removeSignals`, `executeScript`). Tested against included Datastar SDK fixtures.
-- `src/datastar.ts` — typed signal/action/attribute helpers for generating Datastar expressions, modifier suffixes, and `data-*` attributes.
+- `src/datastar.ts` — typed signal/action/attribute helpers for generating Datastar expressions, validating signal names, modifier suffixes, and `data-*` attributes.
 - `src/html.ts` — tiny HTML builder/renderer used while templating choices are still open.
 - `src/jsx.ts` — experimental classic JSX factory that renders through the same HTML nodes.
 - `src/request.ts` — reads Datastar signals from Web `Request`s and decodes them with Effect Schema.
