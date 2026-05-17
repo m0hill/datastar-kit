@@ -1,14 +1,22 @@
 import * as Effect from "effect/Effect"
 import { describe, expect, it } from "vitest"
 import { countFragment, createLiveCounter, pageView } from "../examples/live-counter.js"
+import { render } from "../src/html.js"
 
 describe("live counter example", () => {
   it("renders a page that opens a Datastar SSE stream", () => {
     expect(pageView()).toContain('data-init="@get(&quot;/live&quot;)"')
   })
 
+  it("keeps count fragments as composable HTML nodes", () => {
+    const fragment = countFragment(3)
+
+    expect(fragment.tag).toBe("output")
+    expect(fragment.attrs).toEqual({ id: "count" })
+  })
+
   it("renders count fragments for fat morph patches", () => {
-    expect(countFragment(3)).toBe('<output id="count">3</output>')
+    expect(render(countFragment(3))).toBe('<output id="count">3</output>')
   })
 
   it("publishes increments to live SSE subscribers", async () => {

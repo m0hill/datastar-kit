@@ -26,7 +26,7 @@ export interface LiveCounterApp {
   readonly currentCount: () => number
 }
 
-export const countFragment = (count: number): string => render(h("output", { id: "count" }, count))
+export const countFragment = (count: number) => h("output", { id: "count" }, count)
 
 export const pageNode = () =>
   h(

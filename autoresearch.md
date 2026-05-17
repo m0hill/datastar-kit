@@ -134,3 +134,4 @@ Reference-only material outside `ts-star`:
 - Kept scoped Node server helper at score 129. Next iteration updates examples to return full Datastar HTML documents using `htmlDocument`/`datastarScript`, improving runability now that server lifecycle helpers exist.
 - Kept full-document examples at score 130. Next iteration lets SSE `patchElementsResponse` accept HTML nodes like direct HTML responses, reducing manual `render(...)` calls for streamed patches.
 - Kept SSE patch element node rendering at score 131. Next iteration factors the repeated `htmlResponse(htmlDocument({ head: datastarScript(), body }))` pattern into Datastar document/page helpers, keeping examples runnable without ceremony.
+- Kept Datastar document/page helpers at score 133. Next iteration updates the live counter patch fragment to return an HTML node directly, proving realtime SSE rendering can stay node-based end-to-end.
