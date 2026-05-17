@@ -95,3 +95,26 @@ export const render = (child: Child): string => {
 
   return `<${child.tag}${attrs}>${child.children.map(render).join("")}</${child.tag}>`
 }
+
+export interface HtmlDocumentOptions {
+  readonly lang?: string
+  readonly head?: Child | readonly Child[]
+  readonly body?: Child | readonly Child[]
+}
+
+const childrenArray = (child: Child | readonly Child[] | undefined): readonly Child[] => {
+  if (child === undefined) {
+    return []
+  }
+  return Array.isArray(child) ? child : [child]
+}
+
+export const htmlDocument = (options: HtmlDocumentOptions = {}): string =>
+  `<!doctype html>${render(
+    h(
+      "html",
+      { lang: options.lang ?? "en" },
+      h("head", {}, ...childrenArray(options.head)),
+      h("body", {}, ...childrenArray(options.body))
+    )
+  )}`
