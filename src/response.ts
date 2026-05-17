@@ -1,3 +1,4 @@
+import { render, type Child } from "./html.js"
 import { eventStream, patchElements, patchSignals, type ElementPatchMode, type JsonObject, type PatchElementsOptions, type PatchSignalsOptions } from "./sse.js"
 
 export const sseHeaders = (): Headers =>
@@ -18,8 +19,12 @@ export const emptyResponse = (status = 204, init?: Omit<ResponseInit, "status">)
     status
   })
 
-export const htmlResponse = (html: string): Response =>
-  new Response(html, {
+export type HtmlContent = string | Exclude<Child, string>
+
+const renderHtmlContent = (content: HtmlContent): string => typeof content === "string" ? content : render(content)
+
+export const htmlResponse = (html: HtmlContent): Response =>
+  new Response(renderHtmlContent(html), {
     headers: {
       "content-type": "text/html; charset=utf-8"
     }
@@ -31,7 +36,7 @@ export interface HtmlPatchResponseOptions {
   readonly useViewTransition?: boolean
 }
 
-export const htmlPatchResponse = (html: string, options: HtmlPatchResponseOptions = {}): Response => {
+export const htmlPatchResponse = (html: HtmlContent, options: HtmlPatchResponseOptions = {}): Response => {
   const headers = new Headers({
     "content-type": "text/html; charset=utf-8"
   })
@@ -42,7 +47,7 @@ export const htmlPatchResponse = (html: string, options: HtmlPatchResponseOption
     headers.set("datastar-use-view-transition", String(options.useViewTransition))
   }
 
-  return new Response(html, { headers })
+  return new Response(renderHtmlContent(html), { headers })
 }
 
 export interface JsonSignalsResponseOptions {
