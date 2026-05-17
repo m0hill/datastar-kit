@@ -1,13 +1,36 @@
 {
   "name": "ts-star",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "version": "0.0.0",
+  "description": "Exploratory Effect + Datastar framework prototype",
+  "type": "module",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
   },
-  "keywords": [],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "datastar",
+    "effect",
+    "sse",
+    "hypermedia"
+  ],
   "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "license": "MIT",
+  "dependencies": {
+    "effect": "^3.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.14"
+  }
 }
