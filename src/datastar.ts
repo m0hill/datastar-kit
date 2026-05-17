@@ -427,6 +427,14 @@ export const dataClasses = (mapping: Readonly<Record<string, ExprInput<unknown>>
   "data-class": toJs(mapping)
 })
 
+export const dataStyle = (name: string, expression: ExprInput<unknown>): Attributes => ({
+  [`data-style:${name}`]: toJs(expression)
+})
+
+export const dataStyles = (mapping: Readonly<Record<string, ExprInput<unknown>>>): Attributes => ({
+  "data-style": toJs(mapping)
+})
+
 const assertSignalObjectKeys = (values: Readonly<Record<string, Jsonish | Expr<unknown>>>): void => {
   for (const [key, value] of Object.entries(values)) {
     assertSignalName(key)
