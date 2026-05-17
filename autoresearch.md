@@ -110,3 +110,4 @@ Reference-only material outside `ts-star`:
 - Kept JSX factory + TSX metric fix at score 45. Next iteration improves Datastar DX with typed modifier builders for `data-on`, `data-on-intersect`, `data-on-interval`, and `data-on-signal-patch`, matching documented suffix syntax like `__debounce.500ms.leading`.
 - Kept modifier helper iteration at score 51. Next iteration adds runtime validation for signal names/paths and `dataSignals` keys to make malformed Datastar interactions fail early.
 - Kept signal validation at score 57. Next iteration adds Datastar client asset helpers to make self-hosting `datastar.js` explicit and testable, matching the project note that this script is sent to the browser/client.
+- Kept Datastar client asset helpers at score 62. Next iteration adds direct Datastar action response helpers for `text/html`, `application/json`, and `text/javascript`, because Datastar supports these in addition to SSE streams.
