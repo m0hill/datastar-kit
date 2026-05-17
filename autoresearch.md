@@ -118,3 +118,4 @@ Reference-only material outside `ts-star`:
 - Kept strict attribute merge at score 82. Next iteration adds small expression combinators (`not`, `and`, `or`, `ternary`) to reduce raw JavaScript strings while keeping the expression DSL minimal.
 - Kept expression combinators at score 87. Next iteration adds a fuller search example combining dynamic Datastar action URLs, query decoding, and direct HTML patch responses.
 - Kept search example at score 92. Next iteration replaces raw template literal URLs with a small `queryUrl` helper for encoded dynamic Datastar action URLs.
+- Kept `queryUrl` at score 96. Next iteration adds a live counter example using `Broadcaster` and `liveElementsResponse` to validate realtime composition in an example without introducing a sync engine.

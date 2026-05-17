@@ -84,6 +84,14 @@ export class Broadcaster<A> {
   size(): Effect.Effect<number> {
     return Effect.sync(() => this.subscriptions.size)
   }
+
+  closeAll(): Effect.Effect<void> {
+    return Effect.sync(() => {
+      for (const subscription of [...this.subscriptions]) {
+        subscription.close()
+      }
+    })
+  }
 }
 
 export const makeBroadcaster = <A>(): Effect.Effect<Broadcaster<A>> => Effect.succeed(new Broadcaster<A>())
