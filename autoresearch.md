@@ -135,3 +135,4 @@ Reference-only material outside `ts-star`:
 - Kept full-document examples at score 130. Next iteration lets SSE `patchElementsResponse` accept HTML nodes like direct HTML responses, reducing manual `render(...)` calls for streamed patches.
 - Kept SSE patch element node rendering at score 131. Next iteration factors the repeated `htmlResponse(htmlDocument({ head: datastarScript(), body }))` pattern into Datastar document/page helpers, keeping examples runnable without ceremony.
 - Kept Datastar document/page helpers at score 133. Next iteration updates the live counter patch fragment to return an HTML node directly, proving realtime SSE rendering can stay node-based end-to-end.
+- Kept live counter node-based patches at score 134. Next iteration adds an explicit helper to pair exact app routes with a default `/datastar.js` client asset route, avoiding hidden asset serving while keeping runnable prototypes small.

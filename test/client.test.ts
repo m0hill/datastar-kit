@@ -7,11 +7,12 @@ import {
   datastarClientFileRoute,
   datastarClientResponse,
   datastarClientRoute,
+  datastarClientRoutes,
   datastarDocument,
   datastarPageResponse,
   datastarScript
 } from "../src/client.js"
-import { router } from "../src/handler.js"
+import { route, router } from "../src/handler.js"
 import { h, render } from "../src/html.js"
 
 const datastarJsPath = resolve("..", "datastar.js")
@@ -54,6 +55,22 @@ describe("Datastar client asset helpers", () => {
 
     expect(response.status).toBe(200)
     expect(await response.text()).toBe("export {}")
+  })
+
+  it("pairs app routes with a default Datastar client route", async () => {
+    const app = router(
+      ...datastarClientRoutes(
+        "export const datastar = true",
+        route("GET", "/", () => Effect.succeed(datastarPageResponse(h("main", {}, "Ready"))))
+      )
+    )
+
+    const page = await Effect.runPromise(app(new Request("http://localhost/")))
+    const client = await Effect.runPromise(app(new Request("http://localhost/datastar.js")))
+
+    expect(await page.text()).toContain('<script type="module" src="/datastar.js"></script>')
+    expect(client.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
+    expect(await client.text()).toBe("export const datastar = true")
   })
 
   it("can serve the included minified datastar.js file", async () => {

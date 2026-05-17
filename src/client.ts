@@ -71,6 +71,12 @@ export const datastarClientRoute = (
 ): Route<never, never> =>
   route("GET", path, () => Effect.succeed(datastarClientResponse(script, options)))
 
+export const datastarClientRoutes = <Routes extends ReadonlyArray<Route<any, any>>>(
+  script: string | Uint8Array,
+  ...routes: Routes
+): readonly [Route<never, never>, ...Routes] =>
+  [datastarClientRoute(script), ...routes] as readonly [Route<never, never>, ...Routes]
+
 export const datastarClientFileRoute = (
   filePath: string,
   path = "/datastar.js",
