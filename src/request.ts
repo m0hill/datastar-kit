@@ -30,6 +30,11 @@ export const waitForAbortSignal = (signal: AbortSignal): Effect.Effect<void> => 
 
 export const waitForRequestAbort = (request: Request): Effect.Effect<void> => waitForAbortSignal(request.signal)
 
+export const abortSignalReason = (signal: AbortSignal): Effect.Effect<unknown> =>
+  waitForAbortSignal(signal).pipe(Effect.map(() => signal.reason))
+
+export const requestAbortReason = (request: Request): Effect.Effect<unknown> => abortSignalReason(request.signal)
+
 const methodsWithQuerySignals = new Set(["GET", "DELETE"])
 
 export const rawSignalsFromRequest = (request: Request): Effect.Effect<string, never> =>
