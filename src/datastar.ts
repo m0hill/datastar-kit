@@ -415,8 +415,16 @@ export const dataAttr = (name: string, expression: ExprInput<unknown>): Attribut
   [`data-attr:${name}`]: toJs(expression)
 })
 
+export const dataAttrs = (mapping: Readonly<Record<string, ExprInput<unknown>>>): Attributes => ({
+  "data-attr": toJs(mapping)
+})
+
 export const dataClass = (name: string, expression: ExprInput<unknown>): Attributes => ({
   [`data-class:${name}`]: toJs(expression)
+})
+
+export const dataClasses = (mapping: Readonly<Record<string, ExprInput<unknown>>>): Attributes => ({
+  "data-class": toJs(mapping)
 })
 
 const assertSignalObjectKeys = (values: Readonly<Record<string, Jsonish | Expr<unknown>>>): void => {
