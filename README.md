@@ -9,6 +9,7 @@ This is intentionally small. The current shape favors explicit backend-driven HT
 - `src/sse.ts` — pure Datastar SSE event encoding (`patchElements`, `patchSignals`, `removeSignals`, `executeScript`). Tested against included Datastar SDK fixtures.
 - `src/datastar.ts` — typed signal/action/attribute helpers for generating Datastar expressions and `data-*` attributes.
 - `src/html.ts` — tiny HTML builder/renderer used while templating choices are still open.
+- `src/jsx.ts` — experimental classic JSX factory that renders through the same HTML nodes.
 - `src/request.ts` — reads Datastar signals from Web `Request`s and decodes them with Effect Schema.
 - `src/handler.ts` — plain Effect handlers returning Web `Response`s, plus exact-route dispatch and `withSignals`.
 - `src/node.ts` — boundary adapter from `node:http` to Web `Request`/`Response`.
@@ -61,6 +62,6 @@ export const app = router(
 
 ## Open questions
 
-- Keep the builder, move to JSX, or expose both?
+- Should JSX remain a thin alternative over the builder, or should the builder stay the primary API?
 - How far should the typed expression DSL go before it becomes its own language?
 - Should CQRS/fat-morph live streams remain optional helpers or become a blessed app pattern?
