@@ -1,12 +1,10 @@
 import * as Effect from "effect/Effect"
 import {
-  datastarScript,
+  datastarPageResponse,
   dataSignals,
   emptyResponse,
   get,
   h,
-  htmlDocument,
-  htmlResponse,
   init,
   liveElementsResponse,
   mergeAttrs,
@@ -45,8 +43,7 @@ export const createLiveCounter = (): LiveCounterApp => {
   const broadcaster = new Broadcaster<number>()
   let count = 0
 
-  const page: Handler<never, never> = () =>
-    Effect.succeed(htmlResponse(htmlDocument({ head: datastarScript(), body: pageNode() })))
+  const page: Handler<never, never> = () => Effect.succeed(datastarPageResponse(pageNode()))
 
   const increment: Handler<never, never> = () =>
     broadcaster.publish(++count).pipe(

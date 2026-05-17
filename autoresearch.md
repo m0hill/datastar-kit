@@ -133,3 +133,4 @@ Reference-only material outside `ts-star`:
 - Kept Node serve helper at score 128. Next iteration adds a scoped server helper with `Effect.acquireRelease` for idiomatic lifecycle management in tests/apps.
 - Kept scoped Node server helper at score 129. Next iteration updates examples to return full Datastar HTML documents using `htmlDocument`/`datastarScript`, improving runability now that server lifecycle helpers exist.
 - Kept full-document examples at score 130. Next iteration lets SSE `patchElementsResponse` accept HTML nodes like direct HTML responses, reducing manual `render(...)` calls for streamed patches.
+- Kept SSE patch element node rendering at score 131. Next iteration factors the repeated `htmlResponse(htmlDocument({ head: datastarScript(), body }))` pattern into Datastar document/page helpers, keeping examples runnable without ceremony.

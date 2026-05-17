@@ -2,13 +2,11 @@ import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
   bind,
-  datastarScript,
+  datastarPageResponse,
   dataSignals,
   get,
   h,
-  htmlDocument,
   htmlPatchResponse,
-  htmlResponse,
   mergeAttrs,
   on,
   queryUrl,
@@ -70,8 +68,7 @@ export const searchNode = () => {
 
 export const searchView = (): string => render(searchNode())
 
-export const searchPage = (): Response =>
-  htmlResponse(htmlDocument({ head: datastarScript(), body: searchNode() }))
+export const searchPage = (): Response => datastarPageResponse(searchNode())
 
 export const searchRoute = route("GET", "/search", (request) =>
   readQuery(request, SearchQuery).pipe(
