@@ -5,6 +5,7 @@ import { patchElements, type PatchElementsOptions } from "./sse.js"
 
 export interface Subscription<A> extends AsyncIterable<A>, AsyncIterator<A> {
   close(): void
+  return(): Promise<IteratorResult<A>>
 }
 
 class BroadcastSubscription<A> implements Subscription<A> {
@@ -53,6 +54,11 @@ class BroadcastSubscription<A> implements Subscription<A> {
     for (const waiter of this.waiting.splice(0)) {
       waiter({ done: true, value: undefined })
     }
+  }
+
+  return(): Promise<IteratorResult<A>> {
+    this.close()
+    return Promise.resolve({ done: true, value: undefined })
   }
 
   [Symbol.asyncIterator](): AsyncIterator<A> {
@@ -109,18 +115,32 @@ export async function* mapToElementPatches<A>(
 
 export const eventStreamResponse = (events: AsyncIterable<string>): Response => {
   const encoder = new TextEncoder()
+  const iterator = events[Symbol.asyncIterator]()
+  let closed = false
 
   return new Response(
     new ReadableStream<Uint8Array>({
-      async start(controller) {
+      async pull(controller) {
+        if (closed) {
+          return
+        }
+
         try {
-          for await (const event of events) {
-            controller.enqueue(encoder.encode(event))
+          const result = await iterator.next()
+          if (result.done === true) {
+            closed = true
+            controller.close()
+            return
           }
-          controller.close()
+          controller.enqueue(encoder.encode(result.value))
         } catch (cause) {
+          closed = true
           controller.error(cause)
         }
+      },
+      async cancel() {
+        closed = true
+        await iterator.return?.()
       }
     }),
     {

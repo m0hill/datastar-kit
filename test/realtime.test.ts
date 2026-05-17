@@ -57,4 +57,18 @@ describe("realtime SSE helpers", () => {
 
     await expect(body).resolves.toBe('event: datastar-patch-elements\ndata: elements <div id="count">3</div>\n\n')
   })
+
+  it("closes broadcaster subscriptions when SSE response bodies are canceled", async () => {
+    const broadcaster = new Broadcaster<string>()
+    const subscription = Effect.runSync(broadcaster.subscribe())
+    const response = eventStreamResponse(subscription)
+    const reader = response.body?.getReader()
+
+    expect(reader).toBeDefined()
+    expect(Effect.runSync(broadcaster.size())).toBe(1)
+
+    await reader!.cancel()
+
+    expect(Effect.runSync(broadcaster.size())).toBe(0)
+  })
 })
