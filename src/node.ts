@@ -63,6 +63,30 @@ export const nodeRequestToWeb = async (request: IncomingMessage, origin?: string
   return new Request(url.toString(), init)
 }
 
+const writeResponseChunk = (target: ServerResponse, chunk: Uint8Array): Promise<void> =>
+  new Promise((resolve, reject) => {
+    const cleanup = () => {
+      target.off("drain", onDrain)
+      target.off("error", onError)
+    }
+    const onDrain = () => {
+      cleanup()
+      resolve()
+    }
+    const onError = (cause: Error) => {
+      cleanup()
+      reject(cause)
+    }
+
+    target.once("error", onError)
+    if (target.write(chunk)) {
+      cleanup()
+      resolve()
+      return
+    }
+    target.once("drain", onDrain)
+  })
+
 export const writeWebResponse = async (target: ServerResponse, response: Response): Promise<void> => {
   target.statusCode = response.status
   if (response.statusText.length > 0) {
@@ -78,7 +102,19 @@ export const writeWebResponse = async (target: ServerResponse, response: Respons
     return
   }
 
-  target.end(Buffer.from(await response.arrayBuffer()))
+  const reader = response.body.getReader()
+  try {
+    while (true) {
+      const result = await reader.read()
+      if (result.done) {
+        break
+      }
+      await writeResponseChunk(target, result.value)
+    }
+  } finally {
+    reader.releaseLock()
+    target.end()
+  }
 }
 
 export interface NodeListenerOptions {

@@ -5,6 +5,7 @@ import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { route, router, textResponse, withSignals } from "../src/handler.js"
 import { createNodeListener } from "../src/node.js"
+import { eventStreamResponse } from "../src/realtime.js"
 import { patchSignalsResponse } from "../src/response.js"
 
 const CounterSignals = Schema.Struct({
@@ -68,6 +69,36 @@ describe("Node runtime adapter", () => {
 
     expect(response.status).toBe(500)
     expect(await response.text()).toBe("Internal Server Error")
+  })
+
+  it("streams response chunks without waiting for the body to close", async () => {
+    let releaseSecond!: () => void
+    const second = new Promise<void>((resolve) => {
+      releaseSecond = resolve
+    })
+    async function* events(): AsyncIterable<string> {
+      yield "event: first\n\n"
+      await second
+      yield "event: second\n\n"
+    }
+
+    const origin = await listen(router(route("GET", "/events", () => Effect.succeed(eventStreamResponse(events())))))
+    const response = await fetch(`${origin}/events`)
+    const reader = response.body?.getReader()
+    const decoder = new TextDecoder()
+
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
+    expect(reader).toBeDefined()
+
+    const first = await reader!.read()
+    expect(first.done).toBe(false)
+    expect(decoder.decode(first.value)).toBe("event: first\n\n")
+
+    releaseSecond()
+    const next = await reader!.read()
+    expect(next.done).toBe(false)
+    expect(decoder.decode(next.value)).toBe("event: second\n\n")
+    await expect(reader!.read()).resolves.toEqual({ done: true, value: undefined })
   })
 
   it("allows custom failure responses", async () => {
