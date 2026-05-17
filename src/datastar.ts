@@ -390,6 +390,10 @@ export const onSignalPatch = (expression: ExprInput<unknown>, modifiers?: Timing
   return { [`data-on-signal-patch${modifierSuffix(parts)}`]: toJs(expression) }
 }
 
+export const onSignalPatchFilter = (filter: SignalFilter): Attributes => ({
+  "data-on-signal-patch-filter": toJs(filter)
+})
+
 export const init = (expression: ExprInput<unknown>): Attributes => ({
   "data-init": toJs(expression)
 })

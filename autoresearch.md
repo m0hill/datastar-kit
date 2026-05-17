@@ -124,3 +124,4 @@ Reference-only material outside `ts-star`:
 - Kept handler error mapping at score 105. Next iteration adds an explicit `emptyResponse` helper for command endpoints returning 204/202, replacing ad-hoc `new Response(null, {status: 204})` in the live example.
 - Kept `emptyResponse` at score 107. Next iteration adds object-form `dataAttrs`/`dataClasses` helpers for multiple Datastar bindings, especially class names with Tailwind-style special characters.
 - Kept object-form attrs/classes at score 110. Next iteration adds `dataStyle`/`dataStyles` helpers to cover Datastar's style binding family with the same single-key/object-form pattern.
+- Kept data-style helper family at score 112. Next iteration fills a gap around `data-on-signal-patch-filter`, composing it with existing signal patch listeners.
