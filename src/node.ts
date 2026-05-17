@@ -1,5 +1,6 @@
 import * as Effect from "effect/Effect"
-import type { IncomingMessage, RequestListener, ServerResponse } from "node:http"
+import { createServer, type IncomingMessage, type RequestListener, type Server, type ServerResponse } from "node:http"
+import type { AddressInfo } from "node:net"
 import type { Handler } from "./handler.js"
 
 const hasRequestBody = (method: string | undefined): boolean => {
@@ -107,4 +108,35 @@ export const createNodeListener = (app: Handler<unknown, any>, options: NodeList
       }
       response.end(String(cause))
     })
+}
+
+export interface ServeOptions extends NodeListenerOptions {
+  readonly host?: string
+  readonly port?: number
+}
+
+export const serve = (app: Handler<unknown, any>, options: ServeOptions = {}): Effect.Effect<Server, Error> =>
+  Effect.promise(
+    () =>
+      new Promise<Server>((resolve, reject) => {
+        const server = createServer(createNodeListener(app, options))
+        server.once("error", reject)
+        server.listen(options.port ?? 0, options.host ?? "127.0.0.1", () => {
+          server.off("error", reject)
+          resolve(server)
+        })
+      })
+  )
+
+export const closeServer = (server: Server): Effect.Effect<void, Error> =>
+  Effect.promise(
+    () =>
+      new Promise<void>((resolve, reject) => {
+        server.close((error) => error === undefined ? resolve() : reject(error))
+      })
+  )
+
+export const serverOrigin = (server: Server): string => {
+  const address = server.address() as AddressInfo
+  return `http://${address.address}:${address.port}`
 }
