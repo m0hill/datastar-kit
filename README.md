@@ -12,7 +12,7 @@ This is intentionally small. The current shape favors explicit backend-driven HT
 - `src/datastar.ts` — typed signal/action/attribute helpers for generating Datastar expressions, validating signal names, modifier suffixes, and `data-*` attributes.
 - `src/html.ts` — tiny HTML builder/renderer used while templating choices are still open.
 - `src/jsx.ts` — experimental classic JSX factory that renders through the same HTML nodes.
-- `src/request.ts` — reads Datastar signals from Web `Request`s and decodes them with Effect Schema.
+- `src/request.ts` — detects Datastar action requests, reads Datastar signals from Web `Request`s, and decodes them with Effect Schema.
 - `src/handler.ts` — plain Effect handlers returning Web `Response`s, plus exact-route dispatch and `withSignals`.
 - `src/node.ts` — boundary adapter from `node:http` to Web `Request`/`Response`.
 - `src/realtime.ts` — optional in-process broadcaster + AsyncIterable-to-SSE helpers for CQRS-style live updates.

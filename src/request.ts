@@ -11,6 +11,11 @@ export class SignalJsonError {
   ) {}
 }
 
+export const DATASTAR_REQUEST_HEADER = "datastar-request"
+
+export const isDatastarRequest = (request: Request): boolean =>
+  request.headers.get(DATASTAR_REQUEST_HEADER)?.toLowerCase() === "true"
+
 const methodsWithQuerySignals = new Set(["GET", "DELETE"])
 
 export const rawSignalsFromRequest = (request: Request): Effect.Effect<string, never> =>
