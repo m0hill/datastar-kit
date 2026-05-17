@@ -121,3 +121,4 @@ Reference-only material outside `ts-star`:
 - Kept `queryUrl` at score 96. Next iteration adds a live counter example using `Broadcaster` and `liveElementsResponse` to validate realtime composition in an example without introducing a sync engine.
 - Kept live counter example at score 100. It exposed a public index problem: `export * as Handler` collided with the exported `Handler` type. Next iteration renames the namespace export to `Handlers` and verifies type import from the package root.
 - Kept index export cleanup at score 102. Next iteration adds `mapErrorResponse` so typed Effect handler failures (especially signal decode errors) can become explicit HTTP responses.
+- Kept handler error mapping at score 105. Next iteration adds an explicit `emptyResponse` helper for command endpoints returning 204/202, replacing ad-hoc `new Response(null, {status: 204})` in the live example.

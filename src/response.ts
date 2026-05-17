@@ -12,6 +12,12 @@ export const sseResponse = (...events: ReadonlyArray<string>): Response =>
     headers: sseHeaders()
   })
 
+export const emptyResponse = (status = 204, init?: Omit<ResponseInit, "status">): Response =>
+  new Response(null, {
+    ...init,
+    status
+  })
+
 export const htmlResponse = (html: string): Response =>
   new Response(html, {
     headers: {

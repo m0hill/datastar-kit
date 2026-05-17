@@ -1,6 +1,7 @@
 import * as Effect from "effect/Effect"
 import {
   dataSignals,
+  emptyResponse,
   get,
   h,
   htmlResponse,
@@ -46,7 +47,7 @@ export const createLiveCounter = (): LiveCounterApp => {
 
   const increment: Handler<never, never> = () =>
     broadcaster.publish(++count).pipe(
-      Effect.as(new Response(null, { status: 204 }))
+      Effect.as(emptyResponse())
     )
 
   const live: Handler<never, never> = () =>
