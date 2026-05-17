@@ -1,3 +1,4 @@
+export * as Client from "./client.js"
 export * as Datastar from "./datastar.js"
 export * as Handler from "./handler.js"
 export * as Html from "./html.js"
@@ -8,6 +9,7 @@ export * as Request from "./request.js"
 export * as Response from "./response.js"
 export * as Sse from "./sse.js"
 
+export * from "./client.js"
 export * from "./datastar.js"
 export * from "./handler.js"
 export * from "./html.js"
