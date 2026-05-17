@@ -138,3 +138,4 @@ Reference-only material outside `ts-star`:
 - Kept live counter node-based patches at score 134. Next iteration adds an explicit helper to pair exact app routes with a default `/datastar.js` client asset route, avoiding hidden asset serving while keeping runnable prototypes small.
 - Kept Datastar client route pairing at score 135. Next iteration fixes the Node adapter to stream Web `Response` bodies chunk-by-chunk, because buffering `arrayBuffer()` breaks long-lived Datastar SSE/live responses under `node:http`.
 - Kept Node response body streaming at score 136. Next iteration flushes Node response headers before awaiting the first streaming body chunk so Datastar SSE clients can connect even before the first event is available.
+- Kept Node streaming header flush at score 137. Next iteration adds a real node:http integration test for the live-counter example to verify broadcaster-backed Datastar SSE works through `serve()` end-to-end.
