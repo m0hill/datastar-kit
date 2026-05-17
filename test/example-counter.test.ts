@@ -8,10 +8,12 @@ describe("counter example", () => {
     expect(counterView()).toContain('data-on:click="@post(&quot;/increment&quot;)"')
   })
 
-  it("returns a page that loads the Datastar client", async () => {
+  it("returns a full page that loads the Datastar client", async () => {
     const response = page()
+    const html = await response.text()
 
-    expect(await response.text()).toContain('<script type="module" src="/datastar.js"></script>')
+    expect(html).toContain("<!doctype html>")
+    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
   })
 
   it("increments through the reusable action handler", async () => {

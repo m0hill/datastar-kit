@@ -1,9 +1,11 @@
 import * as Effect from "effect/Effect"
 import {
+  datastarScript,
   dataSignals,
   emptyResponse,
   get,
   h,
+  htmlDocument,
   htmlResponse,
   init,
   liveElementsResponse,
@@ -28,22 +30,23 @@ export interface LiveCounterApp {
 
 export const countFragment = (count: number): string => render(h("output", { id: "count" }, count))
 
-export const pageView = (): string =>
-  render(
-    h(
-      "main",
-      mergeAttrs({ id: "live-counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
-      h("div", init(get("/live")), ""),
-      h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
-      h("output", { id: "count" }, "0")
-    )
+export const pageNode = () =>
+  h(
+    "main",
+    mergeAttrs({ id: "live-counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
+    h("div", init(get("/live")), ""),
+    h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
+    h("output", { id: "count" }, "0")
   )
+
+export const pageView = (): string => render(pageNode())
 
 export const createLiveCounter = (): LiveCounterApp => {
   const broadcaster = new Broadcaster<number>()
   let count = 0
 
-  const page: Handler<never, never> = () => Effect.succeed(htmlResponse(pageView()))
+  const page: Handler<never, never> = () =>
+    Effect.succeed(htmlResponse(htmlDocument({ head: datastarScript(), body: pageNode() })))
 
   const increment: Handler<never, never> = () =>
     broadcaster.publish(++count).pipe(

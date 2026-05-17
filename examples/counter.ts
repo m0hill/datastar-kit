@@ -1,9 +1,11 @@
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
+  datastarScript,
   dataSignals,
-  htmlResponse,
   h,
+  htmlDocument,
+  htmlResponse,
   mergeAttrs,
   on,
   patchSignalsResponse,
@@ -20,22 +22,22 @@ export const CounterSignals = Schema.Struct({
   count: Schema.Number
 })
 
-export const counterView = (): string => {
+export const counterNode = () => {
   const count = signal<number, "count">("count")
 
-  return render(
-    h(
-      "main",
-      mergeAttrs({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
-      h("h1", {}, "ts-star counter"),
-      h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
-      h("output", text(count), "0")
-    )
+  return h(
+    "main",
+    mergeAttrs({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
+    h("h1", {}, "ts-star counter"),
+    h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
+    h("output", text(count), "0")
   )
 }
 
+export const counterView = (): string => render(counterNode())
+
 export const page = (): Response =>
-  htmlResponse(`<!doctype html><html><head><script type="module" src="/datastar.js"></script></head><body>${counterView()}</body></html>`)
+  htmlResponse(htmlDocument({ head: datastarScript(), body: counterNode() }))
 
 export const increment = withSignals(CounterSignals, (signals) =>
   Effect.succeed(patchSignalsResponse({ count: signals.count + 1 }))

@@ -2,9 +2,11 @@ import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import {
   bind,
+  datastarScript,
   dataSignals,
   get,
   h,
+  htmlDocument,
   htmlPatchResponse,
   htmlResponse,
   mergeAttrs,
@@ -48,25 +50,28 @@ export const resultsView = (q: string): string =>
     )
   )
 
-export const searchView = (): string => {
+export const searchNode = () => {
   const q = signal<string, "q">("q")
 
-  return render(
+  return h(
+    "main",
+    mergeAttrs({ id: "search" }, dataSignals({ q: "" }, { ifMissing: true })),
     h(
-      "main",
-      mergeAttrs({ id: "search" }, dataSignals({ q: "" }, { ifMissing: true })),
-      h(
-        "input",
-        mergeAttrs(
-          { type: "search", placeholder: "Search contacts" },
-          bind(q),
-          on("input", get(queryUrl("/search", { q })), { debounce: 200 })
-        )
-      ),
-      h("table", {}, h("tbody", { id: "results" }))
-    )
+      "input",
+      mergeAttrs(
+        { type: "search", placeholder: "Search contacts" },
+        bind(q),
+        on("input", get(queryUrl("/search", { q })), { debounce: 200 })
+      )
+    ),
+    h("table", {}, h("tbody", { id: "results" }))
   )
 }
+
+export const searchView = (): string => render(searchNode())
+
+export const searchPage = (): Response =>
+  htmlResponse(htmlDocument({ head: datastarScript(), body: searchNode() }))
 
 export const searchRoute = route("GET", "/search", (request) =>
   readQuery(request, SearchQuery).pipe(
@@ -75,6 +80,6 @@ export const searchRoute = route("GET", "/search", (request) =>
 )
 
 export const app = router(
-  route("GET", "/", () => Effect.succeed(htmlResponse(searchView()))),
+  route("GET", "/", () => Effect.succeed(searchPage())),
   searchRoute
 )

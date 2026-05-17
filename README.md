@@ -62,7 +62,7 @@ export const app = router(
 )
 ```
 
-See `examples/counter.ts` for the smallest signal patch flow, `examples/search.ts` for query decoding + direct HTML patch responses, and `examples/live-counter.ts` for broadcaster-backed SSE patches.
+See `examples/counter.ts` for the smallest full-page signal patch flow, `examples/search.ts` for query decoding + direct HTML patch responses, and `examples/live-counter.ts` for broadcaster-backed SSE patches.
 
 ## Open questions
 

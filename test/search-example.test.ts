@@ -1,6 +1,6 @@
 import * as Effect from "effect/Effect"
 import { describe, expect, it } from "vitest"
-import { app, resultsView, searchRoute, searchView } from "../examples/search.js"
+import { app, resultsView, searchPage, searchRoute, searchView } from "../examples/search.js"
 import { get, queryUrl, signal } from "../src/datastar.js"
 
 describe("search example", () => {
@@ -12,6 +12,14 @@ describe("search example", () => {
 
   it("renders a search shell with debounced Datastar requests", () => {
     expect(searchView()).toContain('data-on:input__debounce.200ms="@get(`/search?q=${encodeURIComponent($q)}`)"')
+  })
+
+  it("returns a full search page that loads the Datastar client", async () => {
+    const html = await searchPage().text()
+
+    expect(html).toContain("<!doctype html>")
+    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
+    expect(html).toContain('id="search"')
   })
 
   it("renders filtered result rows", () => {

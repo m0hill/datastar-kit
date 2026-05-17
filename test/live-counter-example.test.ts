@@ -27,9 +27,12 @@ describe("live counter example", () => {
     const liveCounter = createLiveCounter()
     const page = await Effect.runPromise(liveCounter.app(new Request("http://localhost/")))
     const increment = await Effect.runPromise(liveCounter.app(new Request("http://localhost/increment", { method: "POST" })))
+    const html = await page.text()
 
     expect(page.status).toBe(200)
-    expect(await page.text()).toContain("live-counter")
+    expect(html).toContain("<!doctype html>")
+    expect(html).toContain("live-counter")
+    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
     expect(increment.status).toBe(204)
     expect(liveCounter.currentCount()).toBe(1)
   })
