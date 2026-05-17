@@ -177,9 +177,140 @@ export const del = (url: string, options?: FetchOptions): Expr<void> => fetchAct
 
 export const mergeAttrs = (...attrs: ReadonlyArray<Attributes>): Attributes => Object.assign({}, ...attrs)
 
-export const on = (event: string, expression: ExprInput<unknown>): Attributes => ({
-  [`data-on:${event}`]: toJs(expression)
+export type Duration = number | `${number}ms` | `${number}s`
+export type CaseModifier = "camel" | "kebab" | "snake" | "pascal"
+
+export interface DebounceOptions {
+  readonly duration: Duration
+  readonly leading?: boolean
+  readonly noTrailing?: boolean
+}
+
+export interface ThrottleOptions {
+  readonly duration: Duration
+  readonly noLeading?: boolean
+  readonly trailing?: boolean
+}
+
+export interface TimingModifiers {
+  readonly delay?: Duration
+  readonly debounce?: Duration | DebounceOptions
+  readonly throttle?: Duration | ThrottleOptions
+  readonly viewTransition?: boolean
+}
+
+export interface OnModifiers extends TimingModifiers {
+  readonly once?: boolean
+  readonly passive?: boolean
+  readonly capture?: boolean
+  readonly case?: CaseModifier
+  readonly window?: boolean
+  readonly document?: boolean
+  readonly outside?: boolean
+  readonly prevent?: boolean
+  readonly stop?: boolean
+}
+
+export interface IntersectModifiers extends TimingModifiers {
+  readonly once?: boolean
+  readonly exit?: boolean
+  readonly half?: boolean
+  readonly full?: boolean
+  readonly threshold?: number
+}
+
+export interface IntervalModifiers {
+  readonly duration?: Duration
+  readonly leading?: boolean
+  readonly viewTransition?: boolean
+}
+
+const durationModifier = (duration: Duration): string => typeof duration === "number" ? `${duration}ms` : duration
+
+const appendTimingModifiers = (parts: Array<string>, modifiers: TimingModifiers): void => {
+  if (modifiers.delay !== undefined) parts.push(`delay.${durationModifier(modifiers.delay)}`)
+
+  if (modifiers.debounce !== undefined) {
+    if (typeof modifiers.debounce === "object") {
+      const tags = [durationModifier(modifiers.debounce.duration)]
+      if (modifiers.debounce.leading === true) tags.push("leading")
+      if (modifiers.debounce.noTrailing === true) tags.push("notrailing")
+      parts.push(`debounce.${tags.join(".")}`)
+    } else {
+      parts.push(`debounce.${durationModifier(modifiers.debounce)}`)
+    }
+  }
+
+  if (modifiers.throttle !== undefined) {
+    if (typeof modifiers.throttle === "object") {
+      const tags = [durationModifier(modifiers.throttle.duration)]
+      if (modifiers.throttle.noLeading === true) tags.push("noleading")
+      if (modifiers.throttle.trailing === true) tags.push("trailing")
+      parts.push(`throttle.${tags.join(".")}`)
+    } else {
+      parts.push(`throttle.${durationModifier(modifiers.throttle)}`)
+    }
+  }
+
+  if (modifiers.viewTransition === true) parts.push("viewtransition")
+}
+
+const modifierSuffix = (parts: ReadonlyArray<string>): string => parts.length === 0 ? "" : `__${parts.join("__")}`
+
+export const onModifiers = (modifiers: OnModifiers = {}): string => {
+  const parts: Array<string> = []
+  if (modifiers.once === true) parts.push("once")
+  if (modifiers.passive === true) parts.push("passive")
+  if (modifiers.capture === true) parts.push("capture")
+  if (modifiers.case !== undefined) parts.push(`case.${modifiers.case}`)
+  if (modifiers.window === true) parts.push("window")
+  if (modifiers.document === true) parts.push("document")
+  if (modifiers.outside === true) parts.push("outside")
+  if (modifiers.prevent === true) parts.push("prevent")
+  if (modifiers.stop === true) parts.push("stop")
+  appendTimingModifiers(parts, modifiers)
+  return modifierSuffix(parts)
+}
+
+export const intersectModifiers = (modifiers: IntersectModifiers = {}): string => {
+  const parts: Array<string> = []
+  if (modifiers.once === true) parts.push("once")
+  if (modifiers.exit === true) parts.push("exit")
+  if (modifiers.half === true) parts.push("half")
+  if (modifiers.full === true) parts.push("full")
+  if (modifiers.threshold !== undefined) parts.push(`threshold.${modifiers.threshold}`)
+  appendTimingModifiers(parts, modifiers)
+  return modifierSuffix(parts)
+}
+
+export const intervalModifiers = (modifiers: IntervalModifiers = {}): string => {
+  const parts: Array<string> = []
+  if (modifiers.duration !== undefined || modifiers.leading === true) {
+    const tags = [durationModifier(modifiers.duration ?? "1s")]
+    if (modifiers.leading === true) tags.push("leading")
+    parts.push(`duration.${tags.join(".")}`)
+  }
+  if (modifiers.viewTransition === true) parts.push("viewtransition")
+  return modifierSuffix(parts)
+}
+
+export const on = (event: string, expression: ExprInput<unknown>, modifiers?: OnModifiers): Attributes => ({
+  [`data-on:${event}${onModifiers(modifiers)}`]: toJs(expression)
 })
+
+export const onIntersect = (expression: ExprInput<unknown>, modifiers?: IntersectModifiers): Attributes => ({
+  [`data-on-intersect${intersectModifiers(modifiers)}`]: toJs(expression)
+})
+
+export const onInterval = (expression: ExprInput<unknown>, modifiers?: IntervalModifiers): Attributes => ({
+  [`data-on-interval${intervalModifiers(modifiers)}`]: toJs(expression)
+})
+
+export const onSignalPatch = (expression: ExprInput<unknown>, modifiers?: TimingModifiers): Attributes => {
+  const parts: Array<string> = []
+  appendTimingModifiers(parts, modifiers ?? {})
+  return { [`data-on-signal-patch${modifierSuffix(parts)}`]: toJs(expression) }
+}
 
 export const init = (expression: ExprInput<unknown>): Attributes => ({
   "data-init": toJs(expression)
