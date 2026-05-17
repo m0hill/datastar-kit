@@ -99,3 +99,4 @@ Reference-only material outside `ts-star`:
 
 - Baseline: no implementation yet; score should be 0.
 - Attempted first vertical slice with SSE encoder, HTML builder, typed signal/action helpers, Effect Schema request decoding, and counter tests. One test failed because a reactive `data-attr:disabled="false"` expression is intentionally a string attribute, not a false boolean HTML attr. Reapplied the slice without that misleading fixture attribute.
+- Kept minimal vertical slice at score 18. Next iteration extends confidence against included SDK fixtures and adds compile-time signal misuse checks.

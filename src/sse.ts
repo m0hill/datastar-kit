@@ -26,6 +26,11 @@ export interface PatchSignalsOptions extends SseOptions {
   readonly onlyIfMissing?: boolean
 }
 
+export interface ExecuteScriptOptions extends SseOptions {
+  readonly attributes?: Readonly<Record<string, string | number | boolean>>
+  readonly autoRemove?: boolean
+}
+
 export type JsonPrimitive = string | number | boolean | null
 export type JsonValue = JsonPrimitive | readonly JsonValue[] | { readonly [key: string]: JsonValue }
 export type JsonObject = { readonly [key: string]: JsonValue }
@@ -104,6 +109,66 @@ export const patchSignals = (signals: JsonObject | string, options: PatchSignals
   lines.push(...dataLines("signals", encodeJson(signals)))
 
   return serializeEvent(PATCH_SIGNALS_EVENT, options, lines)
+}
+
+const setPathToNull = (target: Record<string, JsonValue>, path: string): void => {
+  const parts = path.split(".").filter(Boolean)
+  let current: Record<string, JsonValue> = target
+
+  for (const [index, part] of parts.entries()) {
+    if (index === parts.length - 1) {
+      current[part] = null
+      return
+    }
+
+    const next = current[part]
+    if (typeof next !== "object" || next === null || Array.isArray(next)) {
+      current[part] = {}
+    }
+    current = current[part] as Record<string, JsonValue>
+  }
+}
+
+export const removeSignals = (paths: string | ReadonlyArray<string>, options: SseOptions = {}): string => {
+  const payload: Record<string, JsonValue> = {}
+  const pathList = typeof paths === "string" ? [paths] : paths
+
+  for (const path of pathList) {
+    setPathToNull(payload, path)
+  }
+
+  return patchSignals(payload, options)
+}
+
+const escapeAttribute = (value: string): string =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;")
+
+const scriptAttributes = (options: ExecuteScriptOptions): string => {
+  const attrs: Array<string> = []
+
+  if (options.autoRemove !== false) {
+    attrs.push('data-effect="el.remove()"')
+  }
+
+  for (const [key, value] of Object.entries(options.attributes ?? {})) {
+    attrs.push(`${key}="${escapeAttribute(String(value))}"`)
+  }
+
+  return attrs.length === 0 ? "" : ` ${attrs.join(" ")}`
+}
+
+export const executeScript = (script: string, options: ExecuteScriptOptions = {}): string => {
+  const elements = `<script${scriptAttributes(options)}>${script}</script>`
+  return serializeEvent(PATCH_ELEMENTS_EVENT, options, [
+    { key: "mode", value: "append" },
+    { key: "selector", value: "body" },
+    ...dataLines("elements", elements)
+  ])
 }
 
 export const eventStream = (...events: ReadonlyArray<string>): string => events.join("")
