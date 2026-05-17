@@ -394,6 +394,14 @@ export const onSignalPatchFilter = (filter: SignalFilter): Attributes => ({
   "data-on-signal-patch-filter": toJs(filter)
 })
 
+export const jsonSignals = (filter?: SignalFilter, options: { readonly terse?: boolean } = {}): Attributes => ({
+  [options.terse === true ? "data-json-signals__terse" : "data-json-signals"]: filter === undefined ? true : toJs(filter)
+})
+
+export const preserveAttr = (...names: ReadonlyArray<string>): Attributes => ({
+  "data-preserve-attr": names.join(" ")
+})
+
 export const init = (expression: ExprInput<unknown>): Attributes => ({
   "data-init": toJs(expression)
 })
@@ -409,6 +417,12 @@ export const show = (expression: ExprInput<unknown>): Attributes => ({
 export const bind = <T, Name extends string>(signal: Signal<T, Name>): Attributes => ({
   [`data-bind:${signal.name}`]: true
 })
+
+export const ref = <Name extends string>(name: Name | Signal<unknown, Name>): Attributes => {
+  const signalName = typeof name === "string" ? name : name.name
+  assertSignalName(signalName)
+  return { [`data-ref:${signalName}`]: true }
+}
 
 export const indicator = <Name extends string>(name: Name | Signal<boolean, Name>): Attributes => {
   const signalName = typeof name === "string" ? name : name.name
