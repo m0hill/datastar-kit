@@ -155,6 +155,39 @@ describe("Node runtime adapter", () => {
     expect(returned).toBe(true)
   })
 
+  it("aborts Web Request signals when Node clients disconnect", async () => {
+    let aborted = false
+    const origin = await listen(
+      router(
+        route("GET", "/events", (request) => {
+          request.signal.addEventListener("abort", () => {
+            aborted = true
+          }, { once: true })
+
+          return Effect.succeed(eventStreamResponse({
+            [Symbol.asyncIterator]: () => ({
+              next: () => new Promise<IteratorResult<string>>(() => undefined)
+            })
+          }))
+        })
+      )
+    )
+    const response = await new Promise<IncomingMessage>((resolve, reject) => {
+      const clientRequest = httpGet(`${origin}/events`, resolve)
+      clientRequest.on("error", reject)
+    })
+
+    response.destroy()
+    for (let attempt = 0; attempt < 20; attempt++) {
+      if (aborted) {
+        break
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5))
+    }
+
+    expect(aborted).toBe(true)
+  })
+
   it("allows custom failure responses", async () => {
     const app = router(route("GET", "/boom", () => Effect.fail("boom")))
     server = createServer(createNodeListener(app, { onError: () => textResponse("handled", { status: 418 }) }))

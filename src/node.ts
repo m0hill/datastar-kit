@@ -44,13 +44,21 @@ export const incomingHeaders = (request: IncomingMessage): Headers => {
 const bufferToBody = (buffer: Buffer): BodyInit =>
   buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer
 
-export const nodeRequestToWeb = async (request: IncomingMessage, origin?: string): Promise<Request> => {
+export const nodeRequestToWeb = async (
+  request: IncomingMessage,
+  origin?: string,
+  signal?: AbortSignal
+): Promise<Request> => {
   const headers = incomingHeaders(request)
   const base = origin ?? `http://${headers.get("host") ?? "localhost"}`
   const url = new URL(request.url ?? "/", base)
   const init: RequestInit = {
     method: request.method ?? "GET",
     headers
+  }
+
+  if (signal !== undefined) {
+    init.signal = signal
   }
 
   if (hasRequestBody(request.method)) {
@@ -149,7 +157,10 @@ const defaultErrorResponse = (): Response =>
 
 export const createNodeListener = (app: Handler<unknown, any>, options: NodeListenerOptions = {}): RequestListener =>
 (request, response) => {
-  const program = Effect.promise(() => nodeRequestToWeb(request, options.origin)).pipe(
+  const abortController = new AbortController()
+  response.once("close", () => abortController.abort())
+
+  const program = Effect.promise(() => nodeRequestToWeb(request, options.origin, abortController.signal)).pipe(
     Effect.flatMap(app)
   ) as Effect.Effect<Response, unknown, never>
 
