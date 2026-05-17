@@ -13,6 +13,12 @@ export interface Route<E = never, R = never> {
 
 export const handler = <E, R>(run: Handler<E, R>): Handler<E, R> => run
 
+export const mapErrorResponse = <E, R>(
+  routeHandler: Handler<E, R>,
+  f: (error: E, request: Request) => Response
+): Handler<never, R> =>
+(request) => routeHandler(request).pipe(Effect.catchAll((error) => Effect.succeed(f(error, request))))
+
 export const withSignals = <A, I, R, E2, R2>(
   schema: Schema.Schema<A, I, R>,
   f: (signals: A, request: Request) => Effect.Effect<Response, E2, R2>
