@@ -1,6 +1,6 @@
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
-import { createServer, type Server } from "node:http"
+import { createServer, get as httpGet, type IncomingMessage, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { route, router, textResponse, withSignals } from "../src/handler.js"
@@ -122,6 +122,37 @@ describe("Node runtime adapter", () => {
     const first = await reader!.read()
     expect(first.done).toBe(false)
     expect(new TextDecoder().decode(first.value)).toBe("event: ready\n\n")
+  })
+
+  it("cancels streaming response bodies when Node clients disconnect", async () => {
+    let returned = false
+    const neverEndingEvents: AsyncIterable<string> = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => new Promise<IteratorResult<string>>(() => undefined),
+        return: () => {
+          returned = true
+          return Promise.resolve({ done: true, value: undefined })
+        }
+      })
+    }
+
+    const origin = await listen(
+      router(route("GET", "/events", () => Effect.succeed(eventStreamResponse(neverEndingEvents))))
+    )
+    const response = await new Promise<IncomingMessage>((resolve, reject) => {
+      const request = httpGet(`${origin}/events`, resolve)
+      request.on("error", reject)
+    })
+
+    response.destroy()
+    for (let attempt = 0; attempt < 20; attempt++) {
+      if (returned) {
+        break
+      }
+      await new Promise((resolve) => setTimeout(resolve, 5))
+    }
+
+    expect(returned).toBe(true)
   })
 
   it("allows custom failure responses", async () => {

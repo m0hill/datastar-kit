@@ -66,8 +66,13 @@ export const nodeRequestToWeb = async (request: IncomingMessage, origin?: string
 const writeResponseChunk = (target: ServerResponse, chunk: Uint8Array): Promise<void> =>
   new Promise((resolve, reject) => {
     const cleanup = () => {
+      target.off("close", onClose)
       target.off("drain", onDrain)
       target.off("error", onError)
+    }
+    const onClose = () => {
+      cleanup()
+      reject(new Error("Response closed before chunk flushed"))
     }
     const onDrain = () => {
       cleanup()
@@ -78,6 +83,7 @@ const writeResponseChunk = (target: ServerResponse, chunk: Uint8Array): Promise<
       reject(cause)
     }
 
+    target.once("close", onClose)
     target.once("error", onError)
     if (target.write(chunk)) {
       cleanup()
@@ -104,8 +110,15 @@ export const writeWebResponse = async (target: ServerResponse, response: Respons
 
   target.flushHeaders()
   const reader = response.body.getReader()
+  let targetClosed = false
+  const cancelReader = () => {
+    targetClosed = true
+    void reader.cancel().catch(() => undefined)
+  }
+
+  target.once("close", cancelReader)
   try {
-    while (true) {
+    while (!targetClosed) {
       const result = await reader.read()
       if (result.done) {
         break
@@ -113,8 +126,11 @@ export const writeWebResponse = async (target: ServerResponse, response: Respons
       await writeResponseChunk(target, result.value)
     }
   } finally {
+    target.off("close", cancelReader)
     reader.releaseLock()
-    target.end()
+    if (!target.destroyed && !target.writableEnded) {
+      target.end()
+    }
   }
 }
 
