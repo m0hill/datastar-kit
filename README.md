@@ -9,7 +9,7 @@ This is intentionally small. The current shape favors explicit backend-driven HT
 - `src/client.ts` — helpers for script tags and serving the self-hosted Datastar client asset.
 - `src/response.ts` — Web `Response` helpers for Datastar SSE plus direct `text/html`, `application/json`, and `text/javascript` action responses.
 - `src/sse.ts` — pure Datastar SSE event encoding (`patchElements`, `patchSignals`, `removeSignals`, `executeScript`). Tested against included Datastar SDK fixtures.
-- `src/datastar.ts` — typed signal/action/attribute helpers for generating/composing Datastar expressions, validating signal names, merging attributes, modifier suffixes, and `data-*` attributes.
+- `src/datastar.ts` — typed signal/action/attribute helpers for generating/composing Datastar expressions and action URLs, validating signal names, merging attributes, modifier suffixes, and `data-*` attributes.
 - `src/html.ts` — tiny HTML builder/renderer used while templating choices are still open.
 - `src/jsx.ts` — experimental classic JSX factory that renders through the same HTML nodes.
 - `src/request.ts` — detects Datastar action requests, reads Datastar signals/query params from Web `Request`s, and decodes them with Effect Schema.

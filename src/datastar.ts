@@ -197,6 +197,22 @@ const fetchOptionsToJs = (options: FetchOptions): string => {
 }
 
 export type UrlInput = string | Expr<string>
+export type QueryParamInput = ExprInput<string | number | boolean>
+
+const escapeTemplateText = (value: string): string => value.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("${", "\\${")
+
+export const queryUrl = (path: string, params: Readonly<Record<string, QueryParamInput>>): Expr<string> => {
+  const entries = Object.entries(params)
+  if (entries.length === 0) {
+    return raw(JSON.stringify(path))
+  }
+
+  const separator = path.includes("?") ? "&" : "?"
+  const query = entries
+    .map(([key, value]) => `${encodeURIComponent(key)}=${"${encodeURIComponent("}${toJs(value)}${")}"}`)
+    .join("&")
+  return raw(`\`${escapeTemplateText(path)}${separator}${query}\``)
+}
 
 const urlToJs = (url: UrlInput): string => typeof url === "string" ? JSON.stringify(url) : url.toDatastarExpression()
 

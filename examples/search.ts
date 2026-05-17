@@ -9,7 +9,7 @@ import {
   htmlResponse,
   mergeAttrs,
   on,
-  raw,
+  queryUrl,
   readQuery,
   render,
   route,
@@ -60,7 +60,7 @@ export const searchView = (): string => {
         mergeAttrs(
           { type: "search", placeholder: "Search contacts" },
           bind(q),
-          on("input", get(raw<string>("`/search?q=${encodeURIComponent($q)}`")), { debounce: 200 })
+          on("input", get(queryUrl("/search", { q })), { debounce: 200 })
         )
       ),
       h("table", {}, h("tbody", { id: "results" }))

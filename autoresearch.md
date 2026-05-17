@@ -117,3 +117,4 @@ Reference-only material outside `ts-star`:
 - Kept route prefixing at score 78. `concatRoutes` was discarded because it widened route types to `any`; route groups can be spread directly. Next iteration adds strict attribute merging for cases where silent overrides would hide Datastar attr collisions.
 - Kept strict attribute merge at score 82. Next iteration adds small expression combinators (`not`, `and`, `or`, `ternary`) to reduce raw JavaScript strings while keeping the expression DSL minimal.
 - Kept expression combinators at score 87. Next iteration adds a fuller search example combining dynamic Datastar action URLs, query decoding, and direct HTML patch responses.
+- Kept search example at score 92. Next iteration replaces raw template literal URLs with a small `queryUrl` helper for encoded dynamic Datastar action URLs.

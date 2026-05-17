@@ -1,13 +1,13 @@
 import * as Effect from "effect/Effect"
 import { describe, expect, it } from "vitest"
 import { app, resultsView, searchRoute, searchView } from "../examples/search.js"
-import { get, raw } from "../src/datastar.js"
+import { get, queryUrl, signal } from "../src/datastar.js"
 
 describe("search example", () => {
   it("supports dynamic Datastar action URLs", () => {
-    expect(get(raw<string>("`/search?q=${encodeURIComponent($q)}`")).toDatastarExpression()).toBe(
-      "@get(`/search?q=${encodeURIComponent($q)}`)"
-    )
+    const q = signal<string, "q">("q")
+
+    expect(get(queryUrl("/search", { q })).toDatastarExpression()).toBe("@get(`/search?q=${encodeURIComponent($q)}`)")
   })
 
   it("renders a search shell with debounced Datastar requests", () => {
