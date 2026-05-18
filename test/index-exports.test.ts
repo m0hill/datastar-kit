@@ -16,6 +16,7 @@ describe("package root exports", () => {
     expect(Jsx.jsx).toBeDefined()
     expect(Realtime.makeRealtimePubSub).toBeDefined()
     expect(Realtime.makeRealtimePubSubScoped).toBeDefined()
+    expect(Realtime.heartbeatStream).toBeDefined()
     expect(Realtime.makeBroadcaster).toBeDefined()
     expect(Sse.patchSignals).toBeDefined()
 

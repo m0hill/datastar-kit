@@ -6,6 +6,7 @@ import { describe, expect, it } from "vitest"
 import { h } from "../src/html.js"
 import {
   eventStreamResponse,
+  heartbeatStream,
   liveElementsPubSubResponse,
   liveElementsResponse,
   makeBroadcaster,
@@ -14,7 +15,9 @@ import {
   mapToElementPatches,
   publishRealtime,
   shutdownRealtime,
-  streamFromPubSub
+  streamFromPubSub,
+  sseComment,
+  withHeartbeat
 } from "../src/realtime.js"
 
 const toWeb = (response: HttpServerResponse.HttpServerResponse): Response => HttpServerResponse.toWeb(response)
@@ -74,6 +77,20 @@ describe("realtime SSE helpers", () => {
 
     expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(await response.text()).toBe("event: one\n\nevent: two\n\n")
+  })
+
+  it("builds SSE comment heartbeats with Effect Stream ticks", async () => {
+    const beats = await Effect.runPromise(heartbeatStream({ interval: 0, comment: "ping" }).pipe(Stream.take(2), Stream.runCollect))
+
+    expect(beats).toEqual([": ping\n\n", ": ping\n\n"])
+  })
+
+  it("can merge heartbeat comments into an Effect event stream", async () => {
+    const events = withHeartbeat(Stream.make("event: update\n\n"), { interval: 0, comment: "keepalive" })
+    const response = toWeb(eventStreamResponse(events))
+
+    expect(sseComment("hello\nworld")).toBe(": hello\n: world\n\n")
+    expect(await response.text()).toContain("event: update\n\n")
   })
 
   it("still accepts async iterables at the response boundary", async () => {

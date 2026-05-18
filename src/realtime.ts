@@ -1,3 +1,4 @@
+import type * as Duration from "effect/Duration"
 import * as Effect from "effect/Effect"
 import * as PubSub from "effect/PubSub"
 import * as Stream from "effect/Stream"
@@ -60,6 +61,25 @@ export const shutdownRealtime = <A>(pubsub: RealtimePubSub<A>): Effect.Effect<vo
 
 export const streamFromPubSub = <A>(pubsub: RealtimePubSub<A>): Stream.Stream<A> =>
   Stream.fromPubSub(pubsub)
+
+export interface HeartbeatOptions {
+  readonly interval?: Duration.Input
+  readonly comment?: string
+}
+
+export const sseComment = (comment = ""): string =>
+  comment.length === 0 ? ":\n\n" : `: ${comment.replaceAll("\n", "\n: ")}\n\n`
+
+export const heartbeatStream = (options: HeartbeatOptions = {}): Stream.Stream<string> =>
+  Stream.tick(options.interval ?? "15 seconds").pipe(
+    Stream.map(() => sseComment(options.comment ?? "heartbeat"))
+  )
+
+export const withHeartbeat = <E = never, R = never>(
+  events: Stream.Stream<string, E, R>,
+  options?: HeartbeatOptions
+): Stream.Stream<string, E, R> =>
+  events.pipe(Stream.merge(heartbeatStream(options), { haltStrategy: "left" }))
 
 export const mapToElementPatches = <A, E = never>(
   source: Stream.Stream<A, E>,
