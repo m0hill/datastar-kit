@@ -2,7 +2,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { tsxCounterApp, tsxCounterNode, tsxCounterPage, tsxCounterView } from "../examples/tsx-counter.js"
+import { CounterButton, tsxCounterApp, tsxCounterNode, tsxCounterPage, tsxCounterView } from "../examples/tsx-counter.js"
 import { render } from "../src/html.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -33,6 +33,12 @@ describe("TSX counter example", () => {
 
   it("keeps TSX output compatible with the shared HTML renderer", () => {
     expect(render(tsxCounterNode())).toContain('<output data-text="$count">0</output>')
+  })
+
+  it("uses a reusable typed TSX button component", () => {
+    expect(render(CounterButton({ action: "/save", children: "Save" }))).toBe(
+      '<button type="button" data-on:click="@post(&quot;/save&quot;)">Save</button>'
+    )
   })
 
   it("returns a native page that loads the Datastar client", async () => {

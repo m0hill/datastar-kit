@@ -2,7 +2,7 @@
 /** @jsxFrag Fragment */
 import { describe, expect, it } from "vitest"
 import { dataSignals, mergeAttrs, on, post, signal, text } from "../src/datastar.js"
-import { render } from "../src/html.js"
+import { render, type Child } from "../src/html.js"
 import { Fragment, jsx } from "../src/jsx.js"
 
 describe("JSX templating experiment", () => {
@@ -35,5 +35,16 @@ describe("JSX templating experiment", () => {
     )
 
     expect(render(nodes)).toBe("<span>A</span><span>B</span>")
+  })
+
+  it("supports typed server components", () => {
+    interface LinkProps {
+      readonly href: string
+      readonly children?: Child | readonly Child[]
+    }
+
+    const Link = (props: LinkProps) => <a href={props.href}>{props.children}</a>
+
+    expect(render(<Link href="/docs">Docs</Link>)).toBe('<a href="/docs">Docs</a>')
   })
 })

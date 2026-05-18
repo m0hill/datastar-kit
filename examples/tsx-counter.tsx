@@ -18,13 +18,22 @@ import {
   post,
   render,
   signal,
-  text
+  text,
+  type Child
 } from "../src/index.js"
 import { Fragment, jsx } from "../src/jsx.js"
 
 export const TsxCounterSignals = Schema.Struct({
   count: Schema.Number
 })
+
+export interface CounterButtonProps {
+  readonly action: string
+  readonly children?: Child | readonly Child[]
+}
+
+export const CounterButton = (props: CounterButtonProps) =>
+  <button {...mergeAttrs({ type: "button" }, on("click", post(props.action)))}>{props.children ?? "+"}</button>
 
 export const tsxCounterNode = () => {
   const count = signal<number, "count">("count")
@@ -33,7 +42,7 @@ export const tsxCounterNode = () => {
     <main {...mergeAttrs({ id: "tsx-counter" }, dataSignals({ count: 0 }, { ifMissing: true }))}>
       <h1>ts-star TSX counter</h1>
       <>
-        <button {...mergeAttrs({ type: "button" }, on("click", post("/increment")))}>+</button>
+        <CounterButton action="/increment">+</CounterButton>
         <output {...text(count)}>0</output>
       </>
     </main>
