@@ -10,7 +10,7 @@ import type { AddressInfo } from "node:net"
 import { pathToFileURL } from "node:url"
 import { app as counterApp } from "./counter.js"
 import { createLiveCounter } from "./live-counter.js"
-import { runtimeCounterAppWithRuntime } from "./runtime-counter.js"
+import { runtimeCounterAppWithServices } from "./runtime-counter.js"
 import { app as searchApp } from "./search.js"
 import { tsxCounterApp } from "./tsx-counter.js"
 import { app as validationFormApp } from "./validation-form.js"
@@ -61,7 +61,7 @@ const makeExampleRuntime = (name: ExampleName): ExampleRuntime => {
       return { app: liveCounter.app, close: liveCounter.shutdown }
     }
     case "runtime-counter":
-      return { app: runtimeCounterAppWithRuntime }
+      return { app: runtimeCounterAppWithServices }
     case "validation-form":
       return { app: validationFormApp }
   }

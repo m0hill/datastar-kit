@@ -11,8 +11,9 @@ import {
   Model,
   Observability,
   Platform,
+  read,
   Realtime,
-  Runtime,
+  reply,
   Security,
   Sse,
   Validation,
@@ -32,7 +33,8 @@ describe("package root exports", () => {
     expect(Jsx.jsx).toBeDefined()
     expect(Model.LiveQuery.make).toBeDefined()
     expect(Observability.Telemetry).toBeDefined()
-    expect(Runtime.requestRuntimeLayer).toBeDefined()
+    expect(read.signals).toBeDefined()
+    expect(reply.patch).toBeDefined()
     expect(Security.requireCsrfToken).toBeDefined()
     expect(Validation.FormValidationError).toBeDefined()
     expect(Realtime.makeRealtimePubSub).toBeDefined()

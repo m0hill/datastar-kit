@@ -1,7 +1,7 @@
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { runtimeCounterAppWithRuntime } from "../examples/runtime-counter.js"
+import { runtimeCounterAppWithServices } from "../examples/runtime-counter.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 let server: Server | undefined
@@ -22,15 +22,15 @@ afterEach(async () => {
   await closePlatformListeners()
 })
 
-describe("runtime counter example", () => {
-  it("assembles an Effect-native app from runtime and domain layers", async () => {
-    const listener = await makePlatformListener(runtimeCounterAppWithRuntime)
+describe("Effect services counter example", () => {
+  it("assembles an app from normal Effect domain services", async () => {
+    const listener = await makePlatformListener(runtimeCounterAppWithServices)
     const origin = await serveListener(listener)
 
     const page = await fetch(origin)
     const html = await page.text()
     expect(page.status).toBe(200)
-    expect(html).toContain("Effect-native runtime counter")
+    expect(html).toContain("Effect services counter")
     expect(html).toContain('data-signals__ifmissing="{&quot;count&quot;: 0}"')
 
     const increment = await fetch(`${origin}/increment`, {

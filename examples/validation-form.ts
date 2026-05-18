@@ -9,7 +9,7 @@ import { bind, mergeAttrs, on, post, text, validationDataSignal, validationSigna
 import { h, render } from "../src/html.js"
 import { platformRouter } from "../src/platform.js"
 import * as reply from "../src/reply.js"
-import { catchMappedErrors, requestRuntimeLayer, SignalDecoder } from "../src/runtime.js"
+import * as read from "../src/read.js"
 import { clearValidationSignalPayload, FormValidationError, validationSignalsResponse, type ValidationIssue } from "../src/validation.js"
 
 export const ContactForm = defineSignals(
@@ -76,8 +76,7 @@ export const contactFormPage = (): HttpServerResponse.HttpServerResponse =>
   reply.page(contactFormNode())
 
 const submitContactInner = Effect.gen(function*() {
-  const decoder = yield* SignalDecoder
-  const input = yield* ContactForm.decode(decoder)
+  const input = yield* read.signals(ContactForm.schema)
   const valid = yield* validateContact(input)
 
   return reply.patch(
@@ -86,17 +85,24 @@ const submitContactInner = Effect.gen(function*() {
   )
 })
 
-export const submitContact = catchMappedErrors(
-  submitContactInner.pipe(
-    Effect.matchEffect({
-      onFailure: (error) => error instanceof FormValidationError
-        ? Effect.succeed(validationSignalsResponse(error))
-        : Effect.fail(error),
-      onSuccess: Effect.succeed
-    })
-  )
-).pipe(
-  Effect.provide(requestRuntimeLayer(), { local: true })
+const hasTag = (error: unknown, tag: string): boolean =>
+  typeof error === "object" && error !== null && "_tag" in error && error._tag === tag
+
+export const submitContact = submitContactInner.pipe(
+  Effect.matchEffect({
+    onFailure: (error) => {
+      if (error instanceof FormValidationError) {
+        return Effect.succeed(validationSignalsResponse(error))
+      }
+
+      if (hasTag(error, "SchemaError")) {
+        return Effect.succeed(HttpServerResponse.text("Invalid request input", { status: 400 }))
+      }
+
+      return Effect.fail(error)
+    },
+    onSuccess: Effect.succeed
+  })
 )
 
 export const clearContactValidation = (): HttpServerResponse.HttpServerResponse =>
