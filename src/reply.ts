@@ -224,15 +224,13 @@ export const directHtml = (
   options: DirectHtmlOptions = {}
 ): Response => {
   const { selector, mode, namespace, useViewTransition, ...init } = options
-  const headers = mergeHeaders({
+  return response(render(html), init, 200, {
     "content-type": "text/html; charset=utf-8",
     ...(selector === undefined ? {} : { "datastar-selector": selector }),
     ...(mode === undefined ? {} : { "datastar-mode": mode }),
     ...(namespace === undefined ? {} : { "datastar-namespace": namespace }),
     ...(useViewTransition === undefined ? {} : { "datastar-use-view-transition": String(useViewTransition) })
-  }, init.headers)
-
-  return response(render(html), { ...init, headers }, 200)
+  })
 }
 
 export const directSignals = (
@@ -240,12 +238,10 @@ export const directSignals = (
   options: DirectSignalsOptions = {}
 ): Response => {
   const { onlyIfMissing, ...init } = options
-  const headers = mergeHeaders({
+  return response(typeof value === "string" ? value : JSON.stringify(value), init, 200, {
     "content-type": "application/json; charset=utf-8",
     ...(onlyIfMissing === undefined ? {} : { "datastar-only-if-missing": String(onlyIfMissing) })
-  }, init.headers)
-
-  return response(typeof value === "string" ? value : JSON.stringify(value), { ...init, headers }, 200)
+  })
 }
 
 export const directScript = (
@@ -253,12 +249,10 @@ export const directScript = (
   options: DirectScriptOptions = {}
 ): Response => {
   const { attributes, ...init } = options
-  const headers = mergeHeaders({
+  return response(script, init, 200, {
     "content-type": "text/javascript; charset=utf-8",
     ...(attributes === undefined ? {} : { "datastar-script-attributes": JSON.stringify(attributes) })
-  }, init.headers)
-
-  return response(script, { ...init, headers }, 200)
+  })
 }
 
 const hasControlCharacters = (value: string): boolean => /[\u0000-\u001F\u007F]/u.test(value)
