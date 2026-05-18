@@ -4,7 +4,7 @@ import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { route, router, textResponse } from "../src/handler.js"
-import { toPlatformApp } from "../src/platform.js"
+import { PlatformPathError, toPlatformApp, toPlatformRouter } from "../src/platform.js"
 
 let server: Server | undefined
 
@@ -32,5 +32,30 @@ describe("Effect Platform HTTP adapter", () => {
 
     expect(response.status).toBe(200)
     expect(await response.text()).toBe("platform")
+  })
+
+  it("converts exact ts-star routes to an Effect Platform HttpRouter", async () => {
+    const platformRouter = toPlatformRouter(
+      route("GET", "/", () => Effect.succeed(textResponse("home"))),
+      route("POST", "/submit", () => Effect.succeed(textResponse("submitted", { status: 201 })))
+    )
+    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(platformRouter))
+    const origin = await serveListener(listener)
+
+    const home = await fetch(origin)
+    const submitted = await fetch(`${origin}/submit`, { method: "POST" })
+    const missing = await fetch(`${origin}/missing`)
+
+    expect(home.status).toBe(200)
+    expect(await home.text()).toBe("home")
+    expect(submitted.status).toBe(201)
+    expect(await submitted.text()).toBe("submitted")
+    expect(missing.status).toBe(404)
+  })
+
+  it("rejects invalid platform route paths early", () => {
+    expect(() => toPlatformRouter(route("GET", "relative", () => Effect.succeed(textResponse("bad"))))).toThrow(
+      PlatformPathError
+    )
   })
 })
