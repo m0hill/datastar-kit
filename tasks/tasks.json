@@ -78,7 +78,7 @@
     {
       "order": 3,
       "id": "T003",
-      "title": "Make SSE-first responses the only blessed response path",
+      "title": "Make SSE-first responses the blessed response path",
       "status": "pending",
       "phase": "protocol",
       "priority": "critical",
@@ -86,21 +86,20 @@
       "depends_on": ["T001", "T002"],
       "markdown": "03-sse-first-responses.md",
       "goal": "Collapse duplicate response constructors around Datastar SSE as the canonical response model.",
-      "canonical_direction": "Bless page/html response, SSE patch responses, event streams, and 204 command completion; demote direct text/html, JSON, and script responses to internal or explicit escape hatches.",
+      "canonical_direction": "Use one cohesive public response factory named reply. SSE patch helpers are top-level and blessed; direct HTML/signals/script responses remain as reply.direct.* status-safe escape hatches. Remove verbose datastar* names, DatastarResponse, ds.reply, and public arbitrary-status platform direct helpers.",
       "deliverables": [
-        "One canonical response API",
-        "Duplicate platform/datastar response pairs removed or renamed",
-        "Direct response helpers removed from public API or marked as low-level escape hatches",
-        "Examples rewritten to use SSE-first helpers"
+        "One cohesive public reply factory, inspired by Remix-style contextual naming",
+        "Duplicate platform/datastar direct response pairs removed",
+        "Direct response helpers kept only as secondary status-safe escape hatches",
+        "Examples rewritten to use SSE-first helpers by default"
       ],
       "removal_targets": [
-        "platformHtmlPatchResponse",
-        "platformJsonSignalsResponse",
-        "platformScriptResponse",
-        "datastarHtmlPatchResponse",
-        "datastarJsonSignalsResponse",
-        "datastarScriptResponse",
-        "unnecessary platform* vs datastar* duplicates"
+        "public arbitrary-status platform direct helpers",
+        "separate datastarHtmlPatchResponse/datastarJsonSignalsResponse/datastarScriptResponse functions",
+        "unnecessary platform* vs datastar* direct response duplication",
+        "direct helpers appearing as peers of canonical SSE helpers",
+        "verbose datastar*Response names in public app ergonomics",
+        "DatastarResponse or ds.reply as public response namespaces"
       ]
     },
     {
