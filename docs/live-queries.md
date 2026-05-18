@@ -74,6 +74,12 @@ For PubSub sources, prefer sliding/dropping strategies for invalidation hubs unl
 
 Effect Stream subscriptions are scoped. When a response body is canceled or a request/layer scope closes, subscriptions and PubSubs created through scoped helpers are finalized. `LiveQueryHubLive()` shuts down its PubSub when the layer scope closes.
 
+## Deployment and scaling notes
+
+A live view usually means one SSE connection per browser tab or view. Configure reverse proxies to disable buffering for `text/event-stream`, keep idle timeouts longer than the heartbeat interval, and preserve streaming flush behavior. Use bounded invalidation buffers or coalescing when renders can fall behind updates.
+
+Core intentionally does not require a broker. Redis, NATS, Postgres notifications, or app-specific PubSub should adapt into Effect `Stream` invalidations.
+
 ## Work sharing
 
 The current API renders per connection. Later versions may cache rendered snapshots per invalidation batch for popular views. The API intentionally treats invalidations as triggers and `load`/`render` as separate steps so that optimization can be added without changing the programming model.

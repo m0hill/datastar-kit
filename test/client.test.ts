@@ -72,11 +72,15 @@ describe("Datastar client asset helpers", () => {
     )
   })
 
-  it("serves provided Datastar client content with JavaScript headers", async () => {
-    const response = HttpServerResponse.toWeb(datastarClientResponse("console.log('datastar')", { cacheControl: "public, max-age=60" }))
+  it("serves provided Datastar client content with configurable JavaScript cache headers", async () => {
+    const response = HttpServerResponse.toWeb(datastarClientResponse("console.log('datastar')", {
+      cacheControl: "public, max-age=31536000, immutable",
+      headers: { etag: '"datastar-v1"' }
+    }))
 
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
-    expect(response.headers.get("cache-control")).toBe("public, max-age=60")
+    expect(response.headers.get("cache-control")).toBe("public, max-age=31536000, immutable")
+    expect(response.headers.get("etag")).toBe('"datastar-v1"')
     expect(await response.text()).toBe("console.log('datastar')")
   })
 

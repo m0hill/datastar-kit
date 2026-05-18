@@ -246,7 +246,7 @@
       "order": 14,
       "id": "T014",
       "title": "Prepare performance and deployment story",
-      "status": "pending",
+      "status": "done",
       "phase": "production",
       "priority": "medium",
       "depends_on": ["T008", "T011", "T013"],

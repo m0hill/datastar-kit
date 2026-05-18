@@ -2,6 +2,8 @@
 
 `ts-star` currently targets Node through Effect Platform. The package stays server-driven: static assets are small, and most behavior is ordinary HTTP routes.
 
+See also [`performance-deployment.md`](performance-deployment.md) for compression, reverse proxy, caching, SSE scaling, and smoke-test guidance.
+
 ## Build
 
 ```sh
@@ -45,4 +47,4 @@ Production adapters should set normal platform concerns outside framework helper
 
 ## Datastar asset policy
 
-Pin the Datastar version you test against. Avoid silently floating production pages to an untested client runtime. Add integrity/versioning around `Client` helpers when publishing requires it.
+Pin the Datastar version you test against. Avoid silently floating production pages to an untested client runtime. Use `cacheControl` and custom `headers` on `Client.datastarClientResponse`, `datastarClientRoute`, or `datastarClientFileRoute` to choose no-cache development behavior, fingerprinted immutable production assets, or validation headers for stable URLs.

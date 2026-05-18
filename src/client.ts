@@ -44,10 +44,12 @@ export const datastarPageResponse = (
 
 export interface DatastarClientResponseOptions {
   readonly cacheControl?: string
+  readonly headers?: Readonly<Record<string, string>>
 }
 
 const datastarClientHeaders = (options: DatastarClientResponseOptions = {}) => ({
-  "cache-control": options.cacheControl ?? "no-cache"
+  "cache-control": options.cacheControl ?? "no-cache",
+  ...options.headers
 })
 
 export const datastarClientResponse = (
