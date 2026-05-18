@@ -355,31 +355,42 @@
     {
       "order": 10,
       "id": "T010",
-      "title": "Trim the generic Platform HTTP surface",
+      "title": "Delete Platform as public API and keep only read.signals",
       "status": "pending",
       "phase": "platform",
-      "priority": "high",
-      "grill_level": 3,
+      "priority": "critical",
+      "grill_level": 4,
       "depends_on": [
         "T002",
         "T003",
+        "T004",
         "T009"
       ],
       "markdown": "10-trim-platform-http-surface.md",
-      "goal": "Keep Platform focused on Datastar + Effect Platform integration instead of wrapping generic HTTP helpers.",
-      "canonical_direction": "Keep Datastar-specific signal/query decoding and canonical responses; use Effect Platform directly for generic form/multipart APIs.",
+      "goal": "Remove the public Platform namespace, router helper, generic request readers, read.query, and explicit-request readers so the only ts-star input helper is Datastar-aware read.signals.",
+      "canonical_direction": "Platform is not app-facing. Apps use Effect Platform directly for routing and generic HTTP concerns. ts-star exposes read.signals(schema), which internally handles Datastar GET/DELETE query-param signals and body-based signals.",
       "deliverables": [
-        "Generic form/multipart wrappers removed from public API",
-        "Datastar signal/query decoding remains tested",
-        "Canonical response names aligned with T003",
-        "Docs point to Effect Platform for generic HTTP needs"
+        "Platform namespace removed from public/root exports",
+        "platformRouter deleted and examples rewritten to use Effect Platform directly",
+        "read exposes only read.signals(schema)",
+        "read.query/read.queryFrom/read.signalsFrom deleted",
+        "generic form/urlencoded/multipart wrappers deleted",
+        "SignalJsonError/custom parse error removed in favor of standard Effect Schema parsing/decoding failure",
+        "Focused tests for read.signals across Datastar transport shapes"
       ],
       "removal_targets": [
+        "Platform namespace as public API",
+        "platformRouter and any ts-star router helper",
+        "platformReadSignals/platformReadSignalsFromRequest public names",
+        "platformReadQuery/platformReadQueryFromRequest and read.query/read.queryFrom",
+        "read.signalsFrom explicit-request variant",
         "platformReadUrlEncodedForm*",
         "platformReadForm*",
         "platformReadMultipart*",
-        "UrlEncodedFormInput public type",
-        "generic HTTP wrappers added for convenience"
+        "isDatastarRequest/parseSignalsJson/platformRawSignalsFromRequest/platformQueryFromRequest public helpers",
+        "SignalJsonError or any custom ts-star read parse error",
+        "QueryObject/QueryValue/UrlEncodedFormInput/PlatformResponseOptions public types",
+        "src/platform.ts as a public-shaped module"
       ]
     },
     {
