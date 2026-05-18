@@ -10,7 +10,6 @@ import {
 } from "./sse.js"
 
 export type DatastarResponseInit = Omit<ResponseInit, "status" | "statusText">
-export type PageResponseInit = ResponseInit
 
 export interface HeartbeatOptions {
   readonly intervalMs?: number
@@ -190,7 +189,7 @@ const withoutHeartbeat = (options: StreamOptions): DatastarResponseInit => {
 
 export const page = (
   options: HtmlPageOptions = {},
-  init: PageResponseInit = {}
+  init: ResponseInit = {}
 ): Response =>
   new Response(htmlPage(options), {
     ...init,
