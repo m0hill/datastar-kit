@@ -36,9 +36,6 @@ export type DoneOptions = Omit<ResponseOptions, "contentType" | "status"> & {
   readonly status?: 204
 }
 
-export type PageOptions = HtmlPageOptions
-export type PageResponseOptions = ResponseOptions
-
 export type EventSource = AsyncIterable<string> | Stream.Stream<string, unknown>
 export type StreamInput = ReadonlyArray<string> | EventSource
 
@@ -155,8 +152,8 @@ const withoutHeartbeat = (options: StreamOptions): BodyOptions => {
 }
 
 export const page = (
-  options: PageOptions = {},
-  responseOptions: PageResponseOptions = {}
+  options: HtmlPageOptions = {},
+  responseOptions: ResponseOptions = {}
 ): HttpServerResponse.HttpServerResponse =>
   HttpServerResponse.text(htmlPage(options), {
     ...responseOptions,
