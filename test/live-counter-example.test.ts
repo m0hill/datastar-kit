@@ -1,9 +1,10 @@
 import * as Effect from "effect/Effect"
+import * as PubSub from "effect/PubSub"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { countFragment, createLiveCounter, pageView } from "../examples/live-counter.js"
+import { countFragment, createLiveCounter, makeLiveCounterScoped, pageView } from "../examples/live-counter.js"
 import { render } from "../src/html.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -51,6 +52,12 @@ describe("live counter example", () => {
 
     expect(await body).toBe('event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n')
     expect(liveCounter.currentCount()).toBe(1)
+  })
+
+  it("shuts down scoped live counter PubSub with its Effect scope", async () => {
+    const liveCounter = await Effect.runPromise(Effect.scoped(makeLiveCounterScoped()))
+
+    await expect(Effect.runPromise(PubSub.isShutdown(liveCounter.updates))).resolves.toBe(true)
   })
 
   it("dispatches page and increment routes", async () => {

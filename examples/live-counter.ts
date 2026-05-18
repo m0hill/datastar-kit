@@ -11,6 +11,7 @@ import {
   init,
   liveElementsPubSubResponse,
   makeRealtimePubSub,
+  makeRealtimePubSubScoped,
   mergeAttrs,
   on,
   platformRouter,
@@ -48,9 +49,11 @@ export const pageNode = () =>
 
 export const pageView = (): string => render(pageNode())
 
-export const makeLiveCounter = (): Effect.Effect<LiveCounterApp> =>
+const liveCounterPubSubOptions = { capacity: 16, replay: 1, strategy: "sliding" as const }
+
+const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<RealtimePubSub<number>, never, R>): Effect.Effect<LiveCounterApp, never, R> =>
   Effect.gen(function*() {
-    const updates = yield* makeRealtimePubSub<number>({ capacity: 16, replay: 1, strategy: "sliding" })
+    const updates = yield* updatesEffect
     let count = 0
 
     const page = datastarPageResponse(pageNode())
@@ -78,5 +81,11 @@ export const makeLiveCounter = (): Effect.Effect<LiveCounterApp> =>
       currentCount: () => count
     }
   })
+
+export const makeLiveCounter = (): Effect.Effect<LiveCounterApp> =>
+  makeLiveCounterWith(makeRealtimePubSub<number>(liveCounterPubSubOptions))
+
+export const makeLiveCounterScoped = () =>
+  makeLiveCounterWith(makeRealtimePubSubScoped<number>(liveCounterPubSubOptions))
 
 export const createLiveCounter = (): LiveCounterApp => Effect.runSync(makeLiveCounter())
