@@ -156,11 +156,9 @@ const fetchOptionsToJs = (options: FetchOptions): string => {
 }
 
 export type UrlInput = string | Expr<string>
-export type QueryParamInput = ExprInput<string | number | boolean>
-
 const escapeTemplateText = (value: string): string => value.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("${", "\\${")
 
-export const queryUrl = (path: string, params: Readonly<Record<string, QueryParamInput>>): Expr<string> => {
+export const queryUrl = (path: string, params: Readonly<Record<string, ExprInput<string | number | boolean>>>): Expr<string> => {
   const entries = Object.entries(params)
   if (entries.length === 0) {
     return raw(JSON.stringify(path))
