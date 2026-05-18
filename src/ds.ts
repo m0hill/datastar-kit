@@ -25,10 +25,9 @@ export class SignalNameError extends Error {
   }
 }
 
-const signalSegmentPattern = /^_?[A-Za-z][A-Za-z0-9_]*$/
+const signalNamePattern = /^_?[A-Za-z][A-Za-z0-9_]*(\._?[A-Za-z][A-Za-z0-9_]*)*$/
 
-const isSignalName = (name: string): boolean =>
-  name.length > 0 && name.split(".").every((segment) => signalSegmentPattern.test(segment))
+const isSignalName = (name: string): boolean => signalNamePattern.test(name)
 
 const assertSignalName = (name: string): void => {
   if (!isSignalName(name)) {
