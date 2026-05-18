@@ -102,6 +102,7 @@ Reference examples live in `examples/`:
 - `live-counter.ts` — recipe-style app-owned SSE invalidation stream.
 - `validation-form.ts` — recoverable validation patches using Standard Schema-compatible Zod.
 - `hono-counter.ts` — Hono as an application-framework integration around `Request -> Response` helpers.
+- `hono-live-counter.ts` — Hono routing around the app-owned live counter SSE recipe.
 
 ## Checking examples
 
@@ -115,6 +116,7 @@ pnpm run check:example:search
 pnpm run check:example:live-counter
 pnpm run check:example:validation-form
 pnpm run check:example:hono-counter
+pnpm run check:example:hono-live-counter
 ```
 
 The `check:*` scripts run `typecheck` first, then the matching example test. Use `test:examples` or `test:example:*` when you only need Vitest.
@@ -130,6 +132,7 @@ pnpm run dev:search
 pnpm run dev:live-counter
 pnpm run dev:validation-form
 pnpm run dev:hono-counter
+pnpm run dev:hono-live-counter
 ```
 
 The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or `HOST=0.0.0.0`.

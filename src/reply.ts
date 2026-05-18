@@ -72,7 +72,6 @@ const response = (
     headers: mergeHeaders(defaultHeaders, init?.headers)
   })
 
-const htmlHeader = { "content-type": "text/html; charset=utf-8" } as const
 const sseHeader = {
   "cache-control": "no-cache",
   "content-type": "text/event-stream"
@@ -173,7 +172,7 @@ export const page = (
 ): Response =>
   new Response(htmlPage(options), {
     ...init,
-    headers: mergeHeaders(htmlHeader, init.headers)
+    headers: mergeHeaders({ "content-type": "text/html; charset=utf-8" }, init.headers)
   })
 
 export const patch = (

@@ -5,7 +5,7 @@ const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1
 
 describe("example dev server", () => {
   it("lists every runnable example", () => {
-    expect(exampleNames).toEqual(["counter", "tsx-counter", "search", "live-counter", "validation-form", "hono-counter"])
+    expect(exampleNames).toEqual(["counter", "tsx-counter", "search", "live-counter", "validation-form", "hono-counter", "hono-live-counter"])
   })
 
   it("serves an example through the shared dev server", async () => {
@@ -31,6 +31,18 @@ describe("example dev server", () => {
       const response = await fetch(server.origin)
       expect(response.status).toBe(200)
       expect(await response.text()).toContain("ts-star counter")
+    } finally {
+      await server.close()
+    }
+  })
+
+  it("serves Hono live integration through the same fetch-compatible dev server", async () => {
+    const server = await startExampleServer("hono-live-counter", { port: 0 })
+
+    try {
+      const response = await fetch(server.origin)
+      expect(response.status).toBe(200)
+      expect(await response.text()).toContain("live-counter")
     } finally {
       await server.close()
     }

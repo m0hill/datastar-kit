@@ -3,12 +3,13 @@ import type { AddressInfo } from "node:net"
 import { pathToFileURL } from "node:url"
 import { handle as counterHandle } from "./counter.js"
 import { makeHonoCounter } from "./hono-counter.js"
+import { makeHonoLiveCounter } from "./hono-live-counter.js"
 import { makeLiveCounter } from "./live-counter.js"
 import { handle as searchHandle } from "./search.js"
 import { handle as tsxCounterHandle } from "./tsx-counter.js"
 import { handle as validationFormHandle } from "./validation-form.js"
 
-export const exampleNames = ["counter", "tsx-counter", "search", "live-counter", "validation-form", "hono-counter"] as const
+export const exampleNames = ["counter", "tsx-counter", "search", "live-counter", "validation-form", "hono-counter", "hono-live-counter"] as const
 export type ExampleName = typeof exampleNames[number]
 
 export interface DevServerOptions {
@@ -52,6 +53,10 @@ const makeExampleRuntime = (name: ExampleName): ExampleRuntime => {
     case "hono-counter": {
       const honoCounter = makeHonoCounter()
       return { handle: honoCounter.handle }
+    }
+    case "hono-live-counter": {
+      const liveCounter = makeHonoLiveCounter()
+      return { handle: liveCounter.handle, close: liveCounter.shutdown }
     }
   }
 }

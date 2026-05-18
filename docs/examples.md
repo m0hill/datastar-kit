@@ -24,4 +24,4 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 
 ## Hono counter
 
-`examples/hono-counter.ts` shows Hono as an application framework around `ts-star` helpers. Hono is not imported by core.
+`examples/hono-counter.ts` shows Hono as an application framework around `ts-star` helpers. `examples/hono-live-counter.ts` uses Hono routes around the live counter SSE recipe. Hono is not imported by core.
