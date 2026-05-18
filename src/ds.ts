@@ -2,7 +2,6 @@ import type { Props } from "./html.js"
 import type { ElementNamespace, ElementPatchMode } from "./sse.js"
 
 export interface Expr<T = unknown> {
-  readonly _tag: "Expr"
   toDatastarExpression(): string
 }
 
@@ -36,8 +35,6 @@ const assertSignalName = (name: string): void => {
 }
 
 class RawExpr<T = unknown> implements Expr<T> {
-  readonly _tag = "Expr"
-
   constructor(private readonly code: string) {}
 
   toDatastarExpression(): string {
@@ -50,8 +47,6 @@ class RawExpr<T = unknown> implements Expr<T> {
 }
 
 export class Signal<T, Name extends string = string> implements Expr<T> {
-  readonly _tag = "Expr"
-
   constructor(readonly name: Name) {
     assertSignalName(name)
   }
