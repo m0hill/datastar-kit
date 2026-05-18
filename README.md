@@ -103,6 +103,7 @@ Reference examples live in `examples/`:
 - `validation-form.ts` — recoverable validation patches using Standard Schema-compatible Zod.
 - `hono-counter.ts` — Hono as an application-framework integration around `Request -> Response` helpers.
 - `hono-live-counter.ts` — Hono routing around the app-owned live counter SSE recipe.
+- `todo-sync.tsx` — full-stack Hono todo sync with TSX views, Tailwind browser CSS, Zod validation, compression middleware, and realtime SSE fan-out.
 
 ## Checking examples
 
@@ -115,6 +116,7 @@ pnpm run check:example:tsx-counter
 pnpm run check:example:search
 pnpm run check:example:live-counter
 pnpm run check:example:validation-form
+pnpm run check:example:todo-sync
 pnpm run check:example:hono-counter
 pnpm run check:example:hono-live-counter
 ```
@@ -123,7 +125,7 @@ The `check:*` scripts run `typecheck` first, then the matching example test. Use
 
 ## Running example dev servers
 
-Each dev script builds the TypeScript examples, then starts one example through a small local Node dev server that adapts Node HTTP to Web `Request`/`Response` objects. Examples include the versioned Datastar CDN script explicitly in their page head:
+Each dev script builds the TypeScript examples, then starts one example through a local Node server. Most examples use the shared Web `Request`/`Response` dev adapter; `todo-sync.tsx` uses Hono's Node adapter directly. Examples include the versioned Datastar CDN script explicitly in their page head:
 
 ```sh
 pnpm run dev:counter
@@ -131,6 +133,7 @@ pnpm run dev:tsx-counter
 pnpm run dev:search
 pnpm run dev:live-counter
 pnpm run dev:validation-form
+pnpm run dev:todo-sync
 pnpm run dev:hono-counter
 pnpm run dev:hono-live-counter
 ```

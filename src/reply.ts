@@ -124,8 +124,8 @@ const readableStreamFrom = (
 
   const cleanup = () => {
     closed = true
-    if (initial !== undefined) clearTimeout(initial)
-    if (interval !== undefined) clearInterval(interval)
+    clearTimeout(initial)
+    clearInterval(interval)
   }
 
   return new ReadableStream({

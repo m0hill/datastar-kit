@@ -25,3 +25,7 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 ## Hono counter
 
 `examples/hono-counter.ts` shows Hono as an application framework around `ts-star` helpers. `examples/hono-live-counter.ts` uses Hono routes around the live counter SSE recipe. Hono is not imported by core.
+
+## Todo sync
+
+`examples/todo-sync.tsx` is a full-stack Hono Node example. It uses the explicit TSX adapter for server-rendered views, Tailwind browser CSS, Hono `compress()` middleware, Zod request validation via `@hono/zod-validator`, backend-owned todo state, and `reply.stream(...)` SSE fan-out so multiple tabs receive create/toggle/delete updates in real time.

@@ -6,10 +6,11 @@ import { makeHonoCounter } from "./hono-counter.js"
 import { makeHonoLiveCounter } from "./hono-live-counter.js"
 import { makeLiveCounter } from "./live-counter.js"
 import { handle as searchHandle } from "./search.js"
+import { handle as todoSyncHandle, shutdown as shutdownTodoSync } from "./todo-sync.js"
 import { handle as tsxCounterHandle } from "./tsx-counter.js"
 import { handle as validationFormHandle } from "./validation-form.js"
 
-export const exampleNames = ["counter", "tsx-counter", "search", "live-counter", "validation-form", "hono-counter", "hono-live-counter"] as const
+export const exampleNames = ["counter", "tsx-counter", "search", "live-counter", "validation-form", "hono-counter", "hono-live-counter", "todo-sync"] as const
 export type ExampleName = typeof exampleNames[number]
 
 export interface DevServerOptions {
@@ -58,6 +59,8 @@ const makeExampleRuntime = (name: ExampleName): ExampleRuntime => {
       const liveCounter = makeHonoLiveCounter()
       return { handle: liveCounter.handle, close: liveCounter.shutdown }
     }
+    case "todo-sync":
+      return { handle: todoSyncHandle, close: shutdownTodoSync }
   }
 }
 

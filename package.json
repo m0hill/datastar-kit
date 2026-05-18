@@ -32,6 +32,7 @@
     "check:example:hono-live-counter": "pnpm run typecheck && pnpm run test:example:hono-live-counter",
     "check:example:live-counter": "pnpm run typecheck && pnpm run test:example:live-counter",
     "check:example:search": "pnpm run typecheck && pnpm run test:example:search",
+    "check:example:todo-sync": "pnpm run typecheck && pnpm run test:example:todo-sync",
     "check:example:tsx-counter": "pnpm run typecheck && pnpm run test:example:tsx-counter",
     "check:example:validation-form": "pnpm run typecheck && pnpm run test:example:validation-form",
     "check:examples": "pnpm run typecheck && pnpm run test:examples",
@@ -41,6 +42,7 @@
     "dev:hono-live-counter": "pnpm run build && node dist/examples/dev-server.js hono-live-counter",
     "dev:live-counter": "pnpm run build && node dist/examples/dev-server.js live-counter",
     "dev:search": "pnpm run build && node dist/examples/dev-server.js search",
+    "dev:todo-sync": "pnpm run build && node dist/examples/todo-sync.js",
     "dev:tsx-counter": "pnpm run build && node dist/examples/dev-server.js tsx-counter",
     "dev:validation-form": "pnpm run build && node dist/examples/dev-server.js validation-form",
     "test": "vitest run",
@@ -49,9 +51,10 @@
     "test:example:hono-live-counter": "vitest run test/hono-live-counter-example.test.ts",
     "test:example:live-counter": "vitest run test/live-counter-example.test.ts",
     "test:example:search": "vitest run test/search-example.test.ts",
+    "test:example:todo-sync": "vitest run test/todo-sync-example.test.ts",
     "test:example:tsx-counter": "vitest run test/example-tsx-counter.test.ts",
     "test:example:validation-form": "vitest run test/validation-form-example.test.ts",
-    "test:examples": "vitest run test/example-counter.test.ts test/example-tsx-counter.test.ts test/search-example.test.ts test/live-counter-example.test.ts test/validation-form-example.test.ts test/hono-counter-example.test.ts test/hono-live-counter-example.test.ts",
+    "test:examples": "vitest run test/example-counter.test.ts test/example-tsx-counter.test.ts test/search-example.test.ts test/live-counter-example.test.ts test/validation-form-example.test.ts test/hono-counter-example.test.ts test/hono-live-counter-example.test.ts test/todo-sync-example.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
@@ -65,6 +68,8 @@
     "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
+    "@hono/node-server": "^2.0.3",
+    "@hono/zod-validator": "^0.8.0",
     "@types/node": "^24.10.1",
     "hono": "^4.12.19",
     "typescript": "^5.9.3",
