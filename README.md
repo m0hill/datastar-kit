@@ -4,7 +4,7 @@ Exploratory TypeScript + Effect + Datastar framework prototype.
 
 `ts-star` is intentionally small and server-driven. It keeps low-level Datastar helpers available while building toward a layered framework where backend state is the source of truth, Effect owns runtime/lifecycle concerns, and Datastar applies HTML/signal patches in the browser.
 
-See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline and public module boundary proposal. See [`docs/datastar-protocol.md`](docs/datastar-protocol.md) for Datastar action response status semantics and form decoding policy. See [`docs/programming-model.md`](docs/programming-model.md) for the backend-state/CQRS model. See [`docs/runtime.md`](docs/runtime.md) for the Effect-native service/layer runtime. See [`docs/type-contracts.md`](docs/type-contracts.md) for schema-derived signal and action contracts. See [`docs/html-rendering.md`](docs/html-rendering.md) for the renderer boundary, ordered attributes, raw HTML, and JSX status. See [`docs/signals.md`](docs/signals.md) for signal policy, scoping, and sensitive-data guidance.
+See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline and public module boundary proposal. See [`docs/datastar-protocol.md`](docs/datastar-protocol.md) for Datastar action response status semantics and form decoding policy. See [`docs/programming-model.md`](docs/programming-model.md) for the backend-state/CQRS model. See [`docs/runtime.md`](docs/runtime.md) for the Effect-native service/layer runtime. See [`docs/type-contracts.md`](docs/type-contracts.md) for schema-derived signal and action contracts. See [`docs/html-rendering.md`](docs/html-rendering.md) for the renderer boundary, ordered attributes, raw HTML, and JSX status. See [`docs/signals.md`](docs/signals.md) for signal policy, scoping, and sensitive-data guidance. See [`docs/live-queries.md`](docs/live-queries.md) for reconnect-safe current-state realtime.
 
 ## Current architecture
 
@@ -16,7 +16,7 @@ The package root exports each module as a namespace (`Sse`, `Contracts`, `Datast
 - `src/html.ts` — tiny HTML node builder/renderer plus renderer interface, ordered attributes, explicit raw HTML, patchable ID helpers, and full document helper.
 - `src/jsx.ts` — experimental classic JSX factory that renders through the same HTML node model.
 - `src/platform.ts` — Effect Platform HTTP integration: route composition, Datastar request detection, signal/query/form decoding with Effect Schema, generic HTTP helpers, and Datastar-safe action response helpers.
-- `src/model.ts` — minimal backend-state/CQRS helpers for command completion, current-view patches, and live queries that rerender current state on invalidation.
+- `src/model.ts` — minimal backend-state/CQRS helpers for command completion, current-view patches, and live queries with render-on-connect, heartbeat response support, and invalidation coalescing.
 - `src/runtime.ts` — Effect-native service tags/layers for config, HTML rendering, Datastar protocol responses, request context, signal decoding, error mapping, and live-query invalidation hubs.
 - `src/realtime.ts` — optional Effect `PubSub`/`Stream` helpers, heartbeats, and live element patch responses.
 - `src/client.ts` — Datastar script/document helpers and Effect Platform routes for serving a pinned Datastar client asset.

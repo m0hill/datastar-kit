@@ -9,15 +9,27 @@ import {
   type DatastarBodyResponseOptions,
   type DatastarNoContentResponseOptions
 } from "./platform.js"
+import { eventStreamResponse, type HeartbeatOptions } from "./realtime.js"
 import { patchElements, type PatchElementsOptions } from "./sse.js"
 
 export type View<State> = (state: State) => string | Exclude<Child, string>
+
+export interface LiveQueryCoalesceOptions {
+  readonly capacity?: number
+  readonly strategy?: "dropping" | "sliding" | "suspend"
+}
 
 export interface LiveQueryOptions<State, InvalidationError = never, InvalidationContext = never, StateError = never, StateContext = never> {
   readonly invalidations: Stream.Stream<unknown, InvalidationError, InvalidationContext>
   readonly load: Effect.Effect<State, StateError, StateContext>
   readonly render: View<State>
   readonly patch?: PatchElementsOptions
+  readonly renderOnConnect?: boolean
+  readonly coalesce?: boolean | LiveQueryCoalesceOptions
+}
+
+export interface LiveQueryResponseOptions extends DatastarBodyResponseOptions {
+  readonly heartbeat?: HeartbeatOptions
 }
 
 const renderView = <State>(state: State, view: View<State>): string => {
@@ -36,12 +48,32 @@ export const currentViewPatchResponse = <State>(
 ): HttpServerResponse.HttpServerResponse =>
   datastarPatchElementsResponse(renderView(state, view), options, responseOptions)
 
+const coalescedInvalidations = <E, R>(
+  invalidations: Stream.Stream<unknown, E, R>,
+  coalesce: boolean | LiveQueryCoalesceOptions | undefined
+): Stream.Stream<void, E, R> => {
+  const triggers = invalidations.pipe(Stream.map(() => undefined))
+
+  if (coalesce === undefined || coalesce === false) {
+    return triggers
+  }
+
+  const options = coalesce === true ? {} : coalesce
+  return triggers.pipe(
+    Stream.buffer({
+      capacity: options.capacity ?? 1,
+      strategy: options.strategy ?? "sliding"
+    })
+  )
+}
+
 export const liveQuery = <State, InvalidationError = never, InvalidationContext = never, StateError = never, StateContext = never>(
   options: LiveQueryOptions<State, InvalidationError, InvalidationContext, StateError, StateContext>
 ): Stream.Stream<string, InvalidationError | StateError, InvalidationContext | StateContext> => {
-  const triggers = Stream.make(undefined as void).pipe(
-    Stream.concat(options.invalidations.pipe(Stream.map(() => undefined)))
-  )
+  const invalidations = coalescedInvalidations(options.invalidations, options.coalesce)
+  const triggers = options.renderOnConnect === false
+    ? invalidations
+    : Stream.make(undefined as void).pipe(Stream.concat(invalidations))
 
   return triggers.pipe(
     Stream.mapEffect(() => options.load),
@@ -49,8 +81,27 @@ export const liveQuery = <State, InvalidationError = never, InvalidationContext 
   )
 }
 
+const withoutLiveQueryHeartbeat = (options: LiveQueryResponseOptions): DatastarBodyResponseOptions => {
+  const { heartbeat: _heartbeat, ...responseOptions } = options
+  return responseOptions
+}
+
 export const liveQueryResponse = <State, InvalidationError = never, StateError = never>(
   options: LiveQueryOptions<State, InvalidationError, never, StateError, never>,
-  responseOptions?: DatastarBodyResponseOptions
-): HttpServerResponse.HttpServerResponse =>
-  datastarEventStreamResponse(liveQuery(options), responseOptions)
+  responseOptions: LiveQueryResponseOptions = {}
+): HttpServerResponse.HttpServerResponse => {
+  if (responseOptions.heartbeat === undefined) {
+    return datastarEventStreamResponse(liveQuery(options), responseOptions)
+  }
+
+  return eventStreamResponse(liveQuery(options), {
+    ...withoutLiveQueryHeartbeat(responseOptions),
+    status: responseOptions.status ?? 200,
+    heartbeat: responseOptions.heartbeat
+  })
+}
+
+export const LiveQuery = {
+  make: liveQuery,
+  response: liveQueryResponse
+} as const

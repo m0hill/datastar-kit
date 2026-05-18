@@ -3,7 +3,7 @@ import * as Stream from "effect/Stream"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { describe, expect, it } from "vitest"
 import { h } from "../src/html.js"
-import { commandDone, currentViewPatchResponse, liveQuery } from "../src/model.js"
+import { commandDone, currentViewPatchResponse, LiveQuery, liveQuery, liveQueryResponse } from "../src/model.js"
 
 const countView = (count: number) => h("output", { id: "count" }, count)
 
@@ -37,5 +37,49 @@ describe("CQRS programming model helpers", () => {
       'event: datastar-patch-elements\ndata: selector #count\ndata: elements <output id="count">5</output>\n\n',
       'event: datastar-patch-elements\ndata: selector #count\ndata: elements <output id="count">5</output>\n\n'
     ])
+  })
+
+  it("can disable render-on-connect for explicit invalidation-only streams", async () => {
+    let count = 0
+    const patches = await Effect.runPromise(
+      LiveQuery.make({
+        invalidations: Stream.make("refresh"),
+        load: Effect.sync(() => ++count),
+        render: countView,
+        renderOnConnect: false
+      }).pipe(Stream.runCollect)
+    )
+
+    expect(patches).toEqual([
+      'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
+    ])
+  })
+
+  it("supports heartbeat comments at the live query response boundary", async () => {
+    const response = HttpServerResponse.toWeb(
+      liveQueryResponse(
+        {
+          invalidations: Stream.fromEffect(Effect.never),
+          load: Effect.succeed(0),
+          render: countView
+        },
+        { heartbeat: { interval: 0, initialDelay: "1 millis", comment: "live" } }
+      )
+    )
+    const reader = response.body?.getReader()
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
+    expect(reader).toBeDefined()
+
+    const first = await reader!.read()
+    expect(first.done).toBe(false)
+    expect(new TextDecoder().decode(first.value)).toContain('<output id="count">0</output>')
+
+    const second = await reader!.read()
+    expect(second.done).toBe(false)
+    expect(new TextDecoder().decode(second.value)).toBe(": live\n\n")
+
+    await reader!.cancel()
   })
 })
