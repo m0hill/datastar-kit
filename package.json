@@ -14,7 +14,14 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
+    "check": "pnpm run typecheck && pnpm run test",
+    "check:examples": "pnpm run typecheck && pnpm run test:examples",
     "test": "vitest run",
+    "test:example:counter": "vitest run test/example-counter.test.ts",
+    "test:example:live-counter": "vitest run test/live-counter-example.test.ts",
+    "test:example:search": "vitest run test/search-example.test.ts",
+    "test:example:tsx-counter": "vitest run test/example-tsx-counter.test.ts",
+    "test:examples": "vitest run test/example-counter.test.ts test/example-tsx-counter.test.ts test/search-example.test.ts test/live-counter-example.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
