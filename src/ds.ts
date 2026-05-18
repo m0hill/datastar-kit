@@ -70,10 +70,6 @@ export class Signal<T, Name extends string = string> implements Expr<T> {
   }
 }
 
-export type SignalRecord<Shape extends object> = {
-  readonly [Key in keyof Shape & string]: Signal<Shape[Key], Key>
-}
-
 export const raw = <T = unknown>(code: string): Expr<T> => new RawExpr<T>(code)
 
 export const signal = <T, Name extends string>(name: Name): Signal<T, Name> => new Signal(name)
