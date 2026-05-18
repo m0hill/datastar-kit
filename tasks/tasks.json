@@ -262,32 +262,38 @@
     {
       "order": 8,
       "id": "T008",
-      "title": "Merge realtime around current-state live queries",
+      "title": "Define live.query as the only core realtime abstraction",
       "status": "pending",
       "phase": "realtime",
       "priority": "critical",
       "grill_level": 4,
       "depends_on": [
         "T003",
-        "T004"
+        "T004",
+        "T006",
+        "T007"
       ],
       "markdown": "08-merge-realtime-around-live-query.md",
-      "goal": "Remove overlapping realtime abstractions and make reconnect-safe current-state live queries the one obvious model.",
-      "canonical_direction": "Use Model.liveQuery/liveQueryResponse as the canonical realtime abstraction; let apps use Effect PubSub/Stream directly unless a tiny helper is clearly useful.",
+      "goal": "Replace overlapping Model/Realtime helpers with one current-state live-query primitive that returns Datastar SSE events and composes with reply.stream.",
+      "canonical_direction": "Public realtime core is live.query(...): it accepts an Effect Stream of invalidation triggers, always renders current backend state on connect, ignores invalidation payloads, emits element patch SSE events, and leaves HTTP response construction/heartbeat to reply.stream(...). Apps own PubSub/Stream resources directly.",
       "deliverables": [
-        "Realtime module merged, shrunk, or removed from public API",
-        "Live query example reflects invalidation/load/render semantics",
-        "Generic live element streaming helpers removed from public API",
-        "Reconnect semantics documented and tested"
+        "Lowercase public live namespace with live.query(...)",
+        "reply.stream(..., { heartbeat }) transport-level heartbeat support",
+        "Public Model/Realtime realtime surfaces removed or internalized",
+        "Live counter example rewritten with app-owned Effect PubSub/Stream",
+        "Tests for render-on-connect, invalidation rerender, reconnect safety, heartbeat, and removed public helpers"
       ],
       "removal_targets": [
-        "RealtimeStream alias",
-        "makeBroadcaster alias",
-        "liveElementsResponse",
-        "liveElementsPubSubResponse",
-        "mapToElementPatches public API",
-        "LiveQueryHub service",
-        "LiveQuery object alias if direct functions are enough"
+        "Model namespace/surface as app-facing realtime API",
+        "Realtime namespace/surface as public generic realtime toolbox",
+        "liveQueryResponse and LiveQuery object alias",
+        "commandDone/currentViewPatchResponse duplicate Model helpers",
+        "makeRealtimePubSub/makeRealtimePubSubScoped/makeBroadcaster/publishRealtime/shutdownRealtime/streamFromPubSub public helpers",
+        "liveElementsResponse/liveElementsPubSubResponse/mapToElementPatches public APIs",
+        "eventStreamResponse/heartbeatStream/withHeartbeat/sseComment public APIs",
+        "renderOnConnect option",
+        "public coalesce options",
+        "built-in live-query error mapping/retry/validation conventions"
       ]
     },
     {
