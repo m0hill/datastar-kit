@@ -255,8 +255,6 @@ export const directScript = (
   })
 }
 
-const hasControlCharacters = (value: string): boolean => /[\u0000-\u001F\u007F]/u.test(value)
-
 const originOf = (value: string | URL): string => {
   const raw = value.toString()
   try {
@@ -281,7 +279,7 @@ const safeNavigationUrl = (
   } = {}
 ): string => {
   const raw = input.toString()
-  if (hasControlCharacters(raw)) {
+  if (/[\u0000-\u001F\u007F]/u.test(raw)) {
     throw new NavigationUrlError(raw)
   }
 
