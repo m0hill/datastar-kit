@@ -3,7 +3,7 @@ import { exampleNames, startExampleServer } from "../examples/dev-server.js"
 
 describe("example dev server", () => {
   it("lists every runnable example", () => {
-    expect(exampleNames).toEqual(["counter", "tsx-counter", "search", "live-counter"])
+    expect(exampleNames).toEqual(["counter", "tsx-counter", "search", "live-counter", "runtime-counter", "validation-form"])
   })
 
   it("serves an example through the shared dev server", async () => {

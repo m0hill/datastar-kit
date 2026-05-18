@@ -4,11 +4,11 @@ Exploratory TypeScript + Effect + Datastar framework prototype.
 
 `ts-star` is intentionally small and server-driven. It keeps low-level Datastar helpers available while building toward a layered framework where backend state is the source of truth, Effect owns runtime/lifecycle concerns, and Datastar applies HTML/signal patches in the browser.
 
-See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline and public module boundary proposal. See [`docs/public-api.md`](docs/public-api.md) for stable/experimental modules and extension points. See [`docs/datastar-protocol.md`](docs/datastar-protocol.md) for Datastar action response status semantics and form decoding policy. See [`docs/programming-model.md`](docs/programming-model.md) for the backend-state/CQRS model. See [`docs/runtime.md`](docs/runtime.md) for the Effect-native service/layer runtime. See [`docs/type-contracts.md`](docs/type-contracts.md) for schema-derived signal and action contracts. See [`docs/html-rendering.md`](docs/html-rendering.md) for the renderer boundary, ordered attributes, raw HTML, and JSX status. See [`docs/signals.md`](docs/signals.md) for signal policy, scoping, and sensitive-data guidance. See [`docs/live-queries.md`](docs/live-queries.md) for reconnect-safe current-state realtime. See [`docs/security.md`](docs/security.md) for request lifecycle, CSRF/auth hooks, limits, aborts, and safe navigation. See [`docs/errors-validation.md`](docs/errors-validation.md) for typed validation/domain errors and Datastar error UX. See [`docs/observability-testing.md`](docs/observability-testing.md) for telemetry and browser-test policy.
+See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline and public module boundary proposal. See [`docs/public-api.md`](docs/public-api.md) and [`docs/api-reference.md`](docs/api-reference.md) for stable/experimental modules, extension points, and API maps. See [`docs/examples.md`](docs/examples.md) for the tested reference examples. See [`docs/datastar-philosophy.md`](docs/datastar-philosophy.md) and [`docs/datastar-protocol.md`](docs/datastar-protocol.md) for Datastar philosophy and response semantics. See [`docs/actions-commands.md`](docs/actions-commands.md), [`docs/programming-model.md`](docs/programming-model.md), and [`docs/runtime.md`](docs/runtime.md) for backend-state commands and Effect services. See [`docs/type-contracts.md`](docs/type-contracts.md), [`docs/html-rendering.md`](docs/html-rendering.md), [`docs/signals.md`](docs/signals.md), [`docs/live-queries.md`](docs/live-queries.md), [`docs/security.md`](docs/security.md), [`docs/errors-validation.md`](docs/errors-validation.md), [`docs/observability-testing.md`](docs/observability-testing.md), and [`docs/deployment.md`](docs/deployment.md) for focused guides.
 
 ## Current architecture
 
-The package root exports each module as a namespace (`Sse`, `Contracts`, `Datastar`, `Html`, `Jsx`, `Model`, `Platform`, `Realtime`, `Runtime`, `Client`) and also re-exports their named helpers for small examples.
+The package root exports each module as a namespace (`Client`, `Contracts`, `Datastar`, `Html`, `Jsx`, `Model`, `Observability`, `Platform`, `Realtime`, `Runtime`, `Security`, `Sse`, `Validation`) and also re-exports their named helpers for small examples.
 
 - `src/sse.ts` — pure Datastar SSE event encoding: element patches, signal patches, signal removal, script execution, and event stream concatenation.
 - `src/contracts.ts` — Effect Schema-derived signal contracts, typed signal patches, and route/action helper prototypes.
@@ -88,6 +88,8 @@ pnpm run check:example:counter
 pnpm run check:example:tsx-counter
 pnpm run check:example:search
 pnpm run check:example:live-counter
+pnpm run check:example:runtime-counter
+pnpm run check:example:validation-form
 ```
 
 The `check:*` scripts run `typecheck` first, then the matching example test. Use `test:examples` or `test:example:*` when you only need Vitest.
@@ -101,6 +103,8 @@ pnpm run dev:counter
 pnpm run dev:tsx-counter
 pnpm run dev:search
 pnpm run dev:live-counter
+pnpm run dev:runtime-counter
+pnpm run dev:validation-form
 ```
 
 The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or `HOST=0.0.0.0`.

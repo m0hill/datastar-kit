@@ -43,8 +43,9 @@ describe("search example", () => {
     expect(html).toContain('id="search"')
   })
 
-  it("renders filtered result rows", () => {
+  it("renders filtered result rows and empty states", () => {
     expect(resultsView("ada")).toBe('<tbody id="results"><tr><td>Ada</td><td>Lovelace</td></tr></tbody>')
+    expect(resultsView("nobody")).toBe('<tbody id="results"><tr><td colspan="2">No contacts found</td></tr></tbody>')
   })
 
   it("dispatches the native example app", async () => {

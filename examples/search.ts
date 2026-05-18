@@ -39,16 +39,21 @@ const rows = (q: string) => {
   return contacts.filter((contact) => `${contact.first} ${contact.last}`.toLowerCase().includes(needle))
 }
 
-export const resultsView = (q: string): string =>
-  render(
+export const resultsView = (q: string): string => {
+  const matches = rows(q)
+
+  return render(
     h(
       "tbody",
       { id: "results" },
-      ...rows(q).map((contact) =>
-        h("tr", {}, h("td", {}, contact.first), h("td", {}, contact.last))
-      )
+      ...(matches.length === 0
+        ? [h("tr", {}, h("td", { colspan: 2 }, "No contacts found"))]
+        : matches.map((contact) =>
+          h("tr", {}, h("td", {}, contact.first), h("td", {}, contact.last))
+        ))
     )
   )
+}
 
 export const searchNode = () => {
   const q = signal<string, "q">("q")

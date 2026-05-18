@@ -229,7 +229,7 @@
       "order": 13,
       "id": "T013",
       "title": "Build reference examples and documentation",
-      "status": "pending",
+      "status": "done",
       "phase": "docs",
       "priority": "high",
       "depends_on": ["T001", "T002", "T003", "T004", "T005", "T006", "T007", "T008", "T009", "T010", "T012"],

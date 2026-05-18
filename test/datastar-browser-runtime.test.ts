@@ -4,6 +4,7 @@ import { createServer, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
+import { startExampleServer } from "../examples/dev-server.js"
 import { datastarDocument } from "../src/client.js"
 import { dataSignals, mergeAttrs, on, post, signal, text } from "../src/datastar.js"
 import { h } from "../src/html.js"
@@ -60,6 +61,24 @@ const closeServer = async (server: Server): Promise<void> => {
   await new Promise<void>((resolve, reject) => server.close((error) => error ? reject(error) : resolve()))
 }
 
+const waitForSelector = async (
+  browser: (...args: ReadonlyArray<string>) => Promise<string>,
+  selector: string
+): Promise<void> => {
+  await browser(
+    "eval",
+    `(async () => {
+      const deadline = Date.now() + 2000
+      while (Date.now() < deadline && document.querySelector(${JSON.stringify(selector)}) === null) {
+        await new Promise((resolve) => setTimeout(resolve, 25))
+      }
+      if (document.querySelector(${JSON.stringify(selector)}) === null) {
+        throw new Error("Missing selector ${selector}")
+      }
+    })()`
+  )
+}
+
 describe("Datastar browser runtime integration", () => {
   browserIt("applies 200 direct JSON signal responses and ignores non-200 action bodies", async () => {
     const session = `ts-star-runtime-${process.pid}-${Date.now()}`
@@ -72,6 +91,7 @@ describe("Datastar browser runtime integration", () => {
     try {
       await browser("open", url)
       await browser("wait", "--load", "networkidle")
+      await waitForSelector(browser, "#ignored")
 
       const initial = JSON.parse(await browser("eval", `({ count: document.querySelector("#count")?.textContent })`)) as { count: string }
       expect(initial.count).toBe("0")
@@ -105,6 +125,44 @@ describe("Datastar browser runtime integration", () => {
     } finally {
       await execFile("agent-browser", ["--session-name", session, "close"], { timeout: 20_000 }).catch(() => undefined)
       await closeServer(server)
+    }
+  }, 30_000)
+
+  browserIt("runs the backend-state counter reference example through Datastar", async () => {
+    const session = `ts-star-counter-example-${process.pid}-${Date.now()}`
+    const server = await startExampleServer("counter", { port: 0 })
+    const browser = async (...args: ReadonlyArray<string>): Promise<string> => {
+      const { stdout } = await execFile("agent-browser", ["--session-name", session, ...args], { timeout: 20_000 })
+      return stdout.trim()
+    }
+
+    try {
+      await browser("open", server.origin)
+      await browser("wait", "--load", "networkidle")
+      await waitForSelector(browser, "#count")
+
+      const initial = JSON.parse(await browser("eval", `({ count: document.querySelector("#count")?.textContent })`)) as {
+        count: string
+      }
+      expect(initial.count).toBe("0")
+
+      const afterIncrement = JSON.parse(
+        await browser(
+          "eval",
+          `(async () => {
+            document.querySelector("button")?.click()
+            const deadline = Date.now() + 2000
+            while (Date.now() < deadline && document.querySelector("#count")?.textContent !== "1") {
+              await new Promise((resolve) => setTimeout(resolve, 25))
+            }
+            return { count: document.querySelector("#count")?.textContent }
+          })()`
+        )
+      ) as { count: string }
+      expect(afterIncrement.count).toBe("1")
+    } finally {
+      await execFile("agent-browser", ["--session-name", session, "close"], { timeout: 20_000 }).catch(() => undefined)
+      await server.close()
     }
   }, 30_000)
 })

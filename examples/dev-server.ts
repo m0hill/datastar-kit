@@ -10,12 +10,14 @@ import type { AddressInfo } from "node:net"
 import { pathToFileURL } from "node:url"
 import { app as counterApp } from "./counter.js"
 import { createLiveCounter } from "./live-counter.js"
+import { runtimeCounterAppWithRuntime } from "./runtime-counter.js"
 import { app as searchApp } from "./search.js"
 import { tsxCounterApp } from "./tsx-counter.js"
+import { app as validationFormApp } from "./validation-form.js"
 
 const datastarClientScript = readFileSync(new URL("../vendor/datastar.js", import.meta.url), "utf8")
 
-export const exampleNames = ["counter", "tsx-counter", "search", "live-counter"] as const
+export const exampleNames = ["counter", "tsx-counter", "search", "live-counter", "runtime-counter", "validation-form"] as const
 export type ExampleName = typeof exampleNames[number]
 
 export interface DevServerOptions {
@@ -58,6 +60,10 @@ const makeExampleRuntime = (name: ExampleName): ExampleRuntime => {
       const liveCounter = createLiveCounter()
       return { app: liveCounter.app, close: liveCounter.shutdown }
     }
+    case "runtime-counter":
+      return { app: runtimeCounterAppWithRuntime }
+    case "validation-form":
+      return { app: validationFormApp }
   }
 }
 
