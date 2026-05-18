@@ -51,6 +51,7 @@ export class NavigationUrlError extends Error {
 }
 
 const textEncoder = new TextEncoder()
+type Timer = ReturnType<typeof setTimeout>
 
 const mergeHeaders = (defaults: HeadersInit, headers: HeadersInit | undefined): Headers => {
   const merged = new Headers(defaults)
@@ -76,9 +77,6 @@ const sseHeader = {
   "cache-control": "no-cache",
   "content-type": "text/event-stream"
 } as const
-
-const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
-const heartbeat = { done: "heartbeat" } as const
 
 async function* toAsyncIterable(source: StreamInput): AsyncIterable<EventChunk> {
   if (typeof source === "string") {
@@ -111,56 +109,57 @@ async function* toAsyncIterable(source: StreamInput): AsyncIterable<EventChunk> 
 const sseComment = (comment = ""): string =>
   comment.length === 0 ? ":\n\n" : `: ${comment.replaceAll("\n", "\n: ")}\n\n`
 
-async function* withHeartbeat(
-  events: AsyncIterable<EventChunk>,
-  options: HeartbeatOptions = {}
-): AsyncIterable<EventChunk> {
-  const iterator = events[Symbol.asyncIterator]()
-  let next = iterator.next()
-  let heartbeatDelay = options.initialDelayMs ?? options.intervalMs ?? 15_000
-
-  try {
-    while (true) {
-      const result = await Promise.race([
-        next,
-        delay(heartbeatDelay).then(() => heartbeat)
-      ])
-
-      if (result.done === "heartbeat") {
-        yield sseComment(options.comment ?? "heartbeat")
-        heartbeatDelay = options.intervalMs ?? 15_000
-        continue
-      }
-
-      if (result.done === true) {
-        return
-      }
-
-      yield result.value
-      next = iterator.next()
-      heartbeatDelay = options.intervalMs ?? 15_000
-    }
-  } finally {
-    void iterator.return?.()
-  }
-}
-
 const encodeChunk = (chunk: EventChunk): Uint8Array =>
   typeof chunk === "string" ? textEncoder.encode(chunk) : chunk
 
-const readableStreamFrom = (source: AsyncIterable<EventChunk>): ReadableStream<Uint8Array> => {
+const readableStreamFrom = (
+  source: AsyncIterable<EventChunk>,
+  heartbeat?: HeartbeatOptions
+): ReadableStream<Uint8Array> => {
   const iterator = source[Symbol.asyncIterator]()
+  let closed = false
+  let started = false
+  let initial: Timer | undefined
+  let interval: Timer | undefined
+
+  const cleanup = () => {
+    closed = true
+    if (initial !== undefined) clearTimeout(initial)
+    if (interval !== undefined) clearInterval(interval)
+  }
 
   return new ReadableStream({
     async pull(controller) {
-      const result = await iterator.next()
-      if (result.done === true) {
-        controller.close()
-        return
+      if (heartbeat !== undefined && !started) {
+        started = true
+        const comment = sseComment(heartbeat.comment ?? "heartbeat")
+        const intervalMs = heartbeat.intervalMs ?? 15_000
+        const tick = () => {
+          if (!closed && (controller.desiredSize ?? 0) > 0) controller.enqueue(encodeChunk(comment))
+        }
+        initial = setTimeout(() => {
+          initial = undefined
+          tick()
+          if (!closed) interval = setInterval(tick, intervalMs)
+        }, heartbeat.initialDelayMs ?? intervalMs)
       }
-      controller.enqueue(encodeChunk(result.value))
+
+      try {
+        const result = await iterator.next()
+        if (closed) return
+        if (result.done === true) {
+          cleanup()
+          controller.close()
+          return
+        }
+        controller.enqueue(encodeChunk(result.value))
+      } catch (error) {
+        cleanup()
+        throw error
+      }
     },
     cancel() {
+      cleanup()
       void iterator.return?.()
     }
   })
@@ -194,11 +193,7 @@ export const stream = (
   options: StreamOptions = {}
 ): Response => {
   const { heartbeat, ...init } = options
-  const eventSource = heartbeat === undefined
-    ? toAsyncIterable(events)
-    : withHeartbeat(toAsyncIterable(events), heartbeat)
-
-  return response(readableStreamFrom(eventSource), init, 200, sseHeader)
+  return response(readableStreamFrom(toAsyncIterable(events), heartbeat), init, 200, sseHeader)
 }
 
 export const done = (init: DatastarResponseInit = {}): Response =>

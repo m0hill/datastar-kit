@@ -1,8 +1,11 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { h, raw } from "../src/html.js"
 import * as reply from "../src/reply.js"
 
 describe("reply SSE responses", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
   it("serves Datastar SSE streams", async () => {
     const response = reply.stream(["event: ready\n\n"], { headers: { "x-sse": "yes" } })
 
@@ -65,5 +68,43 @@ describe("reply SSE responses", () => {
     expect(response.headers.get("x-stream")).toBe("web")
     expect(response.headers.get("cache-control")).toBe("no-cache")
     expect(await response.text()).toBe("event: meta\n\n")
+  })
+
+  it("starts heartbeat timers on first pull and clears them on cancel", async () => {
+    vi.useFakeTimers()
+    async function* events() {
+      yield "event: ready\n\n"
+      await new Promise<never>(() => {})
+    }
+
+    const reader = reply.stream(events(), {
+      heartbeat: { initialDelayMs: 10, intervalMs: 20, comment: "tick" }
+    }).body!.getReader()
+
+    expect(vi.getTimerCount()).toBe(0)
+    const first = await reader.read()
+    expect(new TextDecoder().decode(first.value)).toBe("event: ready\n\n")
+    expect(vi.getTimerCount()).toBe(1)
+
+    const next = reader.read()
+    await vi.advanceTimersByTimeAsync(10)
+    const heartbeat = await next
+    expect(new TextDecoder().decode(heartbeat.value)).toBe(": tick\n\n")
+    expect(vi.getTimerCount()).toBe(1)
+
+    await reader.cancel()
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it("clears heartbeat timers when the event source closes", async () => {
+    vi.useFakeTimers()
+    const reader = reply.stream(["event: ready\n\n"], {
+      heartbeat: { intervalMs: 100 }
+    }).body!.getReader()
+
+    expect(await reader.read()).toMatchObject({ done: false })
+    expect(vi.getTimerCount()).toBe(1)
+    await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
+    expect(vi.getTimerCount()).toBe(0)
   })
 })

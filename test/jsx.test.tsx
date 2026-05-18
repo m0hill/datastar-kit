@@ -1,9 +1,9 @@
 /** @jsx jsx */
 /** @jsxFrag Fragment */
 import { describe, expect, it } from "vitest"
-import { dataSignals, on, post, signal, text } from "../src/ds.js"
+import { bind, dataSignals, on, post, signal, text } from "../src/ds.js"
 import { props, render, type Child } from "../src/html.js"
-import { Fragment, jsx } from "../src/jsx.js"
+import { Fragment, jsx, type JsxProps } from "../src/jsx.js"
 
 describe("JSX templating experiment", () => {
   it("renders JSX through the same HTML renderer", () => {
@@ -23,6 +23,23 @@ describe("JSX templating experiment", () => {
 
     expect(render(node)).toBe(
       '<main id="counter" data-signals__ifmissing="{&quot;count&quot;: 0}"><button type="button" data-on:click="@post(&quot;/increment&quot;)">+</button><output data-text="$count">0</output></main>'
+    )
+  })
+
+  it("supports spreading Datastar helper props directly in JSX", () => {
+    const node = (
+      <form>
+        <button {...on("click", post("/increment"))}>+</button>
+        <input {...bind("count")} />
+      </form>
+    )
+
+    expect(render(node)).toBe('<form><button data-on:click="@post(&quot;/increment&quot;)">+</button><input data-bind:count></form>')
+  })
+
+  it("rejects raw expression objects as JSX prop values", () => {
+    expect(() => jsx("output", { "data-text": signal<number, "count">("count") } as unknown as JsxProps)).toThrow(
+      'Unsupported JSX prop value for "data-text"'
     )
   })
 
