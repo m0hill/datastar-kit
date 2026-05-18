@@ -3,6 +3,7 @@ import * as Root from "../src/index.js"
 import * as sse from "../src/sse.js"
 import {
   ds,
+  event,
   read,
   reply,
   fragment,
@@ -25,6 +26,8 @@ describe("package root exports", () => {
     expect("live" in Root).toBe(false)
     expect(ds.signal).toBeDefined()
     expect(ds.delete).toBeDefined()
+    expect(event.patch).toBeDefined()
+    expect(event.signals).toBeDefined()
     expect(h).toBeDefined()
     expect(render).toBeDefined()
     expect(fragment).toBeDefined()

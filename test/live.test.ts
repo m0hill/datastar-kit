@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest"
-import { h, render, type Child } from "../src/html.js"
+import * as event from "../src/event.js"
+import { h, type Child } from "../src/html.js"
 import { stream } from "../src/reply.js"
-import { patchElements, type PatchElementsOptions } from "../src/sse.js"
+import type { PatchElementsOptions } from "../src/sse.js"
 
 type View<State> = (state: State) => Child
 
@@ -13,9 +14,9 @@ interface QueryRecipeOptions<State> {
 }
 
 async function* currentStateRecipe<State>(options: QueryRecipeOptions<State>): AsyncIterable<string> {
-  yield patchElements(render(options.render(await options.load())), options.patch)
+  yield event.patch(options.render(await options.load()), options.patch)
   for await (const _ of options.invalidations) {
-    yield patchElements(render(options.render(await options.load())), options.patch)
+    yield event.patch(options.render(await options.load()), options.patch)
   }
 }
 

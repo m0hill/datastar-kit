@@ -4,9 +4,8 @@ import { Hono } from "hono"
 import { compress } from "hono/compress"
 import { pathToFileURL } from "node:url"
 import * as z from "zod"
-import { ds, read, render, reply, type Child } from "../src/index.js"
+import { ds, event, read, reply, type Child } from "../src/index.js"
 import { jsx } from "../src/jsx.js"
-import { patchElements, patchSignals } from "../src/sse.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 const TAILWIND_CDN = "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"
@@ -246,15 +245,15 @@ export const todoPageNode = (todos: readonly Todo[] = []): Child => {
 }
 
 const todoListPatch = (todos: readonly Todo[]): string =>
-  patchElements(render(todoListNode(todos)), { selector: "#todo-sync-list" })
+  event.patch(todoListNode(todos), { selector: "#todo-sync-list" })
 
 const validationResponse = (message: string): Response =>
   reply.patch(<ErrorMessage message={message} />, { selector: "#todo-errors" })
 
 const createSuccessResponse = (): Response =>
   reply.stream([
-    patchSignals({ title: "" }),
-    patchElements(render(<ErrorMessage />), { selector: "#todo-errors" })
+    event.signals({ title: "" }),
+    event.patch(<ErrorMessage />, { selector: "#todo-errors" })
   ])
 
 const notFound = (): Response => new Response("Todo not found", { status: 404 })

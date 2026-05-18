@@ -7,17 +7,18 @@
 Use contextual namespaces for larger concepts and top-level names only for the tiny HTML authoring surface:
 
 ```ts
-import { ds, read, reply, h, props } from "ts-star"
+import { ds, event, read, reply, h, props } from "ts-star"
 ```
 
 ## Current blessed path
 
 - `ds` — Datastar attributes/actions/signals.
+- `event` — rendered Datastar SSE event chunks for `reply.stream(...)`.
 - `read` — Datastar signal decoding from a native `Request` with Standard Schema validation.
 - `reply` — native `Response` helpers for Datastar page, SSE, direct response, navigation, stream, and no-content semantics.
 - `h`, `render`, `fragment`, `raw`, `props`, `page` — tiny server HTML boundary.
 
-Low-level SSE encoding is available from `ts-star/sse`; JSX is available from `ts-star/jsx`. Neither is a root export.
+Low-level SSE encoding is available from `ts-star/sse`; JSX is available from `ts-star/jsx`. Neither `sse` nor JSX are root exports.
 
 ## Removed from core
 

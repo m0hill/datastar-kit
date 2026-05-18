@@ -11,13 +11,14 @@ See [`CONTEXT.md`](CONTEXT.md) and [`docs/adr/0001-web-standards-sdk-core.md`](d
 The package root exposes:
 
 - `ds` — Datastar actions, attributes, signal refs, and expression escape hatches.
+- `event` — rendered Datastar SSE event helpers for streams.
 - `read` — Datastar signal decoding from a native `Request` with Standard Schema validation.
 - `reply` — Datastar-safe native `Response` helpers.
 - `h`, `render`, `fragment`, `raw`, `props`, `page` — tiny server HTML helpers.
 
 Explicit subpaths:
 
-- `ts-star/sse` — low-level Datastar SSE event encoding.
+- `ts-star/sse` — low-level Datastar SSE event encoding for protocol tests and escape hatches.
 - `ts-star/jsx` — optional server-only JSX adapter over the same HTML node model.
 
 There is no core router, middleware system, dependency-injection context, runtime, PubSub, or application framework adapter. Hono is shown only as an example integration.
@@ -85,7 +86,7 @@ Core depends only on `@standard-schema/spec` for public types. Zod, Valibot, Ark
 - `reply.page(...)` — full HTML page/document response with normal HTTP status options.
 - `reply.patch(...)` — SSE element patch response.
 - `reply.signals(...)` — SSE signal patch response.
-- `reply.stream(...)` — SSE stream from iterable, async iterable, or `ReadableStream` event sources.
+- `reply.stream(...)` — SSE stream from iterable, async iterable, or `ReadableStream` event sources; pair with `event.patch(...)` / `event.signals(...)` for rendered event chunks.
 - `reply.done(...)` — `204` command completion with no body.
 - `reply.navigate(...)` — safe direct script navigation.
 - `reply.directHtml(...)`, `reply.directSignals(...)`, `reply.directScript(...)` — flat explicit Datastar direct-response escape hatches.

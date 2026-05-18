@@ -19,7 +19,8 @@ The SDK has one public job: make Datastar pleasant from fetch-compatible handler
 
 ### 1. Protocol layer
 
-- `src/sse.ts` encodes Datastar SSE events.
+- `src/sse.ts` encodes low-level Datastar SSE events.
+- `src/event.ts` renders HTML nodes into Datastar SSE event chunks for streams.
 - `src/reply.ts` turns events and rendered HTML into native `Response` objects.
 
 ### 2. View layer
@@ -47,6 +48,7 @@ The SDK supports a backend-source-of-truth model:
 Root exports:
 
 - `ds`
+- `event`
 - `read`
 - `reply`
 - `h`, `render`, `fragment`, `raw`, `props`, `page`

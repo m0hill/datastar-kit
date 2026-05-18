@@ -1,0 +1,24 @@
+import { describe, expect, it } from "vitest"
+import * as event from "../src/event.js"
+import { h, raw } from "../src/html.js"
+
+describe("Datastar SSE event helpers", () => {
+  it("renders HTML nodes into patch events", () => {
+    expect(event.patch(h("output", { id: "count" }, 2), { selector: "#count" })).toBe(
+      'event: datastar-patch-elements\ndata: selector #count\ndata: elements <output id="count">2</output>\n\n'
+    )
+  })
+
+  it("keeps raw trusted HTML explicit at the HTML boundary", () => {
+    expect(event.patch(raw("<strong>Saved</strong>"))).toBe(
+      "event: datastar-patch-elements\ndata: elements <strong>Saved</strong>\n\n"
+    )
+  })
+
+  it("builds signal and script events", () => {
+    expect(event.signals({ title: "" })).toBe(
+      'event: datastar-patch-signals\ndata: signals {"title":""}\n\n'
+    )
+    expect(event.script("console.log('hello')")).toContain("data: elements <script")
+  })
+})

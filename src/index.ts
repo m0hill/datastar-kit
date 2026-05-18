@@ -1,4 +1,5 @@
 export * as ds from "./ds.js"
+export * as event from "./event.js"
 export * as read from "./read.js"
 export * as reply from "./reply.js"
 

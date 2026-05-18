@@ -1,5 +1,4 @@
-import { ds, h, props, render, reply, type Child } from "../src/index.js"
-import { patchElements } from "../src/sse.js"
+import { ds, event, h, props, render, reply, type Child } from "../src/index.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -17,7 +16,7 @@ export interface LiveCounterExample {
 
 export const countFragment = (count: number): Child => h("output", { id: "count" }, count)
 
-const countPatch = (count: number): string => patchElements(render(countFragment(count)))
+const countPatch = (count: number): string => event.patch(countFragment(count))
 
 export const pageNode = (): Child =>
   h(

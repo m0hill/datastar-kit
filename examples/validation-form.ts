@@ -1,6 +1,5 @@
 import * as z from "zod"
-import { ds, h, props, read, render, reply, type Child } from "../src/index.js"
-import { patchElements, patchSignals } from "../src/sse.js"
+import { ds, event, h, props, read, render, reply, type Child } from "../src/index.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -67,10 +66,10 @@ const validateContact = (input: ContactFormInput): ValidationMessages => {
 const contactResultNode = (contact: ContactFormInput): Child =>
   h("div", { id: "contact-result", role: "status" }, `Saved ${contact.name} <${contact.email}>`)
 
-const clearValidationEvent = (): string => patchSignals(validationPayload())
+const clearValidationEvent = (): string => event.signals(validationPayload())
 
 const contactResultEvent = (contact: ContactFormInput): string =>
-  patchElements(render(contactResultNode(contact)), { selector: "#contact-result" })
+  event.patch(contactResultNode(contact), { selector: "#contact-result" })
 
 export const contactFormNode = (): Child =>
   h(

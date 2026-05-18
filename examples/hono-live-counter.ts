@@ -1,12 +1,11 @@
 import { Hono } from "hono"
-import { ds, h, props, render, reply, type Child } from "../src/index.js"
-import { patchElements } from "../src/sse.js"
+import { ds, event, h, props, reply, type Child } from "../src/index.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
 const datastarScript = (): Child => h("script", { type: "module", src: DATASTAR_CDN })
 const countNode = (count: number): Child => h("output", { id: "count" }, count)
-const countPatch = (count: number): string => patchElements(render(countNode(count)))
+const countPatch = (count: number): string => event.patch(countNode(count))
 
 const pageNode = (): Child =>
   h(

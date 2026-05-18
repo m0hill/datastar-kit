@@ -5,10 +5,12 @@ Realtime in `ts-star` is current-state oriented. A live view should not be a str
 Core intentionally does not export a `live` namespace, PubSub, broker abstraction, or runtime service. Build the recipe locally and return it with `reply.stream(...)`.
 
 ```ts
+import { event, reply } from "ts-star"
+
 async function* liveEvents() {
-  yield renderCurrentStatePatch()
+  yield event.patch(renderCurrentState(), { selector: "#view" })
   for await (const _ of invalidations) {
-    yield renderCurrentStatePatch()
+    yield event.patch(renderCurrentState(), { selector: "#view" })
   }
 }
 
