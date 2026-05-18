@@ -74,15 +74,15 @@ Future runtime work should introduce services/layers only when they simplify lif
 
 ### 4. Programming model layer
 
-This is the intended framework surface and is still mostly future work.
+This is the intended framework surface and now exists as a minimal semantic layer in `src/model.ts`.
 
-Applications should eventually start from:
+Applications should start from:
 
 1. **Pages/queries** that render current backend state.
-2. **Actions/commands** that decode trusted request inputs, mutate backend state, and return Datastar patches/direct responses.
+2. **Actions/commands** that decode trusted request inputs, mutate backend state, and return `204` or Datastar patches/direct responses for local feedback.
 3. **Live queries** that stream current rendered state on connect and after invalidation, making reconnects safe.
 
-Until that layer exists, examples should demonstrate the same flow explicitly with `platformRouter`, `platformReadSignals`/`platformReadQuery`, backend state, and Datastar response helpers.
+The current helpers (`commandDone`, `currentViewPatchResponse`, `liveQuery`, `liveQueryResponse`) define the semantics while leaving a higher-level `Page`/route DSL flexible.
 
 ## Public module boundary proposal
 
@@ -99,7 +99,8 @@ The package root currently exports every source module both as namespaces and as
 - `Html` / `src/html.ts`: tiny renderer used by examples and tests while the renderer boundary remains open.
 - `Jsx` / `src/jsx.ts`: classic JSX factory over `Html` nodes.
 - `Client` / `src/client.ts`: script/document helpers and client asset routes.
-- `Realtime` / `src/realtime.ts`: PubSub/Stream helpers that should evolve into live-query architecture.
+- `Model` / `src/model.ts`: minimal CQRS/live-query helpers; the semantics are foundational, but exact future page/action APIs remain flexible.
+- `Realtime` / `src/realtime.ts`: PubSub/Stream helpers that support live-query invalidation and streaming.
 - Root-level named re-exports: convenient for examples, but the namespace exports are the clearest way to communicate module ownership.
 
 ### Internal/private API
@@ -110,7 +111,7 @@ No file in `src/` is currently private because `src/index.ts` re-exports all mod
 
 - Keep low-level helpers named after the Datastar concept they generate: `patchSignals`, `dataSignals`, `on`, `post`, `indicator`, etc.
 - Prefix Effect Platform-specific helpers with `platform` while this is the only runtime adapter (`platformHtmlResponse`, `platformReadSignals`).
-- Reserve unprefixed framework names (`page`, `action`, `liveQuery`) for the future programming model layer.
+- Use unprefixed framework names in the programming model layer only when they express framework semantics (`commandDone`, `liveQuery`). Keep route DSL names such as `page` and `action` reserved until the abstraction exists.
 - Prefer explicit names over magic conventions at module boundaries.
 
 ## Default request flow

@@ -50,7 +50,10 @@ describe("live counter example", () => {
     await Effect.runPromise(liveCounter.increment)
     await Effect.runPromise(liveCounter.shutdown)
 
-    expect(await body).toBe('event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n')
+    expect(await body).toBe(
+      'event: datastar-patch-elements\ndata: elements <output id="count">0</output>\n\n' +
+      'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
+    )
     expect(liveCounter.currentCount()).toBe(1)
   })
 
@@ -76,6 +79,26 @@ describe("live counter example", () => {
     expect(liveCounter.currentCount()).toBe(1)
   })
 
+  it("renders current backend state on live reconnect without requiring missed deltas", async () => {
+    const liveCounter = createLiveCounter()
+
+    await Effect.runPromise(liveCounter.increment)
+
+    const liveResponse = await Effect.runPromise(liveCounter.live)
+    const reader = HttpServerResponse.toWeb(liveResponse).body?.getReader()
+
+    expect(reader).toBeDefined()
+
+    const first = await reader!.read()
+    expect(first.done).toBe(false)
+    expect(new TextDecoder().decode(first.value)).toBe(
+      'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
+    )
+
+    await reader!.cancel()
+    await Effect.runPromise(liveCounter.shutdown)
+  })
+
   it("streams live counter updates through node:http", async () => {
     const liveCounter = createLiveCounter()
     const listener = await makePlatformListener(liveCounter.app)
@@ -89,11 +112,19 @@ describe("live counter example", () => {
     expect(reader).toBeDefined()
     expect(increment.status).toBe(204)
 
-    const first = await reader!.read()
-    expect(first.done).toBe(false)
-    expect(new TextDecoder().decode(first.value)).toBe(
-      'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
-    )
+    const decoder = new TextDecoder()
+    let received = ""
+    for (let i = 0; i < 3 && !received.includes('<output id="count">1</output>'); i++) {
+      const chunk = await reader!.read()
+      expect(chunk.done).toBe(false)
+      received += decoder.decode(chunk.value)
+    }
+
+    const initialPatch = 'event: datastar-patch-elements\ndata: elements <output id="count">0</output>\n\n'
+    const updatedPatch = 'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
+    expect(received).toContain(initialPatch)
+    expect(received).toContain(updatedPatch)
+    expect(received.indexOf(initialPatch)).toBeLessThan(received.indexOf(updatedPatch))
 
     await Effect.runPromise(liveCounter.shutdown)
     await expect(reader!.read()).resolves.toEqual({ done: true, value: undefined })

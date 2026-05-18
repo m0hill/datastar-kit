@@ -4,17 +4,18 @@ Exploratory TypeScript + Effect + Datastar framework prototype.
 
 `ts-star` is intentionally small and server-driven. It keeps low-level Datastar helpers available while building toward a layered framework where backend state is the source of truth, Effect owns runtime/lifecycle concerns, and Datastar applies HTML/signal patches in the browser.
 
-See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline and public module boundary proposal. See [`docs/datastar-protocol.md`](docs/datastar-protocol.md) for Datastar action response status semantics and form decoding policy.
+See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline and public module boundary proposal. See [`docs/datastar-protocol.md`](docs/datastar-protocol.md) for Datastar action response status semantics and form decoding policy. See [`docs/programming-model.md`](docs/programming-model.md) for the backend-state/CQRS model.
 
 ## Current architecture
 
-The package root exports each module as a namespace (`Sse`, `Datastar`, `Html`, `Jsx`, `Platform`, `Realtime`, `Client`) and also re-exports their named helpers for small examples.
+The package root exports each module as a namespace (`Sse`, `Datastar`, `Html`, `Jsx`, `Model`, `Platform`, `Realtime`, `Client`) and also re-exports their named helpers for small examples.
 
 - `src/sse.ts` — pure Datastar SSE event encoding: element patches, signal patches, signal removal, script execution, and event stream concatenation.
 - `src/datastar.ts` — typed Datastar expressions, signal references, fetch actions, modifiers, attribute helpers, merge helpers, and signal-name validation.
 - `src/html.ts` — tiny HTML node builder/renderer plus full document helper.
 - `src/jsx.ts` — experimental classic JSX factory that renders through the same HTML node model.
 - `src/platform.ts` — Effect Platform HTTP integration: route composition, Datastar request detection, signal/query/form decoding with Effect Schema, generic HTTP helpers, and Datastar-safe action response helpers.
+- `src/model.ts` — minimal backend-state/CQRS helpers for command completion, current-view patches, and live queries that rerender current state on invalidation.
 - `src/realtime.ts` — optional Effect `PubSub`/`Stream` helpers, heartbeats, and live element patch responses.
 - `src/client.ts` — Datastar script/document helpers and Effect Platform routes for serving a pinned Datastar client asset.
 
@@ -25,9 +26,9 @@ The package root exports each module as a namespace (`Sse`, `Datastar`, `Html`, 
 1. **Protocol layer** — Datastar wire format and response semantics (`Sse`, protocol-facing `Platform` helpers).
 2. **View layer** — server-rendered HTML and Datastar attributes (`Html`, `Jsx`, `Datastar`, `Client`).
 3. **Runtime layer** — Effect request decoding, responses, scopes, streams, and realtime resources (`Platform`, `Realtime`).
-4. **Programming model layer** — future pages, actions, and live queries that guide apps toward backend-source-of-truth flows.
+4. **Programming model layer** — backend-source-of-truth commands, query views, and live queries (`Model`).
 
-The first three layers exist today. The fourth is the roadmap direction.
+All four layers now exist in small form; the programming model layer is intentionally minimal while the higher-level page/action DSL remains open.
 
 ## Minimal counter
 

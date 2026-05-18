@@ -4,13 +4,13 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
 import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import {
-  datastarNoContentResponse,
+  commandDone,
   datastarPageResponse,
   dataSignals,
   get,
   h,
   init,
-  liveElementsPubSubResponse,
+  liveQueryResponse,
   makeRealtimePubSub,
   makeRealtimePubSubScoped,
   mergeAttrs,
@@ -20,6 +20,7 @@ import {
   publishRealtime,
   render,
   shutdownRealtime,
+  streamFromPubSub,
   type RealtimePubSub
 } from "../src/index.js"
 
@@ -32,7 +33,7 @@ export interface LiveCounterApp {
   readonly page: HttpServerResponse.HttpServerResponse
   readonly increment: Effect.Effect<HttpServerResponse.HttpServerResponse>
   readonly live: Effect.Effect<HttpServerResponse.HttpServerResponse>
-  readonly updates: RealtimePubSub<number>
+  readonly updates: RealtimePubSub<void>
   readonly shutdown: Effect.Effect<void>
   readonly currentCount: () => number
 }
@@ -52,20 +53,30 @@ export const pageView = (): string => render(pageNode())
 
 const liveCounterPubSubOptions = { capacity: 16, replay: 1, strategy: "sliding" as const }
 
-const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<RealtimePubSub<number>, never, R>): Effect.Effect<LiveCounterApp, never, R> =>
+const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<RealtimePubSub<void>, never, R>): Effect.Effect<LiveCounterApp, never, R> =>
   Effect.gen(function*() {
     const updates = yield* updatesEffect
     let count = 0
 
     const page = datastarPageResponse(pageNode())
 
+    const loadCount = Effect.sync(() => count)
     const increment = Effect.suspend(() =>
-      publishRealtime(updates, ++count).pipe(
-        Effect.as(datastarNoContentResponse())
+      Effect.sync(() => {
+        count += 1
+      }).pipe(
+        Effect.andThen(publishRealtime(updates, undefined)),
+        Effect.as(commandDone())
       )
     )
 
-    const live = Effect.sync(() => liveElementsPubSubResponse(updates, countFragment))
+    const live = Effect.sync(() =>
+      liveQueryResponse({
+        invalidations: streamFromPubSub(updates),
+        load: loadCount,
+        render: countFragment
+      })
+    )
     const shutdown = shutdownRealtime(updates)
 
     return {
@@ -84,9 +95,9 @@ const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<RealtimePubSub<numb
   })
 
 export const makeLiveCounter = (): Effect.Effect<LiveCounterApp> =>
-  makeLiveCounterWith(makeRealtimePubSub<number>(liveCounterPubSubOptions))
+  makeLiveCounterWith(makeRealtimePubSub<void>(liveCounterPubSubOptions))
 
 export const makeLiveCounterScoped = () =>
-  makeLiveCounterWith(makeRealtimePubSubScoped<number>(liveCounterPubSubOptions))
+  makeLiveCounterWith(makeRealtimePubSubScoped<void>(liveCounterPubSubOptions))
 
 export const createLiveCounter = (): LiveCounterApp => Effect.runSync(makeLiveCounter())

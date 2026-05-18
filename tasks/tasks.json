@@ -59,7 +59,7 @@
       "order": 3,
       "id": "T003",
       "title": "Design the backend-state and CQRS programming model",
-      "status": "pending",
+      "status": "done",
       "phase": "foundation",
       "priority": "critical",
       "depends_on": ["T001", "T002"],
