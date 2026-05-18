@@ -5,6 +5,7 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
+  DATASTAR_CDN,
   datastarDocument,
   dataSignals,
   h,
@@ -39,7 +40,7 @@ export const counterNode = () => {
 export const counterView = (): string => render(counterNode())
 
 export const page = (): HttpServerResponse.HttpServerResponse =>
-  platformHtmlResponse(datastarDocument(counterNode()))
+  platformHtmlResponse(datastarDocument(counterNode(), { scriptSrc: DATASTAR_CDN }))
 
 export const increment: Effect.Effect<
   HttpServerResponse.HttpServerResponse,

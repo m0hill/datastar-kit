@@ -5,6 +5,7 @@ import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { countFragment, createLiveCounter, makeLiveCounterScoped, pageView } from "../examples/live-counter.js"
+import { DATASTAR_CDN } from "../src/client.js"
 import { render } from "../src/html.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -71,7 +72,7 @@ describe("live counter example", () => {
     expect(page.status).toBe(200)
     expect(html).toContain("<!doctype html>")
     expect(html).toContain("live-counter")
-    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
+    expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
     expect(increment.status).toBe(204)
     expect(liveCounter.currentCount()).toBe(1)
   })

@@ -3,6 +3,7 @@ import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { app, resultsView, searchPage, searchView } from "../examples/search.js"
+import { DATASTAR_CDN } from "../src/client.js"
 import { get, queryUrl, signal } from "../src/datastar.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -39,7 +40,7 @@ describe("search example", () => {
     const html = await HttpServerResponse.toWeb(searchPage()).text()
 
     expect(html).toContain("<!doctype html>")
-    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
+    expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
     expect(html).toContain('id="search"')
   })
 

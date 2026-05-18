@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { exampleNames, startExampleServer } from "../examples/dev-server.js"
+import { DATASTAR_CDN } from "../src/client.js"
 
 describe("example dev server", () => {
   it("lists every runnable example", () => {
@@ -15,6 +16,8 @@ describe("example dev server", () => {
 
       expect(response.status).toBe(200)
       expect(html).toContain("ts-star counter")
+      expect(html).toContain(`src="${DATASTAR_CDN}"`)
+      expect(html).not.toContain('src="/datastar.js"')
       expect(server.port).toBeGreaterThan(0)
     } finally {
       await server.close()

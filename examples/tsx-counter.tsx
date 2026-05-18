@@ -7,6 +7,7 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
+  DATASTAR_CDN,
   datastarDocument,
   dataSignals,
   mergeAttrs,
@@ -52,7 +53,7 @@ export const tsxCounterNode = () => {
 export const tsxCounterView = (): string => render(tsxCounterNode())
 
 export const tsxCounterPage = (): HttpServerResponse.HttpServerResponse =>
-  platformHtmlResponse(datastarDocument(tsxCounterNode()))
+  platformHtmlResponse(datastarDocument(tsxCounterNode(), { scriptSrc: DATASTAR_CDN }))
 
 export const tsxIncrement: Effect.Effect<
   HttpServerResponse.HttpServerResponse,
