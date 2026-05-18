@@ -310,15 +310,8 @@ const appendTimingModifiers = (parts: Array<string>, modifiers: TimingModifiers)
 
 const modifierSuffix = (parts: ReadonlyArray<string>): string => parts.length === 0 ? "" : `__${parts.join("__")}`
 
-const appendCaseModifier = (parts: Array<string>, modifiers: CaseModifierOptions): void => {
-  if (modifiers.case !== undefined) parts.push(`case.${modifiers.case}`)
-}
-
-const caseModifierSuffix = (modifiers: CaseModifierOptions = {}): string => {
-  const parts: Array<string> = []
-  appendCaseModifier(parts, modifiers)
-  return modifierSuffix(parts)
-}
+const caseModifierSuffix = (modifiers: CaseModifierOptions = {}): string =>
+  modifiers.case === undefined ? "" : `__case.${modifiers.case}`
 
 const assertUnmodifiedSignalName = (name: string, modifiers: CaseModifierOptions): void => {
   if (modifiers.case === undefined) {
@@ -348,8 +341,7 @@ const bindModifiers = (modifiers: BindModifiers = {}): string => {
 }
 
 const dataSignalModifiers = (modifiers: DataSignalModifiers = {}): string => {
-  const parts: Array<string> = []
-  appendCaseModifier(parts, modifiers)
+  const parts = modifiers.case === undefined ? [] : [`case.${modifiers.case}`]
   if (modifiers.ifMissing === true) parts.push("ifmissing")
   return modifierSuffix(parts)
 }
