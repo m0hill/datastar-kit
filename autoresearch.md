@@ -47,3 +47,4 @@ Correctness backpressure is in `./autoresearch.checks.sh`, which runs TypeScript
 
 - Session initialized from `tasks/tasks.json`; no tasks completed yet.
 - T001 implemented with a rewritten `README.md` and new `docs/architecture.md` documenting layered architecture, public/experimental/internal API boundaries, foundational/flexible decisions, default request flow, and non-goals. Tracker status updated to `done` only after the deliverables were present.
+- T002 implemented Datastar-safe action response helpers (`datastar*Response` for 200 bodies and `datastarNoContentResponse` for 204), added URL-encoded/form/multipart decoding wrappers, documented protocol/form semantics in `docs/datastar-protocol.md`, migrated examples toward safe helpers, and added unit plus real-browser `agent-browser` runtime tests.

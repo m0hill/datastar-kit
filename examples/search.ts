@@ -5,10 +5,10 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   bind,
   datastarDocument,
+  datastarHtmlPatchResponse,
   dataSignals,
   get,
   h,
-  platformHtmlPatchResponse,
   platformHtmlResponse,
   platformReadQuery,
   platformRouter,
@@ -77,7 +77,7 @@ export const searchRoute = HttpRouter.route(
   "GET",
   "/search",
   platformReadQuery(SearchQuery).pipe(
-    Effect.map(({ q }) => platformHtmlPatchResponse(resultsView(q), { selector: "#results", mode: "outer" }))
+    Effect.map(({ q }) => datastarHtmlPatchResponse(resultsView(q), { selector: "#results", mode: "outer" }))
   )
 )
 

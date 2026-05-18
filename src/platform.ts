@@ -1,4 +1,6 @@
 import * as Effect from "effect/Effect"
+import type * as FileSystem from "effect/FileSystem"
+import type * as Path from "effect/Path"
 import * as Schema from "effect/Schema"
 import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
@@ -7,6 +9,7 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerError from "effect/unstable/http/HttpServerError"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
+import type * as Multipart from "effect/unstable/http/Multipart"
 import { render, type Child } from "./html.js"
 import type { ElementNamespace, ElementPatchMode } from "./sse.js"
 import { eventStream, patchElements, patchSignals, type JsonObject, type PatchElementsOptions, type PatchSignalsOptions } from "./sse.js"
@@ -103,6 +106,59 @@ export const platformReadQuery = <A, R>(
   HttpServerRequest.HttpServerRequest.pipe(
     Effect.flatMap((request) => platformReadQueryFromRequest(request, schema))
   )
+
+export type UrlEncodedFormInput = Readonly<Record<string, string | ReadonlyArray<string> | undefined>>
+
+export const platformReadUrlEncodedFormFromRequest = <A, I extends UrlEncodedFormInput, RD, RE>(
+  request: HttpServerRequest.HttpServerRequest,
+  schema: Schema.Codec<A, I, RD, RE>
+): Effect.Effect<A, HttpServerError.HttpServerError | Schema.SchemaError, RD> =>
+  HttpServerRequest.schemaBodyUrlParams(schema).pipe(
+    Effect.provideService(HttpServerRequest.HttpServerRequest, request)
+  )
+
+export const platformReadUrlEncodedForm = <A, I extends UrlEncodedFormInput, RD, RE>(
+  schema: Schema.Codec<A, I, RD, RE>
+): Effect.Effect<A, HttpServerError.HttpServerError | Schema.SchemaError, RD | HttpServerRequest.HttpServerRequest> =>
+  HttpServerRequest.schemaBodyUrlParams(schema)
+
+export const platformReadFormFromRequest = <A, I extends Partial<Multipart.Persisted>, RD, RE>(
+  request: HttpServerRequest.HttpServerRequest,
+  schema: Schema.Codec<A, I, RD, RE>
+): Effect.Effect<
+  A,
+  Multipart.MultipartError | HttpServerError.HttpServerError | Schema.SchemaError,
+  RD | Scope.Scope | FileSystem.FileSystem | Path.Path
+> =>
+  HttpServerRequest.schemaBodyForm(schema).pipe(
+    Effect.provideService(HttpServerRequest.HttpServerRequest, request)
+  )
+
+export const platformReadForm = <A, I extends Partial<Multipart.Persisted>, RD, RE>(
+  schema: Schema.Codec<A, I, RD, RE>
+): Effect.Effect<
+  A,
+  Multipart.MultipartError | HttpServerError.HttpServerError | Schema.SchemaError,
+  RD | HttpServerRequest.HttpServerRequest | Scope.Scope | FileSystem.FileSystem | Path.Path
+> =>
+  HttpServerRequest.schemaBodyForm(schema)
+
+export const platformReadMultipartFromRequest = <A, I extends Partial<Multipart.Persisted>, RD, RE>(
+  request: HttpServerRequest.HttpServerRequest,
+  schema: Schema.Codec<A, I, RD, RE>
+): Effect.Effect<A, Multipart.MultipartError | Schema.SchemaError, RD | Scope.Scope | FileSystem.FileSystem | Path.Path> =>
+  HttpServerRequest.schemaBodyMultipart(schema).pipe(
+    Effect.provideService(HttpServerRequest.HttpServerRequest, request)
+  )
+
+export const platformReadMultipart = <A, I extends Partial<Multipart.Persisted>, RD, RE>(
+  schema: Schema.Codec<A, I, RD, RE>
+): Effect.Effect<
+  A,
+  Multipart.MultipartError | Schema.SchemaError,
+  RD | HttpServerRequest.HttpServerRequest | Scope.Scope | FileSystem.FileSystem | Path.Path
+> =>
+  HttpServerRequest.schemaBodyMultipart(schema)
 
 export type PlatformResponseOptions = HttpServerResponse.Options
 
@@ -226,3 +282,100 @@ export const platformScriptResponse = (
     headers
   })
 }
+
+export class DatastarResponseStatusError extends Error {
+  readonly _tag = "DatastarResponseStatusError"
+
+  constructor(
+    readonly status: number,
+    readonly expected: 200 | 204
+  ) {
+    super(`Datastar action responses with ${expected === 200 ? "bodies" : "no body"} must use HTTP ${expected}, received ${status}`)
+  }
+}
+
+export type DatastarBodyResponseOptions = Omit<PlatformResponseOptions, "status"> & {
+  readonly status?: 200
+}
+
+export type DatastarNoContentResponseOptions = Omit<PlatformResponseOptions, "contentType" | "status"> & {
+  readonly status?: 204
+}
+
+export type DatastarHtmlPatchResponseOptions = Omit<PlatformHtmlPatchResponseOptions, "status"> & {
+  readonly status?: 200
+}
+
+export type DatastarJsonSignalsResponseOptions = Omit<PlatformJsonSignalsResponseOptions, "status"> & {
+  readonly status?: 200
+}
+
+export type DatastarScriptResponseOptions = Omit<PlatformScriptResponseOptions, "status"> & {
+  readonly status?: 200
+}
+
+const assertDatastarStatus = (status: number | undefined, expected: 200 | 204): void => {
+  if (status !== undefined && status !== expected) {
+    throw new DatastarResponseStatusError(status, expected)
+  }
+}
+
+const datastarBodyOptions = <Options extends { readonly status?: 200 }>(
+  options: Options = {} as Options
+): Omit<Options, "status"> & { readonly status: 200 } => {
+  assertDatastarStatus(options.status, 200)
+  const { status: _status, ...responseOptions } = options
+  return { ...responseOptions, status: 200 } as Omit<Options, "status"> & { readonly status: 200 }
+}
+
+export const datastarNoContentResponse = (
+  options: DatastarNoContentResponseOptions = {}
+): HttpServerResponse.HttpServerResponse => {
+  assertDatastarStatus(options.status, 204)
+  const { status: _status, ...responseOptions } = options
+  return HttpServerResponse.empty({ ...responseOptions, status: 204 })
+}
+
+export const datastarSseResponse = (
+  events: ReadonlyArray<string>,
+  options?: DatastarBodyResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  platformSseResponse(events, datastarBodyOptions(options))
+
+export const datastarEventStreamResponse = (
+  events: PlatformEventSource,
+  options?: DatastarBodyResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  platformEventStreamResponse(events, datastarBodyOptions(options))
+
+export const datastarPatchElementsResponse = (
+  elements: string | Exclude<Child, string>,
+  options?: PatchElementsOptions,
+  responseOptions?: DatastarBodyResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  platformPatchElementsResponse(elements, options, datastarBodyOptions(responseOptions))
+
+export const datastarPatchSignalsResponse = (
+  signals: JsonObject | string,
+  options?: PatchSignalsOptions,
+  responseOptions?: DatastarBodyResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  platformPatchSignalsResponse(signals, options, datastarBodyOptions(responseOptions))
+
+export const datastarHtmlPatchResponse = (
+  html: string | Exclude<Child, string>,
+  options?: DatastarHtmlPatchResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  platformHtmlPatchResponse(html, datastarBodyOptions(options))
+
+export const datastarJsonSignalsResponse = (
+  signals: JsonObject | string,
+  options?: DatastarJsonSignalsResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  platformJsonSignalsResponse(signals, datastarBodyOptions(options))
+
+export const datastarScriptResponse = (
+  script: string,
+  options?: DatastarScriptResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  platformScriptResponse(script, datastarBodyOptions(options))

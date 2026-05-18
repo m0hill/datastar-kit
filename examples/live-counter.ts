@@ -4,6 +4,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
 import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import {
+  datastarNoContentResponse,
   datastarPageResponse,
   dataSignals,
   get,
@@ -60,7 +61,7 @@ const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<RealtimePubSub<numb
 
     const increment = Effect.suspend(() =>
       publishRealtime(updates, ++count).pipe(
-        Effect.as(HttpServerResponse.empty())
+        Effect.as(datastarNoContentResponse())
       )
     )
 

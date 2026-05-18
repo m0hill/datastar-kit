@@ -42,7 +42,7 @@
       "order": 2,
       "id": "T002",
       "title": "Lock down Datastar protocol semantics",
-      "status": "pending",
+      "status": "done",
       "phase": "foundation",
       "priority": "critical",
       "depends_on": ["T001"],

@@ -8,11 +8,11 @@ import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   datastarDocument,
+  datastarPatchSignalsResponse,
   dataSignals,
   mergeAttrs,
   on,
   platformHtmlResponse,
-  platformPatchSignalsResponse,
   platformReadSignals,
   platformRouter,
   post,
@@ -65,7 +65,7 @@ export const tsxIncrement: Effect.Effect<
     return HttpServerResponse.text("Bad signals", { status: 400 })
   }
 
-  return platformPatchSignalsResponse({ count: decoded.success.count + 1 })
+  return datastarPatchSignalsResponse({ count: decoded.success.count + 1 })
 })
 
 export const tsxCounterApp = platformRouter(
