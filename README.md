@@ -6,7 +6,7 @@ This is intentionally small. The current shape favors explicit backend-driven HT
 
 ## Current architecture
 
-- `src/client.ts` — helpers for script tags, full Datastar documents/pages, serving the self-hosted Datastar client asset, and pairing exact routes with that asset route.
+- `src/client.ts` — helpers for script tags, full Datastar documents/pages, serving in-memory or file-backed self-hosted Datastar client assets, and pairing exact routes with that asset route.
 - `src/response.ts` — Web `Response` helpers for empty command responses, rendered HTML nodes, Datastar SSE patches/streams, and direct `text/html`, `application/json`, and `text/javascript` action responses with status/header customization.
 - `src/sse.ts` — pure Datastar SSE event encoding (`patchElements`, `patchSignals`, `removeSignals`, `executeScript`). Tested against included Datastar SDK fixtures.
 - `src/datastar.ts` — typed signal/action/attribute/style helpers for generating/composing Datastar expressions and action URLs, validating signal names, merging attributes, inspector/ref/ignore helpers, object-form bindings, modifier suffixes, and `data-*` attributes.

@@ -149,3 +149,4 @@ Reference-only material outside `ts-star`:
 - Crashed success-valued abort race helper attempt: racing even success-valued abort against `Effect.never` timed out, so a generic race helper is deferred. Next iteration keeps the smaller helper shape by exposing abort reasons as Effects without racing arbitrary work.
 - Kept abort reason helpers at score 145. Next iteration adds `ResponseInit` support to HTML/direct Datastar response helpers so handlers can set statuses and custom headers without losing safe default content types.
 - Kept direct response init support at score 150. Next iteration applies the same status/custom header capability to SSE response helpers and realtime streams while preserving Datastar/SSE default headers.
+- Kept SSE response init support at score 155. Next iteration adds a file-backed companion to `datastarClientRoutes`, so examples/apps can pair exact routes with the real self-hosted `datastar.js` asset without hand-writing route arrays.

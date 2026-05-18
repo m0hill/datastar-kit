@@ -87,3 +87,9 @@ export const datastarClientFileRoute = (
       Effect.map((script) => datastarClientResponse(script, options))
     )
   )
+
+export const datastarClientFileRoutes = <Routes extends ReadonlyArray<Route<any, any>>>(
+  filePath: string,
+  ...routes: Routes
+): readonly [Route<unknown, never>, ...Routes] =>
+  [datastarClientFileRoute(filePath), ...routes] as readonly [Route<unknown, never>, ...Routes]

@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest"
 import {
   DATASTAR_CDN,
   datastarClientFileRoute,
+  datastarClientFileRoutes,
   datastarClientResponse,
   datastarClientRoute,
   datastarClientRoutes,
@@ -80,5 +81,21 @@ describe("Datastar client asset helpers", () => {
 
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
     expect(await response.text()).toBe(expected)
+  })
+
+  it("pairs app routes with a file-backed Datastar client route", async () => {
+    const expected = readFileSync(datastarJsPath, "utf8")
+    const app = router(
+      ...datastarClientFileRoutes(
+        datastarJsPath,
+        route("GET", "/", () => Effect.succeed(datastarPageResponse(h("main", {}, "Ready"))))
+      )
+    )
+
+    const page = await Effect.runPromise(app(new Request("http://localhost/")))
+    const client = await Effect.runPromise(app(new Request("http://localhost/datastar.js")))
+
+    expect(await page.text()).toContain('<script type="module" src="/datastar.js"></script>')
+    expect(await client.text()).toBe(expected)
   })
 })
