@@ -106,6 +106,16 @@ describe("realtime SSE helpers", () => {
     await reader!.cancel()
   })
 
+  it("can delay the first heartbeat so finite event streams do not get leading comments", async () => {
+    const response = toWeb(
+      eventStreamResponse(Stream.make("event: update\n\n"), {
+        heartbeat: { interval: 0, initialDelay: "1 second", comment: "late" }
+      })
+    )
+
+    expect(await response.text()).toBe("event: update\n\n")
+  })
+
   it("still accepts async iterables at the response boundary", async () => {
     async function* values(): AsyncIterable<string> {
       yield "event: one\n\n"

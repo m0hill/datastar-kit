@@ -64,16 +64,26 @@ export const streamFromPubSub = <A>(pubsub: RealtimePubSub<A>): Stream.Stream<A>
 
 export interface HeartbeatOptions {
   readonly interval?: Duration.Input
+  readonly initialDelay?: Duration.Input
   readonly comment?: string
 }
 
 export const sseComment = (comment = ""): string =>
   comment.length === 0 ? ":\n\n" : `: ${comment.replaceAll("\n", "\n: ")}\n\n`
 
-export const heartbeatStream = (options: HeartbeatOptions = {}): Stream.Stream<string> =>
-  Stream.tick(options.interval ?? "15 seconds").pipe(
+export const heartbeatStream = (options: HeartbeatOptions = {}): Stream.Stream<string> => {
+  const ticks = Stream.tick(options.interval ?? "15 seconds").pipe(
     Stream.map(() => sseComment(options.comment ?? "heartbeat"))
   )
+
+  if (options.initialDelay === undefined) {
+    return ticks
+  }
+
+  return Stream.fromEffect(Effect.sleep(options.initialDelay)).pipe(
+    Stream.flatMap(() => ticks)
+  )
+}
 
 export const withHeartbeat = <E = never, R = never>(
   events: Stream.Stream<string, E, R>,
