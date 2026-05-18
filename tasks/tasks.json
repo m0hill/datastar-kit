@@ -186,7 +186,7 @@
     {
       "order": 6,
       "id": "T006",
-      "title": "Shrink Datastar helpers and stop expression DSL creep",
+      "title": "Shape ds as thin Datastar mirrors, not a client DSL",
       "status": "pending",
       "phase": "view-api",
       "priority": "high",
@@ -196,21 +196,29 @@
         "T002"
       ],
       "markdown": "06-shrink-datastar-helpers.md",
-      "goal": "Keep helpers that mirror Datastar directly while avoiding a mini client expression language or frontend store API.",
-      "canonical_direction": "Bless thin Datastar attribute/action helpers. Prefer raw Datastar expressions for complex client expressions instead of expanding TypeScript combinators.",
+      "goal": "Expose a lowercase ds namespace for browser-facing Datastar primitives while removing invented expression DSL helpers, aliases, and non-Datastar concerns.",
+      "canonical_direction": "Public app code uses ds.* for Datastar attributes/actions/signals. Keep broad thin mirrors of documented Datastar concepts, expose ds.delete(...), keep Signal as reference/path only, remove expression combinators and aliases, move mergeAttrs out of ds, and keep serializers/modifier builders internal.",
       "deliverables": [
-        "Datastar helper surface reduced",
-        "Duplicate aliases removed",
-        "Signal naming policy simplified",
-        "Tests/docs updated around the remaining helpers"
+        "Lowercase public ds namespace/object replacing app-facing Datastar namespace",
+        "Public ds.delete(...) with reserved-word workaround hidden internally",
+        "Broad thin mirrors of documented Datastar attributes/actions retained",
+        "Invented expression DSL helpers removed from public API",
+        "Signal mutator/comparison helpers removed; path/reference behavior retained",
+        "Local signal helper standardized as ds.local(...)",
+        "mergeAttrs moved out of ds or deferred to HTML boundary cleanup",
+        "Modifier builders and serialization helpers made internal"
       ],
       "removal_targets": [
-        "Signal.set/eq/neq/add/toggle unless strongly justified",
-        "not/and/or/ternary/fn as public DSL helpers",
-        "inputSignal alias",
-        "one of privateSignal/localSignal",
-        "bindValue/refValue/indicatorValue duplicate forms",
-        "validation/loading signal helpers moved out of core or into recipes"
+        "Datastar namespace as app-facing public style",
+        "ds.del public API in favor of ds.delete",
+        "Signal.set/eq/neq/add/toggle",
+        "not/and/or/ternary/fn public expression DSL helpers",
+        "toJs/toExpression public serialization helpers",
+        "inputSignal/privateSignal/privateSignalName public aliases unless needed for ds.local internals",
+        "validationSignal/loadingSignal and validation/loading data-signal helpers in core ds",
+        "bindValue/refValue/indicatorValue duplicate value-form helpers",
+        "mergeAttrs/mergeAttrsStrict/AttributeConflictError under ds",
+        "onModifiers/intersectModifiers/intervalModifiers public builder functions"
       ]
     },
     {
