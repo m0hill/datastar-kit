@@ -14,7 +14,7 @@ This is intentionally small. The current shape favors explicit backend-driven HT
 - `src/jsx.ts` — experimental classic JSX factory that renders through the same HTML nodes.
 - `src/request.ts` — detects Datastar action requests, reads Datastar signals/query params from Web `Request`s, decodes them with Effect Schema, and exposes request abort helpers.
 - `src/handler.ts` — plain Effect handlers returning Web `Response`s, plus exact-route dispatch, route prefixing, typed error mapping, and `withSignals`.
-- `src/node.ts` — boundary adapter plus unscoped/scoped serve helpers from `node:http` to Web `Request`/`Response`.
+- `src/node.ts` — boundary adapter plus unscoped/scoped serve helpers from `node:http` to Web `Request`/`Response`; runtime helpers refuse handlers with unprovided Effect context instead of erasing it.
 - `src/realtime.ts` — optional in-process broadcaster + AsyncIterable-to-SSE helpers for CQRS-style live updates with customizable streaming response headers.
 
 ## Minimal counter

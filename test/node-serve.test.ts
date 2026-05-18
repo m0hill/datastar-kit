@@ -28,4 +28,18 @@ describe("Node serve helper", () => {
       await Effect.runPromise(closeServer(server))
     }
   })
+
+  it("runs environment-free handlers without requiring casts", async () => {
+    const app = router(route("GET", "/typed", () => Effect.succeed(textResponse("typed"))))
+    const server = await Effect.runPromise(serve(app))
+
+    try {
+      const response = await fetch(`${serverOrigin(server)}/typed`)
+
+      expect(response.status).toBe(200)
+      expect(await response.text()).toBe("typed")
+    } finally {
+      await Effect.runPromise(closeServer(server))
+    }
+  })
 })

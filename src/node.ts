@@ -155,14 +155,14 @@ const defaultErrorResponse = (): Response =>
     }
   })
 
-export const createNodeListener = (app: Handler<unknown, any>, options: NodeListenerOptions = {}): RequestListener =>
+export const createNodeListener = (app: Handler<unknown, never>, options: NodeListenerOptions = {}): RequestListener =>
 (request, response) => {
   const abortController = new AbortController()
   response.once("close", () => abortController.abort())
 
   const program = Effect.promise(() => nodeRequestToWeb(request, options.origin, abortController.signal)).pipe(
     Effect.flatMap(app)
-  ) as Effect.Effect<Response, unknown, never>
+  )
 
   Effect.runPromise(program)
     .catch((cause: unknown) => options.onError?.(cause) ?? defaultErrorResponse())
@@ -180,7 +180,7 @@ export interface ServeOptions extends NodeListenerOptions {
   readonly port?: number
 }
 
-export const serve = (app: Handler<unknown, any>, options: ServeOptions = {}): Effect.Effect<Server, Error> =>
+export const serve = (app: Handler<unknown, never>, options: ServeOptions = {}): Effect.Effect<Server, Error> =>
   Effect.promise(
     () =>
       new Promise<Server>((resolve, reject) => {
@@ -202,7 +202,7 @@ export const closeServer = (server: Server): Effect.Effect<void, Error> =>
   )
 
 export const serveScoped = (
-  app: Handler<unknown, any>,
+  app: Handler<unknown, never>,
   options: ServeOptions = {}
 ): Effect.Effect<Server, Error, Scope.Scope> =>
   Effect.acquireRelease(serve(app, options), (server) => Effect.orDie(closeServer(server)))

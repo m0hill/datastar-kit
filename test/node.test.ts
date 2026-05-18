@@ -3,7 +3,7 @@ import * as Schema from "effect/Schema"
 import { createServer, get as httpGet, type IncomingMessage, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { route, router, textResponse, withSignals } from "../src/handler.js"
+import { route, router, textResponse, withSignals, type Handler } from "../src/handler.js"
 import { createNodeListener } from "../src/node.js"
 import { eventStreamResponse } from "../src/realtime.js"
 import { patchSignalsResponse } from "../src/response.js"
@@ -14,7 +14,7 @@ const CounterSignals = Schema.Struct({
 
 let server: Server | undefined
 
-const listen = async (app: ReturnType<typeof router>): Promise<string> => {
+const listen = async (app: Handler<unknown, never>): Promise<string> => {
   server = createServer(createNodeListener(app))
   await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve))
   const address = server.address() as AddressInfo
