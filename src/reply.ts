@@ -253,22 +253,6 @@ export const directScript = (
   })
 }
 
-const originOf = (value: string | URL): string => {
-  const raw = value.toString()
-  try {
-    const url = new URL(raw)
-    if (url.protocol !== "http:" && url.protocol !== "https:") {
-      throw new NavigationUrlError(raw)
-    }
-    return url.origin
-  } catch (error) {
-    if (error instanceof NavigationUrlError) {
-      throw error
-    }
-    throw new NavigationUrlError(raw)
-  }
-}
-
 const safeNavigationUrl = (
   input: string | URL,
   options: {
@@ -298,9 +282,15 @@ const safeNavigationUrl = (
     return `${url.pathname}${url.search}${url.hash}`
   }
 
-  const allowedOrigins = options.allowedOrigins ?? []
-  if (allowedOrigins.some((origin) => originOf(origin) === url.origin)) {
-    return url.toString()
+  for (const origin of options.allowedOrigins ?? []) {
+    try {
+      const allowed = new URL(origin.toString())
+      if ((allowed.protocol === "http:" || allowed.protocol === "https:") && allowed.origin === url.origin) {
+        return url.toString()
+      }
+    } catch {
+      // Treat malformed allowlist entries as non-matches.
+    }
   }
 
   throw new NavigationUrlError(raw)
