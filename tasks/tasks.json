@@ -110,7 +110,7 @@
       "order": 6,
       "id": "T006",
       "title": "Define the HTML and templating boundary",
-      "status": "pending",
+      "status": "done",
       "phase": "foundation",
       "priority": "high",
       "depends_on": ["T003", "T005"],

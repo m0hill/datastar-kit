@@ -54,7 +54,7 @@ Owns server-rendered HTML and Datastar attributes.
 
 Current files:
 
-- `src/html.ts` is the minimal HTML node builder/renderer and document helper.
+- `src/html.ts` is the minimal HTML node builder/renderer, renderer interface, ordered-attribute representation, raw HTML escape hatch, patchable ID helper, and document helper.
 - `src/jsx.ts` is an experimental classic JSX factory over the same HTML nodes.
 - `src/contracts.ts` derives signal handles, initial attributes, decoders, patches, and action URL helpers from Effect Schema contracts.
 - `src/datastar.ts` builds typed Datastar expressions, fetch actions, signal references, modifiers, and `data-*` attributes.

@@ -1,11 +1,29 @@
 export type AttributeValue = string | number | boolean | null | undefined
 export type Attributes = Readonly<Record<string, AttributeValue>>
-export type Child = HtmlNode | string | number | boolean | null | undefined | readonly Child[]
+export type AttributeEntry = readonly [name: string, value: AttributeValue]
+
+export interface OrderedAttributes {
+  readonly _tag: "OrderedAttributes"
+  readonly entries: readonly AttributeEntry[]
+}
+
+export type AttributeInput = Attributes | OrderedAttributes
+
+export interface RawHtml {
+  readonly _tag: "RawHtml"
+  readonly html: string
+}
+
+export type Child = HtmlNode | RawHtml | string | number | boolean | null | undefined | readonly Child[]
 
 export interface HtmlNode {
   readonly tag: string
-  readonly attrs: Attributes
+  readonly attrs: AttributeInput
   readonly children: readonly Child[]
+}
+
+export interface Renderer<Node = unknown> {
+  readonly render: (node: Node) => string
 }
 
 const voidTags = new Set([
@@ -25,13 +43,32 @@ const voidTags = new Set([
   "wbr"
 ])
 
-export const h = (tag: string, attrs: Attributes = {}, ...children: readonly Child[]): HtmlNode => ({
+export const h = (tag: string, attrs: AttributeInput = {}, ...children: readonly Child[]): HtmlNode => ({
   tag,
   attrs,
   children
 })
 
 export const fragment = (...children: readonly Child[]): readonly Child[] => children
+
+export const rawHtml = (html: string): RawHtml => ({
+  _tag: "RawHtml",
+  html
+})
+
+export const attrs = (...entries: readonly AttributeEntry[]): OrderedAttributes => ({
+  _tag: "OrderedAttributes",
+  entries
+})
+
+export const isOrderedAttributes = (value: unknown): value is OrderedAttributes =>
+  typeof value === "object" && value !== null && "_tag" in value && value._tag === "OrderedAttributes"
+
+export const isRawHtml = (value: unknown): value is RawHtml =>
+  typeof value === "object" && value !== null && "_tag" in value && value._tag === "RawHtml"
+
+export const mergeOrderedAttrs = (...groups: readonly AttributeInput[]): OrderedAttributes =>
+  attrs(...groups.flatMap((group) => isOrderedAttributes(group) ? [...group.entries] : Object.entries(group) as AttributeEntry[]))
 
 const escapeText = (value: string): string =>
   value
@@ -44,10 +81,13 @@ const escapeAttribute = (value: string): string =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;")
 
-const renderAttrs = (attrs: Attributes): string => {
+const attributeEntries = (attrs: AttributeInput): readonly AttributeEntry[] =>
+  isOrderedAttributes(attrs) ? attrs.entries : Object.entries(attrs) as AttributeEntry[]
+
+const renderAttrs = (attrs: AttributeInput): string => {
   const rendered: Array<string> = []
 
-  for (const [key, value] of Object.entries(attrs)) {
+  for (const [key, value] of attributeEntries(attrs)) {
     if (value === false || value === null || value === undefined) {
       continue
     }
@@ -70,6 +110,33 @@ export const isHtmlNode = (value: unknown): value is HtmlNode =>
   "attrs" in value &&
   "children" in value
 
+export class MissingPatchIdError extends Error {
+  readonly _tag = "MissingPatchIdError"
+
+  constructor(readonly tag: string) {
+    super(`Patchable <${tag}> nodes must have an id attribute`)
+  }
+}
+
+const attrValue = (attrs: AttributeInput, name: string): AttributeValue => {
+  for (const [key, value] of attributeEntries(attrs)) {
+    if (key === name) {
+      return value
+    }
+  }
+}
+
+export const patchableNode = (tag: string, id: string, attributes: AttributeInput = {}, ...children: readonly Child[]): HtmlNode =>
+  h(tag, mergeOrderedAttrs(attrs(["id", id]), attributes), ...children)
+
+export const requirePatchId = <Node extends HtmlNode>(node: Node): Node => {
+  const id = attrValue(node.attrs, "id")
+  if (typeof id !== "string" || id.length === 0) {
+    throw new MissingPatchIdError(node.tag)
+  }
+  return node
+}
+
 export const render = (child: Child): string => {
   if (Array.isArray(child)) {
     return child.map(render).join("")
@@ -81,6 +148,10 @@ export const render = (child: Child): string => {
 
   if (child === true) {
     return "true"
+  }
+
+  if (isRawHtml(child)) {
+    return child.html
   }
 
   if (!isHtmlNode(child)) {
@@ -109,8 +180,12 @@ const childrenArray = (child: Child | readonly Child[] | undefined): readonly Ch
   return Array.isArray(child) ? child : [child]
 }
 
+export const htmlRenderer: Renderer<Child> = {
+  render
+}
+
 export const htmlDocument = (options: HtmlDocumentOptions = {}): string =>
-  `<!doctype html>${render(
+  `<!doctype html>${htmlRenderer.render(
     h(
       "html",
       { lang: options.lang ?? "en" },
