@@ -130,14 +130,19 @@ export const platformSseResponse = (
 ): HttpServerResponse.HttpServerResponse =>
   HttpServerResponse.text(eventStream(...events), platformSseOptions(options))
 
+export type PlatformEventSource = AsyncIterable<string> | Stream.Stream<string, unknown>
+
+const isPlatformStream = (source: PlatformEventSource): source is Stream.Stream<string, unknown> =>
+  "channel" in source
+
+const platformEventSourceStream = (source: PlatformEventSource): Stream.Stream<Uint8Array, unknown> =>
+  (isPlatformStream(source) ? source : Stream.fromAsyncIterable(source, (cause) => cause)).pipe(Stream.encodeText)
+
 export const platformEventStreamResponse = (
-  events: AsyncIterable<string>,
+  events: PlatformEventSource,
   options?: PlatformResponseOptions
 ): HttpServerResponse.HttpServerResponse =>
-  HttpServerResponse.stream(
-    Stream.fromAsyncIterable(events, (cause) => cause).pipe(Stream.encodeText),
-    platformSseOptions(options)
-  )
+  HttpServerResponse.stream(platformEventSourceStream(events), platformSseOptions(options))
 
 export const platformPatchElementsResponse = (
   elements: string | Exclude<Child, string>,

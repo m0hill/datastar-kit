@@ -14,6 +14,7 @@ describe("package root exports", () => {
     expect(Datastar.signal).toBeDefined()
     expect(Html.h).toBeDefined()
     expect(Jsx.jsx).toBeDefined()
+    expect(Realtime.makeRealtimePubSub).toBeDefined()
     expect(Realtime.makeBroadcaster).toBeDefined()
     expect(Sse.patchSignals).toBeDefined()
 

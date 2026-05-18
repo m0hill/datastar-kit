@@ -9,14 +9,17 @@ import {
   get,
   h,
   init,
-  liveElementsResponse,
+  liveElementsPubSubResponse,
+  makeRealtimePubSub,
   mergeAttrs,
   on,
   platformRouter,
   post,
-  render
+  publishRealtime,
+  render,
+  shutdownRealtime,
+  type RealtimePubSub
 } from "../src/index.js"
-import { Broadcaster } from "../src/realtime.js"
 
 export interface LiveCounterApp {
   readonly app: Effect.Effect<
@@ -27,7 +30,8 @@ export interface LiveCounterApp {
   readonly page: HttpServerResponse.HttpServerResponse
   readonly increment: Effect.Effect<HttpServerResponse.HttpServerResponse>
   readonly live: Effect.Effect<HttpServerResponse.HttpServerResponse>
-  readonly broadcaster: Broadcaster<number>
+  readonly updates: RealtimePubSub<number>
+  readonly shutdown: Effect.Effect<void>
   readonly currentCount: () => number
 }
 
@@ -44,32 +48,35 @@ export const pageNode = () =>
 
 export const pageView = (): string => render(pageNode())
 
-export const createLiveCounter = (): LiveCounterApp => {
-  const broadcaster = new Broadcaster<number>()
-  let count = 0
+export const makeLiveCounter = (): Effect.Effect<LiveCounterApp> =>
+  Effect.gen(function*() {
+    const updates = yield* makeRealtimePubSub<number>({ capacity: 16, replay: 1, strategy: "sliding" })
+    let count = 0
 
-  const page = datastarPageResponse(pageNode())
+    const page = datastarPageResponse(pageNode())
 
-  const increment = Effect.suspend(() =>
-    broadcaster.publish(++count).pipe(
-      Effect.as(HttpServerResponse.empty())
+    const increment = Effect.suspend(() =>
+      publishRealtime(updates, ++count).pipe(
+        Effect.as(HttpServerResponse.empty())
+      )
     )
-  )
 
-  const live = broadcaster.subscribe().pipe(
-    Effect.map((subscription) => liveElementsResponse(subscription, countFragment))
-  )
+    const live = Effect.sync(() => liveElementsPubSubResponse(updates, countFragment))
+    const shutdown = shutdownRealtime(updates)
 
-  return {
-    app: platformRouter(
-      HttpRouter.route("GET", "/", page),
-      HttpRouter.route("POST", "/increment", increment),
-      HttpRouter.route("GET", "/live", live)
-    ),
-    page,
-    increment,
-    live,
-    broadcaster,
-    currentCount: () => count
-  }
-}
+    return {
+      app: platformRouter(
+        HttpRouter.route("GET", "/", page),
+        HttpRouter.route("POST", "/increment", increment),
+        HttpRouter.route("GET", "/live", live)
+      ),
+      page,
+      increment,
+      live,
+      updates,
+      shutdown,
+      currentCount: () => count
+    }
+  })
+
+export const createLiveCounter = (): LiveCounterApp => Effect.runSync(makeLiveCounter())

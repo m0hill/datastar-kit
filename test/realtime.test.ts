@@ -1,77 +1,112 @@
 import * as Effect from "effect/Effect"
+import * as PubSub from "effect/PubSub"
+import * as Stream from "effect/Stream"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { describe, expect, it } from "vitest"
 import { h } from "../src/html.js"
-import { Broadcaster, eventStreamResponse, liveElementsResponse, makeBroadcaster, mapToElementPatches } from "../src/realtime.js"
-
-async function* values<T>(...items: ReadonlyArray<T>): AsyncIterable<T> {
-  for (const item of items) {
-    yield item
-  }
-}
+import {
+  eventStreamResponse,
+  liveElementsPubSubResponse,
+  liveElementsResponse,
+  makeBroadcaster,
+  makeRealtimePubSub,
+  mapToElementPatches,
+  publishRealtime,
+  shutdownRealtime,
+  streamFromPubSub
+} from "../src/realtime.js"
 
 const toWeb = (response: HttpServerResponse.HttpServerResponse): Response => HttpServerResponse.toWeb(response)
 
 describe("realtime SSE helpers", () => {
-  it("broadcasts published values to subscribers", async () => {
-    const broadcaster = Effect.runSync(makeBroadcaster<number>())
-    const subscription = Effect.runSync(broadcaster.subscribe())
+  it("broadcasts published values through Effect PubSub subscriptions", async () => {
+    const values = await Effect.runPromise(
+      Effect.scoped(
+        Effect.gen(function*() {
+          const pubsub = yield* makeRealtimePubSub<number>({ capacity: 8, strategy: "bounded" })
+          const first = yield* PubSub.subscribe(pubsub)
+          const second = yield* PubSub.subscribe(pubsub)
 
-    Effect.runSync(broadcaster.publish(1))
+          yield* publishRealtime(pubsub, 1)
 
-    await expect(subscription.next()).resolves.toEqual({ done: false, value: 1 })
-    subscription.close()
-    await expect(Effect.runPromise(broadcaster.size())).resolves.toBe(0)
+          return yield* Effect.all([PubSub.take(first), PubSub.take(second)])
+        })
+      )
+    )
+
+    expect(values).toEqual([1, 1])
   })
 
-  it("maps async values to Datastar element patches", async () => {
-    const patches: Array<string> = []
+  it("supports replay for late live subscribers", async () => {
+    const pubsub = Effect.runSync(makeRealtimePubSub<number>({ capacity: 2, replay: 1, strategy: "sliding" }))
 
-    for await (const patch of mapToElementPatches(values(1, 2), (n) => `<div id="n">${n}</div>`)) {
-      patches.push(patch)
-    }
+    await Effect.runPromise(publishRealtime(pubsub, 1))
+    await Effect.runPromise(publishRealtime(pubsub, 2))
+
+    const values = await Effect.runPromise(streamFromPubSub(pubsub).pipe(Stream.take(1), Stream.runCollect))
+
+    expect(values).toEqual([2])
+  })
+
+  it("keeps the old makeBroadcaster alias backed by Effect PubSub", () => {
+    expect(Effect.runSync(makeBroadcaster<number>())).toBeDefined()
+  })
+
+  it("maps Effect Stream values to Datastar element patches", async () => {
+    const patches = await Effect.runPromise(
+      mapToElementPatches(Stream.make(1, 2), (n) => `<div id="n">${n}</div>`).pipe(Stream.runCollect)
+    )
 
     expect(patches.join("")).toBe(
       'event: datastar-patch-elements\ndata: elements <div id="n">1</div>\n\nevent: datastar-patch-elements\ndata: elements <div id="n">2</div>\n\n'
     )
   })
 
-  it("streams text/event-stream responses from async events", async () => {
-    const response = toWeb(eventStreamResponse(values("event: one\n\n", "event: two\n\n")))
+  it("streams text/event-stream responses from Effect Streams", async () => {
+    const response = toWeb(eventStreamResponse(Stream.make("event: one\n\n", "event: two\n\n")))
 
     expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(await response.text()).toBe("event: one\n\nevent: two\n\n")
   })
 
+  it("still accepts async iterables at the response boundary", async () => {
+    async function* values(): AsyncIterable<string> {
+      yield "event: one\n\n"
+      yield "event: two\n\n"
+    }
+
+    const response = toWeb(eventStreamResponse(values()))
+
+    expect(await response.text()).toBe("event: one\n\nevent: two\n\n")
+  })
+
   it("renders HTML nodes for live element responses", async () => {
-    const response = toWeb(liveElementsResponse(values("Ada"), (name) => h("div", { id: "person" }, name)))
+    const response = toWeb(liveElementsResponse(Stream.make("Ada"), (name) => h("div", { id: "person" }, name)))
 
     expect(await response.text()).toBe('event: datastar-patch-elements\ndata: elements <div id="person">Ada</div>\n\n')
   })
 
-  it("can bridge a broadcaster subscription into an SSE response", async () => {
-    const broadcaster = new Broadcaster<number>()
-    const subscription = Effect.runSync(broadcaster.subscribe())
-    const response = toWeb(liveElementsResponse(subscription, (n) => `<div id="count">${n}</div>`))
+  it("can bridge an Effect PubSub into an SSE response", async () => {
+    const pubsub = Effect.runSync(makeRealtimePubSub<number>({ replay: 1 }))
+    const response = toWeb(liveElementsPubSubResponse(pubsub, (n) => `<div id="count">${n}</div>`))
     const body = response.text()
 
-    Effect.runSync(broadcaster.publish(3))
-    subscription.close()
+    await Promise.resolve()
+    await Effect.runPromise(publishRealtime(pubsub, 3))
+    await Effect.runPromise(shutdownRealtime(pubsub))
 
     await expect(body).resolves.toBe('event: datastar-patch-elements\ndata: elements <div id="count">3</div>\n\n')
   })
 
-  it("closes broadcaster subscriptions when SSE response bodies are canceled", async () => {
-    const broadcaster = new Broadcaster<string>()
-    const subscription = Effect.runSync(broadcaster.subscribe())
-    const response = toWeb(eventStreamResponse(subscription))
-    const reader = response.body?.getReader()
+  it("completes pubsub-backed response streams when the PubSub shuts down", async () => {
+    const pubsub = Effect.runSync(makeRealtimePubSub<string>({ replay: 1 }))
+    const response = toWeb(eventStreamResponse(streamFromPubSub(pubsub)))
+    const body = response.text()
 
-    expect(reader).toBeDefined()
-    expect(Effect.runSync(broadcaster.size())).toBe(1)
+    await Promise.resolve()
+    await Effect.runPromise(publishRealtime(pubsub, "event: done\n\n"))
+    await Effect.runPromise(shutdownRealtime(pubsub))
 
-    await reader!.cancel()
-
-    expect(Effect.runSync(broadcaster.size())).toBe(0)
+    await expect(body).resolves.toBe("event: done\n\n")
   })
 })

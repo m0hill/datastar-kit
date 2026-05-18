@@ -47,7 +47,7 @@ describe("live counter example", () => {
     const body = HttpServerResponse.toWeb(liveResponse).text()
 
     await Effect.runPromise(liveCounter.increment)
-    await Effect.runPromise(liveCounter.broadcaster.closeAll())
+    await Effect.runPromise(liveCounter.shutdown)
 
     expect(await body).toBe('event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n')
     expect(liveCounter.currentCount()).toBe(1)
@@ -74,11 +74,6 @@ describe("live counter example", () => {
     const listener = await makePlatformListener(liveCounter.app)
     const origin = await serveListener(listener)
     const liveResponsePromise = fetch(`${origin}/live`)
-
-    for (let attempt = 0; attempt < 20 && Effect.runSync(liveCounter.broadcaster.size()) === 0; attempt++) {
-      await new Promise((resolve) => setTimeout(resolve, 10))
-    }
-
     const increment = await fetch(`${origin}/increment`, { method: "POST" })
     const liveResponse = await liveResponsePromise
     const reader = liveResponse.body?.getReader()
@@ -93,7 +88,7 @@ describe("live counter example", () => {
       'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
     )
 
-    await Effect.runPromise(liveCounter.broadcaster.closeAll())
+    await Effect.runPromise(liveCounter.shutdown)
     await expect(reader!.read()).resolves.toEqual({ done: true, value: undefined })
   })
 })
