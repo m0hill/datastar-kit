@@ -7,7 +7,8 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
-import { dataSignals, mergeAttrs, on, post, signal, text } from "../src/datastar.js"
+import { defineSignals } from "../src/contracts.js"
+import { mergeAttrs, on, post, text } from "../src/datastar.js"
 import { h } from "../src/html.js"
 import { platformRouter } from "../src/platform.js"
 import { catchMappedErrors, DatastarProtocol, ErrorMapper, requestRuntimeLayer, SignalDecoder } from "../src/runtime.js"
@@ -26,21 +27,23 @@ export const CounterStoreLive: Layer.Layer<CounterStore> = Layer.effect(CounterS
   )
 )
 
-export const RuntimeCounterSignals = Schema.Struct({
-  count: Schema.Number
-})
+export const RuntimeCounter = defineSignals(
+  "RuntimeCounter",
+  Schema.Struct({
+    count: Schema.Number
+  })
+)
 
-export const runtimeCounterNode = (countValue: number) => {
-  const count = signal<number, "count">("count")
+export const RuntimeCounterSignals = RuntimeCounter.schema
 
-  return h(
+export const runtimeCounterNode = (countValue: number) =>
+  h(
     "main",
-    mergeAttrs({ id: "runtime-counter" }, dataSignals({ count: countValue }, { ifMissing: true })),
+    mergeAttrs({ id: "runtime-counter" }, RuntimeCounter.initial({ count: countValue }, { ifMissing: true })),
     h("h1", {}, "Effect-native runtime counter"),
     h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
-    h("output", text(count), countValue)
+    h("output", text(RuntimeCounter.signals.count), countValue)
   )
-}
 
 export const runtimeCounterPage = catchMappedErrors(
   Effect.gen(function*() {
@@ -54,13 +57,13 @@ export const runtimeCounterPage = catchMappedErrors(
 export const runtimeCounterIncrement = catchMappedErrors(
   Effect.gen(function*() {
     const decoder = yield* SignalDecoder
-    yield* decoder.decode(RuntimeCounterSignals)
+    yield* RuntimeCounter.decode(decoder)
 
     const store = yield* CounterStore
     const protocol = yield* DatastarProtocol
     const count = yield* store.increment
 
-    return yield* protocol.patchSignals({ count })
+    return yield* protocol.patchSignals(RuntimeCounter.patch({ count }))
   })
 )
 

@@ -1,4 +1,5 @@
 export * as Client from "./client.js"
+export * as Contracts from "./contracts.js"
 export * as Datastar from "./datastar.js"
 export * as Html from "./html.js"
 export * as Jsx from "./jsx.js"
@@ -9,6 +10,7 @@ export * as Runtime from "./runtime.js"
 export * as Sse from "./sse.js"
 
 export * from "./client.js"
+export * from "./contracts.js"
 export * from "./datastar.js"
 export * from "./html.js"
 export * from "./jsx.js"

@@ -56,6 +56,7 @@ Current files:
 
 - `src/html.ts` is the minimal HTML node builder/renderer and document helper.
 - `src/jsx.ts` is an experimental classic JSX factory over the same HTML nodes.
+- `src/contracts.ts` derives signal handles, initial attributes, decoders, patches, and action URL helpers from Effect Schema contracts.
 - `src/datastar.ts` builds typed Datastar expressions, fetch actions, signal references, modifiers, and `data-*` attributes.
 - `src/client.ts` creates Datastar script tags/documents and serves pinned Datastar client assets through Effect Platform routes.
 
@@ -92,6 +93,7 @@ The package root currently exports every source module both as namespaces and as
 ### Stable public API candidates
 
 - `Sse` / `src/sse.ts`: low-level Datastar event encoders.
+- `Contracts` / `src/contracts.ts`: schema-derived signal/action contracts that reduce drift across view handles, decoders, and patches.
 - `Datastar` / `src/datastar.ts`: expression, action, signal, modifier, and attribute helpers that mirror Datastar semantics.
 - Core response/request helpers in `Platform` / `src/platform.ts`: signal/query decoding and Datastar response constructors.
 

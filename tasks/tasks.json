@@ -93,7 +93,7 @@
       "order": 5,
       "id": "T005",
       "title": "Create end-to-end type contracts",
-      "status": "pending",
+      "status": "done",
       "phase": "foundation",
       "priority": "critical",
       "depends_on": ["T003", "T004"],
