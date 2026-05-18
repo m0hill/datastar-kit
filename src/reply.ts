@@ -81,12 +81,6 @@ const sseHeader = {
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 const heartbeat = { done: "heartbeat" } as const
 
-const isReadableStream = (source: unknown): source is ReadableStream<EventChunk> =>
-  typeof source === "object" && source !== null && "getReader" in source
-
-const isAsyncIterable = (source: unknown): source is AsyncIterable<EventChunk> =>
-  typeof source === "object" && source !== null && Symbol.asyncIterator in source
-
 async function* readableStreamToAsyncIterable(source: ReadableStream<EventChunk>): AsyncIterable<EventChunk> {
   const reader = source.getReader()
   try {
@@ -108,13 +102,13 @@ async function* toAsyncIterable(source: StreamInput): AsyncIterable<EventChunk> 
     return
   }
 
-  if (isReadableStream(source)) {
-    yield* readableStreamToAsyncIterable(source)
+  if (typeof source === "object" && source !== null && "getReader" in source) {
+    yield* readableStreamToAsyncIterable(source as ReadableStream<EventChunk>)
     return
   }
 
-  if (isAsyncIterable(source)) {
-    yield* source
+  if (typeof source === "object" && source !== null && Symbol.asyncIterator in source) {
+    yield* (source as AsyncIterable<EventChunk>)
     return
   }
 
