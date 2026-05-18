@@ -16,7 +16,7 @@ This is intentionally small. The current shape favors explicit backend-driven HT
 - `src/handler.ts` — plain Effect handlers returning Web `Response`s, plus exact-route dispatch, route prefixing, typed error mapping, and `withSignals`.
 - `src/node.ts` — boundary adapter plus unscoped/scoped serve helpers from `node:http` to Web `Request`/`Response`; runtime helpers refuse handlers with unprovided Effect context instead of erasing it.
 - `src/platform.ts` — adapter from ts-star Web handlers/routes to `@effect/platform` HTTP apps/routers, native Effect Platform signal decoding, and native Datastar SSE/direct response helpers, so prototypes can run through Effect's `NodeHttpServer` instead of only raw Node plumbing.
-- `src/realtime.ts` — optional in-process broadcaster + AsyncIterable-to-SSE helpers for CQRS-style live updates with customizable streaming response headers.
+- `src/realtime.ts` — optional Effect `PubSub`/`Stream` helpers for CQRS-style live updates with customizable streaming response headers.
 
 ## Minimal counter
 
@@ -63,7 +63,7 @@ export const app = router(
 )
 ```
 
-See `examples/counter.ts` for the smallest full-page Web-handler signal patch flow, `examples/platform-counter.ts` for the Effect Platform-native counter route, `examples/search.ts` for query decoding + direct HTML patch responses, and `examples/live-counter.ts` for broadcaster-backed SSE patches.
+See `examples/counter.ts` for the smallest full-page Effect Platform signal patch flow, `examples/tsx-counter.tsx` for the same style of counter written with TSX instead of hyperscript calls, `examples/search.ts` for query decoding + direct HTML patch responses, and `examples/live-counter.ts` for PubSub-backed SSE patches.
 
 ## Open questions
 
