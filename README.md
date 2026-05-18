@@ -81,7 +81,7 @@ The `check:*` scripts run `typecheck` first, then the matching example test. Use
 
 ## Running example dev servers
 
-Each dev script builds the TypeScript examples, then starts one example through Effect Platform's Node HTTP server. Dev examples load Datastar from the CDN, so they do not need a local `/datastar.js` asset route:
+Each dev script builds the TypeScript examples, copies the pinned vendored Datastar client into `dist/vendor/datastar.js`, then starts one example through Effect Platform's Node HTTP server. The dev server serves that framework-pinned client at `/datastar.js`:
 
 ```sh
 pnpm run dev:counter

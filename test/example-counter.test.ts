@@ -3,7 +3,6 @@ import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { app, counterView, page } from "../examples/counter.js"
-import { DATASTAR_CDN } from "../src/client.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 let server: Server | undefined
@@ -35,7 +34,7 @@ describe("counter example", () => {
     const html = await response.text()
 
     expect(html).toContain("<!doctype html>")
-    expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
+    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
   })
 
   it("dispatches the native example app routes", async () => {

@@ -6,7 +6,6 @@ import type { AddressInfo } from "node:net"
 import { resolve } from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 import {
-  DATASTAR_CDN,
   datastarClientFileRoute,
   datastarClientFileRoutes,
   datastarClientResponse,
@@ -20,7 +19,7 @@ import { h, render } from "../src/html.js"
 import { platformRouter } from "../src/platform.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
-const datastarJsPath = resolve("..", "datastar.js")
+const datastarJsPath = resolve("vendor", "datastar.js")
 let server: Server | undefined
 
 const serveListener = async (listener: RequestListener): Promise<string> => {
@@ -44,13 +43,23 @@ describe("Datastar client asset helpers", () => {
     expect(render(datastarScript())).toBe('<script type="module" src="/datastar.js"></script>')
   })
 
-  it("can render a CDN Datastar script tag", () => {
-    expect(render(datastarScript(DATASTAR_CDN))).toBe(`<script type="module" src="${DATASTAR_CDN}"></script>`)
+  it("can render a caller-provided external Datastar script tag", () => {
+    const externalScript = "https://example.com/datastar.js"
+
+    expect(render(datastarScript(externalScript))).toBe(`<script type="module" src="${externalScript}"></script>`)
+  })
+
+  it("does not prescribe a Datastar CDN URL as framework API", async () => {
+    const clientModule = await import("../src/client.js")
+
+    expect("DATASTAR_CDN" in clientModule).toBe(false)
   })
 
   it("builds a full Datastar document around body content", () => {
-    expect(datastarDocument(h("main", {}, "Hello"), { lang: "en-US", scriptSrc: DATASTAR_CDN })).toBe(
-      `<!doctype html><html lang="en-US"><head><script type="module" src="${DATASTAR_CDN}"></script></head><body><main>Hello</main></body></html>`
+    const externalScript = "https://example.com/datastar.js"
+
+    expect(datastarDocument(h("main", {}, "Hello"), { lang: "en-US", scriptSrc: externalScript })).toBe(
+      `<!doctype html><html lang="en-US"><head><script type="module" src="${externalScript}"></script></head><body><main>Hello</main></body></html>`
     )
   })
 

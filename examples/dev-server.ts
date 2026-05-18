@@ -4,13 +4,16 @@ import * as Exit from "effect/Exit"
 import * as Scope from "effect/Scope"
 import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import type * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
-import { createServer, type Server } from "node:http"
+import { readFileSync } from "node:fs"
+import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { pathToFileURL } from "node:url"
 import { app as counterApp } from "./counter.js"
 import { createLiveCounter } from "./live-counter.js"
 import { app as searchApp } from "./search.js"
 import { tsxCounterApp } from "./tsx-counter.js"
+
+const datastarClientScript = readFileSync(new URL("../vendor/datastar.js", import.meta.url), "utf8")
 
 export const exampleNames = ["counter", "tsx-counter", "search", "live-counter"] as const
 export type ExampleName = typeof exampleNames[number]
@@ -63,6 +66,22 @@ const closeNodeServer = (server: Server): Promise<void> =>
     server.close((error) => error === undefined ? resolve() : reject(error))
   })
 
+const withDatastarClientAsset = (listener: RequestListener): RequestListener =>
+  (request, response) => {
+    const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`)
+
+    if (url.pathname === "/datastar.js") {
+      response.writeHead(200, {
+        "cache-control": "no-cache",
+        "content-type": "text/javascript; charset=utf-8"
+      })
+      response.end(datastarClientScript)
+      return
+    }
+
+    listener(request, response)
+  }
+
 export const startExampleServer = async (
   name: ExampleName,
   options: DevServerOptions = {}
@@ -72,7 +91,7 @@ export const startExampleServer = async (
   const scope = await Effect.runPromise(Scope.make())
   const runtime = makeExampleRuntime(name)
   const listener = await Effect.runPromise(NodeHttpServer.makeHandler(runtime.app, { scope }))
-  const server = createServer(listener)
+  const server = createServer(withDatastarClientAsset(listener))
 
   await new Promise<void>((resolve) => server.listen(port, host, resolve))
 

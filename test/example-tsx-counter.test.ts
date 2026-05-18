@@ -3,7 +3,6 @@ import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { CounterButton, tsxCounterApp, tsxCounterNode, tsxCounterPage, tsxCounterView } from "../examples/tsx-counter.js"
-import { DATASTAR_CDN } from "../src/client.js"
 import { render } from "../src/html.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -46,7 +45,7 @@ describe("TSX counter example", () => {
     const html = await HttpServerResponse.toWeb(tsxCounterPage()).text()
 
     expect(html).toContain("<!doctype html>")
-    expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
+    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
     expect(html).toContain("ts-star TSX counter")
   })
 

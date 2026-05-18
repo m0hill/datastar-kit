@@ -4,7 +4,6 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   bind,
-  DATASTAR_CDN,
   datastarDocument,
   dataSignals,
   get,
@@ -72,7 +71,7 @@ export const searchNode = () => {
 export const searchView = (): string => render(searchNode())
 
 export const searchPage = (): HttpServerResponse.HttpServerResponse =>
-  platformHtmlResponse(datastarDocument(searchNode(), { scriptSrc: DATASTAR_CDN }))
+  platformHtmlResponse(datastarDocument(searchNode()))
 
 export const searchRoute = HttpRouter.route(
   "GET",

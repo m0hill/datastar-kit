@@ -5,8 +5,6 @@ import { readFile } from "node:fs/promises"
 import { h, htmlDocument, type Child, type HtmlDocumentOptions, type HtmlNode } from "./html.js"
 import { platformHtmlResponse } from "./platform.js"
 
-export const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
-
 export const datastarScript = (src = "/datastar.js"): HtmlNode =>
   h("script", {
     type: "module",
