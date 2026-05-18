@@ -29,19 +29,18 @@ export const rawSignals = async (request: Request): Promise<string> => {
   return body.length === 0 ? "{}" : body
 }
 
-const parseJson = (input: string): unknown => {
-  try {
-    return JSON.parse(input)
-  } catch (cause) {
-    throw new SignalParseError(input, { cause })
-  }
-}
-
 export const signals = async <Schema extends StandardSchemaV1>(
   request: Request,
   schema: Schema
 ): Promise<StandardSchemaV1.InferOutput<Schema>> => {
-  const input = parseJson(await rawSignals(request))
+  const raw = await rawSignals(request)
+  let input: unknown
+  try {
+    input = JSON.parse(raw)
+  } catch (cause) {
+    throw new SignalParseError(raw, { cause })
+  }
+
   let result = schema["~standard"].validate(input)
   if (result instanceof Promise) {
     result = await result
