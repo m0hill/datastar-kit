@@ -1,4 +1,4 @@
-# T011 — Simplify Datastar client asset helpers
+# T011 — Delete client asset helpers and make Datastar runtime inclusion explicit
 
 ## Status
 
@@ -6,47 +6,95 @@
 
 ## Grill level
 
-`2/5` — low-risk simplification.
+`3/5` — design cleanup with settled decisions.
 
 ## Why this task exists
 
-`src/client.ts` is mostly useful, but it has route tuple helpers that feel like convenience API surface added before use has proven them.
+Earlier versions of `ts-star` treated Datastar client/runtime serving as a framework helper concern:
 
-The core need is simple: render a Datastar script tag/document and optionally serve the pinned client asset.
+- `Client` namespace;
+- `datastarScript()`;
+- `datastarDocument()`;
+- `datastarPageResponse()`;
+- `datastarClientResponse()`;
+- `datastarClientRoute()` / file-route helpers;
+- build-time copying of `vendor/datastar.js`;
+- dev-server `/datastar.js` serving.
 
-## Recommended answer
+After the cleanup of responses, runtime, HTML, and platform APIs, this is too much. The framework should not own a static asset pipeline or silently inject a browser runtime. Applications should compose the script tag explicitly in the HTML they render.
 
-Keep document/script helpers and one route helper. Remove tuple-composition helpers.
+## Settled direction
 
-## Keep candidates
+Do **not** expose public client helpers.
 
-- `datastarScript`
-- `datastarDocument`
-- `datastarPageResponse` if it aligns with canonical response naming
-- `datastarClientResponse`
-- either `datastarClientRoute` or `datastarClientFileRoute`, if examples need it
+Do **not** inject Datastar's script from `reply.page`.
 
-## Removal candidates
+Do **not** provide a default CDN URL.
 
-- `datastarClientRoutes`
-- `datastarClientFileRoutes`
-- excess asset configuration options without a current example
+Do **not** serve `/datastar.js` from framework helpers or dev tooling.
+
+Use explicit HTML instead:
+
+```ts
+const datastarCdn = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
+reply.page({
+  head: h("script", { type: "module", src: datastarCdn }),
+  body: appNode
+})
+```
+
+For non-response document rendering, use the same plain HTML boundary:
+
+```ts
+page({
+  head: h("script", { type: "module", src: datastarCdn }),
+  body: appNode
+})
+```
+
+## Decisions reached
+
+- Delete the public `Client` namespace entirely.
+- Delete `src/client.ts` unless a tiny internal helper remains temporarily during refactor.
+- Delete `datastarScript`; users write the normal `h("script", ...)` tag.
+- Delete `datastarDocument`; use `page({ head, body, lang })` directly.
+- Delete `datastarPageResponse`; use `reply.page({ head, body, lang }, responseOptions?)`.
+- Change `reply.page` to mirror the HTML `page({ head, body, lang })` object shape.
+- Delete `scriptSrc` from reply/page option types.
+- Remove Datastar asset route helpers completely.
+- Remove vendored Datastar runtime from `ts-star` and use a pinned CDN in examples/tests.
+- Remove build-time vendor copying and dev-server `/datastar.js` serving.
 
 ## Implementation work
 
-- Remove tuple route helpers.
-- Align page response naming with T003.
-- Keep cache-control behavior minimal.
-- Update dev server/examples if they import removed helpers.
+- Remove `Client` from `src/index.ts`.
+- Remove root exports from `src/client.ts`.
+- Delete `src/client.ts` if no internals need it.
+- Update `src/reply.ts` so `reply.page` imports `page` from `html.ts`, not `datastarDocument` from `client.ts`.
+- Change `reply.page` signature to `reply.page(options, responseOptions?)`, mirroring `page(options)`.
+- Remove `scriptSrc` from reply/page option types.
+- Remove `vendor/datastar.js` and `dist/vendor/datastar.js` from the package workflow.
+- Remove `cp vendor/datastar.js dist/vendor/datastar.js` from `package.json` build script.
+- Remove dev-server `/datastar.js` route and any runtime file reads.
+- Update examples to include an explicit pinned CDN script tag in the page head.
+- Update browser integration tests to use the same pinned CDN approach.
+- Delete or rewrite `test/client.test.ts` and export tests that assert client helpers.
+- Update docs mentioning `Client.*`, vendored assets, or local `/datastar.js` serving.
 
 ## Acceptance criteria
 
-- Client helper surface is small and obvious.
-- Users can still include and serve the pinned Datastar client.
-- There are no route composition helpers just for convenience.
+- There is no public `Client` namespace.
+- There are no public Datastar client asset helpers.
+- `reply.page` does not inject scripts and has no `scriptSrc` option.
+- Pages that need Datastar include a script tag explicitly with `h("script", ...)`.
+- Examples/tests use a pinned CDN URL explicitly.
+- Build/dev scripts do not copy or serve a local Datastar runtime.
 
 ## Anti-goals
 
-- Do not add CDN/version/integrity configuration unless implementing it now.
-- Do not create an asset pipeline.
-- Do not preserve helper aliases.
+- Do not add CDN constants to core.
+- Do not add static asset serving helpers.
+- Do not keep compatibility aliases for `datastarDocument` or `datastarPageResponse`.
+- Do not keep a near-empty `Client` namespace for possible future use.
+- Do not make `reply.page` magical again by injecting client runtime assets.

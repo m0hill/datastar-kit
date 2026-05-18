@@ -396,28 +396,42 @@
     {
       "order": 11,
       "id": "T011",
-      "title": "Simplify Datastar client asset helpers",
+      "title": "Delete client asset helpers and make Datastar runtime inclusion explicit",
       "status": "pending",
       "phase": "client-asset",
-      "priority": "medium",
-      "grill_level": 2,
+      "priority": "high",
+      "grill_level": 3,
       "depends_on": [
         "T002",
-        "T003"
+        "T003",
+        "T007",
+        "T010"
       ],
       "markdown": "11-simplify-client-asset-helpers.md",
-      "goal": "Keep script/document/client serving helpers small and remove tuple route composition convenience APIs.",
-      "canonical_direction": "Keep document/script helpers and one asset route helper; remove route-list helpers and unneeded configuration surface.",
+      "goal": "Remove the public Client module, stop injecting or serving the Datastar browser runtime, and require pages to include the runtime script explicitly in normal HTML.",
+      "canonical_direction": "No Client namespace, no datastarScript/datastarDocument/datastarPageResponse, no scriptSrc option, no framework-owned /datastar.js route, no vendored runtime. reply.page mirrors page({ head, body, lang }) and does not inject scripts. Examples/tests use an explicit pinned CDN script tag.",
       "deliverables": [
-        "Client helper surface reduced",
-        "Tuple route helpers removed",
-        "Page response naming aligned with T003",
-        "Examples/dev server updated"
+        "Client namespace and src/client.ts removed from public API",
+        "reply.page changed to mirror the HTML page({ head, body, lang }) object API",
+        "scriptSrc removed from page/reply option types",
+        "Datastar script tags written explicitly with h('script', { type: 'module', src })",
+        "Vendored runtime, build copy step, and dev-server /datastar.js serving removed",
+        "Examples/tests/docs updated to use an explicit pinned CDN URL"
       ],
       "removal_targets": [
-        "datastarClientRoutes",
-        "datastarClientFileRoutes",
-        "excess asset configuration without a current example"
+        "Client namespace/root export",
+        "src/client.ts if no internal code remains",
+        "datastarScript",
+        "datastarDocument",
+        "datastarPageResponse",
+        "datastarClientResponse",
+        "datastarClientRoute/datastarClientFileRoute",
+        "datastarClientRoutes/datastarClientFileRoutes",
+        "reply.page scriptSrc option and script injection",
+        "vendor/datastar.js and dist/vendor/datastar.js workflow",
+        "package.json build copy of vendor/datastar.js",
+        "example dev-server /datastar.js route",
+        "docs recommending Client.* or local framework-served /datastar.js"
       ]
     },
     {
