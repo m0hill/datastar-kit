@@ -5,10 +5,13 @@ import * as HttpServerError from "@effect/platform/HttpServerError"
 import * as HttpServerRequest from "@effect/platform/HttpServerRequest"
 import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import * as Effect from "effect/Effect"
+import type * as ParseResult from "effect/ParseResult"
+import * as Schema from "effect/Schema"
 import * as Stream from "effect/Stream"
 import type { Handler, Route } from "./handler.js"
 import { render, type Child } from "./html.js"
 import type { ElementPatchMode } from "./sse.js"
+import { parseSignalsJson, type SignalJsonError } from "./request.js"
 import { eventStream, patchElements, patchSignals, type JsonObject, type PatchElementsOptions, type PatchSignalsOptions } from "./sse.js"
 
 export const toPlatformApp = <E, R>(
@@ -51,6 +54,34 @@ export const toPlatformRouter = <Routes extends ReadonlyArray<Route<unknown, unk
     HttpServerError.RequestError | RouteError<Routes[number]>,
     RouteContext<Routes[number]>
   >
+
+const platformMethodsWithQuerySignals = new Set(["GET", "DELETE"])
+
+export const platformRawSignalsFromRequest = (
+  request: HttpServerRequest.HttpServerRequest
+): Effect.Effect<string, HttpServerError.RequestError> => {
+  if (platformMethodsWithQuerySignals.has(request.method)) {
+    return Effect.succeed(new URL(request.url, "http://localhost").searchParams.get("datastar") ?? "{}")
+  }
+
+  return request.text.pipe(Effect.map((body) => body.length === 0 ? "{}" : body))
+}
+
+export const platformReadSignalsFromRequest = <A, I, R>(
+  request: HttpServerRequest.HttpServerRequest,
+  schema: Schema.Schema<A, I, R>
+): Effect.Effect<A, HttpServerError.RequestError | SignalJsonError | ParseResult.ParseError, R> =>
+  platformRawSignalsFromRequest(request).pipe(
+    Effect.flatMap(parseSignalsJson),
+    Effect.flatMap(Schema.decodeUnknown(schema))
+  )
+
+export const platformReadSignals = <A, I, R>(
+  schema: Schema.Schema<A, I, R>
+): Effect.Effect<A, HttpServerError.RequestError | SignalJsonError | ParseResult.ParseError, R | HttpServerRequest.HttpServerRequest> =>
+  HttpServerRequest.HttpServerRequest.pipe(
+    Effect.flatMap((request) => platformReadSignalsFromRequest(request, schema))
+  )
 
 export type PlatformResponseOptions = HttpServerResponse.Options
 

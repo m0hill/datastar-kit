@@ -1,5 +1,4 @@
 import * as HttpRouter from "@effect/platform/HttpRouter"
-import * as HttpServerError from "@effect/platform/HttpServerError"
 import * as HttpServerRequest from "@effect/platform/HttpServerRequest"
 import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import * as Effect from "effect/Effect"
@@ -8,8 +7,7 @@ import * as Schema from "effect/Schema"
 import { datastarDocument } from "../src/client.js"
 import { dataSignals, mergeAttrs, on, post, signal, text } from "../src/datastar.js"
 import { h } from "../src/html.js"
-import { platformHtmlResponse, platformPatchSignalsResponse } from "../src/platform.js"
-import { readSignals } from "../src/request.js"
+import { platformHtmlResponse, platformPatchSignalsResponse, platformReadSignals } from "../src/platform.js"
 
 export const PlatformCounterSignals = Schema.Struct({
   count: Schema.Number
@@ -32,12 +30,10 @@ export const platformPage = (): HttpServerResponse.HttpServerResponse =>
 
 export const platformIncrement: Effect.Effect<
   HttpServerResponse.HttpServerResponse,
-  HttpServerError.RequestError,
+  never,
   HttpServerRequest.HttpServerRequest
 > = Effect.gen(function* () {
-  const request = yield* HttpServerRequest.HttpServerRequest
-  const webRequest = yield* HttpServerRequest.toWeb(request)
-  const decoded = yield* Effect.either(readSignals(webRequest, PlatformCounterSignals))
+  const decoded = yield* Effect.either(platformReadSignals(PlatformCounterSignals))
 
   if (Either.isLeft(decoded)) {
     return HttpServerResponse.text("Bad signals", { status: 400 })
