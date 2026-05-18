@@ -102,7 +102,6 @@ const toJs = (value: ExprInput<unknown>): string => {
   return JSON.stringify(String(value))
 }
 
-export type HttpMethod = "get" | "post" | "put" | "patch" | "delete"
 export type RetryMode = "auto" | "error" | "always" | "never"
 export type RequestCancellation = "auto" | "cleanup" | "disabled" | Expr<AbortController>
 export type SignalPattern = Expr<RegExp> | string
@@ -179,7 +178,7 @@ export const queryUrl = (path: string, params: Readonly<Record<string, QueryPara
 
 const urlToJs = (url: UrlInput): string => typeof url === "string" ? JSON.stringify(url) : url.toDatastarExpression()
 
-const fetchAction = (method: HttpMethod, url: UrlInput, options?: FetchOptions): Expr<void> => {
+const fetchAction = (method: "get" | "post" | "put" | "patch" | "delete", url: UrlInput, options?: FetchOptions): Expr<void> => {
   if (options === undefined || Object.keys(options).length === 0) {
     return raw(`@${method}(${urlToJs(url)})`)
   }
