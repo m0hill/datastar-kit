@@ -1,71 +1,32 @@
-import * as Effect from "effect/Effect"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
-import { createServer, type RequestListener, type Server } from "node:http"
-import type { AddressInfo } from "node:net"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 import { h } from "../src/html.js"
 import * as reply from "../src/reply.js"
-import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 if (false) {
-  // @ts-expect-error Datastar action body replies only accept HTTP 200.
-  reply.direct.signals({ count: 1 }, { status: 202 })
-  // @ts-expect-error Datastar no-content replies only accept HTTP 204.
-  reply.done({ status: 200 })
+  // @ts-expect-error Datastar action body replies own their protocol status.
+  reply.directSignals({ count: 1 }, { status: 200 })
+  // @ts-expect-error Datastar no-content replies own their protocol status.
+  reply.done({ status: 204 })
 }
-
-let server: Server | undefined
-
-const serveListener = async (listener: RequestListener): Promise<string> => {
-  server = createServer(listener)
-  await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve))
-  const address = server.address() as AddressInfo
-  return `http://127.0.0.1:${address.port}`
-}
-
-afterEach(async () => {
-  const current = server
-  server = undefined
-  if (current !== undefined) {
-    await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
-  }
-  await closePlatformListeners()
-})
 
 describe("reply direct Datastar responses", () => {
   it("serves full Datastar pages with normal page status options", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route(
-        "GET",
-        "/html",
-        Effect.succeed(reply.page({ body: h("main", {}, "Ada & Grace") }, { status: 201, headers: { "x-html": "yes" } }))
-      )
-    ])))
-    const listener = await makePlatformListener(router)
-    const response = await fetch(`${await serveListener(listener)}/html`)
+    const response = reply.page({ body: h("main", {}, "Ada & Grace") }, { status: 201, headers: { "x-html": "yes" } })
+    const html = await response.text()
 
     expect(response.status).toBe(201)
     expect(response.headers.get("content-type")).toContain("text/html")
     expect(response.headers.get("x-html")).toBe("yes")
-    expect(await response.text()).toContain("<main>Ada &amp; Grace</main>")
+    expect(html).toContain("<main>Ada &amp; Grace</main>")
   })
 
   it("serves direct HTML patch responses as explicit escape hatches", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route(
-        "GET",
-        "/patch",
-        Effect.succeed(reply.direct.html(h("p", {}, "Updated"), {
-          selector: "#slot",
-          mode: "inner",
-          namespace: "svg",
-          useViewTransition: true
-        }))
-      )
-    ])))
-    const listener = await makePlatformListener(router)
-    const response = await fetch(`${await serveListener(listener)}/patch`)
+    const response = reply.directHtml(h("p", {}, "Updated"), {
+      selector: "#slot",
+      mode: "inner",
+      namespace: "svg",
+      useViewTransition: true
+    })
 
     expect(response.status).toBe(200)
     expect(response.headers.get("datastar-selector")).toBe("#slot")
@@ -76,15 +37,7 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("serves direct JSON signal responses as explicit escape hatches", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route(
-        "GET",
-        "/signals",
-        Effect.succeed(reply.direct.signals({ count: 1 }, { onlyIfMissing: true }))
-      )
-    ])))
-    const listener = await makePlatformListener(router)
-    const response = await fetch(`${await serveListener(listener)}/signals`)
+    const response = reply.directSignals({ count: 1 }, { onlyIfMissing: true })
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8")
@@ -93,15 +46,7 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("serves direct script responses as explicit escape hatches", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route(
-        "GET",
-        "/script",
-        Effect.succeed(reply.direct.script("console.log('hello')", { attributes: { type: "module", async: true } }))
-      )
-    ])))
-    const listener = await makePlatformListener(router)
-    const response = await fetch(`${await serveListener(listener)}/script`)
+    const response = reply.directScript("console.log('hello')", { attributes: { type: "module", async: true } })
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
@@ -110,15 +55,7 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("serves safe navigation script responses", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route(
-        "GET",
-        "/navigate",
-        Effect.succeed(reply.navigate("/dashboard?from=login#top", { baseUrl: "https://app.example" }))
-      )
-    ])))
-    const listener = await makePlatformListener(router)
-    const response = await fetch(`${await serveListener(listener)}/navigate`)
+    const response = reply.navigate("/dashboard?from=login#top", { baseUrl: "https://app.example" })
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
@@ -126,10 +63,10 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("allows navigation to explicit origin allowlists only", async () => {
-    const response = HttpServerResponse.toWeb(reply.navigate("https://docs.example/start", {
+    const response = reply.navigate("https://docs.example/start", {
       baseUrl: "https://app.example",
       allowedOrigins: ["https://docs.example"]
-    }))
+    })
 
     expect(await response.text()).toBe('window.location.href = "https://docs.example/start"')
     expect(() => reply.navigate("https://evil.example/phish", { baseUrl: "https://app.example" })).toThrow(reply.NavigationUrlError)
@@ -138,23 +75,13 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("keeps Datastar action replies on 200-with-body or 204-without-body status semantics", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route("GET", "/signals", Effect.succeed(reply.direct.signals({ count: 1 }, { status: 200 }))),
-      HttpRouter.route("POST", "/empty", Effect.succeed(reply.done({ status: 204 })))
-    ])))
-    const listener = await makePlatformListener(router)
-    const base = await serveListener(listener)
+    const signals = reply.directSignals({ count: 1 })
+    const empty = reply.done()
 
-    const signals = await fetch(`${base}/signals`)
     expect(signals.status).toBe(200)
     expect(signals.headers.get("content-type")).toBe("application/json; charset=utf-8")
     expect(await signals.text()).toBe('{"count":1}')
-
-    const empty = await fetch(`${base}/empty`, { method: "POST" })
     expect(empty.status).toBe(204)
     expect(await empty.text()).toBe("")
-
-    expect(() => reply.direct.signals({ count: 1 }, { status: 202 as 200 })).toThrow(reply.ResponseStatusError)
-    expect(() => reply.done({ status: 200 as 204 })).toThrow(reply.ResponseStatusError)
   })
 })

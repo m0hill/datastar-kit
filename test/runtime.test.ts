@@ -1,72 +1,43 @@
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
-import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import { describe, expect, it } from "vitest"
+import { z } from "zod"
 import * as read from "../src/read.js"
 
-const CounterSignals = Schema.Struct({
-  count: Schema.Number
+const CounterSignals = z.object({
+  count: z.number()
 })
 
-const nativeRequest = (url: string, init?: RequestInit): HttpServerRequest.HttpServerRequest =>
-  HttpServerRequest.fromWeb(new Request(url, init))
-
 describe("request read helpers", () => {
-  it("decodes body-based Datastar signals from the current request", async () => {
-    const request = nativeRequest("http://localhost/increment", {
+  it("decodes body-based Datastar signals from an explicit Request", async () => {
+    const request = new Request("http://localhost/increment", {
       method: "POST",
       headers: { "datastar-request": "true" },
       body: JSON.stringify({ count: 4 })
     })
 
-    const result = await Effect.runPromise(
-      read.signals(CounterSignals).pipe(
-        Effect.provideService(HttpServerRequest.HttpServerRequest, request)
-      )
-    )
-
-    expect(result).toEqual({ count: 4 })
+    await expect(read.signals(request, CounterSignals)).resolves.toEqual({ count: 4 })
   })
 
   it("decodes GET Datastar signals from the datastar query parameter", async () => {
-    const request = nativeRequest(`http://localhost/signals?datastar=${encodeURIComponent('{"count":7}')}`)
+    const request = new Request(`http://localhost/signals?datastar=${encodeURIComponent('{"count":7}')}`)
 
-    const result = await Effect.runPromise(
-      read.signals(CounterSignals).pipe(
-        Effect.provideService(HttpServerRequest.HttpServerRequest, request)
-      )
-    )
-
-    expect(result).toEqual({ count: 7 })
+    await expect(read.signals(request, CounterSignals)).resolves.toEqual({ count: 7 })
   })
 
-  it("surfaces schema failures in the error channel", async () => {
-    const request = nativeRequest("http://localhost/increment", {
+  it("throws typed validation failures", async () => {
+    const request = new Request("http://localhost/increment", {
       method: "POST",
       body: JSON.stringify({ count: "bad" })
     })
 
-    const result = await Effect.runPromise(
-      Effect.result(read.signals(CounterSignals)).pipe(
-        Effect.provideService(HttpServerRequest.HttpServerRequest, request)
-      )
-    )
-
-    expect(result._tag).toBe("Failure")
+    await expect(read.signals(request, CounterSignals)).rejects.toBeInstanceOf(read.SignalValidationError)
   })
 
-  it("surfaces invalid JSON as a standard schema failure", async () => {
-    const request = nativeRequest("http://localhost/increment", {
+  it("throws typed parse failures for invalid JSON", async () => {
+    const request = new Request("http://localhost/increment", {
       method: "POST",
       body: "not json"
     })
 
-    const result = await Effect.runPromise(
-      Effect.result(read.signals(CounterSignals)).pipe(
-        Effect.provideService(HttpServerRequest.HttpServerRequest, request)
-      )
-    )
-
-    expect(result._tag).toBe("Failure")
+    await expect(read.signals(request, CounterSignals)).rejects.toBeInstanceOf(read.SignalParseError)
   })
 })

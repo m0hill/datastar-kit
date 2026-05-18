@@ -1,24 +1,46 @@
-import * as Effect from "effect/Effect"
-import * as Stream from "effect/Stream"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { describe, expect, it } from "vitest"
-import { h } from "../src/html.js"
-import { query } from "../src/live.js"
+import { h, render, type Child } from "../src/html.js"
 import { stream } from "../src/reply.js"
+import { patchElements, type PatchElementsOptions } from "../src/sse.js"
+
+type View<State> = (state: State) => Child
+
+interface QueryRecipeOptions<State> {
+  readonly invalidations: AsyncIterable<unknown>
+  readonly load: () => State | Promise<State>
+  readonly render: View<State>
+  readonly patch?: PatchElementsOptions
+}
+
+async function* currentStateRecipe<State>(options: QueryRecipeOptions<State>): AsyncIterable<string> {
+  yield patchElements(render(options.render(await options.load())), options.patch)
+  for await (const _ of options.invalidations) {
+    yield patchElements(render(options.render(await options.load())), options.patch)
+  }
+}
+
+async function* values(items: readonly unknown[]): AsyncIterable<unknown> {
+  yield* items
+}
+
+async function* never(): AsyncIterable<unknown> {
+  await new Promise<never>(() => {})
+}
 
 const countView = (count: number) => h("output", { id: "count" }, count)
 
-describe("live.query", () => {
+describe("live query recipe", () => {
   it("renders current state on connect and after invalidation triggers", async () => {
     const states = [2, 5, 5]
-    const patches = await Effect.runPromise(
-      query({
-        invalidations: Stream.make("missed-delta", "refresh"),
-        load: Effect.sync(() => states.shift() ?? -1),
-        render: countView,
-        patch: { selector: "#count", mode: "outer" }
-      }).pipe(Stream.runCollect)
-    )
+    const patches: string[] = []
+    for await (const patch of currentStateRecipe({
+      invalidations: values(["missed-delta", "refresh"]),
+      load: () => states.shift() ?? -1,
+      render: countView,
+      patch: { selector: "#count", mode: "outer" }
+    })) {
+      patches.push(patch)
+    }
 
     expect(patches).toEqual([
       'event: datastar-patch-elements\ndata: selector #count\ndata: elements <output id="count">2</output>\n\n',
@@ -29,13 +51,14 @@ describe("live.query", () => {
 
   it("treats invalidation values as triggers instead of passing deltas to render", async () => {
     let count = 0
-    const patches = await Effect.runPromise(
-      query({
-        invalidations: Stream.make(10, 20),
-        load: Effect.sync(() => ++count),
-        render: countView
-      }).pipe(Stream.runCollect)
-    )
+    const patches: string[] = []
+    for await (const patch of currentStateRecipe({
+      invalidations: values([10, 20]),
+      load: () => ++count,
+      render: countView
+    })) {
+      patches.push(patch)
+    }
 
     expect(patches).toEqual([
       'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n',
@@ -44,16 +67,14 @@ describe("live.query", () => {
     ])
   })
 
-  it("composes with reply.stream for SSE responses and heartbeat comments", async () => {
-    const response = HttpServerResponse.toWeb(
-      stream(
-        query({
-          invalidations: Stream.fromEffect(Effect.never),
-          load: Effect.succeed(0),
-          render: countView
-        }),
-        { heartbeat: { interval: 0, initialDelay: "1 millis", comment: "live" } }
-      )
+  it("composes recipe streams with reply.stream heartbeat comments", async () => {
+    const response = stream(
+      currentStateRecipe({
+        invalidations: never(),
+        load: () => 0,
+        render: countView
+      }),
+      { heartbeat: { intervalMs: 1, initialDelayMs: 1, comment: "live" } }
     )
     const reader = response.body?.getReader()
 
@@ -73,14 +94,15 @@ describe("live.query", () => {
   })
 
   it("lets load failures fail the stream for explicit app handling", async () => {
-    await expect(
-      Effect.runPromise(
-        query({
-          invalidations: Stream.empty,
-          load: Effect.fail("boom"),
-          render: countView
-        }).pipe(Stream.runCollect)
-      )
-    ).rejects.toBe("boom")
+    const response = stream(currentStateRecipe({
+      invalidations: values([]),
+      load: () => {
+        throw new Error("boom")
+      },
+      render: countView
+    }))
+    const reader = response.body!.getReader()
+
+    await expect(reader.read()).rejects.toThrow("boom")
   })
 })

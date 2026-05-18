@@ -6,8 +6,8 @@ This is a map to the current source modules and concept docs.
 
 - `ts-star/sse` — explicit subpath for low-level event encoding (`patchElements`, `patchSignals`, `executeScript`, stream concatenation).
 - `ds` — thin Datastar mirrors for actions, attributes, signal refs, and expression escape hatches.
-- `read` — request-boundary Datastar signal decoding.
-- `reply` — Datastar-safe response helpers. SSE patch helpers are the blessed path; `reply.direct.*` is the direct-response escape hatch.
+- `read` — request-boundary Datastar signal decoding from native `Request` values.
+- `reply` — Datastar-safe native `Response` helpers. SSE patch helpers are the default path; flat `reply.direct*` helpers are explicit direct-response escape hatches.
 
 Docs: `datastar-philosophy.md`, `datastar-protocol.md`, `signals.md`.
 
@@ -22,28 +22,21 @@ Top-level HTML helpers are the canonical server-rendering API:
 - `props`
 - `page`
 
-JSX is an explicit experimental adapter from `src/jsx.ts`, not a root API.
-
-Datastar runtime inclusion is explicit HTML. Add a normal script tag to `page({ head, body })`; there is no public `Client` module or asset-serving helper.
+JSX is an explicit experimental adapter from `ts-star/jsx`, not a root API.
 
 Docs: `html-rendering.md`.
 
-## Contracts and live queries
+## Validation and realtime recipes
 
-- `contract` — schema-derived signal handles, initial props, and typed patches.
-- `live` — current-state live queries that emit Datastar element patch events and compose with `reply.stream`.
+- `read.signals(request, schema)` validates Datastar signal payloads with Standard Schema.
+- Live/current-state updates are app-owned recipes built from invalidation sources and `reply.stream(...)`.
 
-Docs: `type-contracts.md`, `programming-model.md`, `actions-commands.md`, `live-queries.md`.
+Docs: `programming-model.md`, `actions-commands.md`, `live-queries.md`, `errors-validation.md`.
 
 ## Cross-cutting guidance
 
-- Validation is a recipe/pattern built from `read.signals(...)`, app-local errors, local Datastar signals, and `reply.signals(...)` / `reply.patch(...)`.
-- Auth, sessions, CSRF, and request limits are app-owned security boundary concerns, not public framework modules.
+- Auth, sessions, CSRF, and request limits are app-owned security boundary concerns, not public SDK modules.
 - Safe Datastar-driven navigation is handled by `reply.navigate(...)`.
-- Observability should use Effect tracing/OpenTelemetry directly; browser/runtime testing guidance lives in `observability-testing.md`.
+- Observability should use your platform tools directly.
 
-Docs: `runtime.md`, `security.md`, `errors-validation.md`, `observability-testing.md`, `public-api.md`.
-
-## Examples
-
-See `docs/examples.md` for the tested reference examples and package scripts.
+Docs: `runtime.md`, `security.md`, `observability-testing.md`, `public-api.md`.

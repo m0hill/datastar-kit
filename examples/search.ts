@@ -1,8 +1,3 @@
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   ds,
   h,
@@ -10,8 +5,7 @@ import {
   render,
   reply
 } from "../src/index.js"
-
-const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+import { DATASTAR_CDN } from "./counter.js"
 
 interface Contact {
   readonly first: string
@@ -24,9 +18,7 @@ const contacts: ReadonlyArray<Contact> = [
   { first: "Edsger", last: "Dijkstra" }
 ]
 
-export const SearchQuery = Schema.Struct({
-  q: Schema.String
-})
+const notFound = (): Response => new Response("Not Found", { status: 404 })
 
 const rows = (q: string) => {
   const needle = q.toLowerCase()
@@ -69,21 +61,24 @@ export const searchNode = () => {
 
 export const searchView = (): string => render(searchNode())
 
-export const searchPage = (): HttpServerResponse.HttpServerResponse =>
+export const searchPage = (): Response =>
   reply.page({
     head: h("script", { type: "module", src: DATASTAR_CDN }),
     body: searchNode()
   })
 
-export const searchRoute = HttpRouter.route(
-  "GET",
-  "/search",
-  HttpServerRequest.schemaSearchParams(SearchQuery).pipe(
-    Effect.map(({ q }) => reply.patch(resultsNode(q), { selector: "#results", mode: "outer" }))
-  )
-)
+export const searchResults = (request: Request): Response => {
+  const url = new URL(request.url)
+  return reply.patch(resultsNode(url.searchParams.get("q") ?? ""), { selector: "#results", mode: "outer" })
+}
 
-export const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-  HttpRouter.route("GET", "/", searchPage()),
-  searchRoute
-])))
+export const handle = (request: Request): Response => {
+  const url = new URL(request.url)
+  if (request.method === "GET" && url.pathname === "/") {
+    return searchPage()
+  }
+  if (request.method === "GET" && url.pathname === "/search") {
+    return searchResults(request)
+  }
+  return notFound()
+}

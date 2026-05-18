@@ -1,83 +1,40 @@
-# Performance and deployment checklist
+# Performance and deployment notes
 
-`ts-star` favors simple server-rendered HTML plus Datastar patches. That is usually fast enough, especially once repeated HTML is compressed, but production deployments need intentional proxy, caching, and streaming settings.
+`ts-star` is small enough that most production performance work belongs around your application runtime: HTTP serving, data access, static assets, compression, and reverse proxy behavior.
 
 ## Compression
 
-- Enable gzip or Brotli for HTML, JavaScript, and non-streaming text responses.
-- Repeated HTML fragments compress very well; do not prematurely replace clear server-rendered patches with a bespoke diff protocol.
-- Be careful with compression middleware on SSE. Some middleware buffers chunks to improve compression ratio and can delay live updates.
-- If a proxy compresses `text/event-stream`, verify that events flush promptly under load. If not, disable streaming compression and keep normal page/direct-response compression enabled.
+Use gzip or Brotli for ordinary HTML, CSS, JavaScript, and JSON responses when your platform supports it. Be careful with `text/event-stream`: compression can add buffering unless the platform flushes streaming chunks correctly.
 
-## Reverse proxy and HTTP versions
+## Reverse proxies and SSE
 
-SSE works over normal HTTP. Behind a proxy:
-
-- keep upstream connections alive;
-- disable response buffering for `text/event-stream`;
-- set read/idle timeouts longer than the heartbeat interval;
-- avoid request buffering for large uploads if the app streams request bodies;
-- test reconnect behavior when the proxy restarts or closes idle sockets.
-
-HTTP/2 can reduce connection pressure when browsers multiplex requests, but intermediaries still need correct streaming flush behavior. HTTP/3 is fine when the host/proxy supports SSE-like streaming reliably; do not require it for correctness.
-
-## Common proxy settings
-
-Nginx-style deployments usually need:
+For Nginx-style deployments, disable buffering for SSE locations:
 
 ```nginx
-proxy_http_version 1.1;
-proxy_set_header Connection "";
 proxy_buffering off;
-proxy_read_timeout 1h;
 ```
 
-CDN/proxy products have equivalent buffering and idle-timeout settings. Confirm them with a live-query smoke test before relying on realtime behavior.
+Keep proxy/read idle timeouts longer than your heartbeat interval. A live view usually means one SSE connection per browser tab or active view.
 
-## Datastar client asset
+## Static asset caching
 
-Datastar runtime inclusion is explicit HTML. `ts-star` does not provide a `Client` namespace, CDN constant, vendored runtime, or `/datastar.js` route.
+Serve pinned static assets with immutable caching when possible:
 
-For examples and quick starts, use a versioned CDN URL directly in the page head:
-
-```ts
-page({
-  head: h("script", {
-    type: "module",
-    src: "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
-  }),
-  body
-})
+```http
+cache-control: public, max-age=31536000, immutable
 ```
 
-For production self-hosting, serve the Datastar runtime through your app/platform static asset mechanism. Choose normal cache headers for that path: no-cache for development, `public, max-age=31536000, immutable` for fingerprinted assets, or validation headers such as `etag` for stable paths.
+Datastar runtime inclusion is explicit; pin the CDN version or serve your own copy.
 
-## Stream scalability
+## Live stream scalability
 
-- Treat one live view as one SSE connection.
-- Heartbeats keep proxies and browsers aware that the stream is alive; choose an interval shorter than proxy idle timeouts.
-- Invalidation streams should use bounded buffers or coalescing for current-view UI updates.
-- Core does not include a broker. Redis, NATS, Postgres notifications, or app-specific PubSub should adapt into Effect `Stream` invalidations.
-- Set honest maximum-client expectations per deployment. SSE is efficient, but thousands of long-lived connections still require file descriptors, memory, and proxy capacity.
-
-## Rendering cost
-
-Fat morphs and current-view rendering keep the architecture understandable. Optimize later, only for measured hot paths:
-
-- batch invalidations;
-- share rendered snapshots for popular identical views;
-- cache read models;
-- patch smaller elements for hot regions;
-- pre-render static fragments.
-
-Do not promise LiveView-style structural diffing or websocket-scale sync semantics until the framework actually implements them.
+Core does not include a broker. Redis, NATS, Postgres notifications, in-memory subscribers, or app-specific channels should adapt into `AsyncIterable`/`ReadableStream` event sources owned by the application.
 
 ## Deployment smoke test
 
-Before shipping an app behind a proxy:
+A useful Deployment smoke test should verify:
 
-1. Load a normal page and confirm it includes the pinned Datastar runtime script you chose.
-2. Trigger a direct HTML patch action and confirm a `200` Datastar response applies.
-3. Open a live query, wait longer than one heartbeat, and confirm the connection stays open.
-4. Mutate backend state from another request and confirm connected browsers receive the current rendered view.
-5. Restart/close a connection and confirm reconnect renders current state.
+1. full-page HTML responses include the Datastar script;
+2. a Datastar action returns a `200` SSE patch and the browser applies it;
+3. a `204` command completes without a body;
+4. live streams flush an initial patch and heartbeat comment through the proxy.

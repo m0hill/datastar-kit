@@ -1,17 +1,12 @@
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import { createServer, type RequestListener, type Server } from "node:http"
-import type { AddressInfo } from "node:net"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
+import { z } from "zod"
 import { dataSignals, on, post, signal, text } from "../src/ds.js"
 import { h, props, render } from "../src/html.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
-import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
-const CounterSignals = Schema.Struct({
-  count: Schema.Number
+const CounterSignals = z.object({
+  count: z.number()
 })
 
 const counterView = () => {
@@ -27,44 +22,23 @@ const counterView = () => {
   )
 }
 
-const increment = read.signals(CounterSignals).pipe(
-  Effect.map((signals) => reply.signals({ count: signals.count + 1 }))
-)
-
-let server: Server | undefined
-
-const serveListener = async (listener: RequestListener): Promise<string> => {
-  server = createServer(listener)
-  await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve))
-  const address = server.address() as AddressInfo
-  return `http://127.0.0.1:${address.port}`
+const increment = async (request: Request): Promise<Response> => {
+  const signals = await read.signals(request, CounterSignals)
+  return reply.signals({ count: signals.count + 1 })
 }
 
-afterEach(async () => {
-  const current = server
-  server = undefined
-  if (current !== undefined) {
-    await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
-  }
-  await closePlatformListeners()
-})
-
-describe("minimal native Effect vertical slice", () => {
+describe("minimal Web Standards vertical slice", () => {
   it("renders the server-driven counter shell", () => {
     expect(counterView()).toContain('data-on:click="@post(&quot;/increment&quot;)"')
     expect(counterView()).toContain('data-text="$count"')
   })
 
   it("handles an increment action by decoding signals and patching signals", async () => {
-    const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route("POST", "/increment", increment)
-    ])))
-    const listener = await makePlatformListener(app)
-    const origin = await serveListener(listener)
-    const response = await fetch(`${origin}/increment`, {
+    const request = new Request("http://localhost/increment", {
       method: "POST",
       body: JSON.stringify({ count: 7 })
     })
+    const response = await increment(request)
 
     expect(await response.text()).toBe('event: datastar-patch-signals\ndata: signals {"count":8}\n\n')
   })

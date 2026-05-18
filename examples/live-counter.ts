@@ -1,36 +1,88 @@
-import * as Effect from "effect/Effect"
-import * as PubSub from "effect/PubSub"
-import type * as Scope from "effect/Scope"
-import * as Stream from "effect/Stream"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
-import {
-  ds,
-  h,
-  live,
-  props,
-  render,
-  reply
-} from "../src/index.js"
+import { ds, h, props, render, reply, type Child } from "../src/index.js"
+import { patchElements } from "../src/sse.js"
+import { DATASTAR_CDN } from "./counter.js"
 
-const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+interface Subscriber {
+  queued: number
+  closed: boolean
+  resolve?: (() => void) | undefined
+}
 
-export interface LiveCounterApp {
-  readonly app: Effect.Effect<
-    HttpServerResponse.HttpServerResponse,
-    unknown,
-    Scope.Scope | HttpServerRequest.HttpServerRequest
-  >
-  readonly page: HttpServerResponse.HttpServerResponse
-  readonly increment: Effect.Effect<HttpServerResponse.HttpServerResponse>
-  readonly live: Effect.Effect<HttpServerResponse.HttpServerResponse>
-  readonly updates: PubSub.PubSub<void>
-  readonly shutdown: Effect.Effect<void>
+class InvalidationBus {
+  readonly #subscribers = new Set<Subscriber>()
+  #closed = false
+
+  publish(): void {
+    if (this.#closed) {
+      return
+    }
+
+    for (const subscriber of this.#subscribers) {
+      if (subscriber.resolve !== undefined) {
+        const resolve = subscriber.resolve
+        subscriber.resolve = undefined
+        resolve()
+      } else {
+        subscriber.queued += 1
+      }
+    }
+  }
+
+  close(): void {
+    if (this.#closed) {
+      return
+    }
+    this.#closed = true
+
+    for (const subscriber of this.#subscribers) {
+      subscriber.closed = true
+      subscriber.resolve?.()
+    }
+  }
+
+  subscribe(): AsyncIterable<void> {
+    const subscriber: Subscriber = { queued: 0, closed: this.#closed }
+    const subscribers = this.#subscribers
+    subscribers.add(subscriber)
+
+    return {
+      async *[Symbol.asyncIterator]() {
+        try {
+          while (!subscriber.closed) {
+            if (subscriber.queued > 0) {
+              subscriber.queued -= 1
+              yield undefined
+              continue
+            }
+
+            await new Promise<void>((resolve) => {
+              subscriber.resolve = resolve
+            })
+            subscriber.resolve = undefined
+
+            if (!subscriber.closed) {
+              yield undefined
+            }
+          }
+        } finally {
+          subscriber.closed = true
+          subscribers.delete(subscriber)
+        }
+      }
+    }
+  }
+}
+
+export interface LiveCounterExample {
+  readonly page: () => Response
+  readonly increment: () => Response
+  readonly live: () => Response
+  readonly handle: (request: Request) => Response
+  readonly shutdown: () => void
   readonly currentCount: () => number
 }
 
-export const countFragment = (count: number) => h("output", { id: "count" }, count)
+export const countFragment = (count: number): Child => h("output", { id: "count" }, count)
 
 export const pageNode = () =>
   h(
@@ -43,68 +95,54 @@ export const pageNode = () =>
 
 export const pageView = (): string => render(pageNode())
 
-const liveCounterPubSubOptions = { capacity: 16, replay: 1 } as const
+export const makeLiveCounter = (): LiveCounterExample => {
+  const invalidations = new InvalidationBus()
+  let count = 0
 
-const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<PubSub.PubSub<void>, never, R>): Effect.Effect<LiveCounterApp, never, R> =>
-  Effect.gen(function*() {
-    const updates = yield* updatesEffect
-    let count = 0
-
-    const page = reply.page({
+  const page = (): Response =>
+    reply.page({
       head: h("script", { type: "module", src: DATASTAR_CDN }),
       body: pageNode()
     })
 
-    const loadCount = Effect.sync(() => count)
-    const increment = Effect.suspend(() =>
-      Effect.sync(() => {
-        count += 1
-      }).pipe(
-        Effect.andThen(PubSub.publish(updates, undefined)),
-        Effect.as(reply.done())
-      )
-    )
+  const increment = (): Response => {
+    count += 1
+    invalidations.publish()
+    return reply.done()
+  }
 
-    const liveRoute = Effect.sync(() =>
-      reply.stream(
-        live.query({
-          invalidations: Stream.fromPubSub(updates),
-          load: loadCount,
-          render: countFragment
-        })
-      )
-    )
-    const shutdown = PubSub.shutdown(updates)
-
-    return {
-      app: Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-        HttpRouter.route("GET", "/", page),
-        HttpRouter.route("POST", "/increment", increment),
-        HttpRouter.route("GET", "/live", liveRoute)
-      ]))),
-      page,
-      increment,
-      live: liveRoute,
-      updates,
-      shutdown,
-      currentCount: () => count
+  async function* liveEvents(): AsyncIterable<string> {
+    const subscription = invalidations.subscribe()
+    yield patchElements(render(countFragment(count)))
+    for await (const _ of subscription) {
+      yield patchElements(render(countFragment(count)))
     }
-  })
+  }
 
-const makeLiveCounterPubSub = (): Effect.Effect<PubSub.PubSub<void>> =>
-  PubSub.sliding<void>(liveCounterPubSubOptions)
+  const live = (): Response => reply.stream(liveEvents())
 
-const makeLiveCounterPubSubScoped = () =>
-  Effect.gen(function*() {
-    const pubsub = yield* makeLiveCounterPubSub()
-    yield* Effect.addFinalizer(() => PubSub.shutdown(pubsub))
-    return pubsub
-  })
+  const handle = (request: Request): Response => {
+    const url = new URL(request.url)
+    if (request.method === "GET" && url.pathname === "/") {
+      return page()
+    }
+    if (request.method === "POST" && url.pathname === "/increment") {
+      return increment()
+    }
+    if (request.method === "GET" && url.pathname === "/live") {
+      return live()
+    }
+    return new Response("Not Found", { status: 404 })
+  }
 
-export const makeLiveCounter = (): Effect.Effect<LiveCounterApp> =>
-  makeLiveCounterWith(makeLiveCounterPubSub())
+  return {
+    page,
+    increment,
+    live,
+    handle,
+    shutdown: () => invalidations.close(),
+    currentCount: () => count
+  }
+}
 
-export const makeLiveCounterScoped = (): Effect.Effect<LiveCounterApp, never, Scope.Scope> =>
-  makeLiveCounterWith(makeLiveCounterPubSubScoped())
-
-export const createLiveCounter = (): LiveCounterApp => Effect.runSync(makeLiveCounter())
+export const createLiveCounter = makeLiveCounter

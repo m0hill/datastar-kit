@@ -1,21 +1,14 @@
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
-import type * as Scope from "effect/Scope"
-import { contract, ds, h, props, read, render, reply } from "../src/index.js"
+import * as z from "zod"
+import { ds, h, props, read, render, reply } from "../src/index.js"
+import { DATASTAR_CDN } from "./counter.js"
 
-const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+export const ContactFormSchema = z.object({
+  name: z.string(),
+  email: z.string()
+})
 
-export const ContactForm = contract.signals(
-  Schema.Struct({
-    name: Schema.String,
-    email: Schema.String
-  })
-)
-
-type ContactField = keyof typeof ContactForm.schema.Type
+export type ContactFormInput = z.infer<typeof ContactFormSchema>
+type ContactField = keyof ContactFormInput
 
 const fields: readonly ContactField[] = ["name", "email"]
 
@@ -63,10 +56,9 @@ const clearValidationSignalPayload = <Field extends string>(
 
 const validationSignalsResponse = <Field extends string>(
   error: FormValidationError<Field>
-): HttpServerResponse.HttpServerResponse =>
-  reply.signals(validationSignalPayload(error))
+): Response => reply.signals(validationSignalPayload(error))
 
-const validateContact = (input: typeof ContactForm.schema.Type): Effect.Effect<typeof input, FormValidationError<ContactField>> => {
+const validateContact = (input: ContactFormInput): ContactFormInput => {
   const issues: Array<ValidationIssue<ContactField>> = []
 
   if (input.name.trim().length === 0) {
@@ -77,13 +69,16 @@ const validateContact = (input: typeof ContactForm.schema.Type): Effect.Effect<t
     issues.push({ field: "email", message: "Email must contain @" })
   }
 
-  return issues.length === 0
-    ? Effect.succeed(input)
-    : Effect.fail(new FormValidationError(issues, "Please fix the highlighted fields"))
+  if (issues.length > 0) {
+    throw new FormValidationError(issues, "Please fix the highlighted fields")
+  }
+
+  return input
 }
 
 export const contactFormNode = () => {
-  const s = ContactForm.$
+  const name = ds.signal<string, "name">("name")
+  const email = ds.signal<string, "email">("email")
   const nameError = ds.local<string, "validation.name">("validation.name")
   const emailError = ds.local<string, "validation.email">("validation.email")
   const formError = ds.local<string, "validation.form">("validation.form")
@@ -95,16 +90,16 @@ export const contactFormNode = () => {
       "form",
       props(
         { id: "contact-form" },
-        ContactForm.initial({ name: "", email: "" }, { ifMissing: true }),
+        ds.dataSignals({ name: "", email: "" }, { ifMissing: true }),
         ds.dataSignal("_validation.form", "", { ifMissing: true }),
         ds.dataSignal("_validation.name", "", { ifMissing: true }),
         ds.dataSignal("_validation.email", "", { ifMissing: true }),
         ds.on("submit", ds.post("/contact"), { prevent: true })
       ),
       h("p", props({ id: "form-error", role: "alert" }, ds.text(formError))),
-      h("label", {}, "Name", h("input", props({ name: "name" }, ds.bind(s.name)))),
+      h("label", {}, "Name", h("input", props({ name: "name" }, ds.bind(name)))),
       h("p", props({ id: "name-error" }, ds.text(nameError))),
-      h("label", {}, "Email", h("input", props({ name: "email", type: "email" }, ds.bind(s.email)))),
+      h("label", {}, "Email", h("input", props({ name: "email", type: "email" }, ds.bind(email)))),
       h("p", props({ id: "email-error" }, ds.text(emailError))),
       h("button", { type: "submit" }, "Save")
     ),
@@ -114,52 +109,46 @@ export const contactFormNode = () => {
 
 export const contactFormView = (): string => render(contactFormNode())
 
-export const contactFormPage = (): HttpServerResponse.HttpServerResponse =>
+export const contactFormPage = (): Response =>
   reply.page({
     head: h("script", { type: "module", src: DATASTAR_CDN }),
     body: contactFormNode()
   })
 
-const submitContactInner = Effect.gen(function*() {
-  const input = yield* read.signals(ContactForm.schema)
-  const valid = yield* validateContact(input)
+export const submitContact = async (request: Request): Promise<Response> => {
+  try {
+    const input = await read.signals(request, ContactFormSchema)
+    const valid = validateContact(input)
 
-  return reply.patch(
-    h("div", { id: "contact-result", role: "status" }, `Saved ${valid.name} <${valid.email}>`),
-    { selector: "#contact-result", mode: "outer" }
-  )
-})
+    return reply.patch(
+      h("div", { id: "contact-result", role: "status" }, `Saved ${valid.name} <${valid.email}>`),
+      { selector: "#contact-result", mode: "outer" }
+    )
+  } catch (error) {
+    if (error instanceof FormValidationError) {
+      return validationSignalsResponse(error)
+    }
 
-const hasTag = (error: unknown, tag: string): boolean =>
-  typeof error === "object" && error !== null && "_tag" in error && error._tag === tag
+    if (error instanceof read.SignalParseError || error instanceof read.SignalValidationError) {
+      return new Response("Invalid request input", { status: 400 })
+    }
 
-export const submitContact = submitContactInner.pipe(
-  Effect.matchEffect({
-    onFailure: (error) => {
-      if (error instanceof FormValidationError) {
-        return Effect.succeed(validationSignalsResponse(error))
-      }
+    throw error
+  }
+}
 
-      if (hasTag(error, "SchemaError")) {
-        return Effect.succeed(HttpServerResponse.text("Invalid request input", { status: 400 }))
-      }
-
-      return Effect.fail(error)
-    },
-    onSuccess: Effect.succeed
-  })
-)
-
-export const clearContactValidation = (): HttpServerResponse.HttpServerResponse =>
+export const clearContactValidation = (): Response =>
   validationSignalsResponse(new FormValidationError([], ""))
 
 export const contactSuccessSignals = () => clearValidationSignalPayload(...fields)
 
-export const app: Effect.Effect<
-  HttpServerResponse.HttpServerResponse,
-  unknown,
-  Scope.Scope | HttpServerRequest.HttpServerRequest
-> = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-  HttpRouter.route("GET", "/", contactFormPage()),
-  HttpRouter.route("POST", "/contact", submitContact)
-])))
+export const handle = (request: Request): Response | Promise<Response> => {
+  const url = new URL(request.url)
+  if (request.method === "GET" && url.pathname === "/") {
+    return contactFormPage()
+  }
+  if (request.method === "POST" && url.pathname === "/contact") {
+    return submitContact(request)
+  }
+  return new Response("Not Found", { status: 404 })
+}

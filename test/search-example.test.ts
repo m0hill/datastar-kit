@@ -1,30 +1,8 @@
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
-import { createServer, type RequestListener, type Server } from "node:http"
-import type { AddressInfo } from "node:net"
-import { afterEach, describe, expect, it } from "vitest"
-import { app, resultsView, searchPage, searchView } from "../examples/search.js"
+import { describe, expect, it } from "vitest"
+import { handle, resultsView, searchPage, searchView } from "../examples/search.js"
 import * as ds from "../src/ds.js"
-import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
-
-let server: Server | undefined
-
-const serveListener = async (listener: RequestListener): Promise<string> => {
-  server = createServer(listener)
-  await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve))
-  const address = server.address() as AddressInfo
-  return `http://127.0.0.1:${address.port}`
-}
-
-afterEach(async () => {
-  const current = server
-  server = undefined
-  if (current !== undefined) {
-    await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
-  }
-  await closePlatformListeners()
-})
 
 describe("search example", () => {
   it("supports dynamic Datastar action URLs", () => {
@@ -38,7 +16,7 @@ describe("search example", () => {
   })
 
   it("returns a native search page with an explicit Datastar client script", async () => {
-    const html = await HttpServerResponse.toWeb(searchPage()).text()
+    const html = await searchPage().text()
 
     expect(html).toContain("<!doctype html>")
     expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
@@ -50,10 +28,8 @@ describe("search example", () => {
     expect(resultsView("nobody")).toBe('<tbody id="results"><tr><td colspan="2">No contacts found</td></tr></tbody>')
   })
 
-  it("dispatches the native example app", async () => {
-    const listener = await makePlatformListener(app)
-    const origin = await serveListener(listener)
-    const response = await fetch(`${origin}/search?q=grace`)
+  it("dispatches the fetch-compatible example handler", async () => {
+    const response = handle(new Request("http://localhost/search?q=grace"))
 
     expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(await response.text()).toBe(

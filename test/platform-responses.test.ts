@@ -1,43 +1,10 @@
-import * as Effect from "effect/Effect"
-import * as Stream from "effect/Stream"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
-import { createServer, type RequestListener, type Server } from "node:http"
-import type { AddressInfo } from "node:net"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 import { h, raw } from "../src/html.js"
 import * as reply from "../src/reply.js"
-import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
-
-let server: Server | undefined
-
-const serveListener = async (listener: RequestListener): Promise<string> => {
-  server = createServer(listener)
-  await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve))
-  const address = server.address() as AddressInfo
-  return `http://127.0.0.1:${address.port}`
-}
-
-afterEach(async () => {
-  const current = server
-  server = undefined
-  if (current !== undefined) {
-    await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
-  }
-  await closePlatformListeners()
-})
 
 describe("reply SSE responses", () => {
   it("serves Datastar SSE streams", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route(
-        "GET",
-        "/events",
-        Effect.succeed(reply.stream(["event: ready\n\n"], { headers: { "x-sse": "yes" } }))
-      )
-    ])))
-    const listener = await makePlatformListener(router)
-    const response = await fetch(`${await serveListener(listener)}/events`)
+    const response = reply.stream(["event: ready\n\n"], { headers: { "x-sse": "yes" } })
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/event-stream")
@@ -47,30 +14,14 @@ describe("reply SSE responses", () => {
   })
 
   it("serves Datastar signal patch responses", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route(
-        "GET",
-        "/signals",
-        Effect.succeed(reply.signals({ count: 1 }, undefined, { headers: { "x-signals": "yes" } }))
-      )
-    ])))
-    const listener = await makePlatformListener(router)
-    const response = await fetch(`${await serveListener(listener)}/signals`)
+    const response = reply.signals({ count: 1 }, undefined, { headers: { "x-signals": "yes" } })
 
     expect(response.headers.get("x-signals")).toBe("yes")
     expect(await response.text()).toBe('event: datastar-patch-signals\ndata: signals {"count":1}\n\n')
   })
 
   it("renders HTML nodes in element patches", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route(
-        "GET",
-        "/elements",
-        Effect.succeed(reply.patch(h("span", {}, "Ada & Grace"), { selector: "#name" }))
-      )
-    ])))
-    const listener = await makePlatformListener(router)
-    const response = await fetch(`${await serveListener(listener)}/elements`)
+    const response = reply.patch(h("span", {}, "Ada & Grace"), { selector: "#name" })
 
     expect(await response.text()).toBe(
       "event: datastar-patch-elements\ndata: selector #name\ndata: elements <span>Ada &amp; Grace</span>\n\n"
@@ -78,8 +29,8 @@ describe("reply SSE responses", () => {
   })
 
   it("escapes string patches unless raw HTML is explicit", async () => {
-    const text = HttpServerResponse.toWeb(reply.patch("<strong>Saved</strong>"))
-    const html = HttpServerResponse.toWeb(reply.patch(raw("<strong>Saved</strong>")))
+    const text = reply.patch("<strong>Saved</strong>")
+    const html = reply.patch(raw("<strong>Saved</strong>"))
 
     expect(await text.text()).toBe(
       "event: datastar-patch-elements\ndata: elements &lt;strong&gt;Saved&lt;/strong&gt;\n\n"
@@ -89,34 +40,29 @@ describe("reply SSE responses", () => {
     )
   })
 
-  it("streams Effect Stream SSE responses", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route(
-        "GET",
-        "/live",
-        Effect.succeed(reply.stream(Stream.make("event: first\n\n", "event: second\n\n")))
-      )
-    ])))
-    const listener = await makePlatformListener(router)
-    const response = await fetch(`${await serveListener(listener)}/live`)
+  it("streams async iterable SSE responses", async () => {
+    async function* events() {
+      yield "event: first\n\n"
+      yield "event: second\n\n"
+    }
+
+    const response = reply.stream(events())
 
     expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(await response.text()).toBe("event: first\n\nevent: second\n\n")
   })
 
-  it("streams Effect Stream responses with headers", async () => {
-    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route(
-        "GET",
-        "/stream-meta",
-        Effect.succeed(reply.stream(Stream.make("event: meta\n\n"), { headers: { "x-stream": "effect" } }))
-      )
-    ])))
-    const listener = await makePlatformListener(router)
-    const response = await fetch(`${await serveListener(listener)}/stream-meta`)
+  it("streams Web Stream responses with headers", async () => {
+    const source = new ReadableStream<string>({
+      start(controller) {
+        controller.enqueue("event: meta\n\n")
+        controller.close()
+      }
+    })
+    const response = reply.stream(source, { headers: { "x-stream": "web" } })
 
     expect(response.status).toBe(200)
-    expect(response.headers.get("x-stream")).toBe("effect")
+    expect(response.headers.get("x-stream")).toBe("web")
     expect(response.headers.get("cache-control")).toBe("no-cache")
     expect(await response.text()).toBe("event: meta\n\n")
   })

@@ -1,72 +1,27 @@
-# Reference examples
+# Examples
 
-The examples are intentionally small, but each one teaches a framework concept without making browser signals the durable state store.
+The examples are tested reference slices for the Web Standards SDK direction. Each first-party example exports a fetch-compatible handler that accepts a native `Request` and returns a native `Response` or promise.
 
-## Backend-state counter
+## Counter
 
-Files: `examples/counter.ts`, `examples/runtime-counter.ts`, `test/example-counter.test.ts`, `test/runtime-counter-example.test.ts`.
+`examples/counter.ts` stores `count` on the server. The click action mutates backend state and patches the rendered `#count` element. Stale browser signal payloads are ignored because backend state is authoritative.
 
-The counter stores `count` on the server. The click action mutates backend state and patches the rendered `#count` element. The runtime variant shows the same model with Effect services/layers and a schema-derived signal contract for request inputs.
+## TSX counter
 
-Run:
+`examples/tsx-counter.tsx` demonstrates the explicit server-only JSX adapter over the same HTML node model.
 
-```sh
-pnpm run dev:counter
-pnpm run dev:runtime-counter
-pnpm run check:example:counter
-pnpm run check:example:runtime-counter
-```
+## Search
 
-## Search/filter page
+`examples/search.ts` demonstrates Datastar action URL generation with `ds.queryUrl(...)` and server-rendered result patches.
 
-Files: `examples/search.ts`, `test/search-example.test.ts`.
+## Live counter recipe
 
-The search example uses a query schema, a debounced Datastar `GET`, URL query behavior, an SSE element patch for `#results`, filtered rows, and an empty state.
+`examples/live-counter.ts` demonstrates app-owned invalidation subscribers adapted into an SSE stream with `reply.stream(...)`. Core does not provide a live-query runtime.
 
-Run:
+## Validation form
 
-```sh
-pnpm run dev:search
-pnpm run check:example:search
-```
+`examples/validation-form.ts` uses input signals, Standard Schema-compatible Zod validation, app-local validation errors, validation signal patches, and a success patch that updates backend state.
 
-## Form with validation
+## Hono counter
 
-Files: `examples/validation-form.ts`, `test/validation-form-example.test.ts`.
-
-The form uses input signals, Effect Schema decode, app-local validation errors, validation signal patches, and a success patch that updates backend state.
-
-Run:
-
-```sh
-pnpm run dev:validation-form
-pnpm run check:example:validation-form
-```
-
-## Live query counter
-
-Files: `examples/live-counter.ts`, `test/live-counter-example.test.ts`.
-
-The live counter uses command routes to mutate backend state, a live query to render current state on connect and invalidation, heartbeats for idle streams, scoped resources for shutdown, and reconnect-safe current-view rendering.
-
-Run:
-
-```sh
-pnpm run dev:live-counter
-pnpm run check:example:live-counter
-```
-
-## Security/session sketch
-
-Security policy belongs to the app:
-
-1. Read the current user/session in your platform adapter or app services.
-2. Run permission and CSRF checks at the router/command boundary.
-3. Decode browser signals as untrusted input and keep backend state authoritative.
-4. Use `reply.navigate(...)` for Datastar-driven navigation targets instead of hand-written scripts.
-
-`ts-star` does not own your auth/session store or request-policy middleware.
-
-## Browser integration
-
-`test/datastar-browser-runtime.test.ts` runs a real browser with the versioned Datastar CDN script used by examples. It includes protocol fixtures and the backend-state counter reference example. Add browser tests when a behavior depends on the Datastar runtime, not just string encoding.
+`examples/hono-counter.ts` shows Hono as an application framework around `ts-star` helpers. Hono is not imported by core.

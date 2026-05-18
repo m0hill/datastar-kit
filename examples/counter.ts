@@ -1,21 +1,19 @@
-import * as Effect from "effect/Effect"
-import type * as Scope from "effect/Scope"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   ds,
   h,
   props,
   render,
-  reply
+  reply,
+  type Child
 } from "../src/index.js"
 
-const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+export const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
+const notFound = (): Response => new Response("Not Found", { status: 404 })
 
 export const countNode = (count: number) => h("output", { id: "count" }, count)
 
-export const counterNode = (count = 0) =>
+export const counterNode = (count = 0): Child =>
   h(
     "main",
     { id: "counter" },
@@ -27,43 +25,47 @@ export const counterNode = (count = 0) =>
 export const counterView = (count = 0): string => render(counterNode(count))
 
 export interface CounterExample {
-  readonly page: () => HttpServerResponse.HttpServerResponse
-  readonly increment: Effect.Effect<HttpServerResponse.HttpServerResponse>
-  readonly app: Effect.Effect<
-    HttpServerResponse.HttpServerResponse,
-    unknown,
-    Scope.Scope | HttpServerRequest.HttpServerRequest
-  >
+  readonly page: () => Response
+  readonly increment: () => Response
+  readonly handle: (request: Request) => Response
   readonly currentCount: () => number
 }
 
 export const makeCounter = (): CounterExample => {
   let count = 0
 
-  const page = (): HttpServerResponse.HttpServerResponse =>
+  const page = (): Response =>
     reply.page({
       head: h("script", { type: "module", src: DATASTAR_CDN }),
       body: counterNode(count)
     })
 
-  const increment = Effect.sync(() => {
+  const increment = (): Response => {
     count += 1
     return reply.patch(countNode(count), { selector: "#count", mode: "outer" })
-  })
+  }
+
+  const handle = (request: Request): Response => {
+    const url = new URL(request.url)
+    if (request.method === "GET" && url.pathname === "/") {
+      return page()
+    }
+    if (request.method === "POST" && url.pathname === "/increment") {
+      return increment()
+    }
+    return notFound()
+  }
 
   return {
     page,
     increment,
-    app: Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route("GET", "/", page()),
-      HttpRouter.route("POST", "/increment", increment)
-    ]))),
+    handle,
     currentCount: () => count
   }
 }
 
 const defaultCounter = makeCounter()
 
-export const page = (): HttpServerResponse.HttpServerResponse => defaultCounter.page()
-export const increment = defaultCounter.increment
-export const app = defaultCounter.app
+export const page = (): Response => defaultCounter.page()
+export const increment = (): Response => defaultCounter.increment()
+export const handle = (request: Request): Response => defaultCounter.handle(request)

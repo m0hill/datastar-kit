@@ -1,11 +1,8 @@
-import * as Effect from "effect/Effect"
 import { describe, expect, it } from "vitest"
 import * as Root from "../src/index.js"
 import * as sse from "../src/sse.js"
 import {
-  contract,
   ds,
-  live,
   read,
   reply,
   fragment,
@@ -17,14 +14,15 @@ import {
 } from "../src/index.js"
 
 describe("package root exports", () => {
-  it("exports the tiny HTML surface and small framework namespaces", async () => {
+  it("exports the tiny HTML surface and Web Standards SDK namespaces", () => {
     expect("Platform" in Root).toBe(false)
     expect("platformRouter" in Root).toBe(false)
     expect("Client" in Root).toBe(false)
     expect("datastarScript" in Root).toBe(false)
     expect("datastarDocument" in Root).toBe(false)
     expect("datastarPageResponse" in Root).toBe(false)
-    expect(contract.signals).toBeDefined()
+    expect("contract" in Root).toBe(false)
+    expect("live" in Root).toBe(false)
     expect(ds.signal).toBeDefined()
     expect(ds.delete).toBeDefined()
     expect(h).toBeDefined()
@@ -47,7 +45,6 @@ describe("package root exports", () => {
     expect("liveQueryResponse" in Root).toBe(false)
     expect("commandDone" in Root).toBe(false)
     expect("makeRealtimePubSub" in Root).toBe(false)
-    expect(live.query).toBeDefined()
     expect("Security" in Root).toBe(false)
     expect("Validation" in Root).toBe(false)
     expect("Observability" in Root).toBe(false)
@@ -59,8 +56,7 @@ describe("package root exports", () => {
     expect("signalsFrom" in read).toBe(false)
     expect(reply.patch).toBeDefined()
     expect(reply.navigate).toBeDefined()
+    expect(reply.directHtml).toBeDefined()
     expect(sse.patchSignals).toBeDefined()
-
-    await expect(Effect.runPromise(Effect.succeed("ok"))).resolves.toBe("ok")
   })
 })

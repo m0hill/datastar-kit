@@ -1,33 +1,11 @@
 # Datastar philosophy in ts-star
 
-`ts-star` does not hide Datastar. It uses Datastar as the browser runtime and patch protocol while keeping application state on the server.
+`ts-star` follows Datastar's server-driven model: the server renders HTML, Datastar sends user intent and sparse signals, and the browser applies DOM/signal patches.
 
-## Keep the browser simple
+Keep the mental model simple:
 
-Use Datastar signals for:
-
-- form/input values;
-- query/filter parameters;
-- local UI flags such as loading indicators;
-- validation feedback returned by the server.
-
-Avoid storing durable application state only in browser signals. If reconnecting or refreshing would lose correctness, the state belongs on the backend.
-
-## Prefer server-rendered patches
-
-Actions usually return one of:
-
-- `204 No Content` when the command completed and another stream/query will refresh the UI;
-- a direct HTML patch for local updates;
-- a direct JSON signal patch for validation/loading state;
-- an SSE stream for live queries.
-
-This keeps the UI model close to HTTP and HTML instead of recreating a frontend component lifecycle.
-
-## Expose the protocol
-
-Low-level helpers such as `patchElements` from `ts-star/sse` and thin `ds.*` Datastar mirrors stay available. App-facing response construction goes through `reply.*`, and Datastar signal decoding goes through `read.signals(...)`. The underlying Datastar concepts should remain visible without exposing a generic platform wrapper.
-
-## Reconnect safety
-
-Live queries render current backend state on connect and after invalidation. They do not rely on event deltas that only make sense if every browser connection saw every prior event.
+- backend state is authoritative;
+- browser signals are request input and UI affordance;
+- server-rendered HTML is the patch payload;
+- SSE is the primary realtime transport;
+- client-side complexity should stay minimal.

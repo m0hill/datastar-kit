@@ -1,10 +1,5 @@
 /** @jsx jsx */
 /** @jsxFrag Fragment */
-import * as Effect from "effect/Effect"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import type * as Scope from "effect/Scope"
-import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   ds,
   h,
@@ -14,8 +9,7 @@ import {
   type Child
 } from "../src/index.js"
 import { Fragment, jsx } from "../src/jsx.js"
-
-const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+import { DATASTAR_CDN } from "./counter.js"
 
 export interface CounterButtonProps {
   readonly action: string
@@ -38,43 +32,47 @@ export const tsxCounterNode = (count = 0) => (
 export const tsxCounterView = (count = 0): string => render(tsxCounterNode(count))
 
 export interface TsxCounterExample {
-  readonly page: () => HttpServerResponse.HttpServerResponse
-  readonly increment: Effect.Effect<HttpServerResponse.HttpServerResponse>
-  readonly app: Effect.Effect<
-    HttpServerResponse.HttpServerResponse,
-    unknown,
-    Scope.Scope | HttpServerRequest.HttpServerRequest
-  >
+  readonly page: () => Response
+  readonly increment: () => Response
+  readonly handle: (request: Request) => Response
   readonly currentCount: () => number
 }
 
 export const makeTsxCounter = (): TsxCounterExample => {
   let count = 0
 
-  const tsxCounterPage = (): HttpServerResponse.HttpServerResponse =>
+  const page = (): Response =>
     reply.page({
       head: h("script", { type: "module", src: DATASTAR_CDN }),
       body: tsxCounterNode(count)
     })
 
-  const tsxIncrement = Effect.sync(() => {
+  const increment = (): Response => {
     count += 1
     return reply.patch(<CountOutput count={count} />, { selector: "#count", mode: "outer" })
-  })
+  }
+
+  const handle = (request: Request): Response => {
+    const url = new URL(request.url)
+    if (request.method === "GET" && url.pathname === "/") {
+      return page()
+    }
+    if (request.method === "POST" && url.pathname === "/increment") {
+      return increment()
+    }
+    return new Response("Not Found", { status: 404 })
+  }
 
   return {
-    page: tsxCounterPage,
-    increment: tsxIncrement,
-    app: Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route("GET", "/", tsxCounterPage()),
-      HttpRouter.route("POST", "/increment", tsxIncrement)
-    ]))),
+    page,
+    increment,
+    handle,
     currentCount: () => count
   }
 }
 
 const defaultCounter = makeTsxCounter()
 
-export const tsxCounterPage = (): HttpServerResponse.HttpServerResponse => defaultCounter.page()
-export const tsxIncrement = defaultCounter.increment
-export const tsxCounterApp = defaultCounter.app
+export const tsxCounterPage = (): Response => defaultCounter.page()
+export const tsxIncrement = (): Response => defaultCounter.increment()
+export const handle = (request: Request): Response => defaultCounter.handle(request)

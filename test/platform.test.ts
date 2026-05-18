@@ -1,43 +1,22 @@
-import * as Effect from "effect/Effect"
-import * as Stream from "effect/Stream"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
-import { createServer, type RequestListener, type Server } from "node:http"
-import type { AddressInfo } from "node:net"
-import { afterEach, describe, expect, it } from "vitest"
+import { describe, expect, it } from "vitest"
 import { stream } from "../src/reply.js"
-import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
-let server: Server | undefined
+describe("Web Fetch primitives", () => {
+  it("dispatches plain fetch-compatible handlers", async () => {
+    const handler = (request: Request): Response => {
+      const url = new URL(request.url)
+      if (request.method === "GET" && url.pathname === "/") {
+        return new Response("home")
+      }
+      if (request.method === "POST" && url.pathname === "/submit") {
+        return new Response("submitted", { status: 201 })
+      }
+      return new Response("Not Found", { status: 404 })
+    }
 
-const serveListener = async (listener: RequestListener): Promise<string> => {
-  server = createServer(listener)
-  await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve))
-  const address = server.address() as AddressInfo
-  return `http://127.0.0.1:${address.port}`
-}
-
-afterEach(async () => {
-  const current = server
-  server = undefined
-  if (current !== undefined) {
-    await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
-  }
-  await closePlatformListeners()
-})
-
-describe("Effect Platform HTTP runtime", () => {
-  it("dispatches native Effect Platform routes", async () => {
-    const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route("GET", "/", HttpServerResponse.text("home")),
-      HttpRouter.route("POST", "/submit", HttpServerResponse.text("submitted", { status: 201 }))
-    ])))
-    const listener = await makePlatformListener(app)
-    const origin = await serveListener(listener)
-
-    const home = await fetch(origin)
-    const submitted = await fetch(`${origin}/submit`, { method: "POST" })
-    const missing = await fetch(`${origin}/missing`)
+    const home = handler(new Request("http://localhost/"))
+    const submitted = handler(new Request("http://localhost/submit", { method: "POST" }))
+    const missing = handler(new Request("http://localhost/missing"))
 
     expect(home.status).toBe(200)
     expect(await home.text()).toBe("home")
@@ -46,21 +25,19 @@ describe("Effect Platform HTTP runtime", () => {
     expect(missing.status).toBe(404)
   })
 
-  it("streams Datastar SSE responses through native Effect Platform routing", async () => {
+  it("streams Datastar SSE responses through native Response bodies", async () => {
     let releaseSecond!: () => void
     const second = new Promise<void>((resolve) => {
       releaseSecond = resolve
     })
-    const events = Stream.make("event: first\n\n").pipe(
-      Stream.concat(Stream.fromEffect(Effect.promise(() => second).pipe(Effect.as("event: second\n\n"))))
-    )
 
-    const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-      HttpRouter.route("GET", "/events", Effect.succeed(stream(events)))
-    ])))
-    const listener = await makePlatformListener(app)
-    const origin = await serveListener(listener)
-    const response = await fetch(`${origin}/events`)
+    async function* events() {
+      yield "event: first\n\n"
+      await second
+      yield "event: second\n\n"
+    }
+
+    const response = stream(events())
     const reader = response.body?.getReader()
     const decoder = new TextDecoder()
 

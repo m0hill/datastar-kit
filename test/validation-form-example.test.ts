@@ -1,26 +1,5 @@
-import { createServer, type RequestListener, type Server } from "node:http"
-import type { AddressInfo } from "node:net"
-import { afterEach, describe, expect, it } from "vitest"
-import { app, contactFormView } from "../examples/validation-form.js"
-import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
-
-let server: Server | undefined
-
-const serveListener = async (listener: RequestListener): Promise<string> => {
-  server = createServer(listener)
-  await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve))
-  const address = server.address() as AddressInfo
-  return `http://127.0.0.1:${address.port}`
-}
-
-afterEach(async () => {
-  const current = server
-  server = undefined
-  if (current !== undefined) {
-    await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
-  }
-  await closePlatformListeners()
-})
+import { describe, expect, it } from "vitest"
+import { contactFormView, handle } from "../examples/validation-form.js"
 
 describe("validation form example", () => {
   it("renders input and validation signals without trusting them as durable state", () => {
@@ -29,12 +8,10 @@ describe("validation form example", () => {
   })
 
   it("returns 200 validation patches for recoverable form errors", async () => {
-    const listener = await makePlatformListener(app)
-    const origin = await serveListener(listener)
-    const response = await fetch(`${origin}/contact`, {
+    const response = await handle(new Request("http://localhost/contact", {
       method: "POST",
       body: JSON.stringify({ name: "", email: "bad" })
-    })
+    }))
 
     expect(response.status).toBe(200)
     expect(await response.text()).toBe(
@@ -43,12 +20,10 @@ describe("validation form example", () => {
   })
 
   it("returns success patches for valid form submissions", async () => {
-    const listener = await makePlatformListener(app)
-    const origin = await serveListener(listener)
-    const response = await fetch(`${origin}/contact`, {
+    const response = await handle(new Request("http://localhost/contact", {
       method: "POST",
       body: JSON.stringify({ name: "Ada", email: "ada@example.com" })
-    })
+    }))
 
     expect(response.status).toBe(200)
     expect(await response.text()).toBe(
@@ -57,12 +32,10 @@ describe("validation form example", () => {
   })
 
   it("maps malformed signal payloads to explicit decode errors", async () => {
-    const listener = await makePlatformListener(app)
-    const origin = await serveListener(listener)
-    const response = await fetch(`${origin}/contact`, {
+    const response = await handle(new Request("http://localhost/contact", {
       method: "POST",
       body: JSON.stringify({ name: 1, email: "ada@example.com" })
-    })
+    }))
 
     expect(response.status).toBe(400)
     expect(await response.text()).toBe("Invalid request input")

@@ -3,14 +3,14 @@ set -euo pipefail
 
 # Count forbidden Effect/runtime references in implementation-facing files.
 # Docs may discuss the comparison; source, examples, tests, and package metadata must not require Effect.
-forbidden_effect_refs=$(rg -n \
+forbidden_effect_refs=$({ rg -n \
   '(@effect|effect/|"effect"|\bEffect\.|\bLayer\.|\bContext\.|\bScope\.|\bStream\.|\bSchema\.)' \
   src examples test package.json pnpm-lock.yaml tsconfig.json \
   --glob '!dist/**' \
   --glob '!node_modules/**' \
-  2>/dev/null | wc -l | tr -d ' ')
+  2>/dev/null || true; } | wc -l | tr -d ' ')
 
-old_root_exports=$(rg -n 'export \* as (contract|live) ' src/index.ts 2>/dev/null | wc -l | tr -d ' ')
+old_root_exports=$({ rg -n 'export \* as (contract|live) ' src/index.ts 2>/dev/null || true; } | wc -l | tr -d ' ')
 
 src_bytes=$(find src -type f \( -name '*.ts' -o -name '*.tsx' \) -print0 | xargs -0 wc -c | tail -1 | awk '{print $1}')
 test_files=$(find test -maxdepth 1 -type f \( -name '*.ts' -o -name '*.tsx' \) | wc -l | tr -d ' ')

@@ -1,24 +1,56 @@
-import * as Effect from "effect/Effect"
-import * as Schema from "effect/Schema"
-import * as HttpServerError from "effect/unstable/http/HttpServerError"
-import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
+import type { StandardSchemaV1 } from "@standard-schema/spec"
 
 const methodsWithQuerySignals = new Set(["GET", "DELETE"])
 
-const rawSignals = (
-  request: HttpServerRequest.HttpServerRequest
-): Effect.Effect<string, HttpServerError.HttpServerError> => {
-  if (methodsWithQuerySignals.has(request.method)) {
-    return Effect.succeed(new URL(request.url, "http://localhost").searchParams.get("datastar") ?? "{}")
-  }
+export class SignalParseError extends Error {
+  readonly _tag = "SignalParseError"
 
-  return request.text.pipe(Effect.map((body) => body.length === 0 ? "{}" : body))
+  constructor(
+    readonly input: string,
+    options: { readonly cause?: unknown } = {}
+  ) {
+    super("Invalid Datastar signal JSON", options)
+  }
 }
 
-export const signals = <A, R>(
-  schema: Schema.Decoder<A, R>
-): Effect.Effect<A, HttpServerError.HttpServerError | Schema.SchemaError, R | HttpServerRequest.HttpServerRequest> =>
-  HttpServerRequest.HttpServerRequest.pipe(
-    Effect.flatMap(rawSignals),
-    Effect.flatMap(Schema.decodeUnknownEffect(Schema.fromJsonString(schema)))
-  )
+export class SignalValidationError extends Error {
+  readonly _tag = "SignalValidationError"
+
+  constructor(readonly issues: ReadonlyArray<StandardSchemaV1.Issue>) {
+    super(issues[0]?.message ?? "Invalid Datastar signals")
+  }
+}
+
+export const rawSignals = async (request: Request): Promise<string> => {
+  if (methodsWithQuerySignals.has(request.method.toUpperCase())) {
+    return new URL(request.url).searchParams.get("datastar") ?? "{}"
+  }
+
+  const body = await request.text()
+  return body.length === 0 ? "{}" : body
+}
+
+const parseJson = (input: string): unknown => {
+  try {
+    return JSON.parse(input)
+  } catch (cause) {
+    throw new SignalParseError(input, { cause })
+  }
+}
+
+export const signals = async <Schema extends StandardSchemaV1>(
+  request: Request,
+  schema: Schema
+): Promise<StandardSchemaV1.InferOutput<Schema>> => {
+  const input = parseJson(await rawSignals(request))
+  let result = schema["~standard"].validate(input)
+  if (result instanceof Promise) {
+    result = await result
+  }
+
+  if (result.issues !== undefined) {
+    throw new SignalValidationError(result.issues)
+  }
+
+  return result.value
+}

@@ -1,7 +1,7 @@
 {
   "name": "ts-star",
   "version": "0.1.0",
-  "description": "Effect-native Datastar framework for server-driven TypeScript applications",
+  "description": "Web Standards Datastar SDK for server-driven TypeScript applications",
   "type": "module",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
@@ -28,43 +28,44 @@
     "build": "rm -rf dist && tsc -p tsconfig.json",
     "check": "pnpm run typecheck && pnpm run test",
     "check:example:counter": "pnpm run typecheck && pnpm run test:example:counter",
+    "check:example:hono-counter": "pnpm run typecheck && pnpm run test:example:hono-counter",
     "check:example:live-counter": "pnpm run typecheck && pnpm run test:example:live-counter",
-    "check:example:runtime-counter": "pnpm run typecheck && pnpm run test:example:runtime-counter",
     "check:example:search": "pnpm run typecheck && pnpm run test:example:search",
     "check:example:tsx-counter": "pnpm run typecheck && pnpm run test:example:tsx-counter",
     "check:example:validation-form": "pnpm run typecheck && pnpm run test:example:validation-form",
     "check:examples": "pnpm run typecheck && pnpm run test:examples",
     "dev": "pnpm run dev:counter",
     "dev:counter": "pnpm run build && node dist/examples/dev-server.js counter",
+    "dev:hono-counter": "pnpm run build && node dist/examples/dev-server.js hono-counter",
     "dev:live-counter": "pnpm run build && node dist/examples/dev-server.js live-counter",
-    "dev:runtime-counter": "pnpm run build && node dist/examples/dev-server.js runtime-counter",
     "dev:search": "pnpm run build && node dist/examples/dev-server.js search",
     "dev:tsx-counter": "pnpm run build && node dist/examples/dev-server.js tsx-counter",
     "dev:validation-form": "pnpm run build && node dist/examples/dev-server.js validation-form",
     "test": "vitest run",
     "test:example:counter": "vitest run test/example-counter.test.ts",
+    "test:example:hono-counter": "vitest run test/hono-counter-example.test.ts",
     "test:example:live-counter": "vitest run test/live-counter-example.test.ts",
-    "test:example:runtime-counter": "vitest run test/runtime-counter-example.test.ts",
     "test:example:search": "vitest run test/search-example.test.ts",
     "test:example:tsx-counter": "vitest run test/example-tsx-counter.test.ts",
     "test:example:validation-form": "vitest run test/validation-form-example.test.ts",
-    "test:examples": "vitest run test/example-counter.test.ts test/example-tsx-counter.test.ts test/search-example.test.ts test/live-counter-example.test.ts test/runtime-counter-example.test.ts test/validation-form-example.test.ts",
+    "test:examples": "vitest run test/example-counter.test.ts test/example-tsx-counter.test.ts test/search-example.test.ts test/live-counter-example.test.ts test/validation-form-example.test.ts test/hono-counter-example.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
     "datastar",
-    "effect",
     "sse",
-    "hypermedia"
+    "hypermedia",
+    "web-standards"
   ],
   "license": "MIT",
   "dependencies": {
-    "@effect/platform-node": "4.0.0-beta.67",
-    "effect": "4.0.0-beta.67"
+    "@standard-schema/spec": "^1.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "hono": "^4.12.19",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.14"
+    "vitest": "^4.0.14",
+    "zod": "^4.4.3"
   }
 }

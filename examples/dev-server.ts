@@ -1,20 +1,14 @@
-import { NodeHttpServer } from "@effect/platform-node"
-import * as Effect from "effect/Effect"
-import * as Exit from "effect/Exit"
-import * as Scope from "effect/Scope"
-import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
-import type * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
-import { createServer, type Server } from "node:http"
+import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http"
 import type { AddressInfo } from "node:net"
 import { pathToFileURL } from "node:url"
-import { app as counterApp } from "./counter.js"
-import { createLiveCounter } from "./live-counter.js"
-import { runtimeCounterAppWithServices } from "./runtime-counter.js"
-import { app as searchApp } from "./search.js"
-import { tsxCounterApp } from "./tsx-counter.js"
-import { app as validationFormApp } from "./validation-form.js"
+import { handle as counterHandle } from "./counter.js"
+import { makeHonoCounter } from "./hono-counter.js"
+import { makeLiveCounter } from "./live-counter.js"
+import { handle as searchHandle } from "./search.js"
+import { handle as tsxCounterHandle } from "./tsx-counter.js"
+import { handle as validationFormHandle } from "./validation-form.js"
 
-export const exampleNames = ["counter", "tsx-counter", "search", "live-counter", "runtime-counter", "validation-form"] as const
+export const exampleNames = ["counter", "tsx-counter", "search", "live-counter", "validation-form", "hono-counter"] as const
 export type ExampleName = typeof exampleNames[number]
 
 export interface DevServerOptions {
@@ -31,15 +25,11 @@ export interface RunningExampleServer {
   readonly close: () => Promise<void>
 }
 
-type ExampleApp = Effect.Effect<
-  HttpServerResponse.HttpServerResponse,
-  unknown,
-  Scope.Scope | HttpServerRequest.HttpServerRequest
->
+type FetchHandler = (request: Request) => Response | Promise<Response>
 
 interface ExampleRuntime {
-  readonly app: ExampleApp
-  readonly close?: Effect.Effect<void>
+  readonly handle: FetchHandler
+  readonly close?: () => void | Promise<void>
 }
 
 const isExampleName = (value: string): value is ExampleName =>
@@ -48,19 +38,21 @@ const isExampleName = (value: string): value is ExampleName =>
 const makeExampleRuntime = (name: ExampleName): ExampleRuntime => {
   switch (name) {
     case "counter":
-      return { app: counterApp }
+      return { handle: counterHandle }
     case "tsx-counter":
-      return { app: tsxCounterApp }
+      return { handle: tsxCounterHandle }
     case "search":
-      return { app: searchApp }
+      return { handle: searchHandle }
     case "live-counter": {
-      const liveCounter = createLiveCounter()
-      return { app: liveCounter.app, close: liveCounter.shutdown }
+      const liveCounter = makeLiveCounter()
+      return { handle: liveCounter.handle, close: liveCounter.shutdown }
     }
-    case "runtime-counter":
-      return { app: runtimeCounterAppWithServices }
     case "validation-form":
-      return { app: validationFormApp }
+      return { handle: validationFormHandle }
+    case "hono-counter": {
+      const honoCounter = makeHonoCounter()
+      return { handle: honoCounter.handle }
+    }
   }
 }
 
@@ -69,20 +61,99 @@ const closeNodeServer = (server: Server): Promise<void> =>
     server.close((error) => error === undefined ? resolve() : reject(error))
   })
 
+const headersFromNodeRequest = (request: IncomingMessage): Headers => {
+  const headers = new Headers()
+  for (const [name, value] of Object.entries(request.headers)) {
+    if (value === undefined) {
+      continue
+    }
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        headers.append(name, item)
+      }
+    } else {
+      headers.set(name, value)
+    }
+  }
+  return headers
+}
+
+const requestFromNode = (request: IncomingMessage, origin: string): Request => {
+  const method = request.method ?? "GET"
+  const init: RequestInit = {
+    method,
+    headers: headersFromNodeRequest(request)
+  }
+
+  if (method !== "GET" && method !== "HEAD") {
+    init.body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        request.on("data", (chunk: Buffer) => {
+          controller.enqueue(new Uint8Array(chunk.buffer, chunk.byteOffset, chunk.byteLength))
+        })
+        request.on("end", () => controller.close())
+        request.on("error", (error) => controller.error(error))
+      }
+    })
+    ;(init as { duplex: "half" }).duplex = "half"
+  }
+
+  return new Request(new URL(request.url ?? "/", origin), init)
+}
+
+const sendResponse = async (nodeResponse: ServerResponse, response: Response): Promise<void> => {
+  nodeResponse.statusCode = response.status
+  nodeResponse.statusMessage = response.statusText
+  response.headers.forEach((value, name) => {
+    nodeResponse.setHeader(name, value)
+  })
+
+  if (response.body !== null && nodeResponse.req.method !== "HEAD") {
+    const reader = response.body.getReader()
+    try {
+      while (true) {
+        const result = await reader.read()
+        if (result.done) {
+          break
+        }
+        if (!nodeResponse.write(result.value)) {
+          await new Promise<void>((resolve) => nodeResponse.once("drain", resolve))
+        }
+      }
+    } finally {
+      reader.releaseLock()
+    }
+  }
+
+  nodeResponse.end()
+}
+
+const createRequestListener = (handler: FetchHandler, origin: string) =>
+  async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
+    try {
+      await sendResponse(response, await handler(requestFromNode(request, origin)))
+    } catch (error) {
+      console.error(error)
+      response.statusCode = 500
+      response.setHeader("content-type", "text/plain")
+      response.end("Internal Server Error")
+    }
+  }
+
 export const startExampleServer = async (
   name: ExampleName,
   options: DevServerOptions = {}
 ): Promise<RunningExampleServer> => {
   const host = options.host ?? "127.0.0.1"
   const port = options.port ?? 3000
-  const scope = await Effect.runPromise(Scope.make())
   const runtime = makeExampleRuntime(name)
-  const listener = await Effect.runPromise(NodeHttpServer.makeHandler(runtime.app, { scope }))
-  const server = createServer(listener)
+  const server = createServer()
 
   await new Promise<void>((resolve) => server.listen(port, host, resolve))
 
   const address = server.address() as AddressInfo
+  const origin = `http://${host}:${address.port}`
+  server.on("request", createRequestListener(runtime.handle, origin))
   let closed = false
 
   const close = async (): Promise<void> => {
@@ -92,17 +163,14 @@ export const startExampleServer = async (
     closed = true
 
     await closeNodeServer(server)
-    if (runtime.close !== undefined) {
-      await Effect.runPromise(runtime.close)
-    }
-    await Effect.runPromise(Scope.close(scope, Exit.void))
+    await runtime.close?.()
   }
 
   return {
     name,
     host,
     port: address.port,
-    origin: `http://${host}:${address.port}`,
+    origin,
     server,
     close
   }

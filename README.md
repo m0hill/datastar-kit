@@ -1,50 +1,31 @@
 # ts-star
 
-Effect-native Datastar framework for server-driven TypeScript applications.
+Web Standards Datastar SDK for server-driven TypeScript applications.
 
-`ts-star` is intentionally small and server-driven. Backend state is the source of truth, Effect owns runtime/lifecycle concerns, and Datastar applies HTML/signal patches in the browser.
+`ts-star` is intentionally small. It gives you Datastar-oriented HTML, attribute, signal-reading, SSE, and response helpers that compose inside any fetch-compatible JavaScript framework. Your app framework owns routing, middleware, auth, deployment, dependencies, and lifecycle.
 
-See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline and public module boundary proposal. See [`docs/public-api.md`](docs/public-api.md) and [`docs/api-reference.md`](docs/api-reference.md) for stable/experimental modules, extension points, and API maps. See [`docs/examples.md`](docs/examples.md) for the tested reference examples. See [`docs/datastar-philosophy.md`](docs/datastar-philosophy.md) and [`docs/datastar-protocol.md`](docs/datastar-protocol.md) for Datastar philosophy and response semantics. See [`docs/actions-commands.md`](docs/actions-commands.md), [`docs/programming-model.md`](docs/programming-model.md), and [`docs/runtime.md`](docs/runtime.md) for backend-state commands and Effect services. See [`docs/type-contracts.md`](docs/type-contracts.md), [`docs/html-rendering.md`](docs/html-rendering.md), [`docs/signals.md`](docs/signals.md), [`docs/live-queries.md`](docs/live-queries.md), [`docs/security.md`](docs/security.md), [`docs/errors-validation.md`](docs/errors-validation.md), [`docs/observability-testing.md`](docs/observability-testing.md), [`docs/deployment.md`](docs/deployment.md), and [`docs/performance-deployment.md`](docs/performance-deployment.md) for focused guides.
+See [`CONTEXT.md`](CONTEXT.md) and [`docs/adr/0001-web-standards-sdk-core.md`](docs/adr/0001-web-standards-sdk-core.md) for the experimental branch direction.
 
 ## Current architecture
 
-The package root exposes small contextual namespaces such as `ds`, `read`, `reply`, and `contract`, plus tiny top-level HTML helpers (`h`, `render`, `fragment`, `raw`, `props`, `page`). JSX is an explicit experimental adapter, not a root API.
+The package root exposes:
 
-- `src/sse.ts` — pure Datastar SSE event encoding, exposed through the explicit `ts-star/sse` subpath.
-- `src/contract.ts` — narrow Effect Schema-derived signal contracts: typed signal refs, initial props, and typed patches.
-- `src/ds.ts` — thin Datastar mirrors for expressions, signal references, fetch actions, modifiers, and attributes.
-- `src/html.ts` — tiny HTML node builder/renderer: `h`, `render`, `fragment`, `raw`, `props`, and `page`.
-- `src/jsx.ts` — experimental JSX adapter over the same HTML node model.
-- `src/read.ts` — concise request-boundary Datastar signal decoding over Effect Platform. It hides Datastar's GET/DELETE query-param vs body signal transport detail.
-- `src/reply.ts` — Datastar-safe response helpers: pages, SSE patches, event streams, no-content command completion, safe navigation, and explicit direct-response escape hatches.
-- `src/live.ts` — current-state live queries that emit Datastar element patch events and compose with `reply.stream`.
+- `ds` — Datastar actions, attributes, signal refs, and expression escape hatches.
+- `read` — Datastar signal decoding from a native `Request` with Standard Schema validation.
+- `reply` — Datastar-safe native `Response` helpers.
+- `h`, `render`, `fragment`, `raw`, `props`, `page` — tiny server HTML helpers.
 
-Datastar runtime inclusion is explicit HTML: add a normal `<script type="module" src="..."></script>` tag to the page head. `ts-star` does not inject, vendor, or serve the browser runtime for you.
+Explicit subpaths:
 
-Validation is demonstrated as an app-local recipe. Auth/session/CSRF/request limits are app-owned boundary concerns. Observability should use Effect/OpenTelemetry directly rather than a `ts-star` facade.
+- `ts-star/sse` — low-level Datastar SSE event encoding.
+- `ts-star/jsx` — optional server-only JSX adapter over the same HTML node model.
 
-## Layered model
-
-`ts-star` is organized around four layers:
-
-1. **Protocol layer** — Datastar wire format and response semantics (`reply`, plus low-level `ts-star/sse`).
-2. **View layer** — server-rendered HTML helpers, Datastar attributes (`ds`), and optional JSX adapter.
-3. **Runtime layer** — Effect request decoding, responses, scopes, and app-owned streams (`read`, `reply`).
-4. **Programming model layer** — backend-source-of-truth commands, query views, and current-state live queries (`live`).
-
-The programming model layer is intentionally minimal while any higher-level page/action DSL remains open.
+There is no core router, middleware system, dependency-injection context, runtime, PubSub, or application framework adapter. Hono is shown only as an example integration.
 
 ## Minimal counter
 
 ```ts
-import * as Effect from "effect/Effect"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import {
-  ds,
-  h,
-  props,
-  reply
-} from "ts-star"
+import { ds, h, props, reply } from "ts-star"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -60,27 +41,71 @@ const counterNode = () =>
     countNode()
   )
 
-const page = () => reply.page({
-  head: h("script", { type: "module", src: DATASTAR_CDN }),
-  body: counterNode()
-})
+export function handle(request: Request): Response {
+  const url = new URL(request.url)
 
-const increment = Effect.sync(() => {
-  count += 1
-  return reply.patch(countNode(), { selector: "#count", mode: "outer" })
-})
+  if (request.method === "GET" && url.pathname === "/") {
+    return reply.page({
+      head: h("script", { type: "module", src: DATASTAR_CDN }),
+      body: counterNode()
+    })
+  }
 
-export const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
-  HttpRouter.route("GET", "/", page()),
-  HttpRouter.route("POST", "/increment", increment)
-])))
+  if (request.method === "POST" && url.pathname === "/increment") {
+    count += 1
+    return reply.patch(countNode(), { selector: "#count", mode: "outer" })
+  }
+
+  return new Response("Not Found", { status: 404 })
+}
 ```
 
-See `examples/counter.ts` for the smallest backend-state element patch flow, `examples/tsx-counter.tsx` for a TSX syntax variant, `examples/search.ts` for Datastar-driven query params decoded with Effect Platform, `examples/live-counter.ts` for current-state live queries, `examples/runtime-counter.ts` for app-owned Effect services, and `examples/validation-form.ts` for recoverable validation patches.
+## Reading Datastar signals
+
+`read.signals(request, schema)` hides Datastar's transport detail: `GET`/`DELETE` read the `datastar` query parameter, while mutating methods read the request body as JSON. The schema can come from any Standard Schema-compatible validator.
+
+```ts
+import { z } from "zod"
+import { read, reply } from "ts-star"
+
+const CounterSignals = z.object({ count: z.number() })
+
+export async function increment(request: Request): Promise<Response> {
+  const { count } = await read.signals(request, CounterSignals)
+  return reply.signals({ count: count + 1 })
+}
+```
+
+Core depends only on `@standard-schema/spec` for public types. Zod, Valibot, ArkType, Effect Schema, or any compatible validator can be supplied by the application.
+
+## Responses
+
+`reply` helpers return native `Response` objects:
+
+- `reply.page(...)` — full HTML page/document response with normal HTTP status options.
+- `reply.patch(...)` — SSE element patch response.
+- `reply.signals(...)` — SSE signal patch response.
+- `reply.stream(...)` — SSE stream from iterable, async iterable, or `ReadableStream` event sources.
+- `reply.done(...)` — `204` command completion with no body.
+- `reply.navigate(...)` — safe direct script navigation.
+- `reply.directHtml(...)`, `reply.directSignals(...)`, `reply.directScript(...)` — flat explicit Datastar direct-response escape hatches.
+
+Datastar action helpers own their protocol status codes. Use plain `new Response(...)` for non-Datastar HTTP semantics such as ordinary `404` or API JSON errors.
+
+## Examples
+
+Reference examples live in `examples/`:
+
+- `counter.ts` — smallest backend-state element patch flow.
+- `tsx-counter.tsx` — same model using the explicit JSX adapter.
+- `search.ts` — Datastar-driven query URL example.
+- `live-counter.ts` — recipe-style app-owned SSE invalidation stream.
+- `validation-form.ts` — recoverable validation patches using Standard Schema-compatible Zod.
+- `hono-counter.ts` — Hono as an application-framework integration around `Request -> Response` helpers.
 
 ## Checking examples
 
-Use the focused package scripts when changing examples:
+Use focused package scripts when changing examples:
 
 ```sh
 pnpm run check:examples
@@ -88,23 +113,23 @@ pnpm run check:example:counter
 pnpm run check:example:tsx-counter
 pnpm run check:example:search
 pnpm run check:example:live-counter
-pnpm run check:example:runtime-counter
 pnpm run check:example:validation-form
+pnpm run check:example:hono-counter
 ```
 
 The `check:*` scripts run `typecheck` first, then the matching example test. Use `test:examples` or `test:example:*` when you only need Vitest.
 
 ## Running example dev servers
 
-Each dev script builds the TypeScript examples, then starts one example through Effect Platform's Node HTTP server. Examples include the versioned Datastar CDN script explicitly in their page head:
+Each dev script builds the TypeScript examples, then starts one example through a small local Node dev server that adapts Node HTTP to Web `Request`/`Response` objects. Examples include the versioned Datastar CDN script explicitly in their page head:
 
 ```sh
 pnpm run dev:counter
 pnpm run dev:tsx-counter
 pnpm run dev:search
 pnpm run dev:live-counter
-pnpm run dev:runtime-counter
 pnpm run dev:validation-form
+pnpm run dev:hono-counter
 ```
 
 The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or `HOST=0.0.0.0`.
@@ -113,11 +138,5 @@ The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or 
 
 - Backend state should be the durable source of truth.
 - Datastar signals should stay sparse and mostly ephemeral.
-- Effect should model runtime dependencies, typed errors, scopes, concurrency, and streams.
 - Server-rendered HTML should stay simple; external renderer output should cross the trust boundary explicitly with `raw(renderedHtml)`.
-- `ts-star` should not become a virtual DOM runtime, client router, React-style lifecycle system, complex browser store, or plugin-heavy frontend framework clone.
-
-## Open questions
-
-- What exact shape should future `Page` and `Action` APIs take?
-- Whether real-world usage justifies a public renderer adapter later.
+- `ts-star` should not become a virtual DOM runtime, client router, React-style lifecycle system, complex browser store, plugin-heavy framework clone, or application runtime.
