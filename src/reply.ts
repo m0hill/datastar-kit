@@ -43,7 +43,6 @@ export interface NavigateOptions extends DirectScriptOptions {
 }
 
 export type EventChunk = string | Uint8Array
-export type EventSource = Iterable<string> | AsyncIterable<EventChunk> | ReadableStream<EventChunk>
 export type StreamInput = string | Iterable<string> | AsyncIterable<EventChunk> | ReadableStream<EventChunk>
 
 export class NavigationUrlError extends Error {
