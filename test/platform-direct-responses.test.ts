@@ -39,7 +39,7 @@ describe("reply direct Datastar responses", () => {
       HttpRouter.route(
         "GET",
         "/html",
-        Effect.succeed(reply.page(h("main", {}, "Ada & Grace"), { status: 201, headers: { "x-html": "yes" } }))
+        Effect.succeed(reply.page({ body: h("main", {}, "Ada & Grace") }, { status: 201, headers: { "x-html": "yes" } }))
       )
     ])))
     const listener = await makePlatformListener(router)

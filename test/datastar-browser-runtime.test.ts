@@ -1,41 +1,34 @@
 import { execFile as execFileCallback, spawnSync } from "node:child_process"
-import { readFileSync } from "node:fs"
 import { createServer, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
 import { startExampleServer } from "../examples/dev-server.js"
-import { datastarDocument } from "../src/client.js"
 import { dataSignals, on, post, signal, text } from "../src/datastar.js"
-import { h, props } from "../src/html.js"
+import { h, page as htmlPage, props } from "../src/html.js"
 
 const execFile = promisify(execFileCallback)
 const agentBrowserAvailable = spawnSync("agent-browser", ["--version"], { stdio: "ignore" }).status === 0
 const browserIt = agentBrowserAvailable ? it : it.skip
-const vendorScript = readFileSync("vendor/datastar.js", "utf8")
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
-const page = (): string => {
+const runtimePage = (): string => {
   const count = signal<number, "count">("count")
 
-  return datastarDocument(
-    h(
+  return htmlPage({
+    head: h("script", { type: "module", src: DATASTAR_CDN }),
+    body: h(
       "main",
       props({ id: "app" }, dataSignals({ count: 0 }, { ifMissing: true })),
       h("output", props({ id: "count" }, text(count)), "0"),
       h("button", props({ id: "ignored", type: "button" }, on("click", post("/ignored"))), "ignored"),
       h("button", props({ id: "increment", type: "button" }, on("click", post("/increment"))), "+")
     )
-  )
+  })
 }
 
 const serveRuntimeFixture = async (): Promise<{ readonly server: Server; readonly url: string }> => {
   const server = createServer((request, response) => {
-    if (request.url === "/datastar.js") {
-      response.writeHead(200, { "content-type": "text/javascript; charset=utf-8" })
-      response.end(vendorScript)
-      return
-    }
-
     if (request.url === "/ignored") {
       response.writeHead(202, { "content-type": "application/json; charset=utf-8" })
       response.end(JSON.stringify({ count: 99 }))
@@ -49,7 +42,7 @@ const serveRuntimeFixture = async (): Promise<{ readonly server: Server; readonl
     }
 
     response.writeHead(200, { "content-type": "text/html; charset=utf-8" })
-    response.end(page())
+    response.end(runtimePage())
   })
 
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve))

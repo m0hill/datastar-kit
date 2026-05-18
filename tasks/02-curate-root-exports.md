@@ -40,7 +40,8 @@ Remove root-level named re-exports. Promote other modules only after a concrete 
 - `Platform`
 - `Model`
 - maybe narrowed `Contracts`
-- maybe `Client` only if asset/document helpers stay public
+
+`Client` is not public after T011; runtime script inclusion is explicit HTML.
 
 ## Likely non-public namespaces
 

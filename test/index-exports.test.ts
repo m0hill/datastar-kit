@@ -2,7 +2,6 @@ import * as Effect from "effect/Effect"
 import { describe, expect, it } from "vitest"
 import * as Root from "../src/index.js"
 import {
-  Client,
   contract,
   ds,
   live,
@@ -21,7 +20,10 @@ describe("package root exports", () => {
   it("exports the tiny HTML surface and small framework namespaces", async () => {
     expect("Platform" in Root).toBe(false)
     expect("platformRouter" in Root).toBe(false)
-    expect(Client.datastarDocument).toBeDefined()
+    expect("Client" in Root).toBe(false)
+    expect("datastarScript" in Root).toBe(false)
+    expect("datastarDocument" in Root).toBe(false)
+    expect("datastarPageResponse" in Root).toBe(false)
     expect(contract.signals).toBeDefined()
     expect(ds.signal).toBeDefined()
     expect(ds.delete).toBeDefined()

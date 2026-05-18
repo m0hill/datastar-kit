@@ -11,6 +11,8 @@ import * as reply from "../src/reply.js"
 import * as read from "../src/read.js"
 import type { JsonObject } from "../src/sse.js"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 export const ContactForm = contract.signals(
   Schema.Struct({
     name: Schema.String,
@@ -118,7 +120,10 @@ export const contactFormNode = () => {
 export const contactFormView = (): string => render(contactFormNode())
 
 export const contactFormPage = (): HttpServerResponse.HttpServerResponse =>
-  reply.page(contactFormNode())
+  reply.page({
+    head: h("script", { type: "module", src: DATASTAR_CDN }),
+    body: contactFormNode()
+  })
 
 const submitContactInner = Effect.gen(function*() {
   const input = yield* read.signals(ContactForm.schema)

@@ -3,8 +3,7 @@ import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 import * as Headers from "effect/unstable/http/Headers"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
-import { datastarDocument, type DatastarDocumentOptions } from "./client.js"
-import { render, type Child } from "./html.js"
+import { page as htmlPage, render, type Child, type PageOptions as HtmlPageOptions } from "./html.js"
 import {
   eventStream,
   patchElements,
@@ -37,7 +36,8 @@ export type DoneOptions = Omit<ResponseOptions, "contentType" | "status"> & {
   readonly status?: 204
 }
 
-export interface PageOptions extends DatastarDocumentOptions, ResponseOptions {}
+export type PageOptions = HtmlPageOptions
+export type PageResponseOptions = ResponseOptions
 
 export type EventSource = AsyncIterable<string> | Stream.Stream<string, unknown>
 export type StreamInput = ReadonlyArray<string> | EventSource
@@ -154,10 +154,13 @@ const withoutHeartbeat = (options: StreamOptions): BodyOptions => {
   return responseOptions
 }
 
-export const page = (body: Child, options: PageOptions = {}): HttpServerResponse.HttpServerResponse =>
-  HttpServerResponse.text(datastarDocument(body, options), {
-    ...options,
-    contentType: options.contentType ?? "text/html; charset=utf-8"
+export const page = (
+  options: PageOptions = {},
+  responseOptions: PageResponseOptions = {}
+): HttpServerResponse.HttpServerResponse =>
+  HttpServerResponse.text(htmlPage(options), {
+    ...responseOptions,
+    contentType: responseOptions.contentType ?? "text/html; charset=utf-8"
   })
 
 export const patch = (

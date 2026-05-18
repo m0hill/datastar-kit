@@ -10,7 +10,7 @@ See also [`performance-deployment.md`](performance-deployment.md) for compressio
 pnpm run build
 ```
 
-The build compiles TypeScript and copies the pinned Datastar client to `dist/vendor/datastar.js`.
+The build compiles TypeScript. It does not copy or serve the Datastar browser runtime.
 
 ## Run examples
 
@@ -19,7 +19,7 @@ pnpm run dev:counter
 PORT=4000 pnpm run dev:validation-form
 ```
 
-The dev server serves `/datastar.js` with no-cache headers. Production apps can use `Client.datastarClientFileRoute`, a CDN script tag, or an app-owned static file route.
+The example dev server only serves the app. Examples include a versioned Datastar CDN script tag explicitly in the page head. Production apps should likewise choose either a pinned CDN URL or an app-owned static file route.
 
 ## Runtime configuration
 
@@ -46,4 +46,16 @@ Production adapters should set normal platform concerns outside framework helper
 
 ## Datastar asset policy
 
-Pin the Datastar version you test against. Avoid silently floating production pages to an untested client runtime. Use `cacheControl` and custom `headers` on `Client.datastarClientResponse`, `datastarClientRoute`, or `datastarClientFileRoute` to choose no-cache development behavior, fingerprinted immutable production assets, or validation headers for stable URLs.
+Pin the Datastar version you test against. `ts-star` does not expose client asset helpers or a framework-owned `/datastar.js` route. Add the runtime explicitly:
+
+```ts
+page({
+  head: h("script", {
+    type: "module",
+    src: "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  }),
+  body
+})
+```
+
+If you self-host the file, serve it with your application or platform's normal static asset mechanism and cache headers.

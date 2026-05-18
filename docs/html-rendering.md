@@ -92,4 +92,4 @@ Function components, if used, are plain server render functions returning `Child
 
 ## External renderers
 
-There is no public renderer adapter interface yet. If an application uses another template system, render it to a string and pass that string to `reply.page(...)`, `reply.patch(...)`, or `render(...)` boundaries as appropriate.
+There is no public renderer adapter interface yet. If an application uses another template system, render it to a string and pass that string to `reply.page({ body: rendered })`, `reply.patch(...)`, or `render(...)` boundaries as appropriate.

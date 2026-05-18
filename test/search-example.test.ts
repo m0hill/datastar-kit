@@ -6,6 +6,8 @@ import { app, resultsView, searchPage, searchView } from "../examples/search.js"
 import * as ds from "../src/ds.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 let server: Server | undefined
 
 const serveListener = async (listener: RequestListener): Promise<string> => {
@@ -35,11 +37,11 @@ describe("search example", () => {
     expect(searchView()).toContain('data-on:input__debounce.200ms="@get(`/search?q=${encodeURIComponent($q)}`)"')
   })
 
-  it("returns a native search page that loads the Datastar client", async () => {
+  it("returns a native search page with an explicit Datastar client script", async () => {
     const html = await HttpServerResponse.toWeb(searchPage()).text()
 
     expect(html).toContain("<!doctype html>")
-    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
+    expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
     expect(html).toContain('id="search"')
   })
 

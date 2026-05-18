@@ -18,7 +18,8 @@ The package root exposes small contextual namespaces such as `ds`, `read`, `repl
 - `src/read.ts` — concise request-boundary Datastar signal decoding over Effect Platform. It hides Datastar's GET/DELETE query-param vs body signal transport detail.
 - `src/reply.ts` — Datastar-safe response helpers: pages, SSE patches, event streams, no-content command completion, safe navigation, and explicit direct-response escape hatches.
 - `src/live.ts` — current-state live queries that emit Datastar element patch events and compose with `reply.stream`.
-- `src/client.ts` — Datastar script/document helpers and Effect Platform routes for serving a pinned Datastar client asset.
+
+Datastar runtime inclusion is explicit HTML: add a normal `<script type="module" src="..."></script>` tag to the page head. `ts-star` does not inject, vendor, or serve the browser runtime for you.
 
 Validation is demonstrated as an app-local recipe. Auth/session/CSRF/request limits are app-owned boundary concerns. Observability should use Effect/OpenTelemetry directly rather than a `ts-star` facade.
 
@@ -27,7 +28,7 @@ Validation is demonstrated as an app-local recipe. Auth/session/CSRF/request lim
 `ts-star` is organized around four layers:
 
 1. **Protocol layer** — Datastar wire format and response semantics (`Sse`, `reply`).
-2. **View layer** — server-rendered HTML helpers, Datastar attributes (`ds`), optional JSX adapter, and client document helpers.
+2. **View layer** — server-rendered HTML helpers, Datastar attributes (`ds`), and optional JSX adapter.
 3. **Runtime layer** — Effect request decoding, responses, scopes, and app-owned streams (`read`, `reply`).
 4. **Programming model layer** — backend-source-of-truth commands, query views, and current-state live queries (`live`).
 
@@ -45,6 +46,8 @@ import {
   reply
 } from "ts-star"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 let count = 0
 
 const countNode = () => h("output", { id: "count" }, count)
@@ -57,7 +60,10 @@ const counterNode = () =>
     countNode()
   )
 
-const page = () => reply.page(counterNode())
+const page = () => reply.page({
+  head: h("script", { type: "module", src: DATASTAR_CDN }),
+  body: counterNode()
+})
 
 const increment = Effect.sync(() => {
   count += 1
@@ -90,7 +96,7 @@ The `check:*` scripts run `typecheck` first, then the matching example test. Use
 
 ## Running example dev servers
 
-Each dev script builds the TypeScript examples, copies the pinned vendored Datastar client into `dist/vendor/datastar.js`, then starts one example through Effect Platform's Node HTTP server. The dev server serves that framework-pinned client at `/datastar.js`:
+Each dev script builds the TypeScript examples, then starts one example through Effect Platform's Node HTTP server. Examples include the versioned Datastar CDN script explicitly in their page head:
 
 ```sh
 pnpm run dev:counter

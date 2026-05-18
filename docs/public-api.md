@@ -25,7 +25,7 @@ JSX is an explicit experimental adapter, not a root API and not a component runt
 
 ## Internal or recipe-only concerns
 
-The simplification roadmap is still deciding the final status of `Client`.
+There is no public `Client` namespace. Datastar runtime inclusion is explicit HTML in the page head; apps choose a pinned CDN URL or their own static serving.
 
 Validation is a recipe/pattern, not a public namespace. Auth/session/CSRF/request policy belongs to the application. Observability should use Effect/OpenTelemetry directly rather than a `ts-star` facade.
 
@@ -35,7 +35,7 @@ Do not add new root exports by default. Implementation-only helpers should stay 
 
 Do not add plugin discovery or adapter interfaces before there is real pressure.
 
-For external renderers, render to a string and pass it to `reply.page(...)` / `reply.patch(...)`. There is no public renderer interface yet.
+For external renderers, render to a string and pass it to `reply.page({ body: rendered })` / `reply.patch(...)`. There is no public renderer interface yet.
 
 ## What not to add
 

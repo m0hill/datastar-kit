@@ -14,6 +14,8 @@ import {
   reply
 } from "../src/index.js"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 export interface LiveCounterApp {
   readonly app: Effect.Effect<
     HttpServerResponse.HttpServerResponse,
@@ -48,7 +50,10 @@ const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<PubSub.PubSub<void>
     const updates = yield* updatesEffect
     let count = 0
 
-    const page = reply.page(pageNode())
+    const page = reply.page({
+      head: h("script", { type: "module", src: DATASTAR_CDN }),
+      body: pageNode()
+    })
 
     const loadCount = Effect.sync(() => count)
     const increment = Effect.suspend(() =>

@@ -42,7 +42,7 @@ Handle expected errors locally in the route when they should produce Datastar UI
 Use `reply.*` for response construction:
 
 ```ts
-return reply.page(view)
+return reply.page({ body: view })
 return reply.patch(fragment, { selector: "#result" })
 return reply.signals({ saved: true })
 return reply.stream(events, { heartbeat: { interval: "15 seconds" } })

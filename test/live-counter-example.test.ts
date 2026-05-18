@@ -8,6 +8,8 @@ import { countFragment, createLiveCounter, makeLiveCounterScoped, pageView } fro
 import { render } from "../src/html.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 let server: Server | undefined
 
 const serveListener = async (listener: RequestListener): Promise<string> => {
@@ -74,7 +76,7 @@ describe("live counter example", () => {
     expect(page.status).toBe(200)
     expect(html).toContain("<!doctype html>")
     expect(html).toContain("live-counter")
-    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
+    expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
     expect(increment.status).toBe(204)
     expect(liveCounter.currentCount()).toBe(1)
   })

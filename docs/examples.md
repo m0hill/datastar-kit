@@ -69,4 +69,4 @@ Security policy belongs to the app:
 
 ## Browser integration
 
-`test/datastar-browser-runtime.test.ts` runs a real browser with the pinned Datastar asset. It includes protocol fixtures and the backend-state counter reference example. Add browser tests when a behavior depends on the Datastar runtime, not just string encoding.
+`test/datastar-browser-runtime.test.ts` runs a real browser with the versioned Datastar CDN script used by examples. It includes protocol fixtures and the backend-state counter reference example. Add browser tests when a behavior depends on the Datastar runtime, not just string encoding.

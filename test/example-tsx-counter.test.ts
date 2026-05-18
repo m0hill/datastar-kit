@@ -6,6 +6,8 @@ import { CounterButton, makeTsxCounter, tsxCounterNode, tsxCounterPage, tsxCount
 import { render } from "../src/html.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 let server: Server | undefined
 
 const serveListener = async (listener: RequestListener): Promise<string> => {
@@ -41,11 +43,11 @@ describe("TSX counter example", () => {
     )
   })
 
-  it("returns a native page that loads the Datastar client", async () => {
+  it("returns a native page with an explicit Datastar client script", async () => {
     const html = await HttpServerResponse.toWeb(tsxCounterPage()).text()
 
     expect(html).toContain("<!doctype html>")
-    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
+    expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
     expect(html).toContain("ts-star TSX counter")
   })
 

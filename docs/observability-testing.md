@@ -6,7 +6,7 @@ Observability is not a public `ts-star` API. Applications should use Effect trac
 
 ## Browser integration
 
-`test/datastar-browser-runtime.test.ts` uses `agent-browser` with a real Chrome instance and the pinned `vendor/datastar.js`. It verifies actual Datastar runtime behavior such as:
+`test/datastar-browser-runtime.test.ts` uses `agent-browser` with a real Chrome instance and the same versioned Datastar CDN URL used by the examples. It verifies actual Datastar runtime behavior such as:
 
 - successful `200` direct JSON signal responses apply;
 - non-200 action bodies are not treated as UI patches;

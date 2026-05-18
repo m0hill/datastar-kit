@@ -7,11 +7,14 @@ import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   ds,
+  h,
   props as htmlProps,
   render,
   reply,
   type Child
 } from "../src/index.js"
+
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 import { Fragment, jsx } from "../src/jsx.js"
 
 export interface CounterButtonProps {
@@ -49,7 +52,10 @@ export const makeTsxCounter = (): TsxCounterExample => {
   let count = 0
 
   const tsxCounterPage = (): HttpServerResponse.HttpServerResponse =>
-    reply.page(tsxCounterNode(count))
+    reply.page({
+      head: h("script", { type: "module", src: DATASTAR_CDN }),
+      body: tsxCounterNode(count)
+    })
 
   const tsxIncrement = Effect.sync(() => {
     count += 1

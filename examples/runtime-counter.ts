@@ -13,6 +13,8 @@ import { h, props } from "../src/html.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 export class CounterStore extends Context.Service<CounterStore, {
   readonly current: Effect.Effect<number>
   readonly increment: Effect.Effect<number>
@@ -47,7 +49,10 @@ export const runtimeCounterNode = (countValue: number) =>
 export const runtimeCounterPage = Effect.gen(function*() {
   const store = yield* CounterStore
   const count = yield* store.current
-  return reply.page(runtimeCounterNode(count))
+  return reply.page({
+    head: h("script", { type: "module", src: DATASTAR_CDN }),
+    body: runtimeCounterNode(count)
+  })
 })
 
 export const runtimeCounterIncrement = Effect.gen(function*() {

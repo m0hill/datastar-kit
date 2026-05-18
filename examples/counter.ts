@@ -11,6 +11,8 @@ import {
   reply
 } from "../src/index.js"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 export const countNode = (count: number) => h("output", { id: "count" }, count)
 
 export const counterNode = (count = 0) =>
@@ -39,7 +41,10 @@ export const makeCounter = (): CounterExample => {
   let count = 0
 
   const page = (): HttpServerResponse.HttpServerResponse =>
-    reply.page(counterNode(count))
+    reply.page({
+      head: h("script", { type: "module", src: DATASTAR_CDN }),
+      body: counterNode(count)
+    })
 
   const increment = Effect.sync(() => {
     count += 1

@@ -5,6 +5,8 @@ import { afterEach, describe, expect, it } from "vitest"
 import { counterView, makeCounter, page } from "../examples/counter.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 let server: Server | undefined
 
 const serveListener = async (listener: RequestListener): Promise<string> => {
@@ -29,12 +31,12 @@ describe("counter example", () => {
     expect(counterView()).toContain('data-on:click="@post(&quot;/increment&quot;)"')
   })
 
-  it("returns a native page that loads the Datastar client", async () => {
+  it("returns a native page with an explicit Datastar client script", async () => {
     const response = HttpServerResponse.toWeb(page())
     const html = await response.text()
 
     expect(html).toContain("<!doctype html>")
-    expect(html).toContain('<script type="module" src="/datastar.js"></script>')
+    expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
   })
 
   it("dispatches the native example app routes", async () => {

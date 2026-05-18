@@ -36,14 +36,21 @@ CDN/proxy products have equivalent buffering and idle-timeout settings. Confirm 
 
 ## Datastar client asset
 
-Use one of the `Client` helpers to make the asset policy explicit:
+Datastar runtime inclusion is explicit HTML. `ts-star` does not provide a `Client` namespace, CDN constant, vendored runtime, or `/datastar.js` route.
 
-- development: `cache-control: no-cache` for quick iteration;
-- production fingerprinted path: `public, max-age=31536000, immutable`;
-- production stable `/datastar.js`: shorter max-age plus validation headers such as `etag`;
-- CDN: use `datastarScript("https://...")` only with a pinned version you test.
+For examples and quick starts, use a versioned CDN URL directly in the page head:
 
-The vendored `vendor/datastar.js` is the source of truth for examples. Do not silently float production pages to an untested Datastar runtime. Source maps are optional; if published, serve them with the same versioning policy as the script.
+```ts
+page({
+  head: h("script", {
+    type: "module",
+    src: "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  }),
+  body
+})
+```
+
+For production self-hosting, serve the Datastar runtime through your app/platform static asset mechanism. Choose normal cache headers for that path: no-cache for development, `public, max-age=31536000, immutable` for fingerprinted assets, or validation headers such as `etag` for stable paths.
 
 ## Stream scalability
 
@@ -69,7 +76,7 @@ Do not promise LiveView-style structural diffing or websocket-scale sync semanti
 
 Before shipping an app behind a proxy:
 
-1. Load a normal page and confirm the pinned Datastar script cache headers.
+1. Load a normal page and confirm it includes the pinned Datastar runtime script you chose.
 2. Trigger a direct HTML patch action and confirm a `200` Datastar response applies.
 3. Open a live query, wait longer than one heartbeat, and confirm the connection stays open.
 4. Mutate backend state from another request and confirm connected browsers receive the current rendered view.

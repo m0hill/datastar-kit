@@ -24,7 +24,7 @@ Top-level HTML helpers are the canonical server-rendering API:
 
 JSX is an explicit experimental adapter from `src/jsx.ts`, not a root API.
 
-- `Client` — Datastar script/document/client asset helpers.
+Datastar runtime inclusion is explicit HTML. Add a normal script tag to `page({ head, body })`; there is no public `Client` module or asset-serving helper.
 
 Docs: `html-rendering.md`.
 

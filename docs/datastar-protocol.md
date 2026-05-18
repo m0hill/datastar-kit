@@ -62,7 +62,7 @@ Datastar signals and form data are distinct request inputs. Use signals for spar
 
 ## Runtime validation
 
-`test/datastar-browser-runtime.test.ts` starts a real browser with `agent-browser`, loads the pinned `vendor/datastar.js`, performs Datastar actions, and verifies that:
+`test/datastar-browser-runtime.test.ts` starts a real browser with `agent-browser`, loads the versioned Datastar CDN script used by examples, performs Datastar actions, and verifies that:
 
 - a `200` JSON direct response updates a signal-driven DOM node;
 - a `202` JSON body is not treated as a Datastar UI patch.

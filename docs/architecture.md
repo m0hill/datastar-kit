@@ -58,7 +58,8 @@ Current files:
 - `src/jsx.ts` is an experimental adapter over the same HTML nodes, imported explicitly rather than through the package root.
 - `src/contract.ts` derives signal handles, initial props, and typed patches from Effect Schema contracts.
 - `src/ds.ts` / `src/datastar.ts` build thin Datastar mirrors for expressions, fetch actions, signal references, modifiers, and `data-*` attributes.
-- `src/client.ts` creates Datastar script tags/documents and serves pinned Datastar client assets through Effect Platform routes.
+
+Datastar runtime inclusion is explicit HTML in the page head. `ts-star` does not inject scripts, ship a public client asset helper, or serve `/datastar.js`.
 
 External renderers can pass rendered strings at response boundaries. A public renderer adapter interface should wait for real adapter pressure.
 

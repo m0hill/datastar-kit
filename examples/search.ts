@@ -11,6 +11,8 @@ import {
   reply
 } from "../src/index.js"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 interface Contact {
   readonly first: string
   readonly last: string
@@ -68,7 +70,10 @@ export const searchNode = () => {
 export const searchView = (): string => render(searchNode())
 
 export const searchPage = (): HttpServerResponse.HttpServerResponse =>
-  reply.page(searchNode())
+  reply.page({
+    head: h("script", { type: "module", src: DATASTAR_CDN }),
+    body: searchNode()
+  })
 
 export const searchRoute = HttpRouter.route(
   "GET",

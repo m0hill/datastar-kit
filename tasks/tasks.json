@@ -397,7 +397,7 @@
       "order": 11,
       "id": "T011",
       "title": "Delete client asset helpers and make Datastar runtime inclusion explicit",
-      "status": "pending",
+      "status": "done",
       "phase": "client-asset",
       "priority": "high",
       "grill_level": 3,
