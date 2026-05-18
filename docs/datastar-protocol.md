@@ -14,28 +14,25 @@ Use this policy for action helpers:
 
 Validation failures and recoverable domain errors should usually return `200` with a patch that renders the current error state. Reserve non-2xx statuses for generic HTTP clients or failures where no Datastar patch is expected.
 
-## Helper split
+## Response helpers
 
-`ts-star` intentionally keeps generic Effect Platform response helpers and Datastar action helpers separate.
+Use `reply` for Datastar-aware responses:
 
-Generic helpers such as `platformHtmlResponse` and lower-level `platform*Response` functions can still carry arbitrary HTTP status codes when you need normal HTTP behavior.
+- `reply.page(...)` — full HTML page/document response. This is normal HTTP and may use page-level statuses such as `404`.
+- `reply.patch(...)` — blessed SSE element patch response.
+- `reply.signals(...)` — blessed SSE signal patch response.
+- `reply.stream(...)` — SSE event stream response for multiple or long-lived events.
+- `reply.done(...)` — `204` command completion with no body.
+- `reply.navigate(...)` — safe Datastar direct script response for browser navigation.
+- `reply.direct.*` — explicit direct-response escape hatches for Datastar HTML, JSON signal, and script direct responses.
 
-Datastar action helpers encode the browser runtime policy in their types and runtime checks:
+SSE patch helpers are the default path. Direct responses remain available because Datastar supports them, but they should not become a parallel response style in ordinary app code.
 
-- `datastarPatchElementsResponse(...)`
-- `datastarPatchSignalsResponse(...)`
-- `datastarSseResponse(...)`
-- `datastarEventStreamResponse(...)`
-- `datastarHtmlPatchResponse(...)`
-- `datastarJsonSignalsResponse(...)`
-- `datastarScriptResponse(...)`
-- `datastarNoContentResponse(...)`
-
-Body helpers only accept/emit `200`. `datastarNoContentResponse` only accepts/emits `204`.
+Body helpers only accept/emit `200`. `reply.done` only accepts/emits `204`.
 
 ## Direct response headers
 
-The direct response helpers preserve Datastar header names used by the browser runtime:
+The direct response escape hatches preserve Datastar header names used by the browser runtime:
 
 - `datastar-selector`
 - `datastar-mode`
@@ -46,22 +43,22 @@ The direct response helpers preserve Datastar header names used by the browser r
 
 SSE event encoding remains in `src/sse.ts` and is checked against Datastar SDK fixtures, including multiline data fields and default option omission.
 
-## Signals vs forms
+## Signal decoding
 
-Datastar signals and form data are distinct request inputs.
+Use `read.signals(schema)` for Datastar signal payloads.
 
-Use **signals** for sparse browser state that the Datastar runtime sends with an action: counters, selected IDs, validation flags, loading indicators, and small request parameters. Decode them with:
+`read.signals` intentionally hides Datastar's transport detail:
 
-- `platformReadSignals(schema)`
-- `platformReadSignalsFromRequest(request, schema)`
+- `GET`/`DELETE` actions read the `datastar` query parameter.
+- Other methods read the request body as JSON.
 
-Use **forms** when the browser sends user-entered form data, especially with `contentType: "form"`, URL-encoded posts, or file uploads. Decode them with:
+Invalid JSON and schema mismatches fail through standard Effect Schema decoding errors. There is no public ts-star parse error class.
 
-- `platformReadUrlEncodedForm(schema)` / `platformReadUrlEncodedFormFromRequest(request, schema)` for `application/x-www-form-urlencoded`.
-- `platformReadForm(schema)` / `platformReadFormFromRequest(request, schema)` when a handler accepts either URL-encoded or multipart form data.
-- `platformReadMultipart(schema)` / `platformReadMultipartFromRequest(request, schema)` when a handler specifically requires persisted multipart data.
+## Forms and other request bodies
 
-Multipart decoding uses Effect Platform multipart facilities and therefore needs the normal platform services (`Scope`, filesystem, and path services) at the runtime edge.
+`ts-star` does not expose generic form, multipart, body, or query readers. Use Effect Platform directly for those HTTP concerns until the framework has a concrete form/file-upload story.
+
+Datastar signals and form data are distinct request inputs. Use signals for sparse browser state sent by Datastar actions; use normal Effect Platform request APIs for ordinary form posts, file uploads, and non-Datastar HTTP endpoints.
 
 ## Runtime validation
 

@@ -1,6 +1,4 @@
 import * as Effect from "effect/Effect"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { describe, expect, it } from "vitest"
 import * as Root from "../src/index.js"
 import {
@@ -8,25 +6,21 @@ import {
   contract,
   ds,
   live,
-  Platform,
   read,
   reply,
   Sse,
   fragment,
   h,
   page,
-  platformRouter,
   props,
   raw,
   render
 } from "../src/index.js"
 
 describe("package root exports", () => {
-  it("exports the tiny HTML surface, native Effect Platform helpers, and namespaces", async () => {
-    const app = platformRouter(HttpRouter.route("GET", "/", HttpServerResponse.text("ok")))
-
-    expect(app).toBeDefined()
-    expect(Platform.platformRouter).toBe(platformRouter)
+  it("exports the tiny HTML surface and small framework namespaces", async () => {
+    expect("Platform" in Root).toBe(false)
+    expect("platformRouter" in Root).toBe(false)
     expect(Client.datastarDocument).toBeDefined()
     expect(contract.signals).toBeDefined()
     expect(ds.signal).toBeDefined()
@@ -55,6 +49,8 @@ describe("package root exports", () => {
     expect("FormValidationError" in Root).toBe(false)
     expect("Telemetry" in Root).toBe(false)
     expect(read.signals).toBeDefined()
+    expect("query" in read).toBe(false)
+    expect("signalsFrom" in read).toBe(false)
     expect(reply.patch).toBeDefined()
     expect(reply.navigate).toBeDefined()
     expect(Sse.patchSignals).toBeDefined()

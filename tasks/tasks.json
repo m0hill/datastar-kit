@@ -356,7 +356,7 @@
       "order": 10,
       "id": "T010",
       "title": "Delete Platform as public API and keep only read.signals",
-      "status": "pending",
+      "status": "done",
       "phase": "platform",
       "priority": "critical",
       "grill_level": 4,

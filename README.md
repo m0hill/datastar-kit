@@ -15,8 +15,7 @@ The package root exposes small contextual namespaces such as `ds`, `read`, `repl
 - `src/ds.ts` / `src/datastar.ts` — thin Datastar mirrors for expressions, signal references, fetch actions, modifiers, and attributes.
 - `src/html.ts` — tiny HTML node builder/renderer: `h`, `render`, `fragment`, `raw`, `props`, and `page`.
 - `src/jsx.ts` — experimental JSX adapter over the same HTML node model.
-- `src/platform.ts` — Effect Platform HTTP integration: route composition, Datastar request detection, signal/query/form decoding with Effect Schema, and generic HTTP helpers still under cleanup.
-- `src/read.ts` — concise request-boundary signal/query decoding helpers over Effect Platform.
+- `src/read.ts` — concise request-boundary Datastar signal decoding over Effect Platform. It hides Datastar's GET/DELETE query-param vs body signal transport detail.
 - `src/reply.ts` — Datastar-safe response helpers: pages, SSE patches, event streams, no-content command completion, safe navigation, and explicit direct-response escape hatches.
 - `src/live.ts` — current-state live queries that emit Datastar element patch events and compose with `reply.stream`.
 - `src/client.ts` — Datastar script/document helpers and Effect Platform routes for serving a pinned Datastar client asset.
@@ -27,9 +26,9 @@ Validation is demonstrated as an app-local recipe. Auth/session/CSRF/request lim
 
 `ts-star` is organized around four layers:
 
-1. **Protocol layer** — Datastar wire format and response semantics (`Sse`, protocol-facing `Platform` helpers).
+1. **Protocol layer** — Datastar wire format and response semantics (`Sse`, `reply`).
 2. **View layer** — server-rendered HTML helpers, Datastar attributes (`ds`), optional JSX adapter, and client document helpers.
-3. **Runtime layer** — Effect request decoding, responses, scopes, and app-owned streams (`read`, `reply`, `Platform`).
+3. **Runtime layer** — Effect request decoding, responses, scopes, and app-owned streams (`read`, `reply`).
 4. **Programming model layer** — backend-source-of-truth commands, query views, and current-state live queries (`live`).
 
 The programming model layer is intentionally minimal while any higher-level page/action DSL remains open.
@@ -43,7 +42,6 @@ import {
   ds,
   h,
   props,
-  platformRouter,
   reply
 } from "ts-star"
 
@@ -66,13 +64,13 @@ const increment = Effect.sync(() => {
   return reply.patch(countNode(), { selector: "#count", mode: "outer" })
 })
 
-export const app = platformRouter(
+export const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
   HttpRouter.route("GET", "/", page()),
   HttpRouter.route("POST", "/increment", increment)
-)
+])))
 ```
 
-See `examples/counter.ts` for the smallest backend-state element patch flow, `examples/tsx-counter.tsx` for a TSX syntax variant, `examples/search.ts` for query-input signals, `examples/live-counter.ts` for current-state live queries, `examples/runtime-counter.ts` for app-owned Effect services, and `examples/validation-form.ts` for recoverable validation patches.
+See `examples/counter.ts` for the smallest backend-state element patch flow, `examples/tsx-counter.tsx` for a TSX syntax variant, `examples/search.ts` for Datastar-driven query params decoded with Effect Platform, `examples/live-counter.ts` for current-state live queries, `examples/runtime-counter.ts` for app-owned Effect services, and `examples/validation-form.ts` for recoverable validation patches.
 
 ## Checking examples
 

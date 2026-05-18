@@ -1,5 +1,4 @@
 import * as Effect from "effect/Effect"
-import * as Result from "effect/Result"
 import * as Schema from "effect/Schema"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
@@ -63,15 +62,25 @@ describe("schema-derived signal contracts", () => {
   it("uses the contract schema explicitly at the request boundary", async () => {
     const request = nativeRequest("http://localhost/increment", JSON.stringify({ count: 1, draft: "Ada", nested: { enabled: true } }))
 
-    await expect(Effect.runPromise(read.signalsFrom(request, Counter.schema))).resolves.toEqual({
+    await expect(
+      Effect.runPromise(
+        read.signals(Counter.schema).pipe(
+          Effect.provideService(HttpServerRequest.HttpServerRequest, request)
+        )
+      )
+    ).resolves.toEqual({
       count: 1,
       draft: "Ada",
       nested: { enabled: true }
     })
 
     const bad = nativeRequest("http://localhost/increment", JSON.stringify({ count: "bad", draft: "Ada", nested: { enabled: true } }))
-    const result = await Effect.runPromise(Effect.result(read.signalsFrom(bad, Counter.schema)))
+    const result = await Effect.runPromise(
+      Effect.result(read.signals(Counter.schema)).pipe(
+        Effect.provideService(HttpServerRequest.HttpServerRequest, bad)
+      )
+    )
 
-    expect(Result.isFailure(result)).toBe(true)
+    expect(result._tag).toBe("Failure")
   })
 })

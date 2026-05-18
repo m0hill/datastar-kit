@@ -10,7 +10,6 @@ import type * as Scope from "effect/Scope"
 import * as contract from "../src/contract.js"
 import * as ds from "../src/ds.js"
 import { h, props } from "../src/html.js"
-import { platformRouter } from "../src/platform.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
 
@@ -64,10 +63,10 @@ export const runtimeCounterApp: Effect.Effect<
   HttpServerResponse.HttpServerResponse,
   unknown,
   CounterStore | Scope.Scope | HttpServerRequest.HttpServerRequest
-> = platformRouter(
+> = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
   HttpRouter.route("GET", "/", runtimeCounterPage),
   HttpRouter.route("POST", "/increment", runtimeCounterIncrement)
-)
+])))
 
 export const runtimeCounterLayer = CounterStoreLive
 

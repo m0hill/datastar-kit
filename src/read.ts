@@ -1,22 +1,24 @@
+import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
-import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
-import {
-  platformReadQuery,
-  platformReadQueryFromRequest,
-  platformReadSignals,
-  platformReadSignalsFromRequest
-} from "./platform.js"
+import * as HttpServerError from "effect/unstable/http/HttpServerError"
+import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 
-export const signals = <A, R>(schema: Schema.Decoder<A, R>) => platformReadSignals(schema)
+const methodsWithQuerySignals = new Set(["GET", "DELETE"])
 
-export const signalsFrom = <A, R>(
-  request: HttpServerRequest.HttpServerRequest,
+const rawSignals = (
+  request: HttpServerRequest.HttpServerRequest
+): Effect.Effect<string, HttpServerError.HttpServerError> => {
+  if (methodsWithQuerySignals.has(request.method)) {
+    return Effect.succeed(new URL(request.url, "http://localhost").searchParams.get("datastar") ?? "{}")
+  }
+
+  return request.text.pipe(Effect.map((body) => body.length === 0 ? "{}" : body))
+}
+
+export const signals = <A, R>(
   schema: Schema.Decoder<A, R>
-) => platformReadSignalsFromRequest(request, schema)
-
-export const query = <A, R>(schema: Schema.Decoder<A, R>) => platformReadQuery(schema)
-
-export const queryFrom = <A, R>(
-  request: HttpServerRequest.HttpServerRequest,
-  schema: Schema.Decoder<A, R>
-) => platformReadQueryFromRequest(request, schema)
+): Effect.Effect<A, HttpServerError.HttpServerError | Schema.SchemaError, R | HttpServerRequest.HttpServerRequest> =>
+  HttpServerRequest.HttpServerRequest.pipe(
+    Effect.flatMap(rawSignals),
+    Effect.flatMap(Schema.decodeUnknownEffect(Schema.fromJsonString(schema)))
+  )

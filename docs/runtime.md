@@ -25,12 +25,15 @@ Use Effect services/layers for domain capabilities:
 
 ## Request boundary
 
-Use `read.*` for request-boundary decoding:
+Use `read.signals` for Datastar signal decoding:
 
 ```ts
 const signals = yield* read.signals(Contact.schema)
-const query = yield* read.query(Search.schema)
 ```
+
+`read.signals` handles both Datastar signal transports internally: GET/DELETE `?datastar=...` and body JSON for mutating methods.
+
+Use Effect Platform directly for ordinary query params, forms, multipart bodies, and non-Datastar HTTP inputs.
 
 Handle expected errors locally in the route when they should produce Datastar UI feedback. Use normal Effect error handling and normal Effect Platform responses for non-Datastar HTTP errors.
 

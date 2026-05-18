@@ -5,7 +5,6 @@ import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { h } from "../src/html.js"
-import { platformRouter } from "../src/platform.js"
 import * as reply from "../src/reply.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -29,13 +28,13 @@ afterEach(async () => {
 
 describe("reply SSE responses", () => {
   it("serves Datastar SSE streams", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route(
         "GET",
         "/events",
         Effect.succeed(reply.stream(["event: ready\n\n"], { headers: { "x-sse": "yes" } }))
       )
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/events`)
 
@@ -47,13 +46,13 @@ describe("reply SSE responses", () => {
   })
 
   it("serves Datastar signal patch responses", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route(
         "GET",
         "/signals",
         Effect.succeed(reply.signals({ count: 1 }, undefined, { headers: { "x-signals": "yes" } }))
       )
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/signals`)
 
@@ -62,13 +61,13 @@ describe("reply SSE responses", () => {
   })
 
   it("renders HTML nodes in element patches", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route(
         "GET",
         "/elements",
         Effect.succeed(reply.patch(h("span", {}, "Ada & Grace"), { selector: "#name" }))
       )
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/elements`)
 
@@ -78,13 +77,13 @@ describe("reply SSE responses", () => {
   })
 
   it("streams Effect Stream SSE responses", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route(
         "GET",
         "/live",
         Effect.succeed(reply.stream(Stream.make("event: first\n\n", "event: second\n\n")))
       )
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/live`)
 
@@ -93,13 +92,13 @@ describe("reply SSE responses", () => {
   })
 
   it("streams Effect Stream responses with headers", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route(
         "GET",
         "/stream-meta",
         Effect.succeed(reply.stream(Stream.make("event: meta\n\n"), { headers: { "x-stream": "effect" } }))
       )
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/stream-meta`)
 

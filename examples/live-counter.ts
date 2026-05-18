@@ -9,7 +9,6 @@ import {
   ds,
   h,
   live,
-  platformRouter,
   props,
   render,
   reply
@@ -73,11 +72,11 @@ const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<PubSub.PubSub<void>
     const shutdown = PubSub.shutdown(updates)
 
     return {
-      app: platformRouter(
+      app: Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
         HttpRouter.route("GET", "/", page),
         HttpRouter.route("POST", "/increment", increment),
         HttpRouter.route("GET", "/live", liveRoute)
-      ),
+      ]))),
       page,
       increment,
       live: liveRoute,

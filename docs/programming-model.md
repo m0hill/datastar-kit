@@ -36,7 +36,7 @@ Commands represent intent: add todo, toggle item, save profile, upload avatar.
 
 Guidelines:
 
-- Decode untrusted request input with Effect Schema through `read.*` helpers.
+- Decode Datastar signal input with Effect Schema through `read.signals`; use Effect Platform directly for other request inputs.
 - Mutate backend state inside the command.
 - Publish invalidations after successful mutations when live/current views should refresh.
 - Return `reply.done()` by default when no immediate UI feedback is needed.

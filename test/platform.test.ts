@@ -5,7 +5,6 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { platformRouter } from "../src/platform.js"
 import { stream } from "../src/reply.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -29,10 +28,10 @@ afterEach(async () => {
 
 describe("Effect Platform HTTP runtime", () => {
   it("dispatches native Effect Platform routes", async () => {
-    const app = platformRouter(
+    const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route("GET", "/", HttpServerResponse.text("home")),
       HttpRouter.route("POST", "/submit", HttpServerResponse.text("submitted", { status: 201 }))
-    )
+    ])))
     const listener = await makePlatformListener(app)
     const origin = await serveListener(listener)
 
@@ -56,9 +55,9 @@ describe("Effect Platform HTTP runtime", () => {
       Stream.concat(Stream.fromEffect(Effect.promise(() => second).pipe(Effect.as("event: second\n\n"))))
     )
 
-    const app = platformRouter(
+    const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route("GET", "/events", Effect.succeed(stream(events)))
-    )
+    ])))
     const listener = await makePlatformListener(app)
     const origin = await serveListener(listener)
     const response = await fetch(`${origin}/events`)

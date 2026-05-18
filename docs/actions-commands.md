@@ -5,7 +5,7 @@ Actions are HTTP routes triggered by Datastar attributes. Commands are actions t
 ## Default command flow
 
 1. Render HTML with a Datastar action attribute such as `data-on:click="@post('/increment')"`.
-2. Decode request query/body/signals with Effect Schema through `read.*` helpers.
+2. Decode Datastar signals with `read.signals(...)`, or use Effect Platform directly for non-Datastar query/body/form inputs.
 3. Check security/session/CSRF requirements in app code when needed.
 4. Mutate backend state through an app-owned Effect service.
 5. Return `reply.done()` for no immediate UI feedback, or return a Datastar patch/stream through `reply.*`.
@@ -28,4 +28,4 @@ Commands may read sparse browser signals, but durable state belongs in backend s
 
 ## Typed inputs
 
-Use `contract.signals(schema)` when a signal shape should produce typed Datastar refs, initial signal props, and typed patches. Decode at the request boundary with `read.signals(Contact.schema)` or `read.query(Search.schema)`.
+Use `contract.signals(schema)` when a signal shape should produce typed Datastar refs, initial signal props, and typed patches. Decode Datastar signal payloads at the request boundary with `read.signals(Contact.schema)`.

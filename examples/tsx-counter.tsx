@@ -8,7 +8,6 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   ds,
   props as htmlProps,
-  platformRouter,
   render,
   reply,
   type Child
@@ -60,10 +59,10 @@ export const makeTsxCounter = (): TsxCounterExample => {
   return {
     page: tsxCounterPage,
     increment: tsxIncrement,
-    app: platformRouter(
+    app: Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route("GET", "/", tsxCounterPage()),
       HttpRouter.route("POST", "/increment", tsxIncrement)
-    ),
+    ]))),
     currentCount: () => count
   }
 }

@@ -1,3 +1,4 @@
+import * as Effect from "effect/Effect"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { readFileSync } from "node:fs"
@@ -16,7 +17,6 @@ import {
   datastarScript
 } from "../src/client.js"
 import { h, render } from "../src/html.js"
-import { platformRouter } from "../src/platform.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 const datastarJsPath = resolve("vendor", "datastar.js")
@@ -85,7 +85,9 @@ describe("Datastar client asset helpers", () => {
   })
 
   it("creates a route for provided Datastar client content", async () => {
-    const app = platformRouter(datastarClientRoute("export {}"))
+    const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
+      datastarClientRoute("export {}")
+    ])))
     const listener = await makePlatformListener(app)
     const response = await fetch(`${await serveListener(listener)}/datastar.js`)
 
@@ -94,12 +96,12 @@ describe("Datastar client asset helpers", () => {
   })
 
   it("pairs app routes with a default Datastar client route", async () => {
-    const app = platformRouter(
+    const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       ...datastarClientRoutes(
         "export const datastar = true",
         HttpRouter.route("GET", "/", datastarPageResponse(h("main", {}, "Ready")))
       )
-    )
+    ])))
     const listener = await makePlatformListener(app)
     const origin = await serveListener(listener)
 
@@ -113,7 +115,9 @@ describe("Datastar client asset helpers", () => {
 
   it("can serve the included minified datastar.js file", async () => {
     const expected = readFileSync(datastarJsPath, "utf8")
-    const app = platformRouter(datastarClientFileRoute(datastarJsPath))
+    const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
+      datastarClientFileRoute(datastarJsPath)
+    ])))
     const listener = await makePlatformListener(app)
     const response = await fetch(`${await serveListener(listener)}/datastar.js`)
 
@@ -123,12 +127,12 @@ describe("Datastar client asset helpers", () => {
 
   it("pairs app routes with a file-backed Datastar client route", async () => {
     const expected = readFileSync(datastarJsPath, "utf8")
-    const app = platformRouter(
+    const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       ...datastarClientFileRoutes(
         datastarJsPath,
         HttpRouter.route("GET", "/", datastarPageResponse(h("main", {}, "Ready")))
       )
-    )
+    ])))
     const listener = await makePlatformListener(app)
     const origin = await serveListener(listener)
 

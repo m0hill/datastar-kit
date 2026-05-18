@@ -6,7 +6,7 @@ This is a map to the current source modules and concept docs.
 
 - `Sse` — low-level event encoding (`patchElements`, `patchSignals`, `executeScript`, stream concatenation).
 - `ds` — thin Datastar mirrors for actions, attributes, signal refs, and expression escape hatches.
-- `read` — request-boundary signal/query decoding helpers.
+- `read` — request-boundary Datastar signal decoding.
 - `reply` — Datastar-safe response helpers. SSE patch helpers are the blessed path; `reply.direct.*` is the direct-response escape hatch.
 
 Docs: `datastar-philosophy.md`, `datastar-protocol.md`, `signals.md`.
@@ -37,7 +37,7 @@ Docs: `type-contracts.md`, `programming-model.md`, `actions-commands.md`, `live-
 
 ## Cross-cutting guidance
 
-- Validation is a recipe/pattern built from `read.*`, app-local errors, local Datastar signals, and `reply.signals(...)` / `reply.patch(...)`.
+- Validation is a recipe/pattern built from `read.signals(...)`, app-local errors, local Datastar signals, and `reply.signals(...)` / `reply.patch(...)`.
 - Auth, sessions, CSRF, and request limits are app-owned security boundary concerns, not public framework modules.
 - Safe Datastar-driven navigation is handled by `reply.navigate(...)`.
 - Observability should use Effect tracing/OpenTelemetry directly; browser/runtime testing guidance lives in `observability-testing.md`.

@@ -19,7 +19,7 @@ Keep this style for protocol changes that depend on browser behavior. Unit tests
 Coverage is layered:
 
 - **Pure unit tests** — SSE fixtures, multiline data, default omission behavior, signal naming, HTML escaping, safe navigation URL validation.
-- **Request/response tests** — Effect Platform routes, `read.*` helpers, `reply.*` helpers, and Datastar response status semantics.
+- **Request/response tests** — Effect Platform routes, `read.signals`, `reply.*` helpers, and Datastar response status semantics.
 - **Live-query tests** — current-state render-on-connect behavior and invalidation-trigger semantics.
 - **Browser tests** — actual Datastar runtime behavior for direct responses and actions.
 - **Type tests** — `@ts-expect-error` coverage for contracts and public API boundaries.

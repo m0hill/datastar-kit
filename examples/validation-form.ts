@@ -7,7 +7,6 @@ import type * as Scope from "effect/Scope"
 import * as contract from "../src/contract.js"
 import * as ds from "../src/ds.js"
 import { h, props, render } from "../src/html.js"
-import { platformRouter } from "../src/platform.js"
 import * as reply from "../src/reply.js"
 import * as read from "../src/read.js"
 import type { JsonObject } from "../src/sse.js"
@@ -160,7 +159,7 @@ export const app: Effect.Effect<
   HttpServerResponse.HttpServerResponse,
   unknown,
   Scope.Scope | HttpServerRequest.HttpServerRequest
-> = platformRouter(
+> = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
   HttpRouter.route("GET", "/", contactFormPage()),
   HttpRouter.route("POST", "/contact", submitContact)
-)
+])))

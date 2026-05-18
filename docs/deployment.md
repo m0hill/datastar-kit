@@ -31,7 +31,7 @@ Use Effect layers for app-owned dependencies:
 - error mapping;
 - telemetry/tracing.
 
-`ts-star` does not provide a runtime service catalog. App code composes ordinary Effect services with `read.*`, `reply.*`, and `live.query(...)`.
+`ts-star` does not provide a runtime service catalog. App code composes ordinary Effect services with `read.signals`, `reply.*`, and `live.query(...)`.
 
 ## HTTP concerns
 

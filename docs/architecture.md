@@ -8,7 +8,7 @@ This document is the baseline for future roadmap work. New APIs should fit one o
 
 `ts-star` is not only a Datastar protocol SDK and not yet a complete application framework. It is a layered package with two public faces:
 
-1. **Low-level SDK surface** for Datastar events, attributes, signal decoding, HTML rendering, and Effect Platform responses.
+1. **Low-level SDK surface** for Datastar events, attributes, Datastar signal decoding, HTML rendering, and response construction.
 2. **Framework surface** that should guide applications toward backend-source-of-truth pages, actions, and live queries.
 
 The low-level surface remains available for escape hatches and small apps. The framework surface is where request decoding, response semantics, and realtime semantics should converge without taking over app-owned security or observability policy.
@@ -19,7 +19,7 @@ These are baseline decisions for the rest of the roadmap:
 
 - **Backend state is the source of truth.** Browser signals are sparse request inputs and UI affordances, not the primary application store.
 - **Datastar is the browser runtime and patch protocol.** `ts-star` should generate Datastar-compatible attributes, direct responses, and SSE events rather than wrapping Datastar in a separate client framework.
-- **Effect owns the runtime model.** Request lifecycle, dependencies, typed errors, resource scopes, concurrency, streams, and realtime resources should be modeled with Effect services/layers as the framework surface grows.
+- **Effect owns app runtime concerns.** Dependencies, typed errors, resource scopes, concurrency, streams, and realtime resources should be modeled with app-owned Effect services/layers rather than a ts-star runtime service catalog.
 - **HTML is generated on the server.** The current builder and JSX factory are intentionally small; the renderer boundary must remain open for adapters.
 - **Datastar direct responses and SSE streams are first-class.** Commands can return `204`, direct HTML/JSON/script responses, or SSE patch streams depending on browser runtime semantics.
 - **Signals are mostly ephemeral.** They should support form/input state, validation feedback, loading/indicator flags, and request parameters without becoming hidden client-side app state.
@@ -44,7 +44,7 @@ Owns the Datastar wire format and direct response semantics.
 Current files:
 
 - `src/sse.ts` encodes Datastar SSE events: element patches, signal patches, signal removal, script execution, and event stream concatenation.
-- Protocol-facing helpers in `src/platform.ts` turn those events into Effect Platform HTTP responses and direct Datastar response types.
+- `src/reply.ts` turns those events into Datastar-aware HTTP responses and direct-response escape hatches.
 
 Future work in this layer should be driven by runtime-backed Datastar behavior, not guessed protocol interpretations.
 
@@ -68,8 +68,8 @@ Owns Effect-native request handling, decoding, responses, streaming, and resourc
 
 Current files:
 
-- `src/platform.ts` adapts Effect Platform HTTP requests/responses, decodes query params and Datastar signals, and exposes router composition.
-- `src/read.ts` provides concise request-boundary decoding helpers.
+- `src/read.ts` provides concise request-boundary Datastar signal decoding. It internally handles Datastar's GET/DELETE query-param signal transport and body JSON transport.
+- Apps use Effect Platform directly for routing, query params, forms, multipart bodies, and non-Datastar HTTP inputs.
 - `src/reply.ts` provides Datastar-safe page, patch, stream, direct-response, and no-content helpers.
 
 Future runtime work should introduce framework services only when they simplify lifecycle, typed error handling, cancellation, or shared dependencies enough to justify the added surface area.
@@ -91,7 +91,7 @@ The current helpers (`reply.done`, `reply.patch`, `reply.stream`, and `live.quer
 The public boundary is being simplified before release. The current app-facing direction is:
 
 - `ds` for Datastar browser-facing primitives.
-- `read` for request-boundary decoding.
+- `read` for Datastar signal decoding.
 - `reply` for Datastar-safe responses.
 - `contract` for narrow schema-derived signal contracts.
 - `live` for current-state live query event streams.
@@ -104,7 +104,7 @@ Implementation-only code should live under `src/internal/**` or stay unexported 
 ## Naming conventions
 
 - Keep low-level helpers named after the Datastar concept they generate: `patchSignals`, `dataSignals`, `on`, `post`, `indicator`, etc.
-- Prefix Effect Platform-specific helpers with `platform` while this is the only runtime adapter.
+- Do not expose `platform*` helpers as app-facing API; use Effect Platform directly for routing and generic HTTP concerns.
 - Use short contextual namespaces for app-facing helpers: `ds`, `read`, `reply`, `contract`, and `live`. Keep route DSL names such as `action` reserved until the abstraction exists.
 - Prefer explicit names over magic conventions at module boundaries.
 
@@ -113,8 +113,8 @@ Implementation-only code should live under `src/internal/**` or stay unexported 
 A typical action should flow like this:
 
 1. Server-rendered HTML includes Datastar attributes such as `data-on:click="@post('/increment')"`.
-2. The browser runtime sends a Datastar request with sparse signals or query params.
-3. An Effect handler decodes those inputs with an Effect Schema at the request boundary.
+2. The browser runtime sends a Datastar request with sparse signals.
+3. An Effect handler decodes Datastar signals with `read.signals(schema)` or uses Effect Platform directly for non-Datastar inputs.
 4. The handler reads/mutates backend state.
 5. The response is a Datastar-compatible direct response or SSE patch stream.
 6. The browser applies the patch; durable state remains on the backend.

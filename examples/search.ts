@@ -1,12 +1,11 @@
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   ds,
   h,
-  platformReadQuery,
-  platformRouter,
   props,
   render,
   reply
@@ -74,12 +73,12 @@ export const searchPage = (): HttpServerResponse.HttpServerResponse =>
 export const searchRoute = HttpRouter.route(
   "GET",
   "/search",
-  platformReadQuery(SearchQuery).pipe(
+  HttpServerRequest.schemaSearchParams(SearchQuery).pipe(
     Effect.map(({ q }) => reply.patch(resultsView(q), { selector: "#results", mode: "outer" }))
   )
 )
 
-export const app = platformRouter(
+export const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
   HttpRouter.route("GET", "/", searchPage()),
   searchRoute
-)
+])))

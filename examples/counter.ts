@@ -7,7 +7,6 @@ import {
   ds,
   h,
   props,
-  platformRouter,
   render,
   reply
 } from "../src/index.js"
@@ -50,10 +49,10 @@ export const makeCounter = (): CounterExample => {
   return {
     page,
     increment,
-    app: platformRouter(
+    app: Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route("GET", "/", page()),
       HttpRouter.route("POST", "/increment", increment)
-    ),
+    ]))),
     currentCount: () => count
   }
 }

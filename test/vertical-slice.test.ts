@@ -6,7 +6,7 @@ import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { dataSignals, on, post, signal, text } from "../src/datastar.js"
 import { h, props, render } from "../src/html.js"
-import { platformReadSignals, platformRouter } from "../src/platform.js"
+import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -27,7 +27,7 @@ const counterView = () => {
   )
 }
 
-const increment = platformReadSignals(CounterSignals).pipe(
+const increment = read.signals(CounterSignals).pipe(
   Effect.map((signals) => reply.signals({ count: signals.count + 1 }))
 )
 
@@ -56,7 +56,9 @@ describe("minimal native Effect vertical slice", () => {
   })
 
   it("handles an increment action by decoding signals and patching signals", async () => {
-    const app = platformRouter(HttpRouter.route("POST", "/increment", increment))
+    const app = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
+      HttpRouter.route("POST", "/increment", increment)
+    ])))
     const listener = await makePlatformListener(app)
     const origin = await serveListener(listener)
     const response = await fetch(`${origin}/increment`, {

@@ -5,7 +5,6 @@ import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { h } from "../src/html.js"
-import { platformRouter } from "../src/platform.js"
 import * as reply from "../src/reply.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -36,13 +35,13 @@ afterEach(async () => {
 
 describe("reply direct Datastar responses", () => {
   it("serves full Datastar pages with normal page status options", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route(
         "GET",
         "/html",
         Effect.succeed(reply.page(h("main", {}, "Ada & Grace"), { status: 201, headers: { "x-html": "yes" } }))
       )
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/html`)
 
@@ -53,7 +52,7 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("serves direct HTML patch responses as explicit escape hatches", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route(
         "GET",
         "/patch",
@@ -64,7 +63,7 @@ describe("reply direct Datastar responses", () => {
           useViewTransition: true
         }))
       )
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/patch`)
 
@@ -77,13 +76,13 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("serves direct JSON signal responses as explicit escape hatches", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route(
         "GET",
         "/signals",
         Effect.succeed(reply.direct.signals({ count: 1 }, { onlyIfMissing: true }))
       )
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/signals`)
 
@@ -94,13 +93,13 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("serves direct script responses as explicit escape hatches", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route(
         "GET",
         "/script",
         Effect.succeed(reply.direct.script("console.log('hello')", { attributes: { type: "module", async: true } }))
       )
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/script`)
 
@@ -111,13 +110,13 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("serves safe navigation script responses", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route(
         "GET",
         "/navigate",
         Effect.succeed(reply.navigate("/dashboard?from=login#top", { baseUrl: "https://app.example" }))
       )
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/navigate`)
 
@@ -139,10 +138,10 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("keeps Datastar action replies on 200-with-body or 204-without-body status semantics", async () => {
-    const router = platformRouter(
+    const router = Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll([
       HttpRouter.route("GET", "/signals", Effect.succeed(reply.direct.signals({ count: 1 }, { status: 200 }))),
       HttpRouter.route("POST", "/empty", Effect.succeed(reply.done({ status: 204 })))
-    )
+    ])))
     const listener = await makePlatformListener(router)
     const base = await serveListener(listener)
 
