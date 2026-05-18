@@ -136,23 +136,30 @@ export interface FetchOptions {
 
 export const regex = (pattern: string, flags = ""): Expr<RegExp> => raw(`/${pattern}/${flags}`)
 
+const fetchOptionKeys = [
+  "filterSignals",
+  "selector",
+  "headers",
+  "openWhenHidden",
+  "payload",
+  "responseOverrides",
+  "retry",
+  "retryInterval",
+  "retryScaler",
+  "retryMaxWait",
+  "retryMaxCount",
+  "requestCancellation"
+] as const
+
 const fetchOptionsToJs = (options: FetchOptions): string => {
-  const entries: Array<[string, ExprInput<unknown>]> = []
+  const entries: string[] = []
 
-  if (options.filterSignals !== undefined) entries.push(["filterSignals", options.filterSignals])
-  if (options.selector !== undefined) entries.push(["selector", options.selector])
-  if (options.headers !== undefined) entries.push(["headers", options.headers])
-  if (options.openWhenHidden !== undefined) entries.push(["openWhenHidden", options.openWhenHidden])
-  if (options.payload !== undefined) entries.push(["payload", options.payload])
-  if (options.responseOverrides !== undefined) entries.push(["responseOverrides", options.responseOverrides])
-  if (options.retry !== undefined) entries.push(["retry", options.retry])
-  if (options.retryInterval !== undefined) entries.push(["retryInterval", options.retryInterval])
-  if (options.retryScaler !== undefined) entries.push(["retryScaler", options.retryScaler])
-  if (options.retryMaxWait !== undefined) entries.push(["retryMaxWait", options.retryMaxWait])
-  if (options.retryMaxCount !== undefined) entries.push(["retryMaxCount", options.retryMaxCount])
-  if (options.requestCancellation !== undefined) entries.push(["requestCancellation", options.requestCancellation])
+  for (const key of fetchOptionKeys) {
+    const value = options[key]
+    if (value !== undefined) entries.push(`${key}: ${toJs(value)}`)
+  }
 
-  return `{${entries.map(([key, value]) => `${key}: ${toJs(value)}`).join(", ")}}`
+  return `{${entries.join(", ")}}`
 }
 
 export type UrlInput = string | Expr<string>
