@@ -7,9 +7,12 @@ export interface Expr<T = unknown> {
 
 export type ExprInput<T> = Expr<T> | T
 
-export type DatastarPrimitive = string | number | boolean | null | undefined
 export type DatastarValue =
-  | DatastarPrimitive
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
   | Expr<unknown>
   | readonly DatastarValue[]
   | { readonly [key: string]: DatastarValue }
