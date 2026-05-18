@@ -4,7 +4,7 @@ Exploratory TypeScript + Effect + Datastar framework prototype.
 
 `ts-star` is intentionally small and server-driven. It keeps low-level Datastar helpers available while building toward a layered framework where backend state is the source of truth, Effect owns runtime/lifecycle concerns, and Datastar applies HTML/signal patches in the browser.
 
-See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline and public module boundary proposal. See [`docs/datastar-protocol.md`](docs/datastar-protocol.md) for Datastar action response status semantics and form decoding policy. See [`docs/programming-model.md`](docs/programming-model.md) for the backend-state/CQRS model. See [`docs/runtime.md`](docs/runtime.md) for the Effect-native service/layer runtime. See [`docs/type-contracts.md`](docs/type-contracts.md) for schema-derived signal and action contracts. See [`docs/html-rendering.md`](docs/html-rendering.md) for the renderer boundary, ordered attributes, raw HTML, and JSX status.
+See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline and public module boundary proposal. See [`docs/datastar-protocol.md`](docs/datastar-protocol.md) for Datastar action response status semantics and form decoding policy. See [`docs/programming-model.md`](docs/programming-model.md) for the backend-state/CQRS model. See [`docs/runtime.md`](docs/runtime.md) for the Effect-native service/layer runtime. See [`docs/type-contracts.md`](docs/type-contracts.md) for schema-derived signal and action contracts. See [`docs/html-rendering.md`](docs/html-rendering.md) for the renderer boundary, ordered attributes, raw HTML, and JSX status. See [`docs/signals.md`](docs/signals.md) for signal policy, scoping, and sensitive-data guidance.
 
 ## Current architecture
 
@@ -12,7 +12,7 @@ The package root exports each module as a namespace (`Sse`, `Contracts`, `Datast
 
 - `src/sse.ts` — pure Datastar SSE event encoding: element patches, signal patches, signal removal, script execution, and event stream concatenation.
 - `src/contracts.ts` — Effect Schema-derived signal contracts, typed signal patches, and route/action helper prototypes.
-- `src/datastar.ts` — typed Datastar expressions, signal references, fetch actions, modifiers, attribute helpers, merge helpers, and signal-name validation.
+- `src/datastar.ts` — typed Datastar expressions, signal references, signal policy/scoping helpers, fetch actions, modifiers, attribute helpers, merge helpers, and signal-name validation.
 - `src/html.ts` — tiny HTML node builder/renderer plus renderer interface, ordered attributes, explicit raw HTML, patchable ID helpers, and full document helper.
 - `src/jsx.ts` — experimental classic JSX factory that renders through the same HTML node model.
 - `src/platform.ts` — Effect Platform HTTP integration: route composition, Datastar request detection, signal/query/form decoding with Effect Schema, generic HTTP helpers, and Datastar-safe action response helpers.
@@ -36,54 +36,35 @@ All four layers now exist in small form; the programming model layer is intentio
 
 ```ts
 import * as Effect from "effect/Effect"
-import * as Result from "effect/Result"
-import * as Schema from "effect/Schema"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   datastarDocument,
-  datastarPatchSignalsResponse,
-  dataSignals,
+  datastarPatchElementsResponse,
   h,
   mergeAttrs,
   on,
   platformHtmlResponse,
-  platformReadSignals,
   platformRouter,
-  post,
-  render,
-  signal,
-  text
+  post
 } from "ts-star"
 
-const CounterSignals = Schema.Struct({ count: Schema.Number })
+let count = 0
 
-const counterNode = () => {
-  const count = signal<number, "count">("count")
+const countNode = () => h("output", { id: "count" }, count)
 
-  return h(
+const counterNode = () =>
+  h(
     "main",
-    mergeAttrs({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
+    { id: "counter" },
     h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
-    h("output", text(count), "0")
+    countNode()
   )
-}
 
 const page = () => platformHtmlResponse(datastarDocument(counterNode()))
 
-const increment: Effect.Effect<
-  HttpServerResponse.HttpServerResponse,
-  never,
-  HttpServerRequest.HttpServerRequest
-> = Effect.gen(function* () {
-  const decoded = yield* Effect.result(platformReadSignals(CounterSignals))
-
-  if (Result.isFailure(decoded)) {
-    return HttpServerResponse.text("Bad signals", { status: 400 })
-  }
-
-  return datastarPatchSignalsResponse({ count: decoded.success.count + 1 })
+const increment = Effect.sync(() => {
+  count += 1
+  return datastarPatchElementsResponse(countNode(), { selector: "#count", mode: "outer" })
 })
 
 export const app = platformRouter(
@@ -92,7 +73,7 @@ export const app = platformRouter(
 )
 ```
 
-See `examples/counter.ts` for the smallest full-page Effect Platform signal patch flow, `examples/tsx-counter.tsx` for the same style of counter written with TSX, `examples/search.ts` for query decoding and direct HTML patch responses, `examples/live-counter.ts` for current-state live queries, and `examples/runtime-counter.ts` for service/layer-based runtime wiring.
+See `examples/counter.ts` for the smallest backend-state element patch flow, `examples/tsx-counter.tsx` for a TSX syntax variant, `examples/search.ts` for appropriate query-input signals and direct HTML patch responses, `examples/live-counter.ts` for current-state live queries, and `examples/runtime-counter.ts` for service/layer-based runtime wiring.
 
 ## Checking examples
 

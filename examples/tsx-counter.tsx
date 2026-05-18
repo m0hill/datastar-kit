@@ -1,31 +1,22 @@
 /** @jsx jsx */
 /** @jsxFrag Fragment */
 import * as Effect from "effect/Effect"
-import * as Result from "effect/Result"
-import * as Schema from "effect/Schema"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
+import type * as Scope from "effect/Scope"
+import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   datastarDocument,
-  datastarPatchSignalsResponse,
-  dataSignals,
+  datastarPatchElementsResponse,
   mergeAttrs,
   on,
   platformHtmlResponse,
-  platformReadSignals,
   platformRouter,
   post,
   render,
-  signal,
-  text,
   type Child
 } from "../src/index.js"
 import { Fragment, jsx } from "../src/jsx.js"
-
-export const TsxCounterSignals = Schema.Struct({
-  count: Schema.Number
-})
 
 export interface CounterButtonProps {
   readonly action: string
@@ -35,40 +26,53 @@ export interface CounterButtonProps {
 export const CounterButton = (props: CounterButtonProps) =>
   <button {...mergeAttrs({ type: "button" }, on("click", post(props.action)))}>{props.children ?? "+"}</button>
 
-export const tsxCounterNode = () => {
-  const count = signal<number, "count">("count")
+export const CountOutput = (props: { readonly count: number }) => <output id="count">{props.count}</output>
 
-  return (
-    <main {...mergeAttrs({ id: "tsx-counter", className: "counter-shell" }, dataSignals({ count: 0 }, { ifMissing: true }))}>
-      <h1>ts-star TSX counter</h1>
-      <>
-        <CounterButton action="/increment">+</CounterButton>
-        <output {...text(count)}>0</output>
-      </>
-    </main>
-  )
+export const tsxCounterNode = (count = 0) => (
+  <main id="tsx-counter" className="counter-shell">
+    <h1>ts-star TSX counter</h1>
+    <CounterButton action="/increment">+</CounterButton>
+    <CountOutput count={count} />
+  </main>
+)
+
+export const tsxCounterView = (count = 0): string => render(tsxCounterNode(count))
+
+export interface TsxCounterExample {
+  readonly page: () => HttpServerResponse.HttpServerResponse
+  readonly increment: Effect.Effect<HttpServerResponse.HttpServerResponse>
+  readonly app: Effect.Effect<
+    HttpServerResponse.HttpServerResponse,
+    unknown,
+    Scope.Scope | HttpServerRequest.HttpServerRequest
+  >
+  readonly currentCount: () => number
 }
 
-export const tsxCounterView = (): string => render(tsxCounterNode())
+export const makeTsxCounter = (): TsxCounterExample => {
+  let count = 0
 
-export const tsxCounterPage = (): HttpServerResponse.HttpServerResponse =>
-  platformHtmlResponse(datastarDocument(tsxCounterNode()))
+  const tsxCounterPage = (): HttpServerResponse.HttpServerResponse =>
+    platformHtmlResponse(datastarDocument(tsxCounterNode(count)))
 
-export const tsxIncrement: Effect.Effect<
-  HttpServerResponse.HttpServerResponse,
-  never,
-  HttpServerRequest.HttpServerRequest
-> = Effect.gen(function*() {
-  const decoded = yield* Effect.result(platformReadSignals(TsxCounterSignals))
+  const tsxIncrement = Effect.sync(() => {
+    count += 1
+    return datastarPatchElementsResponse(<CountOutput count={count} />, { selector: "#count", mode: "outer" })
+  })
 
-  if (Result.isFailure(decoded)) {
-    return HttpServerResponse.text("Bad signals", { status: 400 })
+  return {
+    page: tsxCounterPage,
+    increment: tsxIncrement,
+    app: platformRouter(
+      HttpRouter.route("GET", "/", tsxCounterPage()),
+      HttpRouter.route("POST", "/increment", tsxIncrement)
+    ),
+    currentCount: () => count
   }
+}
 
-  return datastarPatchSignalsResponse({ count: decoded.success.count + 1 })
-})
+const defaultCounter = makeTsxCounter()
 
-export const tsxCounterApp = platformRouter(
-  HttpRouter.route("GET", "/", tsxCounterPage()),
-  HttpRouter.route("POST", "/increment", tsxIncrement)
-)
+export const tsxCounterPage = (): HttpServerResponse.HttpServerResponse => defaultCounter.page()
+export const tsxIncrement = defaultCounter.increment
+export const tsxCounterApp = defaultCounter.app

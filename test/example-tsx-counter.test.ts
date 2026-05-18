@@ -2,7 +2,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { CounterButton, tsxCounterApp, tsxCounterNode, tsxCounterPage, tsxCounterView } from "../examples/tsx-counter.js"
+import { CounterButton, makeTsxCounter, tsxCounterNode, tsxCounterPage, tsxCounterView } from "../examples/tsx-counter.js"
 import { render } from "../src/html.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -27,12 +27,12 @@ afterEach(async () => {
 describe("TSX counter example", () => {
   it("builds the counter view with TSX instead of hyperscript calls", () => {
     expect(tsxCounterView()).toBe(
-      '<main id="tsx-counter" class="counter-shell" data-signals__ifmissing="{&quot;count&quot;: 0}"><h1>ts-star TSX counter</h1><button type="button" data-on:click="@post(&quot;/increment&quot;)">+</button><output data-text="$count">0</output></main>'
+      '<main id="tsx-counter" class="counter-shell"><h1>ts-star TSX counter</h1><button type="button" data-on:click="@post(&quot;/increment&quot;)">+</button><output id="count">0</output></main>'
     )
   })
 
   it("keeps TSX output compatible with the shared HTML renderer", () => {
-    expect(render(tsxCounterNode())).toContain('<output data-text="$count">0</output>')
+    expect(render(tsxCounterNode())).toContain('<output id="count">0</output>')
   })
 
   it("uses a reusable typed TSX button component", () => {
@@ -50,16 +50,16 @@ describe("TSX counter example", () => {
   })
 
   it("dispatches TSX example app routes", async () => {
-    const listener = await makePlatformListener(tsxCounterApp)
+    const counter = makeTsxCounter()
+    const listener = await makePlatformListener(counter.app)
     const origin = await serveListener(listener)
     const pageResponse = await fetch(origin)
-    const incrementResponse = await fetch(`${origin}/increment`, {
-      method: "POST",
-      body: JSON.stringify({ count: 4 })
-    })
+    const incrementResponse = await fetch(`${origin}/increment`, { method: "POST" })
 
     expect(pageResponse.status).toBe(200)
     expect(await pageResponse.text()).toContain('id="tsx-counter"')
-    expect(await incrementResponse.text()).toBe('event: datastar-patch-signals\ndata: signals {"count":5}\n\n')
+    expect(await incrementResponse.text()).toBe(
+      'event: datastar-patch-elements\ndata: selector #count\ndata: elements <output id="count">1</output>\n\n'
+    )
   })
 })

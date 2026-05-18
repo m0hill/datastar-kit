@@ -127,7 +127,7 @@
       "order": 7,
       "id": "T007",
       "title": "Establish the signal policy and scoping model",
-      "status": "pending",
+      "status": "done",
       "phase": "foundation",
       "priority": "critical",
       "depends_on": ["T003", "T005", "T006"],

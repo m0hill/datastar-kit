@@ -1,61 +1,68 @@
 import * as Effect from "effect/Effect"
-import * as Result from "effect/Result"
-import * as Schema from "effect/Schema"
+import type * as Scope from "effect/Scope"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
+import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   datastarDocument,
-  datastarPatchSignalsResponse,
-  dataSignals,
+  datastarPatchElementsResponse,
   h,
   mergeAttrs,
   on,
   platformHtmlResponse,
-  platformReadSignals,
   platformRouter,
   post,
-  render,
-  signal,
-  text
+  render
 } from "../src/index.js"
 
-export const CounterSignals = Schema.Struct({
-  count: Schema.Number
-})
+export const countNode = (count: number) => h("output", { id: "count" }, count)
 
-export const counterNode = () => {
-  const count = signal<number, "count">("count")
-
-  return h(
+export const counterNode = (count = 0) =>
+  h(
     "main",
-    mergeAttrs({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
+    { id: "counter" },
     h("h1", {}, "ts-star counter"),
     h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
-    h("output", text(count), "0")
+    countNode(count)
   )
+
+export const counterView = (count = 0): string => render(counterNode(count))
+
+export interface CounterExample {
+  readonly page: () => HttpServerResponse.HttpServerResponse
+  readonly increment: Effect.Effect<HttpServerResponse.HttpServerResponse>
+  readonly app: Effect.Effect<
+    HttpServerResponse.HttpServerResponse,
+    unknown,
+    Scope.Scope | HttpServerRequest.HttpServerRequest
+  >
+  readonly currentCount: () => number
 }
 
-export const counterView = (): string => render(counterNode())
+export const makeCounter = (): CounterExample => {
+  let count = 0
 
-export const page = (): HttpServerResponse.HttpServerResponse =>
-  platformHtmlResponse(datastarDocument(counterNode()))
+  const page = (): HttpServerResponse.HttpServerResponse =>
+    platformHtmlResponse(datastarDocument(counterNode(count)))
 
-export const increment: Effect.Effect<
-  HttpServerResponse.HttpServerResponse,
-  never,
-  HttpServerRequest.HttpServerRequest
-> = Effect.gen(function* () {
-  const decoded = yield* Effect.result(platformReadSignals(CounterSignals))
+  const increment = Effect.sync(() => {
+    count += 1
+    return datastarPatchElementsResponse(countNode(count), { selector: "#count", mode: "outer" })
+  })
 
-  if (Result.isFailure(decoded)) {
-    return HttpServerResponse.text("Bad signals", { status: 400 })
+  return {
+    page,
+    increment,
+    app: platformRouter(
+      HttpRouter.route("GET", "/", page()),
+      HttpRouter.route("POST", "/increment", increment)
+    ),
+    currentCount: () => count
   }
+}
 
-  return datastarPatchSignalsResponse({ count: decoded.success.count + 1 })
-})
+const defaultCounter = makeCounter()
 
-export const app = platformRouter(
-  HttpRouter.route("GET", "/", page()),
-  HttpRouter.route("POST", "/increment", increment)
-)
+export const page = (): HttpServerResponse.HttpServerResponse => defaultCounter.page()
+export const increment = defaultCounter.increment
+export const app = defaultCounter.app

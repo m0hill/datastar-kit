@@ -2,7 +2,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { app, counterView, page } from "../examples/counter.js"
+import { counterView, makeCounter, page } from "../examples/counter.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 let server: Server | undefined
@@ -25,7 +25,7 @@ afterEach(async () => {
 
 describe("counter example", () => {
   it("renders a Datastar counter view", () => {
-    expect(counterView()).toContain('data-signals__ifmissing="{&quot;count&quot;: 0}"')
+    expect(counterView()).toContain('<output id="count">0</output>')
     expect(counterView()).toContain('data-on:click="@post(&quot;/increment&quot;)"')
   })
 
@@ -38,28 +38,32 @@ describe("counter example", () => {
   })
 
   it("dispatches the native example app routes", async () => {
-    const listener = await makePlatformListener(app)
+    const counter = makeCounter()
+    const listener = await makePlatformListener(counter.app)
     const origin = await serveListener(listener)
     const pageResponse = await fetch(origin)
-    const incrementResponse = await fetch(`${origin}/increment`, {
-      method: "POST",
-      body: JSON.stringify({ count: 12 })
-    })
+    const incrementResponse = await fetch(`${origin}/increment`, { method: "POST" })
 
     expect(pageResponse.status).toBe(200)
     expect(await pageResponse.text()).toContain("ts-star counter")
-    expect(await incrementResponse.text()).toBe('event: datastar-patch-signals\ndata: signals {"count":13}\n\n')
+    expect(await incrementResponse.text()).toBe(
+      'event: datastar-patch-elements\ndata: selector #count\ndata: elements <output id="count">1</output>\n\n'
+    )
   })
 
-  it("handles bad native signal payloads explicitly", async () => {
-    const listener = await makePlatformListener(app)
+  it("keeps backend state authoritative over stale client signal payloads", async () => {
+    const counter = makeCounter()
+    const listener = await makePlatformListener(counter.app)
     const origin = await serveListener(listener)
     const response = await fetch(`${origin}/increment`, {
       method: "POST",
-      body: JSON.stringify({ count: "bad" })
+      body: JSON.stringify({ count: 999 })
     })
 
-    expect(response.status).toBe(400)
-    expect(await response.text()).toBe("Bad signals")
+    expect(response.status).toBe(200)
+    expect(counter.currentCount()).toBe(1)
+    expect(await response.text()).toBe(
+      'event: datastar-patch-elements\ndata: selector #count\ndata: elements <output id="count">1</output>\n\n'
+    )
   })
 })

@@ -6,7 +6,6 @@ import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import {
   commandDone,
   datastarPageResponse,
-  dataSignals,
   get,
   h,
   init,
@@ -43,7 +42,7 @@ export const countFragment = (count: number) => h("output", { id: "count" }, cou
 export const pageNode = () =>
   h(
     "main",
-    mergeAttrs({ id: "live-counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
+    { id: "live-counter" },
     h("div", init(get("/live")), ""),
     h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
     h("output", { id: "count" }, "0")

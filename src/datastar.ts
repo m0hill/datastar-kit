@@ -101,6 +101,26 @@ export const fn = <T = unknown>(expression: ExprInput<T>, args = ""): Expr<Datas
 
 export const signal = <T, Name extends string>(name: Name): Signal<T, Name> => new Signal(name)
 
+export type PrivateSignalName<Name extends string> = Name extends `_${string}` ? Name : `_${Name}`
+export type ValidationSignalName<Name extends string> = `_validation.${Name}`
+export type LoadingSignalName<Name extends string> = `_loading.${Name}`
+
+export const privateSignalName = <Name extends string>(name: Name): PrivateSignalName<Name> =>
+  (name.startsWith("_") ? name : `_${name}`) as PrivateSignalName<Name>
+
+export const inputSignal = <T, Name extends string>(name: Name): Signal<T, Name> => signal<T, Name>(name)
+
+export const privateSignal = <T, Name extends string>(name: Name): Signal<T, PrivateSignalName<Name>> =>
+  signal<T, PrivateSignalName<Name>>(privateSignalName(name))
+
+export const localSignal = privateSignal
+
+export const validationSignal = <T = string, Name extends string = string>(name: Name): Signal<T, ValidationSignalName<Name>> =>
+  signal<T, ValidationSignalName<Name>>(`_validation.${name}` as ValidationSignalName<Name>)
+
+export const loadingSignal = <Name extends string>(name: Name): Signal<boolean, LoadingSignalName<Name>> =>
+  signal<boolean, LoadingSignalName<Name>>(`_loading.${name}` as LoadingSignalName<Name>)
+
 export const signals = <Shape extends object>(): SignalRecord<Shape> =>
   new Proxy(
     {},
@@ -624,6 +644,15 @@ export const dataSignal = (name: string, value: DatastarValue, modifiers: DataSi
   assertUnmodifiedSignalName(name, modifiers)
   return { [`data-signals:${name}${dataSignalModifiers(modifiers)}`]: toJs(value) }
 }
+
+export const privateDataSignal = <Name extends string>(name: Name, value: DatastarValue, modifiers: DataSignalModifiers = {}): Attributes =>
+  dataSignal(privateSignalName(name), value, modifiers)
+
+export const validationDataSignal = <Name extends string>(name: Name, value: DatastarValue, modifiers: DataSignalModifiers = {}): Attributes =>
+  dataSignal(`_validation.${name}`, value, modifiers)
+
+export const loadingDataSignal = <Name extends string>(name: Name, value: boolean, modifiers: DataSignalModifiers = {}): Attributes =>
+  dataSignal(`_loading.${name}`, value, modifiers)
 
 export const dataSignals = (values: DatastarObject, options: { readonly ifMissing?: boolean } = {}): Attributes => {
   assertSignalObjectKeys(values)
