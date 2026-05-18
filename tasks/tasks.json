@@ -195,7 +195,7 @@
       "order": 11,
       "id": "T011",
       "title": "Add observability and real browser testing",
-      "status": "pending",
+      "status": "done",
       "phase": "quality",
       "priority": "high",
       "depends_on": ["T002", "T004", "T008", "T010"],

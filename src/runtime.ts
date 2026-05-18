@@ -9,6 +9,7 @@ import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { datastarDocument, type DatastarDocumentOptions } from "./client.js"
 import { render, type Child } from "./html.js"
+import { NoopTelemetryLive, type Telemetry } from "./observability.js"
 import {
   type DatastarBodyResponseOptions,
   datastarNoContentResponse,
@@ -241,14 +242,14 @@ export const LiveQueryHubLive = (options: RealtimePubSubOptions = {}): Layer.Lay
   )
 
 export const runtimeCoreLayer = (config?: Partial<TsStarConfigValue>): Layer.Layer<
-  TsStarConfig | HtmlRenderer | DatastarProtocol | ErrorMapper
+  TsStarConfig | HtmlRenderer | DatastarProtocol | ErrorMapper | Telemetry
 > =>
-  Layer.mergeAll(DatastarProtocolLive, ErrorMapperLive).pipe(
+  Layer.mergeAll(DatastarProtocolLive, ErrorMapperLive, NoopTelemetryLive).pipe(
     Layer.provideMerge(Layer.mergeAll(TsStarConfigLive(config), HtmlRendererLive))
   )
 
 export const requestRuntimeLayer = (config?: Partial<TsStarConfigValue>): Layer.Layer<
-  TsStarConfig | HtmlRenderer | DatastarProtocol | ErrorMapper | RequestContext | SignalDecoder,
+  TsStarConfig | HtmlRenderer | DatastarProtocol | ErrorMapper | Telemetry | RequestContext | SignalDecoder,
   never,
   HttpServerRequest.HttpServerRequest
 > =>
