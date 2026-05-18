@@ -1,6 +1,5 @@
 import { page as htmlPage, render, type Child, type PageOptions as HtmlPageOptions } from "./html.js"
 import {
-  eventStream,
   patchElements,
   patchSignals,
   type ElementNamespace,
@@ -56,8 +55,6 @@ export class NavigationUrlError extends Error {
 }
 
 const textEncoder = new TextEncoder()
-
-const renderHtml = (content: Child): string => render(content)
 
 const mergeHeaders = (defaults: HeadersInit, headers: HeadersInit | undefined): Headers => {
   const merged = new Headers(defaults)
@@ -209,14 +206,14 @@ export const patch = (
   options?: PatchElementsOptions,
   init?: DatastarResponseInit
 ): Response =>
-  response(eventStream(patchElements(renderHtml(elements), options)), init, 200, sseHeaders(init))
+  response(patchElements(render(elements), options), init, 200, sseHeaders(init))
 
 export const signals = (
   value: JsonObject | string,
   options?: PatchSignalsOptions,
   init?: DatastarResponseInit
 ): Response =>
-  response(eventStream(patchSignals(value, options)), init, 200, sseHeaders(init))
+  response(patchSignals(value, options), init, 200, sseHeaders(init))
 
 export const stream = (
   events: StreamInput,
@@ -246,7 +243,7 @@ export const directHtml = (
     ...(useViewTransition === undefined ? {} : { "datastar-use-view-transition": String(useViewTransition) })
   }, init.headers)
 
-  return response(renderHtml(html), { ...init, headers }, 200)
+  return response(render(html), { ...init, headers }, 200)
 }
 
 export const directSignals = (
