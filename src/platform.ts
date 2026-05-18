@@ -8,6 +8,7 @@ import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 import type { Handler, Route } from "./handler.js"
 import { render, type Child } from "./html.js"
+import type { ElementPatchMode } from "./sse.js"
 import { eventStream, patchElements, patchSignals, type JsonObject, type PatchElementsOptions, type PatchSignalsOptions } from "./sse.js"
 
 export const toPlatformApp = <E, R>(
@@ -99,3 +100,70 @@ export const platformPatchSignalsResponse = (
   responseOptions?: PlatformResponseOptions
 ): HttpServerResponse.HttpServerResponse =>
   platformSseResponse([patchSignals(signals, options)], responseOptions)
+
+export const platformHtmlResponse = (
+  html: string | Exclude<Child, string>,
+  options: PlatformResponseOptions = {}
+): HttpServerResponse.HttpServerResponse =>
+  HttpServerResponse.html(renderPlatformHtml(html)).pipe(
+    HttpServerResponse.setStatus(options.status ?? 200, options.statusText),
+    HttpServerResponse.setHeaders(Headers.fromInput(options.headers))
+  )
+
+export interface PlatformHtmlPatchResponseOptions extends PlatformResponseOptions {
+  readonly selector?: string
+  readonly mode?: ElementPatchMode
+  readonly useViewTransition?: boolean
+}
+
+export const platformHtmlPatchResponse = (
+  html: string | Exclude<Child, string>,
+  options: PlatformHtmlPatchResponseOptions = {}
+): HttpServerResponse.HttpServerResponse => {
+  const headers = Headers.fromInput(options.headers)
+  const datastarHeaders = Headers.fromInput({
+    ...headers,
+    ...(options.selector === undefined ? {} : { "datastar-selector": options.selector }),
+    ...(options.mode === undefined ? {} : { "datastar-mode": options.mode }),
+    ...(options.useViewTransition === undefined ? {} : { "datastar-use-view-transition": String(options.useViewTransition) })
+  })
+  return platformHtmlResponse(renderPlatformHtml(html), { ...options, headers: datastarHeaders })
+}
+
+export interface PlatformJsonSignalsResponseOptions extends PlatformResponseOptions {
+  readonly onlyIfMissing?: boolean
+}
+
+export const platformJsonSignalsResponse = (
+  signals: JsonObject | string,
+  options: PlatformJsonSignalsResponseOptions = {}
+): HttpServerResponse.HttpServerResponse => {
+  const headers = Headers.fromInput({
+    ...Headers.fromInput(options.headers),
+    ...(options.onlyIfMissing === undefined ? {} : { "datastar-only-if-missing": String(options.onlyIfMissing) })
+  })
+  return HttpServerResponse.text(typeof signals === "string" ? signals : JSON.stringify(signals), {
+    ...options,
+    contentType: options.contentType ?? "application/json; charset=utf-8",
+    headers
+  })
+}
+
+export interface PlatformScriptResponseOptions extends PlatformResponseOptions {
+  readonly attributes?: Readonly<Record<string, string | number | boolean>>
+}
+
+export const platformScriptResponse = (
+  script: string,
+  options: PlatformScriptResponseOptions = {}
+): HttpServerResponse.HttpServerResponse => {
+  const headers = Headers.fromInput({
+    ...Headers.fromInput(options.headers),
+    ...(options.attributes === undefined ? {} : { "datastar-script-attributes": JSON.stringify(options.attributes) })
+  })
+  return HttpServerResponse.text(script, {
+    ...options,
+    contentType: options.contentType ?? "text/javascript; charset=utf-8",
+    headers
+  })
+}
