@@ -1,4 +1,5 @@
 import type { Attributes } from "./html.js"
+import type { ElementNamespace, ElementPatchMode } from "./sse.js"
 
 export interface Expr<T = unknown> {
   readonly _tag: "Expr"
@@ -7,7 +8,14 @@ export interface Expr<T = unknown> {
 
 export type ExprInput<T> = Expr<T> | T
 
-type Jsonish = string | number | boolean | null | readonly Jsonish[] | { readonly [key: string]: Jsonish | Expr<unknown> }
+export type DatastarPrimitive = string | number | boolean | null | undefined
+export type DatastarValue =
+  | DatastarPrimitive
+  | Expr<unknown>
+  | readonly DatastarValue[]
+  | { readonly [key: string]: DatastarValue }
+export type DatastarObject = Readonly<Record<string, DatastarValue>>
+export type DatastarFunction<T = unknown> = (...args: ReadonlyArray<unknown>) => T
 
 export class SignalNameError extends Error {
   readonly _tag = "SignalNameError"
@@ -88,6 +96,9 @@ export type SignalRecord<Shape extends object> = {
 
 export const raw = <T = unknown>(code: string): Expr<T> => new RawExpr<T>(code)
 
+export const fn = <T = unknown>(expression: ExprInput<T>, args = ""): Expr<DatastarFunction<T>> =>
+  raw(`(${args}) => ${toJs(expression)}`)
+
 export const signal = <T, Name extends string>(name: Name): Signal<T, Name> => new Signal(name)
 
 export const signals = <Shape extends object>(): SignalRecord<Shape> =>
@@ -140,19 +151,32 @@ export type HttpMethod = "get" | "post" | "put" | "patch" | "delete"
 export type ContentType = "json" | "form"
 export type RetryMode = "auto" | "error" | "always" | "never"
 export type RequestCancellation = "auto" | "cleanup" | "disabled" | Expr<AbortController>
+export type SignalPattern = Expr<RegExp> | string
 
 export interface SignalFilter {
-  readonly include?: Expr<RegExp>
-  readonly exclude?: Expr<RegExp>
+  readonly include?: SignalPattern
+  readonly exclude?: SignalPattern
 }
+
+export type FetchResponseOverrides =
+  | {
+      readonly selector?: string
+      readonly mode?: ElementPatchMode
+      readonly namespace?: ElementNamespace
+      readonly useViewTransition?: boolean
+    }
+  | {
+      readonly onlyIfMissing?: boolean
+    }
 
 export interface FetchOptions {
   readonly contentType?: ContentType
   readonly filterSignals?: SignalFilter
-  readonly selector?: string
+  readonly selector?: string | null
   readonly headers?: Readonly<Record<string, string>>
   readonly openWhenHidden?: boolean
-  readonly payload?: Readonly<Record<string, Jsonish | Expr<unknown>>>
+  readonly payload?: DatastarObject
+  readonly responseOverrides?: FetchResponseOverrides
   readonly retry?: RetryMode
   readonly retryInterval?: number
   readonly retryScaler?: number
@@ -186,6 +210,7 @@ const fetchOptionsToJs = (options: FetchOptions): string => {
   if (options.headers !== undefined) entries.push(["headers", options.headers])
   if (options.openWhenHidden !== undefined) entries.push(["openWhenHidden", options.openWhenHidden])
   if (options.payload !== undefined) entries.push(["payload", options.payload])
+  if (options.responseOverrides !== undefined) entries.push(["responseOverrides", options.responseOverrides])
   if (options.retry !== undefined) entries.push(["retry", options.retry])
   if (options.retryInterval !== undefined) entries.push(["retryInterval", options.retryInterval])
   if (options.retryScaler !== undefined) entries.push(["retryScaler", options.retryScaler])
@@ -229,6 +254,17 @@ export const post = (url: UrlInput, options?: FetchOptions): Expr<void> => fetch
 export const put = (url: UrlInput, options?: FetchOptions): Expr<void> => fetchAction("put", url, options)
 export const patch = (url: UrlInput, options?: FetchOptions): Expr<void> => fetchAction("patch", url, options)
 export const del = (url: UrlInput, options?: FetchOptions): Expr<void> => fetchAction("delete", url, options)
+
+export const datastarAction = <T = unknown>(name: string, ...args: ReadonlyArray<ExprInput<unknown>>): Expr<T> =>
+  raw(`@${name}(${args.map((arg) => toJs(arg)).join(", ")})`)
+
+export const peek = <T = unknown>(callback: Expr<DatastarFunction<T>>): Expr<T> => datastarAction<T>("peek", callback)
+
+export const setAll = (value: ExprInput<unknown>, filter?: SignalFilter): Expr<void> =>
+  filter === undefined ? datastarAction<void>("setAll", value) : datastarAction<void>("setAll", value, filter)
+
+export const toggleAll = (filter?: SignalFilter): Expr<void> =>
+  filter === undefined ? datastarAction<void>("toggleAll") : datastarAction<void>("toggleAll", filter)
 
 export class AttributeConflictError extends Error {
   readonly _tag = "AttributeConflictError"
@@ -303,6 +339,30 @@ export interface IntervalModifiers {
   readonly viewTransition?: boolean
 }
 
+export interface InitModifiers {
+  readonly delay?: Duration
+  readonly viewTransition?: boolean
+}
+
+export interface CaseModifierOptions {
+  readonly case?: CaseModifier
+}
+
+export interface BindModifiers extends CaseModifierOptions {
+  readonly prop?: string
+  readonly events?: string | ReadonlyArray<string>
+}
+
+export type BindValueModifiers = Omit<BindModifiers, "case">
+
+export interface SignalKeyModifiers extends CaseModifierOptions {}
+
+export interface DataSignalModifiers extends CaseModifierOptions {
+  readonly ifMissing?: boolean
+}
+
+export interface ClassModifiers extends CaseModifierOptions {}
+
 const durationModifier = (duration: Duration): string => typeof duration === "number" ? `${duration}ms` : duration
 
 const appendTimingModifiers = (parts: Array<string>, modifiers: TimingModifiers): void => {
@@ -334,6 +394,50 @@ const appendTimingModifiers = (parts: Array<string>, modifiers: TimingModifiers)
 }
 
 const modifierSuffix = (parts: ReadonlyArray<string>): string => parts.length === 0 ? "" : `__${parts.join("__")}`
+
+const appendCaseModifier = (parts: Array<string>, modifiers: CaseModifierOptions): void => {
+  if (modifiers.case !== undefined) parts.push(`case.${modifiers.case}`)
+}
+
+const caseModifierSuffix = (modifiers: CaseModifierOptions = {}): string => {
+  const parts: Array<string> = []
+  appendCaseModifier(parts, modifiers)
+  return modifierSuffix(parts)
+}
+
+const assertUnmodifiedSignalName = (name: string, modifiers: CaseModifierOptions): void => {
+  if (modifiers.case === undefined) {
+    assertSignalName(name)
+  }
+}
+
+const signalKeyName = <Name extends string>(name: Name | { readonly name: Name }): Name =>
+  typeof name === "string" ? name : name.name
+
+const initModifiers = (modifiers: InitModifiers = {}): string => {
+  const parts: Array<string> = []
+  if (modifiers.delay !== undefined) parts.push(`delay.${durationModifier(modifiers.delay)}`)
+  if (modifiers.viewTransition === true) parts.push("viewtransition")
+  return modifierSuffix(parts)
+}
+
+const bindModifiers = (modifiers: BindModifiers | BindValueModifiers = {}): string => {
+  const parts: Array<string> = []
+  if ("case" in modifiers && modifiers.case !== undefined) parts.push(`case.${modifiers.case}`)
+  if (modifiers.prop !== undefined) parts.push(`prop.${modifiers.prop}`)
+  if (modifiers.events !== undefined) {
+    const events = typeof modifiers.events === "string" ? [modifiers.events] : modifiers.events
+    if (events.length > 0) parts.push(`event.${events.join(".")}`)
+  }
+  return modifierSuffix(parts)
+}
+
+const dataSignalModifiers = (modifiers: DataSignalModifiers = {}): string => {
+  const parts: Array<string> = []
+  appendCaseModifier(parts, modifiers)
+  if (modifiers.ifMissing === true) parts.push("ifmissing")
+  return modifierSuffix(parts)
+}
 
 export const onModifiers = (modifiers: OnModifiers = {}): string => {
   const parts: Array<string> = []
@@ -410,8 +514,12 @@ export const ignoreMorph = (): Attributes => ({
   "data-ignore-morph": true
 })
 
-export const init = (expression: ExprInput<unknown>): Attributes => ({
-  "data-init": toJs(expression)
+export const init = (expression: ExprInput<unknown>, modifiers?: InitModifiers): Attributes => ({
+  [`data-init${initModifiers(modifiers)}`]: toJs(expression)
+})
+
+export const effect = (expression: ExprInput<unknown>): Attributes => ({
+  "data-effect": toJs(expression)
 })
 
 export const text = (expression: ExprInput<unknown>): Attributes => ({
@@ -422,19 +530,37 @@ export const show = (expression: ExprInput<unknown>): Attributes => ({
   "data-show": toJs(expression)
 })
 
-export const bind = <T, Name extends string>(signal: Signal<T, Name>): Attributes => ({
-  [`data-bind:${signal.name}`]: true
-})
-
-export const ref = <Name extends string>(name: Name | Signal<unknown, Name>): Attributes => {
-  const signalName = typeof name === "string" ? name : name.name
-  assertSignalName(signalName)
-  return { [`data-ref:${signalName}`]: true }
+export const bind = <T, Name extends string>(name: Name | Signal<T, Name>, modifiers: BindModifiers = {}): Attributes => {
+  const signalName = signalKeyName(name)
+  assertUnmodifiedSignalName(signalName, modifiers)
+  return { [`data-bind:${signalName}${bindModifiers(modifiers)}`]: true }
 }
 
-export const indicator = <Name extends string>(name: Name | Signal<boolean, Name>): Attributes => {
-  const signalName = typeof name === "string" ? name : name.name
-  return { [`data-indicator:${signalName}`]: true }
+export const bindValue = <Name extends string>(name: Name, modifiers: BindValueModifiers = {}): Attributes => {
+  assertSignalName(name)
+  return { [`data-bind${bindModifiers(modifiers)}`]: name }
+}
+
+export const ref = <Name extends string>(name: Name | Signal<unknown, Name>, modifiers: SignalKeyModifiers = {}): Attributes => {
+  const signalName = signalKeyName(name)
+  assertUnmodifiedSignalName(signalName, modifiers)
+  return { [`data-ref:${signalName}${caseModifierSuffix(modifiers)}`]: true }
+}
+
+export const refValue = <Name extends string>(name: Name): Attributes => {
+  assertSignalName(name)
+  return { "data-ref": name }
+}
+
+export const indicator = <Name extends string>(name: Name | Signal<boolean, Name>, modifiers: SignalKeyModifiers = {}): Attributes => {
+  const signalName = signalKeyName(name)
+  assertUnmodifiedSignalName(signalName, modifiers)
+  return { [`data-indicator:${signalName}${caseModifierSuffix(modifiers)}`]: true }
+}
+
+export const indicatorValue = <Name extends string>(name: Name): Attributes => {
+  assertSignalName(name)
+  return { "data-indicator": name }
 }
 
 export const dataAttr = (name: string, expression: ExprInput<unknown>): Attributes => ({
@@ -445,13 +571,36 @@ export const dataAttrs = (mapping: Readonly<Record<string, ExprInput<unknown>>>)
   "data-attr": toJs(mapping)
 })
 
-export const dataClass = (name: string, expression: ExprInput<unknown>): Attributes => ({
-  [`data-class:${name}`]: toJs(expression)
+export const dataClass = (name: string, expression: ExprInput<unknown>, modifiers?: ClassModifiers): Attributes => ({
+  [`data-class:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression)
 })
 
 export const dataClasses = (mapping: Readonly<Record<string, ExprInput<unknown>>>): Attributes => ({
   "data-class": toJs(mapping)
 })
+
+export const dataComputed = <T>(name: string, expression: ExprInput<T>, modifiers: SignalKeyModifiers = {}): Attributes => {
+  assertUnmodifiedSignalName(name, modifiers)
+  return { [`data-computed:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression) }
+}
+
+export type DataComputedValue = Expr<DatastarFunction<unknown>> | { readonly [key: string]: DataComputedValue }
+export type DataComputedObject = Readonly<Record<string, DataComputedValue>>
+
+const assertDataComputedObjectKeys = (values: DataComputedObject): void => {
+  for (const [key, value] of Object.entries(values)) {
+    assertSignalName(key)
+
+    if (!isExpr(value)) {
+      assertDataComputedObjectKeys(value)
+    }
+  }
+}
+
+export const dataComputeds = (mapping: DataComputedObject): Attributes => {
+  assertDataComputedObjectKeys(mapping)
+  return { "data-computed": toJs(mapping) }
+}
 
 export const dataStyle = (name: string, expression: ExprInput<unknown>): Attributes => ({
   [`data-style:${name}`]: toJs(expression)
@@ -461,17 +610,22 @@ export const dataStyles = (mapping: Readonly<Record<string, ExprInput<unknown>>>
   "data-style": toJs(mapping)
 })
 
-const assertSignalObjectKeys = (values: Readonly<Record<string, Jsonish | Expr<unknown>>>): void => {
+const assertSignalObjectKeys = (values: DatastarObject): void => {
   for (const [key, value] of Object.entries(values)) {
     assertSignalName(key)
 
     if (typeof value === "object" && value !== null && !Array.isArray(value) && !isExpr(value)) {
-      assertSignalObjectKeys(value as Readonly<Record<string, Jsonish | Expr<unknown>>>)
+      assertSignalObjectKeys(value as DatastarObject)
     }
   }
 }
 
-export const dataSignals = (values: Readonly<Record<string, Jsonish>>, options: { readonly ifMissing?: boolean } = {}): Attributes => {
+export const dataSignal = (name: string, value: DatastarValue, modifiers: DataSignalModifiers = {}): Attributes => {
+  assertUnmodifiedSignalName(name, modifiers)
+  return { [`data-signals:${name}${dataSignalModifiers(modifiers)}`]: toJs(value) }
+}
+
+export const dataSignals = (values: DatastarObject, options: { readonly ifMissing?: boolean } = {}): Attributes => {
   assertSignalObjectKeys(values)
   return {
     [options.ifMissing === true ? "data-signals__ifmissing" : "data-signals"]: toJs(values)

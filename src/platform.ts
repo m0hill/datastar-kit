@@ -8,7 +8,7 @@ import * as HttpServerError from "effect/unstable/http/HttpServerError"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { render, type Child } from "./html.js"
-import type { ElementPatchMode } from "./sse.js"
+import type { ElementNamespace, ElementPatchMode } from "./sse.js"
 import { eventStream, patchElements, patchSignals, type JsonObject, type PatchElementsOptions, type PatchSignalsOptions } from "./sse.js"
 
 export class SignalJsonError {
@@ -170,6 +170,7 @@ export const platformHtmlResponse = (
 export interface PlatformHtmlPatchResponseOptions extends PlatformResponseOptions {
   readonly selector?: string
   readonly mode?: ElementPatchMode
+  readonly namespace?: ElementNamespace
   readonly useViewTransition?: boolean
 }
 
@@ -182,6 +183,7 @@ export const platformHtmlPatchResponse = (
     ...headers,
     ...(options.selector === undefined ? {} : { "datastar-selector": options.selector }),
     ...(options.mode === undefined ? {} : { "datastar-mode": options.mode }),
+    ...(options.namespace === undefined ? {} : { "datastar-namespace": options.namespace }),
     ...(options.useViewTransition === undefined ? {} : { "datastar-use-view-transition": String(options.useViewTransition) })
   })
   return platformHtmlResponse(renderPlatformHtml(html), { ...options, headers: datastarHeaders })

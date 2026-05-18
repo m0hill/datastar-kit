@@ -57,6 +57,7 @@ describe("native Effect Platform direct Datastar responses", () => {
         Effect.succeed(platformHtmlPatchResponse(h("p", {}, "Updated"), {
           selector: "#slot",
           mode: "inner",
+          namespace: "svg",
           useViewTransition: true
         }))
       )
@@ -66,6 +67,7 @@ describe("native Effect Platform direct Datastar responses", () => {
 
     expect(response.headers.get("datastar-selector")).toBe("#slot")
     expect(response.headers.get("datastar-mode")).toBe("inner")
+    expect(response.headers.get("datastar-namespace")).toBe("svg")
     expect(response.headers.get("datastar-use-view-transition")).toBe("true")
     expect(await response.text()).toBe("<p>Updated</p>")
   })
