@@ -1,37 +1,43 @@
 # API reference map
 
-This is a map to the current source modules and concept docs. Prefer namespace imports from the root package.
+This is a map to the current source modules and concept docs.
 
 ## Protocol and Datastar
 
 - `Sse` — low-level event encoding (`patchElements`, `patchSignals`, `executeScript`, stream concatenation).
-- `Datastar` — expressions, signals, action helpers, modifiers, attributes, signal policy helpers.
-- `Platform` — HTTP request decode helpers and Datastar-safe response constructors.
+- `ds` — thin Datastar mirrors for actions, attributes, signal refs, and expression escape hatches.
+- `read` — request-boundary signal/query decoding helpers.
+- `reply` — Datastar-safe response helpers. SSE patch helpers are the blessed path; `reply.direct.*` is the direct-response escape hatch.
 
 Docs: `datastar-philosophy.md`, `datastar-protocol.md`, `signals.md`.
 
-## Views
+## HTML and views
 
-- `Html` — HTML node builder, renderer, ordered attrs, raw HTML, patchable IDs.
-- `Jsx` — experimental classic JSX factory over `Html` nodes.
+Top-level HTML helpers are the canonical server-rendering API:
+
+- `h`
+- `render`
+- `fragment`
+- `raw`
+- `props`
+- `page`
+
+JSX is an explicit experimental adapter from `src/jsx.ts`, not a root API.
+
 - `Client` — Datastar script/document/client asset helpers.
 
 Docs: `html-rendering.md`.
 
 ## Contracts and model
 
-- `Contracts` — schema-derived signal handles, initial attributes, decoders, patches, action/query URL helpers.
+- `contract` — schema-derived signal handles, initial props, and typed patches.
 - `Model` — command completion, current-view patch responses, live-query helpers.
 
 Docs: `type-contracts.md`, `programming-model.md`, `actions-commands.md`, `live-queries.md`.
 
-## Runtime and services
+## Still under cleanup
 
-- `Runtime` — Effect services/layers for config, renderer, protocol, request context, signal decoder, error mapper, live query hub.
-- `Realtime` — PubSub/Stream utilities, heartbeats, live element patch responses.
-- `Security` — CSRF, auth context, request limits, abort access, safe navigation.
-- `Validation` — typed validation/domain error UX helpers.
-- `Observability` — telemetry service, span helpers, stream observation, in-memory test telemetry.
+- `Realtime`, `Security`, `Validation`, and `Observability` still exist in source while the simplification roadmap decides whether they stay public.
 
 Docs: `runtime.md`, `security.md`, `errors-validation.md`, `observability-testing.md`, `public-api.md`.
 

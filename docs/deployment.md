@@ -25,7 +25,7 @@ The dev server serves `/datastar.js` with no-cache headers. Production apps can 
 
 Use Effect layers for app dependencies:
 
-- renderer (`Html.Renderer` / `Runtime.HtmlRenderer`);
+- HTML rendering boundary (`h`, `render`, `page`; external renderers can pass strings);
 - security/session/auth services;
 - domain repositories;
 - realtime notification streams;

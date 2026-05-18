@@ -10,7 +10,7 @@ import {
   liveQueryResponse,
   makeRealtimePubSub,
   makeRealtimePubSubScoped,
-  mergeAttrs,
+  props,
   platformRouter,
   reply,
   publishRealtime,
@@ -41,7 +41,7 @@ export const pageNode = () =>
     "main",
     { id: "live-counter" },
     h("div", ds.init(ds.get("/live")), ""),
-    h("button", mergeAttrs({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
+    h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
     h("output", { id: "count" }, "0")
   )
 

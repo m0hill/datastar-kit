@@ -1,8 +1,8 @@
 /** @jsx jsx */
 /** @jsxFrag Fragment */
 import { describe, expect, it } from "vitest"
-import { dataSignals, mergeAttrs, on, post, signal, text } from "../src/datastar.js"
-import { render, type Child } from "../src/html.js"
+import { dataSignals, on, post, signal, text } from "../src/datastar.js"
+import { props, render, type Child } from "../src/html.js"
 import { Fragment, jsx } from "../src/jsx.js"
 
 describe("JSX templating experiment", () => {
@@ -15,8 +15,8 @@ describe("JSX templating experiment", () => {
   it("supports Datastar attr fragments in JSX", () => {
     const count = signal<number, "count">("count")
     const node = (
-      <main {...mergeAttrs({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true }))}>
-        <button {...mergeAttrs({ type: "button" }, on("click", post("/increment")))}>+</button>
+      <main {...props({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true }))}>
+        <button {...props({ type: "button" }, on("click", post("/increment")))}>+</button>
         <output {...text(count)}>0</output>
       </main>
     )

@@ -1,4 +1,4 @@
-import type { Attributes } from "./html.js"
+import type { Props } from "./html.js"
 import type { ElementNamespace, ElementPatchMode } from "./sse.js"
 
 export interface Expr<T = unknown> {
@@ -266,31 +266,6 @@ export const setAll = (value: ExprInput<unknown>, filter?: SignalFilter): Expr<v
 export const toggleAll = (filter?: SignalFilter): Expr<void> =>
   filter === undefined ? datastarAction<void>("toggleAll") : datastarAction<void>("toggleAll", filter)
 
-export class AttributeConflictError extends Error {
-  readonly _tag = "AttributeConflictError"
-
-  constructor(readonly attribute: string) {
-    super(`Duplicate HTML attribute: ${attribute}`)
-  }
-}
-
-export const mergeAttrs = (...attrs: ReadonlyArray<Attributes>): Attributes => Object.assign({}, ...attrs)
-
-export const mergeAttrsStrict = (...attrs: ReadonlyArray<Attributes>): Attributes => {
-  const merged: Record<string, Attributes[string]> = {}
-
-  for (const group of attrs) {
-    for (const [key, value] of Object.entries(group)) {
-      if (key in merged) {
-        throw new AttributeConflictError(key)
-      }
-      merged[key] = value
-    }
-  }
-
-  return merged
-}
-
 export type Duration = number | `${number}ms` | `${number}s`
 export type CaseModifier = "camel" | "kebab" | "snake" | "pascal"
 
@@ -476,110 +451,110 @@ export const intervalModifiers = (modifiers: IntervalModifiers = {}): string => 
   return modifierSuffix(parts)
 }
 
-export const on = (event: string, expression: ExprInput<unknown>, modifiers?: OnModifiers): Attributes => ({
+export const on = (event: string, expression: ExprInput<unknown>, modifiers?: OnModifiers): Props => ({
   [`data-on:${event}${onModifiers(modifiers)}`]: toJs(expression)
 })
 
-export const onIntersect = (expression: ExprInput<unknown>, modifiers?: IntersectModifiers): Attributes => ({
+export const onIntersect = (expression: ExprInput<unknown>, modifiers?: IntersectModifiers): Props => ({
   [`data-on-intersect${intersectModifiers(modifiers)}`]: toJs(expression)
 })
 
-export const onInterval = (expression: ExprInput<unknown>, modifiers?: IntervalModifiers): Attributes => ({
+export const onInterval = (expression: ExprInput<unknown>, modifiers?: IntervalModifiers): Props => ({
   [`data-on-interval${intervalModifiers(modifiers)}`]: toJs(expression)
 })
 
-export const onSignalPatch = (expression: ExprInput<unknown>, modifiers?: TimingModifiers): Attributes => {
+export const onSignalPatch = (expression: ExprInput<unknown>, modifiers?: TimingModifiers): Props => {
   const parts: Array<string> = []
   appendTimingModifiers(parts, modifiers ?? {})
   return { [`data-on-signal-patch${modifierSuffix(parts)}`]: toJs(expression) }
 }
 
-export const onSignalPatchFilter = (filter: SignalFilter): Attributes => ({
+export const onSignalPatchFilter = (filter: SignalFilter): Props => ({
   "data-on-signal-patch-filter": toJs(filter)
 })
 
-export const jsonSignals = (filter?: SignalFilter, options: { readonly terse?: boolean } = {}): Attributes => ({
+export const jsonSignals = (filter?: SignalFilter, options: { readonly terse?: boolean } = {}): Props => ({
   [options.terse === true ? "data-json-signals__terse" : "data-json-signals"]: filter === undefined ? true : toJs(filter)
 })
 
-export const preserveAttr = (...names: ReadonlyArray<string>): Attributes => ({
+export const preserveAttr = (...names: ReadonlyArray<string>): Props => ({
   "data-preserve-attr": names.join(" ")
 })
 
-export const ignore = (options: { readonly self?: boolean } = {}): Attributes => ({
+export const ignore = (options: { readonly self?: boolean } = {}): Props => ({
   [options.self === true ? "data-ignore__self" : "data-ignore"]: true
 })
 
-export const ignoreMorph = (): Attributes => ({
+export const ignoreMorph = (): Props => ({
   "data-ignore-morph": true
 })
 
-export const init = (expression: ExprInput<unknown>, modifiers?: InitModifiers): Attributes => ({
+export const init = (expression: ExprInput<unknown>, modifiers?: InitModifiers): Props => ({
   [`data-init${initModifiers(modifiers)}`]: toJs(expression)
 })
 
-export const effect = (expression: ExprInput<unknown>): Attributes => ({
+export const effect = (expression: ExprInput<unknown>): Props => ({
   "data-effect": toJs(expression)
 })
 
-export const text = (expression: ExprInput<unknown>): Attributes => ({
+export const text = (expression: ExprInput<unknown>): Props => ({
   "data-text": toJs(expression)
 })
 
-export const show = (expression: ExprInput<unknown>): Attributes => ({
+export const show = (expression: ExprInput<unknown>): Props => ({
   "data-show": toJs(expression)
 })
 
-export const bind = <T, Name extends string>(name: Name | Signal<T, Name>, modifiers: BindModifiers = {}): Attributes => {
+export const bind = <T, Name extends string>(name: Name | Signal<T, Name>, modifiers: BindModifiers = {}): Props => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
   return { [`data-bind:${signalName}${bindModifiers(modifiers)}`]: true }
 }
 
-export const bindValue = <Name extends string>(name: Name, modifiers: BindValueModifiers = {}): Attributes => {
+export const bindValue = <Name extends string>(name: Name, modifiers: BindValueModifiers = {}): Props => {
   assertSignalName(name)
   return { [`data-bind${bindModifiers(modifiers)}`]: name }
 }
 
-export const ref = <Name extends string>(name: Name | Signal<unknown, Name>, modifiers: SignalKeyModifiers = {}): Attributes => {
+export const ref = <Name extends string>(name: Name | Signal<unknown, Name>, modifiers: SignalKeyModifiers = {}): Props => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
   return { [`data-ref:${signalName}${caseModifierSuffix(modifiers)}`]: true }
 }
 
-export const refValue = <Name extends string>(name: Name): Attributes => {
+export const refValue = <Name extends string>(name: Name): Props => {
   assertSignalName(name)
   return { "data-ref": name }
 }
 
-export const indicator = <Name extends string>(name: Name | Signal<boolean, Name>, modifiers: SignalKeyModifiers = {}): Attributes => {
+export const indicator = <Name extends string>(name: Name | Signal<boolean, Name>, modifiers: SignalKeyModifiers = {}): Props => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
   return { [`data-indicator:${signalName}${caseModifierSuffix(modifiers)}`]: true }
 }
 
-export const indicatorValue = <Name extends string>(name: Name): Attributes => {
+export const indicatorValue = <Name extends string>(name: Name): Props => {
   assertSignalName(name)
   return { "data-indicator": name }
 }
 
-export const dataAttr = (name: string, expression: ExprInput<unknown>): Attributes => ({
+export const dataAttr = (name: string, expression: ExprInput<unknown>): Props => ({
   [`data-attr:${name}`]: toJs(expression)
 })
 
-export const dataAttrs = (mapping: Readonly<Record<string, ExprInput<unknown>>>): Attributes => ({
+export const dataAttrs = (mapping: Readonly<Record<string, ExprInput<unknown>>>): Props => ({
   "data-attr": toJs(mapping)
 })
 
-export const dataClass = (name: string, expression: ExprInput<unknown>, modifiers?: ClassModifiers): Attributes => ({
+export const dataClass = (name: string, expression: ExprInput<unknown>, modifiers?: ClassModifiers): Props => ({
   [`data-class:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression)
 })
 
-export const dataClasses = (mapping: Readonly<Record<string, ExprInput<unknown>>>): Attributes => ({
+export const dataClasses = (mapping: Readonly<Record<string, ExprInput<unknown>>>): Props => ({
   "data-class": toJs(mapping)
 })
 
-export const dataComputed = <T>(name: string, expression: ExprInput<T>, modifiers: SignalKeyModifiers = {}): Attributes => {
+export const dataComputed = <T>(name: string, expression: ExprInput<T>, modifiers: SignalKeyModifiers = {}): Props => {
   assertUnmodifiedSignalName(name, modifiers)
   return { [`data-computed:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression) }
 }
@@ -597,16 +572,16 @@ const assertDataComputedObjectKeys = (values: DataComputedObject): void => {
   }
 }
 
-export const dataComputeds = (mapping: DataComputedObject): Attributes => {
+export const dataComputeds = (mapping: DataComputedObject): Props => {
   assertDataComputedObjectKeys(mapping)
   return { "data-computed": toJs(mapping) }
 }
 
-export const dataStyle = (name: string, expression: ExprInput<unknown>): Attributes => ({
+export const dataStyle = (name: string, expression: ExprInput<unknown>): Props => ({
   [`data-style:${name}`]: toJs(expression)
 })
 
-export const dataStyles = (mapping: Readonly<Record<string, ExprInput<unknown>>>): Attributes => ({
+export const dataStyles = (mapping: Readonly<Record<string, ExprInput<unknown>>>): Props => ({
   "data-style": toJs(mapping)
 })
 
@@ -620,21 +595,21 @@ const assertSignalObjectKeys = (values: DatastarObject): void => {
   }
 }
 
-export const dataSignal = (name: string, value: DatastarValue, modifiers: DataSignalModifiers = {}): Attributes => {
+export const dataSignal = (name: string, value: DatastarValue, modifiers: DataSignalModifiers = {}): Props => {
   assertUnmodifiedSignalName(name, modifiers)
   return { [`data-signals:${name}${dataSignalModifiers(modifiers)}`]: toJs(value) }
 }
 
-export const privateDataSignal = <Name extends string>(name: Name, value: DatastarValue, modifiers: DataSignalModifiers = {}): Attributes =>
+export const privateDataSignal = <Name extends string>(name: Name, value: DatastarValue, modifiers: DataSignalModifiers = {}): Props =>
   dataSignal(privateSignalName(name), value, modifiers)
 
-export const validationDataSignal = <Name extends string>(name: Name, value: DatastarValue, modifiers: DataSignalModifiers = {}): Attributes =>
+export const validationDataSignal = <Name extends string>(name: Name, value: DatastarValue, modifiers: DataSignalModifiers = {}): Props =>
   dataSignal(`_validation.${name}`, value, modifiers)
 
-export const loadingDataSignal = <Name extends string>(name: Name, value: boolean, modifiers: DataSignalModifiers = {}): Attributes =>
+export const loadingDataSignal = <Name extends string>(name: Name, value: boolean, modifiers: DataSignalModifiers = {}): Props =>
   dataSignal(`_loading.${name}`, value, modifiers)
 
-export const dataSignals = (values: DatastarObject, options: { readonly ifMissing?: boolean } = {}): Attributes => {
+export const dataSignals = (values: DatastarObject, options: { readonly ifMissing?: boolean } = {}): Props => {
   assertSignalObjectKeys(values)
   return {
     [options.ifMissing === true ? "data-signals__ifmissing" : "data-signals"]: toJs(values)

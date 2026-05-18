@@ -1,70 +1,51 @@
 import { describe, expect, it } from "vitest"
-import { dataSignals, on, post, signal, text } from "../src/datastar.js"
-import {
-  attrs,
-  h,
-  htmlRenderer,
-  mergeOrderedAttrs,
-  MissingPatchIdError,
-  patchableNode,
-  rawHtml,
-  render,
-  requirePatchId,
-  type Renderer
-} from "../src/html.js"
-
-const stringRenderer: Renderer<string> = {
-  render: (value) => value.toUpperCase()
-}
+import { dataSignals, signal, text } from "../src/datastar.js"
+import { fragment, h, page, props, raw, render } from "../src/html.js"
 
 describe("HTML rendering boundary", () => {
-  it("exposes a renderer interface and default HTML renderer", () => {
-    expect(stringRenderer.render("ok")).toBe("OK")
-    expect(htmlRenderer.render(h("strong", {}, "Safe"))).toBe("<strong>Safe</strong>")
-  })
-
   it("escapes text by default and requires explicit raw HTML", () => {
     expect(render(h("p", {}, "<script>alert(1)</script>"))).toBe(
       "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>"
     )
-    expect(render(h("p", {}, rawHtml("<strong>trusted</strong>")))).toBe("<p><strong>trusted</strong></p>")
+    expect(render(h("p", {}, raw("<strong>trusted</strong>")))).toBe("<p><strong>trusted</strong></p>")
   })
 
-  it("preserves explicit attribute order for Datastar-sensitive attributes", () => {
+  it("composes props with later values overriding earlier values", () => {
+    expect(props({ class: "base", id: "old" }, { id: "new", hidden: true })).toEqual({
+      class: "base",
+      id: "new",
+      hidden: true
+    })
+  })
+
+  it("renders composed Datastar props in object insertion order", () => {
+    const count = signal<number, "count">("count")
     const node = h(
       "main",
-      attrs(
-        ["data-signals__ifmissing", '{"count": 0}'],
-        ["data-computed:double", "() => $count * 2"],
-        ["data-text", "$double"]
-      )
+      props(
+        { id: "counter" },
+        dataSignals({ count: 0 }, { ifMissing: true }),
+        text(count)
+      ),
+      "0"
     )
 
     expect(render(node)).toBe(
-      '<main data-signals__ifmissing="{&quot;count&quot;: 0}" data-computed:double="() =&gt; $count * 2" data-text="$double"></main>'
+      '<main id="counter" data-signals__ifmissing="{&quot;count&quot;: 0}" data-text="$count">0</main>'
     )
   })
 
-  it("can merge record attributes into explicit ordered attributes", () => {
-    const node = h(
-      "button",
-      mergeOrderedAttrs({ type: "button" }, on("click", post("/save")), { disabled: true }),
-      "Save"
-    )
-
-    expect(render(node)).toBe(
-      '<button type="button" data-on:click="@post(&quot;/save&quot;)" disabled>Save</button>'
+  it("renders fragments and full pages", () => {
+    expect(render(fragment(h("span", {}, "A"), h("span", {}, "B")))).toBe("<span>A</span><span>B</span>")
+    expect(page({ body: h("main", {}, "Hello") })).toBe(
+      '<!doctype html><html lang="en"><head></head><body><main>Hello</main></body></html>'
     )
   })
 
-  it("provides patchable node helpers that encourage top-level ids", () => {
-    const name = signal<string, "name">("name")
-    const node = patchableNode("section", "profile", mergeOrderedAttrs(dataSignals({ name: "Ada" }), text(name)), "Ada")
+  it("keeps stable patch ids as plain explicit props", () => {
+    const node = h("section", { id: "profile" }, "Ada")
 
-    expect(requirePatchId(node)).toBe(node)
-    expect(render(node)).toBe(
-      '<section id="profile" data-signals="{&quot;name&quot;: &quot;Ada&quot;}" data-text="$name">Ada</section>'
-    )
-    expect(() => requirePatchId(h("section", {}, "No id"))).toThrow(MissingPatchIdError)
+    expect(node.props.id).toBe("profile")
+    expect(render(node)).toBe('<section id="profile">Ada</section>')
   })
 })

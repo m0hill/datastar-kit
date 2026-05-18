@@ -8,13 +8,13 @@ See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline
 
 ## Current architecture
 
-The package root exports each module as a namespace (`Client`, `Contracts`, `Datastar`, `Html`, `Jsx`, `Model`, `Observability`, `Platform`, `Realtime`, `Runtime`, `Security`, `Sse`, `Validation`) and also re-exports their named helpers for small examples.
+The package root exposes small contextual namespaces such as `ds`, `read`, `reply`, and `contract`, plus tiny top-level HTML helpers (`h`, `render`, `fragment`, `raw`, `props`, `page`). JSX is an explicit experimental adapter, not a root API.
 
 - `src/sse.ts` — pure Datastar SSE event encoding: element patches, signal patches, signal removal, script execution, and event stream concatenation.
-- `src/contracts.ts` — Effect Schema-derived signal contracts, typed signal patches, and route/action helper prototypes.
-- `src/datastar.ts` — typed Datastar expressions, signal references, signal policy/scoping helpers, fetch actions, modifiers, attribute helpers, merge helpers, and signal-name validation.
-- `src/html.ts` — tiny HTML node builder/renderer plus renderer interface, ordered attributes, explicit raw HTML, patchable ID helpers, and full document helper.
-- `src/jsx.ts` — experimental classic JSX factory that renders through the same HTML node model.
+- `src/contract.ts` — narrow Effect Schema-derived signal contracts: typed signal refs, initial props, and typed patches.
+- `src/ds.ts` / `src/datastar.ts` — thin Datastar mirrors for expressions, signal references, fetch actions, modifiers, and attributes.
+- `src/html.ts` — tiny HTML node builder/renderer: `h`, `render`, `fragment`, `raw`, `props`, and `page`.
+- `src/jsx.ts` — experimental JSX adapter over the same HTML node model.
 - `src/platform.ts` — Effect Platform HTTP integration: route composition, Datastar request detection, signal/query/form decoding with Effect Schema, generic HTTP helpers, and Datastar-safe action response helpers.
 - `src/model.ts` — minimal backend-state/CQRS helpers for command completion, current-view patches, and live queries with render-on-connect, heartbeat response support, and invalidation coalescing.
 - `src/observability.ts` — OpenTelemetry-friendly telemetry service boundary, span helpers, stream observation, noop runtime layer, and in-memory test telemetry.
@@ -29,7 +29,7 @@ The package root exports each module as a namespace (`Client`, `Contracts`, `Dat
 `ts-star` is organized around four layers:
 
 1. **Protocol layer** — Datastar wire format and response semantics (`Sse`, protocol-facing `Platform` helpers).
-2. **View layer** — server-rendered HTML and Datastar attributes (`Html`, `Jsx`, `Datastar`, `Client`).
+2. **View layer** — server-rendered HTML helpers, Datastar attributes (`ds`), optional JSX adapter, and client document helpers.
 3. **Runtime layer** — Effect request decoding, responses, scopes, streams, and realtime resources (`Platform`, `Realtime`).
 4. **Programming model layer** — backend-source-of-truth commands, query views, and live queries (`Model`).
 
@@ -41,14 +41,11 @@ All four layers now exist in small form; the programming model layer is intentio
 import * as Effect from "effect/Effect"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import {
-  datastarDocument,
-  datastarPatchElementsResponse,
+  ds,
   h,
-  mergeAttrs,
-  on,
-  platformHtmlResponse,
+  props,
   platformRouter,
-  post
+  reply
 } from "ts-star"
 
 let count = 0
@@ -59,15 +56,15 @@ const counterNode = () =>
   h(
     "main",
     { id: "counter" },
-    h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
+    h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
     countNode()
   )
 
-const page = () => platformHtmlResponse(datastarDocument(counterNode()))
+const page = () => reply.page(counterNode())
 
 const increment = Effect.sync(() => {
   count += 1
-  return datastarPatchElementsResponse(countNode(), { selector: "#count", mode: "outer" })
+  return reply.patch(countNode(), { selector: "#count", mode: "outer" })
 })
 
 export const app = platformRouter(
@@ -114,11 +111,11 @@ The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or 
 - Backend state should be the durable source of truth.
 - Datastar signals should stay sparse and mostly ephemeral.
 - Effect should model runtime dependencies, typed errors, scopes, concurrency, and streams.
-- Server-rendered HTML should remain compatible with external renderer adapters.
+- Server-rendered HTML should stay simple; external renderers can pass rendered strings at response boundaries.
 - `ts-star` should not become a virtual DOM runtime, client router, React-style lifecycle system, complex browser store, or plugin-heavy frontend framework clone.
 
 ## Open questions
 
 - What exact shape should the future `Page`, `Action`, and `LiveQuery` APIs take?
 - How far should the typed expression DSL go before it becomes its own language?
-- Which renderer style should be documented as the default once adapters exist?
+- Whether real-world usage justifies a public renderer adapter later.

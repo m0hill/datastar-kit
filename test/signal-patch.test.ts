@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { mergeAttrsStrict, onSignalPatch, onSignalPatchFilter, post, regex } from "../src/datastar.js"
+import { onSignalPatch, onSignalPatchFilter, post, regex } from "../src/datastar.js"
+import { props } from "../src/html.js"
 
 describe("signal patch helpers", () => {
   it("builds signal patch filter attributes", () => {
@@ -10,7 +11,7 @@ describe("signal patch helpers", () => {
 
   it("composes signal patch listeners and filters", () => {
     expect(
-      mergeAttrsStrict(
+      props(
         onSignalPatch(post("/autosave"), { debounce: 500 }),
         onSignalPatchFilter({ include: regex("^draft") })
       )

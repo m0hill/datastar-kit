@@ -7,7 +7,7 @@ import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   ds,
-  mergeAttrs,
+  props as htmlProps,
   platformRouter,
   render,
   reply,
@@ -20,10 +20,10 @@ export interface CounterButtonProps {
   readonly children?: Child | readonly Child[]
 }
 
-export const CounterButton = (props: CounterButtonProps) =>
-  <button {...mergeAttrs({ type: "button" }, ds.on("click", ds.post(props.action)))}>{props.children ?? "+"}</button>
+export const CounterButton = (button: CounterButtonProps) =>
+  <button {...htmlProps({ type: "button" }, ds.on("click", ds.post(button.action)))}>{button.children ?? "+"}</button>
 
-export const CountOutput = (props: { readonly count: number }) => <output id="count">{props.count}</output>
+export const CountOutput = (output: { readonly count: number }) => <output id="count">{output.count}</output>
 
 export const tsxCounterNode = (count = 0) => (
   <main id="tsx-counter" className="counter-shell">

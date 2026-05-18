@@ -9,7 +9,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
 import * as contract from "../src/contract.js"
 import * as ds from "../src/ds.js"
-import { h, mergeAttrs } from "../src/html.js"
+import { h, props } from "../src/html.js"
 import { platformRouter } from "../src/platform.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
@@ -39,9 +39,9 @@ export const RuntimeCounterSignals = RuntimeCounter.schema
 export const runtimeCounterNode = (countValue: number) =>
   h(
     "main",
-    mergeAttrs({ id: "runtime-counter" }, RuntimeCounter.initial({ count: countValue }, { ifMissing: true })),
+    props({ id: "runtime-counter" }, RuntimeCounter.initial({ count: countValue }, { ifMissing: true })),
     h("h1", {}, "Effect services counter"),
-    h("button", mergeAttrs({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
+    h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
     h("output", ds.text(RuntimeCounter.$.count), countValue)
   )
 

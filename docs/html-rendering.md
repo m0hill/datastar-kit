@@ -1,37 +1,36 @@
 # HTML rendering boundary
 
-`ts-star` renders HTML on the server, but the tiny `src/html.ts` builder is not meant to be the only possible templating system forever. The framework boundary is:
+`ts-star` renders HTML on the server. The built-in HTML boundary is intentionally tiny and explicit:
 
 ```ts
-interface Renderer<Node = unknown> {
-  readonly render: (node: Node) => string
-}
+import { ds, h, props, render } from "ts-star"
+
+const view = h(
+  "button",
+  props({ type: "button" }, ds.on("click", ds.post("/save"))),
+  "Save"
+)
+
+render(view)
 ```
 
-`htmlRenderer` is the default renderer for the built-in `Child` tree. Runtime services can depend on renderer services instead of directly depending on the builder.
+## Canonical HTML API
 
-## Built-in builder status
+Top-level helpers:
 
-`src/html.ts` remains a deliberately small builder:
-
-- `h(tag, attrs, ...children)` creates an `HtmlNode`.
+- `h(tag, props, ...children)` creates an `HtmlNode`.
+- `props(...groups)` composes HTML props/attributes. Later groups override earlier groups.
 - `fragment(...children)` creates sibling nodes.
-- `render(child)` renders with escaping by default.
-- `htmlDocument(...)` renders a full document.
+- `raw(html)` inserts trusted raw HTML.
+- `render(child)` renders a node/fragment/string to an HTML string.
+- `page(options)` renders a full HTML document string.
 
-This is enough for examples and framework internals, but external renderers can be adapted by implementing the renderer boundary.
+Public types:
 
-## JSX status
-
-`src/jsx.ts` is an experimental convenience syntax over the same `HtmlNode` tree. It is not a React-like runtime:
-
-- no client component lifecycle;
-- no hooks;
-- no virtual DOM;
-- no hydration model;
-- server functions are just functions returning HTML nodes/fragments.
-
-JSX remains optional. The hyperscript builder and future external renderer adapters are equally valid.
+- `Child`
+- `HtmlNode`
+- `Props`
+- `PropValue`
 
 ## Escaping and raw HTML
 
@@ -42,58 +41,55 @@ render(h("p", {}, "<script>bad()</script>"))
 // <p>&lt;script&gt;bad()&lt;/script&gt;</p>
 ```
 
-Trusted raw HTML must be explicit with `rawHtml(...)`:
+Trusted raw HTML must be explicit with `raw(...)`:
 
 ```ts
-render(h("p", {}, rawHtml("<strong>trusted</strong>")))
+render(h("p", {}, raw("<strong>trusted</strong>")))
 // <p><strong>trusted</strong></p>
 ```
 
-Do not pass user input to `rawHtml`. It is an escape hatch for already-sanitized or framework-generated HTML.
+Do not pass user input to `raw`. It is an escape hatch for already-sanitized or framework-generated HTML.
 
-## Attribute ordering policy
+Note: top-level `raw(...)` is for raw HTML. `ds.raw(...)` is the Datastar expression escape hatch.
 
-Datastar evaluates attributes in DOM order, so order-sensitive attributes should be written explicitly.
+## Prop composition
 
-The normal record form remains convenient:
-
-```ts
-h("button", { type: "button", disabled: true }, "Save")
-```
-
-JavaScript preserves object insertion order for normal string keys, but object merging can obscure intent. When order matters, use ordered attributes:
+`ds.*` helpers return plain HTML props. Compose them with `props(...)`:
 
 ```ts
 h(
   "main",
-  attrs(
-    ["data-signals__ifmissing", '{"count": 0}'],
-    ["data-computed:double", "() => $count * 2"],
-    ["data-text", "$double"]
-  )
+  props({ id: "counter" }, ds.dataSignals({ count: 0 }, { ifMissing: true })),
+  h("output", ds.text(ds.signal<number, "count">("count")), "0")
 )
 ```
 
-Use `mergeOrderedAttrs(...)` when composing normal record helpers into a deliberate order:
+There is no public ordered-attribute or strict-merge API. Normal JavaScript object insertion order plus explicit `props(...)` composition is the blessed path for now.
+
+## Patchable roots
+
+Datastar element patches are most robust when patchable roots have stable IDs or explicit selectors:
 
 ```ts
-h("button", mergeOrderedAttrs({ type: "button" }, on("click", post("/save"))))
+const count = (value: number) => h("output", { id: "count" }, value)
 ```
 
-`mergeAttrs` remains useful for order-insensitive composition. `mergeAttrsStrict` remains useful when duplicate keys should be rejected.
+The framework does not expose a patchable-node helper. Prefer plain, visible IDs/selectors over another abstraction.
 
-## Patchable IDs
+## JSX status
 
-Datastar element patches are most robust when patchable roots have stable IDs or explicit selectors.
+JSX/TSX is an experimental syntax adapter over the same server HTML tree. It is not part of the main framework identity and should be imported explicitly from the adapter/subpath.
 
-Use `patchableNode(tag, id, attrs, ...children)` to put the ID first and make the intention clear, or call `requirePatchId(node)` in helpers/tests when a patchable view must have an ID. `requirePatchId` throws `MissingPatchIdError` when the node lacks a non-empty `id`.
+It has no:
+
+- client component lifecycle;
+- hooks;
+- virtual DOM;
+- hydration model;
+- client components.
+
+Function components, if used, are plain server render functions returning `Child`/`HtmlNode`.
 
 ## External renderers
 
-Future adapters should provide a `Renderer<Node>` and keep these invariants:
-
-- escaped text by default;
-- raw HTML is explicit;
-- Datastar attribute names and order can be preserved;
-- server-rendered output is plain HTML strings;
-- no hidden client-side component/runtime semantics.
+There is no public renderer adapter interface yet. If an application uses another template system, render it to a string and pass that string to `reply.page(...)`, `reply.patch(...)`, or `render(...)` boundaries as appropriate.

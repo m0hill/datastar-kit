@@ -2,7 +2,7 @@ import * as Effect from "effect/Effect"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { readFile } from "node:fs/promises"
-import { h, htmlDocument, type Child, type HtmlDocumentOptions, type HtmlNode } from "./html.js"
+import { h, page, type Child, type HtmlNode, type PageOptions } from "./html.js"
 
 export const datastarScript = (src = "/datastar.js"): HtmlNode =>
   h("script", {
@@ -24,16 +24,16 @@ const childArray = (child: Child | undefined): readonly Child[] => {
 }
 
 export const datastarDocument = (body: Child, options: DatastarDocumentOptions = {}): string => {
-  const documentOptions: HtmlDocumentOptions = {
+  const documentOptions: PageOptions = {
     head: [...childArray(options.head), datastarScript(options.scriptSrc)],
     body
   }
 
   if (options.lang !== undefined) {
-    return htmlDocument({ ...documentOptions, lang: options.lang })
+    return page({ ...documentOptions, lang: options.lang })
   }
 
-  return htmlDocument(documentOptions)
+  return page(documentOptions)
 }
 
 export const datastarPageResponse = (

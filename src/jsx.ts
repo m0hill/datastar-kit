@@ -1,8 +1,8 @@
-import type { AttributeValue, Attributes, Child, HtmlNode } from "./html.js"
+import type { Child, HtmlNode, Props, PropValue } from "./html.js"
 import { fragment, h } from "./html.js"
 
 export type JsxElement = HtmlNode | readonly Child[]
-export type JsxAttributes = Readonly<Record<string, AttributeValue | Child | readonly Child[]>>
+export type JsxProps = Readonly<Record<string, PropValue | Child | readonly Child[]>>
 export type JsxComponentProps = Readonly<Record<string, unknown>> & {
   readonly children?: Child | readonly Child[]
 }
@@ -27,31 +27,31 @@ export const Fragment = (props: { readonly children?: Child | readonly Child[] }
   return Array.isArray(children) ? children : [children]
 }
 
-const normalizeAttrName = (key: string): string => key === "className" ? "class" : key
+const normalizePropName = (key: string): string => key === "className" ? "class" : key
 
-const cleanAttrs = (attrs: JsxAttributes | null): Attributes => {
-  const cleaned: Record<string, AttributeValue> = {}
+const cleanElementProps = (input: JsxProps | null): Props => {
+  const cleaned: Record<string, PropValue> = {}
 
-  for (const [key, value] of Object.entries(attrs ?? {})) {
+  for (const [key, value] of Object.entries(input ?? {})) {
     if (key === "__self" || key === "__source" || key === "children") {
       continue
     }
 
-    const attrName = normalizeAttrName(key)
+    const propName = normalizePropName(key)
     if (key === "className" && cleaned.class !== undefined) {
       continue
     }
 
-    cleaned[attrName] = value as AttributeValue
+    cleaned[propName] = value as PropValue
   }
 
   return cleaned
 }
 
-const cleanProps = (attrs: Readonly<Record<string, unknown>> | null, children: readonly Child[]): JsxComponentProps => {
+const cleanComponentProps = (input: Readonly<Record<string, unknown>> | null, children: readonly Child[]): JsxComponentProps => {
   const cleaned: Record<string, unknown> = {}
 
-  for (const [key, value] of Object.entries(attrs ?? {})) {
+  for (const [key, value] of Object.entries(input ?? {})) {
     if (key === "__self" || key === "__source" || key === "children") {
       continue
     }
@@ -66,24 +66,24 @@ const cleanProps = (attrs: Readonly<Record<string, unknown>> | null, children: r
   return cleaned as JsxComponentProps
 }
 
-export function jsx(tag: typeof Fragment, attrs: null, ...children: readonly Child[]): readonly Child[]
-export function jsx(tag: string, attrs: JsxAttributes | null, ...children: readonly Child[]): HtmlNode
+export function jsx(tag: typeof Fragment, props: null, ...children: readonly Child[]): readonly Child[]
+export function jsx(tag: string, props: JsxProps | null, ...children: readonly Child[]): HtmlNode
 export function jsx<P extends object>(
   tag: (props: P) => JsxElement,
-  attrs: Omit<P, "children"> | null,
+  props: Omit<P, "children"> | null,
   ...children: readonly Child[]
 ): JsxElement
-export function jsx(tag: JsxTag, attrs: Readonly<Record<string, unknown>> | null, ...children: readonly Child[]): JsxElement {
+export function jsx(tag: JsxTag, input: Readonly<Record<string, unknown>> | null, ...children: readonly Child[]): JsxElement {
   if (tag === Fragment) {
     return fragment(...children)
   }
 
   if (typeof tag === "function") {
     const component = tag as (props: JsxComponentProps) => JsxElement
-    return component(cleanProps(attrs, children))
+    return component(cleanComponentProps(input, children))
   }
 
-  return h(tag, cleanAttrs(attrs as JsxAttributes | null), ...children)
+  return h(tag, cleanElementProps(input as JsxProps | null), ...children)
 }
 
 declare global {
@@ -93,7 +93,7 @@ declare global {
       children: {}
     }
     interface IntrinsicElements {
-      [tagName: string]: JsxAttributes
+      [tagName: string]: JsxProps
     }
   }
 }

@@ -4,8 +4,8 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { dataSignals, mergeAttrs, on, post, signal, text } from "../src/datastar.js"
-import { h, render } from "../src/html.js"
+import { dataSignals, on, post, signal, text } from "../src/datastar.js"
+import { h, props, render } from "../src/html.js"
 import { platformReadSignals, platformRouter } from "../src/platform.js"
 import * as reply from "../src/reply.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
@@ -20,8 +20,8 @@ const counterView = () => {
   return render(
     h(
       "main",
-      mergeAttrs({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
-      h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
+      props({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
+      h("button", props({ type: "button" }, on("click", post("/increment"))), "+"),
       h("output", text(count), "0")
     )
   )

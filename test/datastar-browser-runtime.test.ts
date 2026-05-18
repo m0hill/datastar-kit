@@ -6,8 +6,8 @@ import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
 import { startExampleServer } from "../examples/dev-server.js"
 import { datastarDocument } from "../src/client.js"
-import { dataSignals, mergeAttrs, on, post, signal, text } from "../src/datastar.js"
-import { h } from "../src/html.js"
+import { dataSignals, on, post, signal, text } from "../src/datastar.js"
+import { h, props } from "../src/html.js"
 
 const execFile = promisify(execFileCallback)
 const agentBrowserAvailable = spawnSync("agent-browser", ["--version"], { stdio: "ignore" }).status === 0
@@ -20,10 +20,10 @@ const page = (): string => {
   return datastarDocument(
     h(
       "main",
-      mergeAttrs({ id: "app" }, dataSignals({ count: 0 }, { ifMissing: true })),
-      h("output", mergeAttrs({ id: "count" }, text(count)), "0"),
-      h("button", mergeAttrs({ id: "ignored", type: "button" }, on("click", post("/ignored"))), "ignored"),
-      h("button", mergeAttrs({ id: "increment", type: "button" }, on("click", post("/increment"))), "+")
+      props({ id: "app" }, dataSignals({ count: 0 }, { ifMissing: true })),
+      h("output", props({ id: "count" }, text(count)), "0"),
+      h("button", props({ id: "ignored", type: "button" }, on("click", post("/ignored"))), "ignored"),
+      h("button", props({ id: "increment", type: "button" }, on("click", post("/increment"))), "+")
     )
   )
 }

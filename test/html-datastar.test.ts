@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import * as ds from "../src/ds.js"
-import { h, mergeAttrs, render } from "../src/html.js"
+import { h, props, render } from "../src/html.js"
 
 describe("typed Datastar HTML helpers", () => {
   it("renders escaped HTML and boolean attributes", () => {
@@ -34,10 +34,10 @@ describe("typed Datastar HTML helpers", () => {
     const count = ds.signal<number, "count">("count")
     const view = h(
       "main",
-      mergeAttrs({ id: "counter" }, ds.dataSignals({ count: 0 }, { ifMissing: true })),
-      h("button", mergeAttrs({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
+      props({ id: "counter" }, ds.dataSignals({ count: 0 }, { ifMissing: true })),
+      h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
       h("output", ds.text(count), "0"),
-      h("input", mergeAttrs({ type: "number" }, ds.bind(count)))
+      h("input", props({ type: "number" }, ds.bind(count)))
     )
 
     expect(render(view)).toBe(

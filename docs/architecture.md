@@ -54,13 +54,13 @@ Owns server-rendered HTML and Datastar attributes.
 
 Current files:
 
-- `src/html.ts` is the minimal HTML node builder/renderer, renderer interface, ordered-attribute representation, raw HTML escape hatch, patchable ID helper, and document helper.
-- `src/jsx.ts` is an experimental classic JSX factory over the same HTML nodes.
-- `src/contracts.ts` derives signal handles, initial attributes, decoders, patches, and action URL helpers from Effect Schema contracts.
-- `src/datastar.ts` builds typed Datastar expressions, fetch actions, signal references, modifiers, and `data-*` attributes.
+- `src/html.ts` is the minimal top-level HTML boundary: `h`, `render`, `fragment`, `raw`, `props`, and `page`.
+- `src/jsx.ts` is an experimental adapter over the same HTML nodes, imported explicitly rather than through the package root.
+- `src/contract.ts` derives signal handles, initial props, and typed patches from Effect Schema contracts.
+- `src/ds.ts` / `src/datastar.ts` build thin Datastar mirrors for expressions, fetch actions, signal references, modifiers, and `data-*` attributes.
 - `src/client.ts` creates Datastar script tags/documents and serves pinned Datastar client assets through Effect Platform routes.
 
-Future renderer work should preserve Datastar attribute ordering/serialization semantics while allowing adapters.
+External renderers can pass rendered strings at response boundaries. A public renderer adapter interface should wait for real adapter pressure.
 
 ### 3. Runtime layer
 
@@ -88,28 +88,17 @@ The current helpers (`commandDone`, `currentViewPatchResponse`, `liveQuery`, `li
 
 ## Public module boundary proposal
 
-The package root currently exports every source module both as namespaces and as named helpers. Use this as the working boundary:
+The public boundary is being simplified before release. The current app-facing direction is:
 
-### Stable public API candidates
+- `ds` for Datastar browser-facing primitives.
+- `read` for request-boundary decoding.
+- `reply` for Datastar-safe responses.
+- `contract` for narrow schema-derived signal contracts.
+- top-level `h`, `render`, `fragment`, `raw`, `props`, and `page` for server HTML.
 
-- `Sse` / `src/sse.ts`: low-level Datastar event encoders.
-- `Contracts` / `src/contracts.ts`: schema-derived signal/action contracts that reduce drift across view handles, decoders, and patches.
-- `Datastar` / `src/datastar.ts`: expression, action, signal, modifier, and attribute helpers that mirror Datastar semantics.
-- Core response/request helpers in `Platform` / `src/platform.ts`: signal/query decoding and Datastar response constructors.
+JSX is an explicit experimental adapter, not a root API.
 
-### Experimental public API
-
-- `Html` / `src/html.ts`: tiny renderer used by examples and tests while the renderer boundary remains open.
-- `Jsx` / `src/jsx.ts`: classic JSX factory over `Html` nodes.
-- `Client` / `src/client.ts`: script/document helpers and client asset routes.
-- `Model` / `src/model.ts`: minimal CQRS/live-query helpers; the semantics are foundational, but exact future page/action APIs remain flexible.
-- `Runtime` / `src/runtime.ts`: Effect-native service/layer boundary; foundational service names may evolve as later security/telemetry tasks add capabilities.
-- `Realtime` / `src/realtime.ts`: PubSub/Stream helpers that support live-query invalidation and streaming.
-- Root-level named re-exports: convenient for examples, but the namespace exports are the clearest way to communicate module ownership.
-
-### Internal/private API
-
-No file in `src/` is currently private because `src/index.ts` re-exports all modules. New implementation-only code should live under `src/internal/**` or stay unexported from module files until it is intentionally promoted.
+Implementation-only code should live under `src/internal/**` or stay unexported from module files until intentionally promoted.
 
 ## Naming conventions
 

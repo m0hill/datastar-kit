@@ -6,7 +6,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
 import * as contract from "../src/contract.js"
 import * as ds from "../src/ds.js"
-import { h, mergeAttrs, render } from "../src/html.js"
+import { h, props, render } from "../src/html.js"
 import { platformRouter } from "../src/platform.js"
 import * as reply from "../src/reply.js"
 import * as read from "../src/read.js"
@@ -50,7 +50,7 @@ export const contactFormNode = () => {
     { id: "contact-page" },
     h(
       "form",
-      mergeAttrs(
+      props(
         { id: "contact-form" },
         ContactForm.initial({ name: "", email: "" }, { ifMissing: true }),
         ds.dataSignal("_validation.form", "", { ifMissing: true }),
@@ -58,11 +58,11 @@ export const contactFormNode = () => {
         ds.dataSignal("_validation.email", "", { ifMissing: true }),
         ds.on("submit", ds.post("/contact"), { prevent: true })
       ),
-      h("p", mergeAttrs({ id: "form-error", role: "alert" }, ds.text(formError))),
-      h("label", {}, "Name", h("input", mergeAttrs({ name: "name" }, ds.bind(s.name)))),
-      h("p", mergeAttrs({ id: "name-error" }, ds.text(nameError))),
-      h("label", {}, "Email", h("input", mergeAttrs({ name: "email", type: "email" }, ds.bind(s.email)))),
-      h("p", mergeAttrs({ id: "email-error" }, ds.text(emailError))),
+      h("p", props({ id: "form-error", role: "alert" }, ds.text(formError))),
+      h("label", {}, "Name", h("input", props({ name: "name" }, ds.bind(s.name)))),
+      h("p", props({ id: "name-error" }, ds.text(nameError))),
+      h("label", {}, "Email", h("input", props({ name: "email", type: "email" }, ds.bind(s.email)))),
+      h("p", props({ id: "email-error" }, ds.text(emailError))),
       h("button", { type: "submit" }, "Save")
     ),
     h("div", { id: "contact-result" })

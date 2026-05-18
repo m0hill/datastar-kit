@@ -9,7 +9,6 @@ This direction follows the shape used by the Effect repository examples (`packag
 `src/runtime.ts` introduces the smallest useful service set:
 
 - `TsStarConfig` — framework defaults such as the Datastar script path and runtime mode.
-- `HtmlRenderer` — service boundary for rendering framework HTML nodes or future external template adapters.
 - `DatastarProtocol` — service-backed constructors for Datastar page, element patch, signal patch, and no-content responses.
 - `RequestContext` — current Effect Platform request, parsed URL, method, Datastar request flag, and raw signal body/query effect.
 - `SignalDecoder` — schema-based signal decoding derived from `RequestContext`.

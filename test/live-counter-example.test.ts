@@ -35,7 +35,7 @@ describe("live counter example", () => {
     const fragment = countFragment(3)
 
     expect(fragment.tag).toBe("output")
-    expect(fragment.attrs).toEqual({ id: "count" })
+    expect(fragment.props).toEqual({ id: "count" })
   })
 
   it("renders count fragments for fat morph patches", () => {

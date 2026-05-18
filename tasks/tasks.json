@@ -225,7 +225,7 @@
       "order": 7,
       "id": "T007",
       "title": "Define the tiny HTML boundary and explicit JSX adapter",
-      "status": "pending",
+      "status": "done",
       "phase": "view-api",
       "priority": "high",
       "grill_level": 3,

@@ -7,7 +7,7 @@ import {
   h,
   platformReadQuery,
   platformRouter,
-  mergeAttrs,
+  props,
   render,
   reply
 } from "../src/index.js"
@@ -53,10 +53,10 @@ export const searchNode = () => {
 
   return h(
     "main",
-    mergeAttrs({ id: "search" }, ds.dataSignals({ q: "" }, { ifMissing: true })),
+    props({ id: "search" }, ds.dataSignals({ q: "" }, { ifMissing: true })),
     h(
       "input",
-      mergeAttrs(
+      props(
         { type: "search", placeholder: "Search contacts" },
         ds.bind(q),
         ds.on("input", ds.get(ds.queryUrl("/search", { q })), { debounce: 200 })

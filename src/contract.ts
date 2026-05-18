@@ -1,6 +1,6 @@
 import * as Schema from "effect/Schema"
 import { dataSignals, signals as signalRefs, type SignalRecord } from "./datastar.js"
-import type { Attributes } from "./html.js"
+import type { Props } from "./html.js"
 import type { JsonObject } from "./sse.js"
 
 type PatchValue<T> = T extends readonly (infer Item)[]
@@ -16,7 +16,7 @@ type SignalPatch<Shape extends object> = {
 export interface Signals<Shape extends object, R = never> {
   readonly schema: Schema.Decoder<Shape, R>
   readonly $: SignalRecord<Shape>
-  readonly initial: (values: Shape, options?: { readonly ifMissing?: boolean }) => Attributes
+  readonly initial: (values: Shape, options?: { readonly ifMissing?: boolean }) => Props
   readonly patch: (values: SignalPatch<Shape>) => SignalPatch<Shape>
 }
 

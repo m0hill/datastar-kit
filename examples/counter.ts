@@ -6,7 +6,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   ds,
   h,
-  mergeAttrs,
+  props,
   platformRouter,
   render,
   reply
@@ -19,7 +19,7 @@ export const counterNode = (count = 0) =>
     "main",
     { id: "counter" },
     h("h1", {}, "ts-star counter"),
-    h("button", mergeAttrs({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
+    h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
     countNode(count)
   )
 
