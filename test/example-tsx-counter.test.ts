@@ -27,7 +27,7 @@ afterEach(async () => {
 describe("TSX counter example", () => {
   it("builds the counter view with TSX instead of hyperscript calls", () => {
     expect(tsxCounterView()).toBe(
-      '<main id="tsx-counter" data-signals__ifmissing="{&quot;count&quot;: 0}"><h1>ts-star TSX counter</h1><button type="button" data-on:click="@post(&quot;/increment&quot;)">+</button><output data-text="$count">0</output></main>'
+      '<main id="tsx-counter" class="counter-shell" data-signals__ifmissing="{&quot;count&quot;: 0}"><h1>ts-star TSX counter</h1><button type="button" data-on:click="@post(&quot;/increment&quot;)">+</button><output data-text="$count">0</output></main>'
     )
   })
 

@@ -27,6 +27,8 @@ export const Fragment = (props: { readonly children?: Child | readonly Child[] }
   return Array.isArray(children) ? children : [children]
 }
 
+const normalizeAttrName = (key: string): string => key === "className" ? "class" : key
+
 const cleanAttrs = (attrs: JsxAttributes | null): Attributes => {
   const cleaned: Record<string, AttributeValue> = {}
 
@@ -34,7 +36,13 @@ const cleanAttrs = (attrs: JsxAttributes | null): Attributes => {
     if (key === "__self" || key === "__source" || key === "children") {
       continue
     }
-    cleaned[key] = value as AttributeValue
+
+    const attrName = normalizeAttrName(key)
+    if (key === "className" && cleaned.class !== undefined) {
+      continue
+    }
+
+    cleaned[attrName] = value as AttributeValue
   }
 
   return cleaned

@@ -39,7 +39,7 @@ export const tsxCounterNode = () => {
   const count = signal<number, "count">("count")
 
   return (
-    <main {...mergeAttrs({ id: "tsx-counter" }, dataSignals({ count: 0 }, { ifMissing: true }))}>
+    <main {...mergeAttrs({ id: "tsx-counter", className: "counter-shell" }, dataSignals({ count: 0 }, { ifMissing: true }))}>
       <h1>ts-star TSX counter</h1>
       <>
         <CounterButton action="/increment">+</CounterButton>

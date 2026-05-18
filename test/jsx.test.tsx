@@ -26,6 +26,12 @@ describe("JSX templating experiment", () => {
     )
   })
 
+  it("normalizes TSX className to HTML class", () => {
+    const node = <div className="stack gap-2">Hello</div>
+
+    expect(render(node)).toBe('<div class="stack gap-2">Hello</div>')
+  })
+
   it("renders fragments for sibling nodes", () => {
     const nodes = (
       <>
