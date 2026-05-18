@@ -6,7 +6,7 @@ export type JsxProps = Readonly<Record<string, PropValue | Child | readonly Chil
 export type JsxComponentProps = Readonly<Record<string, unknown>> & {
   readonly children?: Child | readonly Child[]
 }
-export type JsxComponent = (props: never) => JsxElement
+export type JsxComponent = (props: JsxComponentProps) => JsxElement
 export type JsxTag = string | typeof Fragment | JsxComponent
 
 const childrenProp = (children: readonly Child[]): Child | readonly Child[] | undefined => {
@@ -29,7 +29,10 @@ export const Fragment = (props: { readonly children?: Child | readonly Child[] }
 
 const normalizePropName = (key: string): string => key === "className" ? "class" : key
 
-const cleanElementProps = (input: JsxProps | null): Props => {
+const isPropValue = (value: unknown): value is PropValue =>
+  value === null || value === undefined || typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+
+const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): Props => {
   const cleaned: Record<string, PropValue> = {}
 
   for (const [key, value] of Object.entries(input ?? {})) {
@@ -42,14 +45,18 @@ const cleanElementProps = (input: JsxProps | null): Props => {
       continue
     }
 
-    cleaned[propName] = value as PropValue
+    if (!isPropValue(value)) {
+      throw new TypeError(`Unsupported JSX prop value for ${JSON.stringify(key)}`)
+    }
+
+    cleaned[propName] = value
   }
 
   return cleaned
 }
 
 const cleanComponentProps = (input: Readonly<Record<string, unknown>> | null, children: readonly Child[]): JsxComponentProps => {
-  const cleaned: Record<string, unknown> = {}
+  const cleaned: Record<string, unknown> & { children?: Child | readonly Child[] } = {}
 
   for (const [key, value] of Object.entries(input ?? {})) {
     if (key === "__self" || key === "__source" || key === "children") {
@@ -63,7 +70,7 @@ const cleanComponentProps = (input: Readonly<Record<string, unknown>> | null, ch
     cleaned.children = child
   }
 
-  return cleaned as JsxComponentProps
+  return cleaned
 }
 
 export function jsx(tag: typeof Fragment, props: null, ...children: readonly Child[]): readonly Child[]
@@ -79,11 +86,10 @@ export function jsx(tag: JsxTag, input: Readonly<Record<string, unknown>> | null
   }
 
   if (typeof tag === "function") {
-    const component = tag as (props: JsxComponentProps) => JsxElement
-    return component(cleanComponentProps(input, children))
+    return tag(cleanComponentProps(input, children))
   }
 
-  return h(tag, cleanElementProps(input as JsxProps | null), ...children)
+  return h(tag, cleanElementProps(input), ...children)
 }
 
 declare global {

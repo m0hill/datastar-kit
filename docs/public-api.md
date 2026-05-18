@@ -19,6 +19,8 @@ import { ds, read, reply, contract, live, h, props } from "ts-star"
 - `live` — current-state live query event streams that compose with `reply.stream`.
 - `h`, `render`, `fragment`, `raw`, `props`, `page` — tiny server HTML boundary.
 
+Low-level SSE encoding is available from the explicit `ts-star/sse` subpath when needed; it is not part of the root happy path.
+
 ## JSX status
 
 JSX is an explicit experimental adapter, not a root API and not a component runtime. If used, import it deliberately from the adapter/subpath. JSX function components are plain server render functions only.
@@ -35,7 +37,7 @@ Do not add new root exports by default. Implementation-only helpers should stay 
 
 Do not add plugin discovery or adapter interfaces before there is real pressure.
 
-For external renderers, render to a string and pass it to `reply.page({ body: rendered })` / `reply.patch(...)`. There is no public renderer interface yet.
+For external renderers, render to a string and mark it as trusted HTML with `raw(rendered)` before passing it to `reply.page(...)`, `reply.patch(...)`, or `reply.direct.html(...)`. There is no public renderer interface yet.
 
 ## What not to add
 

@@ -7,11 +7,7 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
-import * as contract from "../src/contract.js"
-import * as ds from "../src/ds.js"
-import { h, props } from "../src/html.js"
-import * as read from "../src/read.js"
-import * as reply from "../src/reply.js"
+import { contract, ds, h, props, read, reply } from "../src/index.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 

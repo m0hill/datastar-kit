@@ -57,11 +57,11 @@ Current files:
 - `src/html.ts` is the minimal top-level HTML boundary: `h`, `render`, `fragment`, `raw`, `props`, and `page`.
 - `src/jsx.ts` is an experimental adapter over the same HTML nodes, imported explicitly rather than through the package root.
 - `src/contract.ts` derives signal handles, initial props, and typed patches from Effect Schema contracts.
-- `src/ds.ts` / `src/datastar.ts` build thin Datastar mirrors for expressions, fetch actions, signal references, modifiers, and `data-*` attributes.
+- `src/ds.ts` exposes thin Datastar mirrors for expressions, fetch actions, signal references, modifiers, and `data-*` attributes; implementation-only helpers stay non-exported in that module.
 
 Datastar runtime inclusion is explicit HTML in the page head. `ts-star` does not inject scripts, ship a public client asset helper, or serve `/datastar.js`.
 
-External renderers can pass rendered strings at response boundaries. A public renderer adapter interface should wait for real adapter pressure.
+External renderers can pass trusted rendered strings through `raw(renderedHtml)` at response boundaries. A public renderer adapter interface should wait for real adapter pressure.
 
 ### 3. Runtime layer
 
@@ -97,10 +97,11 @@ The public boundary is being simplified before release. The current app-facing d
 - `contract` for narrow schema-derived signal contracts.
 - `live` for current-state live query event streams.
 - top-level `h`, `render`, `fragment`, `raw`, `props`, and `page` for server HTML.
+- `ts-star/sse` as an explicit low-level protocol subpath, not a root export.
 
 JSX is an explicit experimental adapter, not a root API.
 
-Implementation-only code should live under `src/internal/**` or stay unexported from module files until intentionally promoted.
+Implementation-only code should stay unexported from module files or live under `src/internal/**` only when a real split improves source navigation.
 
 ## Naming conventions
 

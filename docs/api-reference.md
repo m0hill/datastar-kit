@@ -4,7 +4,7 @@ This is a map to the current source modules and concept docs.
 
 ## Protocol and Datastar
 
-- `Sse` — low-level event encoding (`patchElements`, `patchSignals`, `executeScript`, stream concatenation).
+- `ts-star/sse` — explicit subpath for low-level event encoding (`patchElements`, `patchSignals`, `executeScript`, stream concatenation).
 - `ds` — thin Datastar mirrors for actions, attributes, signal refs, and expression escape hatches.
 - `read` — request-boundary Datastar signal decoding.
 - `reply` — Datastar-safe response helpers. SSE patch helpers are the blessed path; `reply.direct.*` is the direct-response escape hatch.

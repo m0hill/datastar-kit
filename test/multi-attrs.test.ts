@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { dataAttrs, dataClasses, signal } from "../src/datastar.js"
+import { dataAttrs, dataClasses, signal } from "../src/ds.js"
 
 describe("multi-attribute Datastar helpers", () => {
   it("builds object-form data-attr bindings", () => {

@@ -41,14 +41,14 @@ render(h("p", {}, "<script>bad()</script>"))
 // <p>&lt;script&gt;bad()&lt;/script&gt;</p>
 ```
 
-Trusted raw HTML must be explicit with `raw(...)`:
+Trusted raw HTML must be explicit with `raw(...)`. This applies both inside HTML trees and at response boundaries such as `reply.patch(...)`:
 
 ```ts
 render(h("p", {}, raw("<strong>trusted</strong>")))
 // <p><strong>trusted</strong></p>
 ```
 
-Do not pass user input to `raw`. It is an escape hatch for already-sanitized or framework-generated HTML.
+Do not pass user input to `raw`. It is an escape hatch for already-sanitized or framework-generated HTML. Plain strings are rendered as text and escaped, even when passed to `reply.patch(...)`.
 
 Note: top-level `raw(...)` is for raw HTML. `ds.raw(...)` is the Datastar expression escape hatch.
 
@@ -92,4 +92,4 @@ Function components, if used, are plain server render functions returning `Child
 
 ## External renderers
 
-There is no public renderer adapter interface yet. If an application uses another template system, render it to a string and pass that string to `reply.page({ body: rendered })`, `reply.patch(...)`, or `render(...)` boundaries as appropriate.
+There is no public renderer adapter interface yet. If an application uses another template system, render it to a string and pass `raw(rendered)` to `reply.page({ body })`, `reply.patch(...)`, or `reply.direct.html(...)` as appropriate.

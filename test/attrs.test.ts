@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { dataAttr, on, post, raw as dsRaw } from "../src/datastar.js"
+import { dataAttr, on, post, raw as dsRaw } from "../src/ds.js"
 import { props } from "../src/html.js"
 
 describe("prop merging", () => {

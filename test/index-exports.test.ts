@@ -1,13 +1,13 @@
 import * as Effect from "effect/Effect"
 import { describe, expect, it } from "vitest"
 import * as Root from "../src/index.js"
+import * as sse from "../src/sse.js"
 import {
   contract,
   ds,
   live,
   read,
   reply,
-  Sse,
   fragment,
   h,
   page,
@@ -33,6 +33,10 @@ describe("package root exports", () => {
     expect(raw).toBeDefined()
     expect(props).toBeDefined()
     expect(page).toBeDefined()
+    expect("Sse" in Root).toBe(false)
+    expect("sse" in Root).toBe(false)
+    expect("patchElements" in Root).toBe(false)
+    expect("patchSignals" in Root).toBe(false)
     expect("Html" in Root).toBe(false)
     expect("Jsx" in Root).toBe(false)
     expect("jsx" in Root).toBe(false)
@@ -55,7 +59,7 @@ describe("package root exports", () => {
     expect("signalsFrom" in read).toBe(false)
     expect(reply.patch).toBeDefined()
     expect(reply.navigate).toBeDefined()
-    expect(Sse.patchSignals).toBeDefined()
+    expect(sse.patchSignals).toBeDefined()
 
     await expect(Effect.runPromise(Effect.succeed("ok"))).resolves.toBe("ok")
   })

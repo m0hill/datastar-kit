@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { dataSignals, signal, text } from "../src/datastar.js"
+import { dataSignals, signal, text } from "../src/ds.js"
 import { fragment, h, page, props, raw, render } from "../src/html.js"
 
 describe("HTML rendering boundary", () => {

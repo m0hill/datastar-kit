@@ -23,10 +23,10 @@ if (false) {
   // @ts-expect-error Unknown signal handles are not exposed by the contract.
   Counter.$.missing
 
-  type CounterPatch = contract.Patch<typeof Counter>
+  type CounterPatch = contract.PatchOf<typeof Counter>
   const _validPatch: CounterPatch = { count: 1, nested: { enabled: false } }
 
-  type RawPatch = contract.Patch<{ readonly count: number }>
+  type RawPatch = contract.PatchOf<{ readonly count: number }>
   // @ts-expect-error Patch only accepts a contract instance type.
   const _rawPatch: RawPatch = { count: 1 }
 }
@@ -46,7 +46,7 @@ describe("schema-derived signal contracts", () => {
   })
 
   it("derives typed signal patches without constructing responses", async () => {
-    const patch: contract.Patch<typeof Counter> = Counter.patch({
+    const patch: contract.PatchOf<typeof Counter> = Counter.patch({
       count: 2,
       nested: { enabled: true },
       draft: null

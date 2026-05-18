@@ -1,7 +1,7 @@
 /** @jsx jsx */
 /** @jsxFrag Fragment */
 import { describe, expect, it } from "vitest"
-import { dataSignals, on, post, signal, text } from "../src/datastar.js"
+import { dataSignals, on, post, signal, text } from "../src/ds.js"
 import { props, render, type Child } from "../src/html.js"
 import { Fragment, jsx } from "../src/jsx.js"
 

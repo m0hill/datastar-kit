@@ -1,10 +1,11 @@
 import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { h } from "../src/html.js"
+import { h, raw } from "../src/html.js"
 import * as reply from "../src/reply.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -73,6 +74,18 @@ describe("reply SSE responses", () => {
 
     expect(await response.text()).toBe(
       "event: datastar-patch-elements\ndata: selector #name\ndata: elements <span>Ada &amp; Grace</span>\n\n"
+    )
+  })
+
+  it("escapes string patches unless raw HTML is explicit", async () => {
+    const text = HttpServerResponse.toWeb(reply.patch("<strong>Saved</strong>"))
+    const html = HttpServerResponse.toWeb(reply.patch(raw("<strong>Saved</strong>")))
+
+    expect(await text.text()).toBe(
+      "event: datastar-patch-elements\ndata: elements &lt;strong&gt;Saved&lt;/strong&gt;\n\n"
+    )
+    expect(await html.text()).toBe(
+      "event: datastar-patch-elements\ndata: elements <strong>Saved</strong>\n\n"
     )
   })
 

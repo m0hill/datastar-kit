@@ -1,8 +1,8 @@
 # ts-star
 
-Exploratory TypeScript + Effect + Datastar framework prototype.
+Effect-native Datastar framework for server-driven TypeScript applications.
 
-`ts-star` is intentionally small and server-driven. It keeps low-level Datastar helpers available while building toward a layered framework where backend state is the source of truth, Effect owns runtime/lifecycle concerns, and Datastar applies HTML/signal patches in the browser.
+`ts-star` is intentionally small and server-driven. Backend state is the source of truth, Effect owns runtime/lifecycle concerns, and Datastar applies HTML/signal patches in the browser.
 
 See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline and public module boundary proposal. See [`docs/public-api.md`](docs/public-api.md) and [`docs/api-reference.md`](docs/api-reference.md) for stable/experimental modules, extension points, and API maps. See [`docs/examples.md`](docs/examples.md) for the tested reference examples. See [`docs/datastar-philosophy.md`](docs/datastar-philosophy.md) and [`docs/datastar-protocol.md`](docs/datastar-protocol.md) for Datastar philosophy and response semantics. See [`docs/actions-commands.md`](docs/actions-commands.md), [`docs/programming-model.md`](docs/programming-model.md), and [`docs/runtime.md`](docs/runtime.md) for backend-state commands and Effect services. See [`docs/type-contracts.md`](docs/type-contracts.md), [`docs/html-rendering.md`](docs/html-rendering.md), [`docs/signals.md`](docs/signals.md), [`docs/live-queries.md`](docs/live-queries.md), [`docs/security.md`](docs/security.md), [`docs/errors-validation.md`](docs/errors-validation.md), [`docs/observability-testing.md`](docs/observability-testing.md), [`docs/deployment.md`](docs/deployment.md), and [`docs/performance-deployment.md`](docs/performance-deployment.md) for focused guides.
 
@@ -10,9 +10,9 @@ See [`docs/architecture.md`](docs/architecture.md) for the architecture baseline
 
 The package root exposes small contextual namespaces such as `ds`, `read`, `reply`, and `contract`, plus tiny top-level HTML helpers (`h`, `render`, `fragment`, `raw`, `props`, `page`). JSX is an explicit experimental adapter, not a root API.
 
-- `src/sse.ts` — pure Datastar SSE event encoding: element patches, signal patches, signal removal, script execution, and event stream concatenation.
+- `src/sse.ts` — pure Datastar SSE event encoding, exposed through the explicit `ts-star/sse` subpath.
 - `src/contract.ts` — narrow Effect Schema-derived signal contracts: typed signal refs, initial props, and typed patches.
-- `src/ds.ts` / `src/datastar.ts` — thin Datastar mirrors for expressions, signal references, fetch actions, modifiers, and attributes.
+- `src/ds.ts` — thin Datastar mirrors for expressions, signal references, fetch actions, modifiers, and attributes.
 - `src/html.ts` — tiny HTML node builder/renderer: `h`, `render`, `fragment`, `raw`, `props`, and `page`.
 - `src/jsx.ts` — experimental JSX adapter over the same HTML node model.
 - `src/read.ts` — concise request-boundary Datastar signal decoding over Effect Platform. It hides Datastar's GET/DELETE query-param vs body signal transport detail.
@@ -27,7 +27,7 @@ Validation is demonstrated as an app-local recipe. Auth/session/CSRF/request lim
 
 `ts-star` is organized around four layers:
 
-1. **Protocol layer** — Datastar wire format and response semantics (`Sse`, `reply`).
+1. **Protocol layer** — Datastar wire format and response semantics (`reply`, plus low-level `ts-star/sse`).
 2. **View layer** — server-rendered HTML helpers, Datastar attributes (`ds`), and optional JSX adapter.
 3. **Runtime layer** — Effect request decoding, responses, scopes, and app-owned streams (`read`, `reply`).
 4. **Programming model layer** — backend-source-of-truth commands, query views, and current-state live queries (`live`).
@@ -114,11 +114,10 @@ The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or 
 - Backend state should be the durable source of truth.
 - Datastar signals should stay sparse and mostly ephemeral.
 - Effect should model runtime dependencies, typed errors, scopes, concurrency, and streams.
-- Server-rendered HTML should stay simple; external renderers can pass rendered strings at response boundaries.
+- Server-rendered HTML should stay simple; external renderer output should cross the trust boundary explicitly with `raw(renderedHtml)`.
 - `ts-star` should not become a virtual DOM runtime, client router, React-style lifecycle system, complex browser store, or plugin-heavy frontend framework clone.
 
 ## Open questions
 
 - What exact shape should future `Page` and `Action` APIs take?
-- How far should the typed expression DSL go before it becomes its own language?
 - Whether real-world usage justifies a public renderer adapter later.

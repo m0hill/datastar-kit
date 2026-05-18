@@ -78,8 +78,7 @@ export class NavigationUrlError extends Error {
   }
 }
 
-const renderHtml = (content: string | Exclude<Child, string>): string =>
-  typeof content === "string" ? content : render(content)
+const renderHtml = (content: Child): string => render(content)
 
 const assertStatus = (status: number | undefined, expected: 200 | 204): void => {
   if (status !== undefined && status !== expected) {
@@ -87,12 +86,10 @@ const assertStatus = (status: number | undefined, expected: 200 | 204): void => 
   }
 }
 
-const bodyOptions = <Options extends { readonly status?: 200 }>(
-  options: Options = {} as Options
-): Omit<Options, "status"> & { readonly status: 200 } => {
+const bodyOptions = (options: BodyOptions = {}): Omit<BodyOptions, "status"> & { readonly status: 200 } => {
   assertStatus(options.status, 200)
   const { status: _status, ...responseOptions } = options
-  return { ...responseOptions, status: 200 } as Omit<Options, "status"> & { readonly status: 200 }
+  return { ...responseOptions, status: 200 }
 }
 
 const sseHeaders = (headers: Headers.Input | undefined): Headers.Headers => {
@@ -161,7 +158,7 @@ export const page = (
   })
 
 export const patch = (
-  elements: string | Exclude<Child, string>,
+  elements: Child,
   options?: PatchElementsOptions,
   responseOptions?: BodyOptions
 ): HttpServerResponse.HttpServerResponse =>
@@ -198,16 +195,17 @@ export const done = (options: DoneOptions = {}): HttpServerResponse.HttpServerRe
 }
 
 const directHtml = (
-  html: string | Exclude<Child, string>,
+  html: Child,
   options: DirectHtmlOptions = {}
 ): HttpServerResponse.HttpServerResponse => {
-  const responseOptions = bodyOptions(options)
+  const { selector, mode, namespace, useViewTransition, ...body } = options
+  const responseOptions = bodyOptions(body)
   const headers = Headers.fromInput({
-    ...Headers.fromInput(options.headers),
-    ...(options.selector === undefined ? {} : { "datastar-selector": options.selector }),
-    ...(options.mode === undefined ? {} : { "datastar-mode": options.mode }),
-    ...(options.namespace === undefined ? {} : { "datastar-namespace": options.namespace }),
-    ...(options.useViewTransition === undefined ? {} : { "datastar-use-view-transition": String(options.useViewTransition) })
+    ...Headers.fromInput(body.headers),
+    ...(selector === undefined ? {} : { "datastar-selector": selector }),
+    ...(mode === undefined ? {} : { "datastar-mode": mode }),
+    ...(namespace === undefined ? {} : { "datastar-namespace": namespace }),
+    ...(useViewTransition === undefined ? {} : { "datastar-use-view-transition": String(useViewTransition) })
   })
 
   return HttpServerResponse.text(renderHtml(html), {
@@ -221,10 +219,11 @@ const directSignals = (
   value: JsonObject | string,
   options: DirectSignalsOptions = {}
 ): HttpServerResponse.HttpServerResponse => {
-  const responseOptions = bodyOptions(options)
+  const { onlyIfMissing, ...body } = options
+  const responseOptions = bodyOptions(body)
   const headers = Headers.fromInput({
-    ...Headers.fromInput(options.headers),
-    ...(options.onlyIfMissing === undefined ? {} : { "datastar-only-if-missing": String(options.onlyIfMissing) })
+    ...Headers.fromInput(body.headers),
+    ...(onlyIfMissing === undefined ? {} : { "datastar-only-if-missing": String(onlyIfMissing) })
   })
 
   return HttpServerResponse.text(typeof value === "string" ? value : JSON.stringify(value), {
@@ -238,10 +237,11 @@ const directScript = (
   script: string,
   options: DirectScriptOptions = {}
 ): HttpServerResponse.HttpServerResponse => {
-  const responseOptions = bodyOptions(options)
+  const { attributes, ...body } = options
+  const responseOptions = bodyOptions(body)
   const headers = Headers.fromInput({
-    ...Headers.fromInput(options.headers),
-    ...(options.attributes === undefined ? {} : { "datastar-script-attributes": JSON.stringify(options.attributes) })
+    ...Headers.fromInput(body.headers),
+    ...(attributes === undefined ? {} : { "datastar-script-attributes": JSON.stringify(attributes) })
   })
 
   return HttpServerResponse.text(script, {

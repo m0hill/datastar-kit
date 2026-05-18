@@ -1,9 +1,8 @@
 {
   "name": "ts-star",
-  "version": "0.0.0",
-  "description": "Exploratory Effect + Datastar framework prototype",
+  "version": "0.1.0",
+  "description": "Effect-native Datastar framework for server-driven TypeScript applications",
   "type": "module",
-  "private": true,
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",
   "exports": {
@@ -14,8 +13,17 @@
     "./jsx": {
       "types": "./dist/src/jsx.d.ts",
       "default": "./dist/src/jsx.js"
+    },
+    "./sse": {
+      "types": "./dist/src/sse.d.ts",
+      "default": "./dist/src/sse.js"
     }
   },
+  "files": [
+    "dist/src",
+    "README.md"
+  ],
+  "sideEffects": false,
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
     "check": "pnpm run typecheck && pnpm run test",
@@ -49,7 +57,6 @@
     "sse",
     "hypermedia"
   ],
-  "author": "",
   "license": "MIT",
   "dependencies": {
     "@effect/platform-node": "4.0.0-beta.67",

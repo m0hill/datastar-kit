@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net"
 import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
 import { startExampleServer } from "../examples/dev-server.js"
-import { dataSignals, on, post, signal, text } from "../src/datastar.js"
+import { dataSignals, on, post, signal, text } from "../src/ds.js"
 import { h, page as htmlPage, props } from "../src/html.js"
 
 const execFile = promisify(execFileCallback)

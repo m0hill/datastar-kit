@@ -1,97 +1,57 @@
-# End-to-end type contracts
+# Signal contracts
 
-`ts-star` should let a small application define its request/view contract once and reuse it across signals, action URLs, decoders, and patches.
-
-The first contract API lives in `src/contracts.ts`. It is intentionally small: it reduces the highest-value duplication without trying to become a tRPC clone or a full route compiler.
-
-## Signal contracts
-
-Use `defineSignals(name, schema)` with an Effect Schema:
+`contract.signals(schema)` is the schema-derived signal contract API. It keeps the high-value type safety without coupling contracts to routing, request decoding, or response construction.
 
 ```ts
-const Counter = defineSignals(
-  "Counter",
+import * as Effect from "effect/Effect"
+import * as Schema from "effect/Schema"
+import { contract, ds, h, props, read, reply } from "ts-star"
+
+const Contact = contract.signals(
   Schema.Struct({
-    count: Schema.Number,
-    draft: Schema.String
+    name: Schema.String,
+    email: Schema.String
   })
 )
-```
 
-The returned contract derives:
-
-- `Counter.schema` — the source schema.
-- `Counter.signals` — typed Datastar signal handles (`Counter.signals.count`).
-- `Counter.initial(values, options)` — `data-signals` attributes typed from the schema output.
-- `Counter.read` / `Counter.readFromRequest(request)` — request-boundary signal decoding.
-- `Counter.decode(signalDecoder)` — decoding through the Effect-native `SignalDecoder` service.
-- `Counter.patch(values)` — typed partial signal patches with `null` removal semantics.
-- `Counter.patchResponse(values, options, responseOptions)` — Datastar-safe signal patch response.
-
-Example:
-
-```ts
-const s = Counter.signals
-
-h(
-  "main",
-  Counter.initial({ count: 0, draft: "" }, { ifMissing: true }),
-  h("output", text(s.count), "0")
+const form = h(
+  "form",
+  props(Contact.initial({ name: "", email: "" }, { ifMissing: true })),
+  h("input", props({ name: "name" }, ds.bind(Contact.$.name))),
+  h("input", props({ name: "email" }, ds.bind(Contact.$.email)))
 )
 
-const increment = Effect.gen(function* () {
-  const signals = yield* Counter.read
-  return Counter.patchResponse({ count: signals.count + 1 })
+const submit = Effect.gen(function*() {
+  const input = yield* read.signals(Contact.schema)
+  return reply.signals(Contact.patch({ email: input.email.trim() }))
 })
 ```
 
-Compile-time checks cover missing initial keys, wrong patch value types, unknown signal handles, and nested signal paths.
+## Returned contract
 
-## Signal patches
+`contract.signals(schema)` returns a `contract.SignalContract`:
 
-`SignalPatch<T>` is a partial object matching the signal shape. Values may be:
+- `schema` — the original Effect Schema decoder.
+- `$` — typed Datastar signal references, matching Datastar's `$signal` naming.
+- `initial(values, options)` — typed `data-signals` props for initial browser signals.
+- `patch(values)` — typed partial signal patches with `null` removal semantics.
 
-- the same type as the signal field;
-- a nested partial patch for nested objects;
-- `null` to remove a signal/path.
+Use `read.signals(Contact.schema)` at the request boundary and `reply.signals(Contact.patch(...))` at the response boundary. Contracts intentionally do not own HTTP status, routing, request services, or response construction.
 
-This mirrors Datastar signal removal semantics while keeping patches tied to the schema-derived shape.
+## Patch types
 
-## Query action contracts
-
-Use `defineQueryAction(...)` when a Datastar action URL and a route decoder share the same query schema:
+Use `contract.PatchOf<typeof Contact>` when a helper needs the typed patch shape:
 
 ```ts
-const Search = defineQueryAction({
-  name: "search",
-  method: "get",
-  path: "/search",
-  querySchema: Schema.Struct({
-    q: Schema.String,
-    page: Schema.FiniteFromString
-  })
-})
+type ContactPatch = contract.PatchOf<typeof Contact>
 
-on("input", Search.actionWithQuery({ q, page: 1 }))
-
-const route = Search.readQuery.pipe(
-  Effect.map(({ q, page }) => ...)
-)
+const clearEmail: ContactPatch = {
+  email: null
+}
 ```
 
-The query helper requires the schema-derived keys when constructing URLs/actions and rejects unknown keys in object literals.
+Signal patches are partial objects matching the signal shape. Nested objects may be patched partially, and `null` removes the signal/path according to Datastar signal patch semantics.
 
-## Plain action contracts
+## What contracts do not do
 
-Use `defineAction({ name, method, path })` when no typed query payload is needed. It records method/path together and generates the matching Datastar fetch expression.
-
-## Runtime validation
-
-Contracts do not replace runtime decoding. `read`, `readFromRequest`, `readQuery`, and `readQueryFromRequest` still use Effect Schema and fail explicitly with typed schema errors at the request boundary.
-
-## Current limits
-
-- Path params are not typed yet.
-- Form/body contracts beyond signals and query params are not finalized.
-- Patch runtime validation is intentionally light; the compile-time type catches the common drift, while request decoding remains the authoritative runtime guard.
-- The API is a prototype and may be folded into future `Page`/`Action` abstractions.
+Contracts do not define route/action DSLs, query-string builders, form parsers, or response helpers. Use `ds.*` for Datastar action expressions, Effect Platform for routing and non-Datastar inputs, `read.signals(...)` for Datastar signals, and `reply.*` for Datastar-aware responses.

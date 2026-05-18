@@ -33,21 +33,21 @@ const rows = (q: string) => {
   return contacts.filter((contact) => `${contact.first} ${contact.last}`.toLowerCase().includes(needle))
 }
 
-export const resultsView = (q: string): string => {
+export const resultsNode = (q: string) => {
   const matches = rows(q)
 
-  return render(
-    h(
-      "tbody",
-      { id: "results" },
-      ...(matches.length === 0
-        ? [h("tr", {}, h("td", { colspan: 2 }, "No contacts found"))]
-        : matches.map((contact) =>
-          h("tr", {}, h("td", {}, contact.first), h("td", {}, contact.last))
-        ))
-    )
+  return h(
+    "tbody",
+    { id: "results" },
+    ...(matches.length === 0
+      ? [h("tr", {}, h("td", { colspan: 2 }, "No contacts found"))]
+      : matches.map((contact) =>
+        h("tr", {}, h("td", {}, contact.first), h("td", {}, contact.last))
+      ))
   )
 }
+
+export const resultsView = (q: string): string => render(resultsNode(q))
 
 export const searchNode = () => {
   const q = ds.signal<string, "q">("q")
@@ -79,7 +79,7 @@ export const searchRoute = HttpRouter.route(
   "GET",
   "/search",
   HttpServerRequest.schemaSearchParams(SearchQuery).pipe(
-    Effect.map(({ q }) => reply.patch(resultsView(q), { selector: "#results", mode: "outer" }))
+    Effect.map(({ q }) => reply.patch(resultsNode(q), { selector: "#results", mode: "outer" }))
   )
 )
 

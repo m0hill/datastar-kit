@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { jsonSignals, preserveAttr, ref, regex, signal, SignalNameError } from "../src/datastar.js"
+import { jsonSignals, preserveAttr, ref, regex, signal, SignalNameError } from "../src/ds.js"
 
 describe("misc Datastar attribute helpers", () => {
   it("builds data-ref attributes from names and signals", () => {

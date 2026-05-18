@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest"
-import { dataSignals, isSignalName, signal, SignalNameError, signals } from "../src/datastar.js"
+import { dataSignals, signal, SignalNameError } from "../src/ds.js"
 
 describe("Datastar signal name validation", () => {
   it("accepts normal, nested, and local signal names", () => {
-    expect(isSignalName("count")).toBe(true)
-    expect(isSignalName("form.email")).toBe(true)
-    expect(isSignalName("_fetching")).toBe(true)
+    expect(signal<number, "count">("count").toDatastarExpression()).toBe("$count")
+    expect(signal<string, "form.email">("form.email").toDatastarExpression()).toBe("$form.email")
+    expect(signal<boolean, "_fetching">("_fetching").toDatastarExpression()).toBe("$_fetching")
   })
 
   it("rejects names Datastar would case-convert or fail to address predictably", () => {
-    expect(isSignalName("first-name")).toBe(false)
-    expect(isSignalName("1count")).toBe(false)
-    expect(isSignalName("form..email")).toBe(false)
-    expect(isSignalName("")).toBe(false)
+    expect(() => signal<unknown, "first-name">("first-name")).toThrow(SignalNameError)
+    expect(() => signal<unknown, "1count">("1count")).toThrow(SignalNameError)
+    expect(() => signal<unknown, "form..email">("form..email")).toThrow(SignalNameError)
+    expect(() => signal<unknown, "">("")).toThrow(SignalNameError)
   })
 
   it("throws early for invalid signal constructors", () => {
@@ -32,9 +32,4 @@ describe("Datastar signal name validation", () => {
     expect(() => dataSignals({ "bad-key": true })).toThrow(SignalNameError)
   })
 
-  it("signal records still create validated signal refs", () => {
-    const $ = signals<{ count: number }>()
-
-    expect($.count.toDatastarExpression()).toBe("$count")
-  })
 })

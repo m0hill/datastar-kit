@@ -26,7 +26,7 @@ This keeps the UI model close to HTTP and HTML instead of recreating a frontend 
 
 ## Expose the protocol
 
-Low-level helpers such as `Sse.patchElements` and thin `ds.*` Datastar mirrors stay available. App-facing response construction goes through `reply.*`, and Datastar signal decoding goes through `read.signals(...)`. The underlying Datastar concepts should remain visible without exposing a generic platform wrapper.
+Low-level helpers such as `patchElements` from `ts-star/sse` and thin `ds.*` Datastar mirrors stay available. App-facing response construction goes through `reply.*`, and Datastar signal decoding goes through `read.signals(...)`. The underlying Datastar concepts should remain visible without exposing a generic platform wrapper.
 
 ## Reconnect safety
 

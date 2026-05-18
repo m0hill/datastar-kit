@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { onSignalPatch, onSignalPatchFilter, post, regex } from "../src/datastar.js"
+import { onSignalPatch, onSignalPatchFilter, post, regex } from "../src/ds.js"
 import { props } from "../src/html.js"
 
 describe("signal patch helpers", () => {

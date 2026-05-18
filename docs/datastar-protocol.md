@@ -41,7 +41,7 @@ The direct response escape hatches preserve Datastar header names used by the br
 - `datastar-only-if-missing`
 - `datastar-script-attributes`
 
-SSE event encoding remains in `src/sse.ts` and is checked against Datastar SDK fixtures, including multiline data fields and default option omission.
+Low-level SSE event encoding is available from `ts-star/sse` and is checked against Datastar SDK fixtures, including multiline data fields and default option omission.
 
 ## Signal decoding
 

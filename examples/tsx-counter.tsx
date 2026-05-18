@@ -13,9 +13,9 @@ import {
   reply,
   type Child
 } from "../src/index.js"
+import { Fragment, jsx } from "../src/jsx.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
-import { Fragment, jsx } from "../src/jsx.js"
 
 export interface CounterButtonProps {
   readonly action: string
