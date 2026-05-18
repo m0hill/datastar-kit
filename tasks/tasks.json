@@ -2,7 +2,13 @@
   "project": "ts-star",
   "purpose": "Simplification roadmap after the Datastar + Effect framework philosophy audit. These tasks remove accidental complexity, narrow public API surface, and preserve the server-driven identity before users exist.",
   "generated_at": "2026-05-18",
-  "status_values": ["pending", "running", "blocked", "done", "deferred"],
+  "status_values": [
+    "pending",
+    "running",
+    "blocked",
+    "done",
+    "deferred"
+  ],
   "grill_scale": {
     "1": "Mechanical cleanup; implement directly.",
     "2": "Low-risk simplification; validate with tests/docs.",
@@ -59,7 +65,9 @@
       "phase": "api-surface",
       "priority": "critical",
       "grill_level": 3,
-      "depends_on": ["T001"],
+      "depends_on": [
+        "T001"
+      ],
       "markdown": "02-curate-root-exports.md",
       "goal": "Stop exporting every prototype helper as public API and force intentional promotion of modules/functions.",
       "canonical_direction": "Prefer namespace exports for a small blessed set; remove root-level named re-exports and hide experimental modules.",
@@ -83,7 +91,10 @@
       "phase": "protocol",
       "priority": "critical",
       "grill_level": 4,
-      "depends_on": ["T001", "T002"],
+      "depends_on": [
+        "T001",
+        "T002"
+      ],
       "markdown": "03-sse-first-responses.md",
       "goal": "Collapse duplicate response constructors around Datastar SSE as the canonical response model.",
       "canonical_direction": "Use one cohesive public response factory named reply. SSE patch helpers are top-level and blessed; direct HTML/signals/script responses remain as reply.direct.* status-safe escape hatches. Remove verbose datastar* names, DatastarResponse, ds.reply, and public arbitrary-status platform direct helpers.",
@@ -105,29 +116,37 @@
     {
       "order": 4,
       "id": "T004",
-      "title": "Remove the public Runtime service catalog",
+      "title": "Replace Runtime service catalog with explicit read/reply APIs and app-owned Effect services",
       "status": "pending",
       "phase": "runtime",
       "priority": "critical",
       "grill_level": 5,
-      "depends_on": ["T001", "T002", "T003"],
-      "markdown": "04-remove-runtime-service-catalog.md",
-      "goal": "Prevent simple Datastar apps from requiring an enterprise Effect service graph around pure helpers.",
-      "canonical_direction": "Remove Runtime from public API. Keep Effect for app services, request decoding, scopes, streams, and PubSub—not wrappers around rendering and response constructors.",
+      "depends_on": [
+        "T001",
+        "T002",
+        "T003"
+      ],
+      "markdown": "04-replace-runtime-service-catalog.md",
+      "goal": "Remove the public ts-star Runtime service catalog while preserving Effect as the app-owned dependency/resource model.",
+      "canonical_direction": "Normal apps use h, ds, read, and reply. Request decoding is read.signals/read.query; responses are reply.*; app dependencies are plain Effect services/layers owned by the app. Runtime services are deleted or internal only.",
       "deliverables": [
+        "Public read.signals/read.query helper namespace",
         "Runtime namespace removed from public exports",
-        "Thin services deleted or moved internal",
-        "Runtime counter example rewritten or removed",
-        "Docs explain where Effect genuinely remains valuable"
+        "Thin runtime services deleted or moved internal without aliases",
+        "Runtime counter rewritten as an app-owned Effect services example",
+        "Docs explain where Effect remains valuable without a ts-star runtime service graph"
       ],
       "removal_targets": [
-        "TsStarConfig service unless still needed internally",
-        "HtmlRenderer service",
-        "DatastarProtocol service",
-        "SignalDecoder service",
-        "ErrorMapper service",
-        "LiveQueryHub service",
-        "requestRuntimeLayer/runtimeCoreLayer as public API"
+        "Runtime namespace as public API",
+        "requestRuntimeLayer/runtimeCoreLayer public APIs",
+        "TsStarConfig public service",
+        "HtmlRenderer public service",
+        "DatastarProtocol public service",
+        "RequestContext public service",
+        "SignalDecoder public service",
+        "ErrorMapper/catchMappedErrors public APIs",
+        "LiveQueryHub public service",
+        "platformReadSignals/platformReadQuery as app-facing names"
       ]
     },
     {
@@ -138,7 +157,10 @@
       "phase": "types",
       "priority": "high",
       "grill_level": 4,
-      "depends_on": ["T002", "T004"],
+      "depends_on": [
+        "T002",
+        "T004"
+      ],
       "markdown": "05-narrow-contracts.md",
       "goal": "Keep the useful type-safety win while removing premature route/action/runtime coupling.",
       "canonical_direction": "A contract may derive signal refs, initial signal attributes, and typed patch shapes. Request reading and response construction should stay in Platform/Model.",
@@ -165,7 +187,10 @@
       "phase": "view-api",
       "priority": "high",
       "grill_level": 4,
-      "depends_on": ["T001", "T002"],
+      "depends_on": [
+        "T001",
+        "T002"
+      ],
       "markdown": "06-shrink-datastar-helpers.md",
       "goal": "Keep helpers that mirror Datastar directly while avoiding a mini client expression language or frontend store API.",
       "canonical_direction": "Bless thin Datastar attribute/action helpers. Prefer raw Datastar expressions for complex client expressions instead of expanding TypeScript combinators.",
@@ -192,7 +217,11 @@
       "phase": "view-api",
       "priority": "high",
       "grill_level": 3,
-      "depends_on": ["T001", "T002", "T006"],
+      "depends_on": [
+        "T001",
+        "T002",
+        "T006"
+      ],
       "markdown": "07-simplify-html-jsx-boundary.md",
       "goal": "Expose a small server HTML API and prevent JSX from becoming a React-like component runtime direction.",
       "canonical_direction": "Make h/render the conceptual default; keep JSX internal or explicitly experimental syntax sugar.",
@@ -218,7 +247,10 @@
       "phase": "realtime",
       "priority": "critical",
       "grill_level": 4,
-      "depends_on": ["T003", "T004"],
+      "depends_on": [
+        "T003",
+        "T004"
+      ],
       "markdown": "08-merge-realtime-around-live-query.md",
       "goal": "Remove overlapping realtime abstractions and make reconnect-safe current-state live queries the one obvious model.",
       "canonical_direction": "Use Model.liveQuery/liveQueryResponse as the canonical realtime abstraction; let apps use Effect PubSub/Stream directly unless a tiny helper is clearly useful.",
@@ -246,7 +278,12 @@
       "phase": "cross-cutting",
       "priority": "high",
       "grill_level": 5,
-      "depends_on": ["T001", "T002", "T004", "T005"],
+      "depends_on": [
+        "T001",
+        "T002",
+        "T004",
+        "T005"
+      ],
       "markdown": "09-move-cross-cutting-modules-out-of-core.md",
       "goal": "Prevent generic auth/security/validation/telemetry modules from defining the framework identity too early.",
       "canonical_direction": "Move these concerns to recipes or internals. Core should expose primitives, not public subsystems.",
@@ -271,7 +308,11 @@
       "phase": "platform",
       "priority": "high",
       "grill_level": 3,
-      "depends_on": ["T002", "T003", "T009"],
+      "depends_on": [
+        "T002",
+        "T003",
+        "T009"
+      ],
       "markdown": "10-trim-platform-http-surface.md",
       "goal": "Keep Platform focused on Datastar + Effect Platform integration instead of wrapping generic HTTP helpers.",
       "canonical_direction": "Keep Datastar-specific signal/query decoding and canonical responses; use Effect Platform directly for generic form/multipart APIs.",
@@ -297,7 +338,10 @@
       "phase": "client-asset",
       "priority": "medium",
       "grill_level": 2,
-      "depends_on": ["T002", "T003"],
+      "depends_on": [
+        "T002",
+        "T003"
+      ],
       "markdown": "11-simplify-client-asset-helpers.md",
       "goal": "Keep script/document/client serving helpers small and remove tuple route composition convenience APIs.",
       "canonical_direction": "Keep document/script helpers and one asset route helper; remove route-list helpers and unneeded configuration surface.",
@@ -321,7 +365,17 @@
       "phase": "docs-examples",
       "priority": "critical",
       "grill_level": 3,
-      "depends_on": ["T002", "T003", "T005", "T006", "T007", "T008", "T009", "T010", "T011"],
+      "depends_on": [
+        "T002",
+        "T003",
+        "T005",
+        "T006",
+        "T007",
+        "T008",
+        "T009",
+        "T010",
+        "T011"
+      ],
       "markdown": "12-rewrite-docs-examples-blessed-path.md",
       "goal": "Teach the cleaned framework identity instead of cataloging every prototype helper or preserving old approaches.",
       "canonical_direction": "Docs and examples should show render HTML, attach Datastar attrs, decode inputs, mutate/read backend state, return 204 or SSE patches, and use live queries for realtime.",
@@ -346,7 +400,9 @@
       "phase": "verification",
       "priority": "high",
       "grill_level": 2,
-      "depends_on": ["T012"],
+      "depends_on": [
+        "T012"
+      ],
       "markdown": "13-final-surface-audit.md",
       "goal": "Verify that the cleanup actually reduced conceptual surface area and left no compatibility shims or duplicate abstractions.",
       "canonical_direction": "Measure success by local reasoning and one obvious path, not by feature count.",
