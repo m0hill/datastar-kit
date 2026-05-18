@@ -212,7 +212,7 @@
       "order": 12,
       "id": "T012",
       "title": "Define extensibility and public API stabilization",
-      "status": "pending",
+      "status": "done",
       "phase": "api",
       "priority": "high",
       "depends_on": ["T001", "T003", "T004", "T005"],
