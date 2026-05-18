@@ -179,6 +179,22 @@ export const defaultErrorResponse = (error: unknown): HttpServerResponse.HttpSer
     return HttpServerResponse.text(message, { status: 400 })
   }
 
+  if (hasTag(error, "CsrfError")) {
+    return HttpServerResponse.text("CSRF check failed", { status: 403 })
+  }
+
+  if (hasTag(error, "UnauthorizedError")) {
+    return HttpServerResponse.text("Unauthorized", { status: 401 })
+  }
+
+  if (hasTag(error, "RequestSizeLimitError")) {
+    return HttpServerResponse.text("Request body too large", { status: 413 })
+  }
+
+  if (hasTag(error, "UnsafeRedirectUrlError")) {
+    return HttpServerResponse.text("Unsafe redirect URL", { status: 400 })
+  }
+
   if (error instanceof DatastarResponseStatusError) {
     return HttpServerResponse.text("Invalid Datastar response status", { status: 500 })
   }

@@ -161,7 +161,7 @@
       "order": 9,
       "id": "T009",
       "title": "Define request lifecycle, security, and boundaries",
-      "status": "pending",
+      "status": "done",
       "phase": "runtime",
       "priority": "critical",
       "depends_on": ["T003", "T004"],
