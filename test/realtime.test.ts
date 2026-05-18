@@ -93,6 +93,19 @@ describe("realtime SSE helpers", () => {
     expect(await response.text()).toContain("event: update\n\n")
   })
 
+  it("can attach heartbeat comments at the response helper level", async () => {
+    const response = toWeb(eventStreamResponse(Stream.fromEffect(Effect.never), { heartbeat: { interval: 0, comment: "ping" } }))
+    const reader = response.body?.getReader()
+
+    expect(reader).toBeDefined()
+
+    const first = await reader!.read()
+    expect(first.done).toBe(false)
+    expect(new TextDecoder().decode(first.value)).toBe(": ping\n\n")
+
+    await reader!.cancel()
+  })
+
   it("still accepts async iterables at the response boundary", async () => {
     async function* values(): AsyncIterable<string> {
       yield "event: one\n\n"

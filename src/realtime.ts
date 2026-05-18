@@ -81,6 +81,21 @@ export const withHeartbeat = <E = never, R = never>(
 ): Stream.Stream<string, E, R> =>
   events.pipe(Stream.merge(heartbeatStream(options), { haltStrategy: "left" }))
 
+export interface RealtimeResponseOptions extends PlatformResponseOptions {
+  readonly heartbeat?: HeartbeatOptions
+}
+
+const isRealtimeStream = (source: PlatformEventSource): source is Stream.Stream<string, unknown> =>
+  "channel" in source
+
+const toRealtimeStream = (source: PlatformEventSource): Stream.Stream<string, unknown> =>
+  isRealtimeStream(source) ? source : Stream.fromAsyncIterable(source, (cause) => cause)
+
+const withoutHeartbeat = (options: RealtimeResponseOptions): PlatformResponseOptions => {
+  const { heartbeat: _heartbeat, ...responseOptions } = options
+  return responseOptions
+}
+
 export const mapToElementPatches = <A, E = never>(
   source: Stream.Stream<A, E>,
   renderValue: (value: A) => string | Child,
@@ -95,14 +110,20 @@ export const mapToElementPatches = <A, E = never>(
 
 export const eventStreamResponse = (
   events: PlatformEventSource,
-  options?: PlatformResponseOptions
-): HttpServerResponse.HttpServerResponse => platformEventStreamResponse(events, options)
+  options?: RealtimeResponseOptions
+): HttpServerResponse.HttpServerResponse => {
+  if (options?.heartbeat === undefined) {
+    return platformEventStreamResponse(events, options)
+  }
+
+  return platformEventStreamResponse(withHeartbeat(toRealtimeStream(events), options.heartbeat), withoutHeartbeat(options))
+}
 
 export const liveElementsResponse = <A, E = never>(
   source: Stream.Stream<A, E>,
   renderValue: (value: A) => string | Child,
   options?: PatchElementsOptions,
-  responseOptions?: PlatformResponseOptions
+  responseOptions?: RealtimeResponseOptions
 ): HttpServerResponse.HttpServerResponse =>
   eventStreamResponse(mapToElementPatches(source, renderValue, options), responseOptions)
 
@@ -110,6 +131,6 @@ export const liveElementsPubSubResponse = <A>(
   pubsub: RealtimePubSub<A>,
   renderValue: (value: A) => string | Child,
   options?: PatchElementsOptions,
-  responseOptions?: PlatformResponseOptions
+  responseOptions?: RealtimeResponseOptions
 ): HttpServerResponse.HttpServerResponse =>
   liveElementsResponse(streamFromPubSub(pubsub), renderValue, options, responseOptions)
