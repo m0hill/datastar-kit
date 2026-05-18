@@ -1,4 +1,5 @@
 import * as Effect from "effect/Effect"
+import * as Stream from "effect/Stream"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
@@ -30,11 +31,6 @@ afterEach(async () => {
   }
   await closePlatformListeners()
 })
-
-async function* events(): AsyncIterable<string> {
-  yield "event: first\n\n"
-  yield "event: second\n\n"
-}
 
 describe("native Effect Platform Datastar responses", () => {
   it("serves native platform SSE responses", async () => {
@@ -86,12 +82,37 @@ describe("native Effect Platform Datastar responses", () => {
     )
   })
 
-  it("streams native platform async SSE responses", async () => {
-    const router = platformRouter(HttpRouter.route("GET", "/live", Effect.succeed(platformEventStreamResponse(events()))))
+  it("streams native platform Effect Stream SSE responses", async () => {
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/live",
+        Effect.succeed(platformEventStreamResponse(Stream.make("event: first\n\n", "event: second\n\n")))
+      )
+    )
     const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/live`)
 
     expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(await response.text()).toBe("event: first\n\nevent: second\n\n")
+  })
+
+  it("streams native platform Effect Stream responses with status and headers", async () => {
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/stream-meta",
+        Effect.succeed(
+          platformEventStreamResponse(Stream.make("event: meta\n\n"), { status: 202, headers: { "x-stream": "effect" } })
+        )
+      )
+    )
+    const listener = await makePlatformListener(router)
+    const response = await fetch(`${await serveListener(listener)}/stream-meta`)
+
+    expect(response.status).toBe(202)
+    expect(response.headers.get("x-stream")).toBe("effect")
+    expect(response.headers.get("cache-control")).toBe("no-cache")
+    expect(await response.text()).toBe("event: meta\n\n")
   })
 })

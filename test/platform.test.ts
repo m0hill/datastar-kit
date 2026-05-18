@@ -1,4 +1,5 @@
 import * as Effect from "effect/Effect"
+import * as Stream from "effect/Stream"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { createServer, type RequestListener, type Server } from "node:http"
@@ -51,14 +52,12 @@ describe("Effect Platform HTTP runtime", () => {
     const second = new Promise<void>((resolve) => {
       releaseSecond = resolve
     })
-    async function* events(): AsyncIterable<string> {
-      yield "event: first\n\n"
-      await second
-      yield "event: second\n\n"
-    }
+    const events = Stream.make("event: first\n\n").pipe(
+      Stream.concat(Stream.fromEffect(Effect.promise(() => second).pipe(Effect.as("event: second\n\n"))))
+    )
 
     const app = platformRouter(
-      HttpRouter.route("GET", "/events", Effect.succeed(eventStreamResponse(events())))
+      HttpRouter.route("GET", "/events", Effect.succeed(eventStreamResponse(events)))
     )
     const listener = await makePlatformListener(app)
     const origin = await serveListener(listener)
