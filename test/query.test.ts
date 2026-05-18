@@ -1,11 +1,12 @@
 import * as Effect from "effect/Effect"
+import * as Result from "effect/Result"
 import * as Schema from "effect/Schema"
 import { describe, expect, it } from "vitest"
 import { queryFromRequest, readQuery } from "../src/request.js"
 
 const SearchQuery = Schema.Struct({
   q: Schema.String,
-  page: Schema.NumberFromString
+  page: Schema.FiniteFromString
 })
 
 const RepeatedQuery = Schema.Struct({
@@ -41,8 +42,8 @@ describe("query decoding", () => {
 
   it("reports schema failures for invalid query values", async () => {
     const request = new Request("http://localhost/search?q=ada&page=nope")
-    const result = await Effect.runPromise(Effect.either(readQuery(request, SearchQuery)))
+    const result = await Effect.runPromise(Effect.result(readQuery(request, SearchQuery)))
 
-    expect(result._tag).toBe("Left")
+    expect(Result.isFailure(result)).toBe(true)
   })
 })

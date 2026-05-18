@@ -1,5 +1,4 @@
 import * as Effect from "effect/Effect"
-import * as ParseResult from "effect/ParseResult"
 import * as Schema from "effect/Schema"
 
 export class SignalJsonError {
@@ -21,7 +20,7 @@ export const waitForAbortSignal = (signal: AbortSignal): Effect.Effect<void> => 
     return Effect.void
   }
 
-  return Effect.async<void>((resume) => {
+  return Effect.callback<void>((resume) => {
     const onAbort = () => resume(Effect.void)
     signal.addEventListener("abort", onAbort, { once: true })
     return Effect.sync(() => signal.removeEventListener("abort", onAbort))
@@ -53,13 +52,13 @@ export const parseSignalsJson = (raw: string): Effect.Effect<unknown, SignalJson
     catch: (cause) => new SignalJsonError(raw, cause)
   })
 
-export const readSignals = <A, I, R>(
+export const readSignals = <A, R>(
   request: Request,
-  schema: Schema.Schema<A, I, R>
-): Effect.Effect<A, SignalJsonError | ParseResult.ParseError, R> =>
+  schema: Schema.Decoder<A, R>
+): Effect.Effect<A, SignalJsonError | Schema.SchemaError, R> =>
   rawSignalsFromRequest(request).pipe(
     Effect.flatMap(parseSignalsJson),
-    Effect.flatMap(Schema.decodeUnknown(schema))
+    Effect.flatMap(Schema.decodeUnknownEffect(schema))
   )
 
 export type QueryValue = string | ReadonlyArray<string>
@@ -81,8 +80,8 @@ export const queryFromRequest = (request: Request): QueryObject => {
   return result
 }
 
-export const readQuery = <A, I, R>(
+export const readQuery = <A, R>(
   request: Request,
-  schema: Schema.Schema<A, I, R>
-): Effect.Effect<A, ParseResult.ParseError, R> =>
-  Schema.decodeUnknown(schema)(queryFromRequest(request))
+  schema: Schema.Decoder<A, R>
+): Effect.Effect<A, Schema.SchemaError, R> =>
+  Schema.decodeUnknownEffect(schema)(queryFromRequest(request))

@@ -1,11 +1,10 @@
-import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
-import { NodeHttpServer } from "@effect/platform-node"
-import * as Effect from "effect/Effect"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { platformCounterNode, platformCounterRouter, platformPage } from "../examples/platform-counter.js"
 import { render } from "../src/html.js"
+import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 let server: Server | undefined
 
@@ -22,6 +21,7 @@ afterEach(async () => {
   if (current !== undefined) {
     await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
   }
+  await closePlatformListeners()
 })
 
 describe("platform counter example", () => {
@@ -33,15 +33,14 @@ describe("platform counter example", () => {
   })
 
   it("returns a native platform page response", async () => {
-    const response = await Effect.runPromise(platformPage())
-    const webResponse = HttpServerResponse.toWeb(response)
+    const webResponse = HttpServerResponse.toWeb(platformPage())
 
     expect(webResponse.status).toBe(200)
     expect(await webResponse.text()).toContain("ts-star platform counter")
   })
 
   it("increments through the native platform action handler", async () => {
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(platformCounterRouter))
+    const listener = await makePlatformListener(platformCounterRouter)
     const origin = await serveListener(listener)
     const response = await fetch(`${origin}/increment`, {
       method: "POST",
@@ -53,7 +52,7 @@ describe("platform counter example", () => {
   })
 
   it("handles bad native platform signal payloads explicitly", async () => {
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(platformCounterRouter))
+    const listener = await makePlatformListener(platformCounterRouter)
     const origin = await serveListener(listener)
     const response = await fetch(`${origin}/increment`, {
       method: "POST",
@@ -65,7 +64,7 @@ describe("platform counter example", () => {
   })
 
   it("dispatches native platform counter routes", async () => {
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(platformCounterRouter))
+    const listener = await makePlatformListener(platformCounterRouter)
     const origin = await serveListener(listener)
     const response = await fetch(origin)
 

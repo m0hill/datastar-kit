@@ -17,10 +17,10 @@ export const mapErrorResponse = <E, R>(
   routeHandler: Handler<E, R>,
   f: (error: E, request: Request) => Response
 ): Handler<never, R> =>
-(request) => routeHandler(request).pipe(Effect.catchAll((error) => Effect.succeed(f(error, request))))
+(request) => routeHandler(request).pipe(Effect.catch((error) => Effect.succeed(f(error, request))))
 
-export const withSignals = <A, I, R, E2, R2>(
-  schema: Schema.Schema<A, I, R>,
+export const withSignals = <A, R, E2, R2>(
+  schema: Schema.Decoder<A, R>,
   f: (signals: A, request: Request) => Effect.Effect<Response, E2, R2>
 ) =>
 (request: Request) =>

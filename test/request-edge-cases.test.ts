@@ -1,4 +1,5 @@
 import * as Effect from "effect/Effect"
+import * as Result from "effect/Result"
 import * as Schema from "effect/Schema"
 import { describe, expect, it } from "vitest"
 import { isDatastarRequest, readSignals, rawSignalsFromRequest, SignalJsonError } from "../src/request.js"
@@ -36,11 +37,11 @@ describe("Datastar request edge cases", () => {
 
   it("returns SignalJsonError for malformed JSON signal payloads", async () => {
     const request = new Request("http://localhost/save", { method: "POST", body: "{" })
-    const result = await Effect.runPromise(Effect.either(readSignals(request, CounterSignals)))
+    const result = await Effect.runPromise(Effect.result(readSignals(request, CounterSignals)))
 
-    expect(result._tag).toBe("Left")
-    if (result._tag === "Left") {
-      expect(result.left).toBeInstanceOf(SignalJsonError)
+    expect(Result.isFailure(result)).toBe(true)
+    if (Result.isFailure(result)) {
+      expect(result.failure).toBeInstanceOf(SignalJsonError)
     }
   })
 })

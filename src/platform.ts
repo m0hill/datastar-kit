@@ -1,13 +1,12 @@
-import * as Headers from "@effect/platform/Headers"
-import type * as HttpApp from "@effect/platform/HttpApp"
-import * as HttpRouter from "@effect/platform/HttpRouter"
-import * as HttpServerError from "@effect/platform/HttpServerError"
-import * as HttpServerRequest from "@effect/platform/HttpServerRequest"
-import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import * as Effect from "effect/Effect"
-import type * as ParseResult from "effect/ParseResult"
 import * as Schema from "effect/Schema"
+import type * as Scope from "effect/Scope"
 import * as Stream from "effect/Stream"
+import * as Headers from "effect/unstable/http/Headers"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerError from "effect/unstable/http/HttpServerError"
+import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type { Handler, Route } from "./handler.js"
 import { render, type Child } from "./html.js"
 import type { ElementPatchMode } from "./sse.js"
@@ -16,7 +15,7 @@ import { eventStream, patchElements, patchSignals, type JsonObject, type PatchEl
 
 export const toPlatformApp = <E, R>(
   app: Handler<E, R>
-): HttpApp.Default<E | HttpServerError.RequestError, R> =>
+): Effect.Effect<HttpServerResponse.HttpServerResponse, E | HttpServerError.RequestError, R | HttpServerRequest.HttpServerRequest> =>
   Effect.gen(function* () {
     const request = yield* HttpServerRequest.HttpServerRequest
     const webRequest = yield* HttpServerRequest.toWeb(request)
@@ -45,21 +44,39 @@ const toPlatformPath = (path: string): HttpRouter.PathInput => {
 export const toPlatformRoute = <E, R>(
   route: Route<E, R>
 ): HttpRouter.Route<E | HttpServerError.RequestError, R> =>
-  HttpRouter.makeRoute(route.method, toPlatformPath(route.path), toPlatformApp(route.handler))
+  HttpRouter.route(route.method, toPlatformPath(route.path), toPlatformApp(route.handler))
+
+export const platformRouter = <Routes extends ReadonlyArray<HttpRouter.Route<unknown, unknown>>>(
+  ...routes: Routes
+): Effect.Effect<
+  HttpServerResponse.HttpServerResponse,
+  HttpServerError.HttpServerError | HttpRouter.Route.Error<Routes[number]>,
+  Scope.Scope | HttpServerRequest.HttpServerRequest | HttpRouter.Route.Context<Routes[number]>
+> =>
+  Effect.flatten(HttpRouter.toHttpEffect(HttpRouter.addAll(routes))) as Effect.Effect<
+    HttpServerResponse.HttpServerResponse,
+    HttpServerError.HttpServerError | HttpRouter.Route.Error<Routes[number]>,
+    Scope.Scope | HttpServerRequest.HttpServerRequest | HttpRouter.Route.Context<Routes[number]>
+  >
 
 export const toPlatformRouter = <Routes extends ReadonlyArray<Route<unknown, unknown>>>(
   ...routes: Routes
-): HttpRouter.HttpRouter<HttpServerError.RequestError | RouteError<Routes[number]>, RouteContext<Routes[number]>> =>
-  HttpRouter.fromIterable(routes.map(toPlatformRoute)) as HttpRouter.HttpRouter<
-    HttpServerError.RequestError | RouteError<Routes[number]>,
-    RouteContext<Routes[number]>
+): Effect.Effect<
+  HttpServerResponse.HttpServerResponse,
+  HttpServerError.HttpServerError | HttpServerError.RequestError | RouteError<Routes[number]>,
+  Scope.Scope | HttpServerRequest.HttpServerRequest | RouteContext<Routes[number]>
+> =>
+  platformRouter(...routes.map(toPlatformRoute)) as Effect.Effect<
+    HttpServerResponse.HttpServerResponse,
+    HttpServerError.HttpServerError | HttpServerError.RequestError | RouteError<Routes[number]>,
+    Scope.Scope | HttpServerRequest.HttpServerRequest | RouteContext<Routes[number]>
   >
 
 const platformMethodsWithQuerySignals = new Set(["GET", "DELETE"])
 
 export const platformRawSignalsFromRequest = (
   request: HttpServerRequest.HttpServerRequest
-): Effect.Effect<string, HttpServerError.RequestError> => {
+): Effect.Effect<string, HttpServerError.HttpServerError> => {
   if (platformMethodsWithQuerySignals.has(request.method)) {
     return Effect.succeed(new URL(request.url, "http://localhost").searchParams.get("datastar") ?? "{}")
   }
@@ -67,18 +84,18 @@ export const platformRawSignalsFromRequest = (
   return request.text.pipe(Effect.map((body) => body.length === 0 ? "{}" : body))
 }
 
-export const platformReadSignalsFromRequest = <A, I, R>(
+export const platformReadSignalsFromRequest = <A, R>(
   request: HttpServerRequest.HttpServerRequest,
-  schema: Schema.Schema<A, I, R>
-): Effect.Effect<A, HttpServerError.RequestError | SignalJsonError | ParseResult.ParseError, R> =>
+  schema: Schema.Decoder<A, R>
+): Effect.Effect<A, HttpServerError.HttpServerError | SignalJsonError | Schema.SchemaError, R> =>
   platformRawSignalsFromRequest(request).pipe(
     Effect.flatMap(parseSignalsJson),
-    Effect.flatMap(Schema.decodeUnknown(schema))
+    Effect.flatMap(Schema.decodeUnknownEffect(schema))
   )
 
-export const platformReadSignals = <A, I, R>(
-  schema: Schema.Schema<A, I, R>
-): Effect.Effect<A, HttpServerError.RequestError | SignalJsonError | ParseResult.ParseError, R | HttpServerRequest.HttpServerRequest> =>
+export const platformReadSignals = <A, R>(
+  schema: Schema.Decoder<A, R>
+): Effect.Effect<A, HttpServerError.HttpServerError | SignalJsonError | Schema.SchemaError, R | HttpServerRequest.HttpServerRequest> =>
   HttpServerRequest.HttpServerRequest.pipe(
     Effect.flatMap((request) => platformReadSignalsFromRequest(request, schema))
   )

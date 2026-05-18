@@ -1,6 +1,5 @@
-import * as HttpRouter from "@effect/platform/HttpRouter"
-import { NodeHttpServer } from "@effect/platform-node"
 import * as Effect from "effect/Effect"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
@@ -9,8 +8,10 @@ import {
   platformEventStreamResponse,
   platformPatchElementsResponse,
   platformPatchSignalsResponse,
+  platformRouter,
   platformSseResponse
 } from "../src/platform.js"
+import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 let server: Server | undefined
 
@@ -27,6 +28,7 @@ afterEach(async () => {
   if (current !== undefined) {
     await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
   }
+  await closePlatformListeners()
 })
 
 async function* events(): AsyncIterable<string> {
@@ -36,12 +38,14 @@ async function* events(): AsyncIterable<string> {
 
 describe("native Effect Platform Datastar responses", () => {
   it("serves native platform SSE responses", async () => {
-    const router = HttpRouter.get(
-      HttpRouter.empty,
-      "/events",
-      Effect.succeed(platformSseResponse(["event: ready\n\n"], { status: 202, headers: { "x-sse": "yes" } }))
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/events",
+        Effect.succeed(platformSseResponse(["event: ready\n\n"], { status: 202, headers: { "x-sse": "yes" } }))
+      )
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/events`)
 
     expect(response.status).toBe(202)
@@ -52,12 +56,14 @@ describe("native Effect Platform Datastar responses", () => {
   })
 
   it("serves native platform Datastar patch responses", async () => {
-    const router = HttpRouter.get(
-      HttpRouter.empty,
-      "/signals",
-      Effect.succeed(platformPatchSignalsResponse({ count: 1 }, undefined, { headers: { "x-signals": "yes" } }))
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/signals",
+        Effect.succeed(platformPatchSignalsResponse({ count: 1 }, undefined, { headers: { "x-signals": "yes" } }))
+      )
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/signals`)
 
     expect(response.headers.get("x-signals")).toBe("yes")
@@ -65,12 +71,14 @@ describe("native Effect Platform Datastar responses", () => {
   })
 
   it("renders HTML nodes in native platform element patches", async () => {
-    const router = HttpRouter.get(
-      HttpRouter.empty,
-      "/elements",
-      Effect.succeed(platformPatchElementsResponse(h("span", {}, "Ada & Grace"), { selector: "#name" }))
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/elements",
+        Effect.succeed(platformPatchElementsResponse(h("span", {}, "Ada & Grace"), { selector: "#name" }))
+      )
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/elements`)
 
     expect(await response.text()).toBe(
@@ -79,8 +87,8 @@ describe("native Effect Platform Datastar responses", () => {
   })
 
   it("streams native platform async SSE responses", async () => {
-    const router = HttpRouter.get(HttpRouter.empty, "/live", Effect.succeed(platformEventStreamResponse(events())))
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const router = platformRouter(HttpRouter.route("GET", "/live", Effect.succeed(platformEventStreamResponse(events()))))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/live`)
 
     expect(response.headers.get("content-type")).toBe("text/event-stream")

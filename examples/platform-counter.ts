@@ -1,13 +1,13 @@
-import * as HttpRouter from "@effect/platform/HttpRouter"
-import * as HttpServerRequest from "@effect/platform/HttpServerRequest"
-import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import * as Effect from "effect/Effect"
-import * as Either from "effect/Either"
+import * as Result from "effect/Result"
 import * as Schema from "effect/Schema"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { datastarDocument } from "../src/client.js"
 import { dataSignals, mergeAttrs, on, post, signal, text } from "../src/datastar.js"
 import { h } from "../src/html.js"
-import { platformHtmlResponse, platformPatchSignalsResponse, platformReadSignals } from "../src/platform.js"
+import { platformHtmlResponse, platformPatchSignalsResponse, platformReadSignals, platformRouter } from "../src/platform.js"
 
 export const PlatformCounterSignals = Schema.Struct({
   count: Schema.Number
@@ -33,16 +33,16 @@ export const platformIncrement: Effect.Effect<
   never,
   HttpServerRequest.HttpServerRequest
 > = Effect.gen(function* () {
-  const decoded = yield* Effect.either(platformReadSignals(PlatformCounterSignals))
+  const decoded = yield* Effect.result(platformReadSignals(PlatformCounterSignals))
 
-  if (Either.isLeft(decoded)) {
+  if (Result.isFailure(decoded)) {
     return HttpServerResponse.text("Bad signals", { status: 400 })
   }
 
-  return platformPatchSignalsResponse({ count: decoded.right.count + 1 })
+  return platformPatchSignalsResponse({ count: decoded.success.count + 1 })
 })
 
-export const platformCounterRouter = HttpRouter.empty.pipe(
-  HttpRouter.get("/", Effect.succeed(platformPage())),
-  HttpRouter.post("/increment", platformIncrement)
+export const platformCounterRouter = platformRouter(
+  HttpRouter.route("GET", "/", platformPage()),
+  HttpRouter.route("POST", "/increment", platformIncrement)
 )

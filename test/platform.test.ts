@@ -1,4 +1,3 @@
-import { NodeHttpServer } from "@effect/platform-node"
 import * as Effect from "effect/Effect"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
@@ -6,6 +5,7 @@ import { afterEach, describe, expect, it } from "vitest"
 import { route, router, textResponse } from "../src/handler.js"
 import { PlatformPathError, toPlatformApp, toPlatformRouter } from "../src/platform.js"
 import { eventStreamResponse } from "../src/realtime.js"
+import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 let server: Server | undefined
 
@@ -22,12 +22,13 @@ afterEach(async () => {
   if (current !== undefined) {
     await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
   }
+  await closePlatformListeners()
 })
 
 describe("Effect Platform HTTP adapter", () => {
   it("runs ts-star handlers through NodeHttpServer.makeHandler", async () => {
     const app = router(route("GET", "/", () => Effect.succeed(textResponse("platform"))))
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(toPlatformApp(app)))
+    const listener = await makePlatformListener(toPlatformApp(app))
     const origin = await serveListener(listener)
     const response = await fetch(origin)
 
@@ -40,7 +41,7 @@ describe("Effect Platform HTTP adapter", () => {
       route("GET", "/", () => Effect.succeed(textResponse("home"))),
       route("POST", "/submit", () => Effect.succeed(textResponse("submitted", { status: 201 })))
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(platformRouter))
+    const listener = await makePlatformListener(platformRouter)
     const origin = await serveListener(listener)
 
     const home = await fetch(origin)
@@ -68,7 +69,7 @@ describe("Effect Platform HTTP adapter", () => {
     const platformRouter = toPlatformRouter(
       route("GET", "/events", () => Effect.succeed(eventStreamResponse(events())))
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(platformRouter))
+    const listener = await makePlatformListener(platformRouter)
     const origin = await serveListener(listener)
     const response = await fetch(`${origin}/events`)
     const reader = response.body?.getReader()

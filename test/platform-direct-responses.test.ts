@@ -1,6 +1,5 @@
-import * as HttpRouter from "@effect/platform/HttpRouter"
-import { NodeHttpServer } from "@effect/platform-node"
 import * as Effect from "effect/Effect"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
@@ -9,8 +8,10 @@ import {
   platformHtmlPatchResponse,
   platformHtmlResponse,
   platformJsonSignalsResponse,
+  platformRouter,
   platformScriptResponse
 } from "../src/platform.js"
+import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 let server: Server | undefined
 
@@ -27,16 +28,19 @@ afterEach(async () => {
   if (current !== undefined) {
     await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
   }
+  await closePlatformListeners()
 })
 
 describe("native Effect Platform direct Datastar responses", () => {
   it("serves native platform HTML node responses", async () => {
-    const router = HttpRouter.get(
-      HttpRouter.empty,
-      "/html",
-      Effect.succeed(platformHtmlResponse(h("main", {}, "Ada & Grace"), { status: 201, headers: { "x-html": "yes" } }))
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/html",
+        Effect.succeed(platformHtmlResponse(h("main", {}, "Ada & Grace"), { status: 201, headers: { "x-html": "yes" } }))
+      )
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/html`)
 
     expect(response.status).toBe(201)
@@ -46,16 +50,18 @@ describe("native Effect Platform direct Datastar responses", () => {
   })
 
   it("serves native platform direct HTML patch responses", async () => {
-    const router = HttpRouter.get(
-      HttpRouter.empty,
-      "/patch",
-      Effect.succeed(platformHtmlPatchResponse(h("p", {}, "Updated"), {
-        selector: "#slot",
-        mode: "inner",
-        useViewTransition: true
-      }))
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/patch",
+        Effect.succeed(platformHtmlPatchResponse(h("p", {}, "Updated"), {
+          selector: "#slot",
+          mode: "inner",
+          useViewTransition: true
+        }))
+      )
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/patch`)
 
     expect(response.headers.get("datastar-selector")).toBe("#slot")
@@ -65,12 +71,14 @@ describe("native Effect Platform direct Datastar responses", () => {
   })
 
   it("serves native platform JSON signal responses", async () => {
-    const router = HttpRouter.get(
-      HttpRouter.empty,
-      "/signals",
-      Effect.succeed(platformJsonSignalsResponse({ count: 1 }, { onlyIfMissing: true, status: 202 }))
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/signals",
+        Effect.succeed(platformJsonSignalsResponse({ count: 1 }, { onlyIfMissing: true, status: 202 }))
+      )
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/signals`)
 
     expect(response.status).toBe(202)
@@ -80,12 +88,14 @@ describe("native Effect Platform direct Datastar responses", () => {
   })
 
   it("serves native platform script responses", async () => {
-    const router = HttpRouter.get(
-      HttpRouter.empty,
-      "/script",
-      Effect.succeed(platformScriptResponse("console.log('hello')", { attributes: { type: "module", async: true } }))
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/script",
+        Effect.succeed(platformScriptResponse("console.log('hello')", { attributes: { type: "module", async: true } }))
+      )
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/script`)
 
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")

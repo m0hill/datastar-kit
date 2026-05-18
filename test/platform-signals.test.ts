@@ -1,12 +1,12 @@
-import * as HttpRouter from "@effect/platform/HttpRouter"
-import { NodeHttpServer } from "@effect/platform-node"
 import * as Effect from "effect/Effect"
-import * as Either from "effect/Either"
+import * as Result from "effect/Result"
 import * as Schema from "effect/Schema"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { platformJsonSignalsResponse, platformPatchSignalsResponse, platformReadSignals } from "../src/platform.js"
+import { platformJsonSignalsResponse, platformPatchSignalsResponse, platformReadSignals, platformRouter } from "../src/platform.js"
+import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 const CounterSignals = Schema.Struct({
   count: Schema.Number
@@ -27,18 +27,21 @@ afterEach(async () => {
   if (current !== undefined) {
     await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
   }
+  await closePlatformListeners()
 })
 
 describe("native Effect Platform signal decoding", () => {
   it("decodes POST Datastar signals without converting to a Web Request", async () => {
-    const router = HttpRouter.post(
-      HttpRouter.empty,
-      "/increment",
-      platformReadSignals(CounterSignals).pipe(
-        Effect.map(({ count }) => platformPatchSignalsResponse({ count: count + 1 }))
+    const router = platformRouter(
+      HttpRouter.route(
+        "POST",
+        "/increment",
+        platformReadSignals(CounterSignals).pipe(
+          Effect.map(({ count }) => platformPatchSignalsResponse({ count: count + 1 }))
+        )
       )
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/increment`, {
       method: "POST",
       body: JSON.stringify({ count: 9 })
@@ -48,14 +51,16 @@ describe("native Effect Platform signal decoding", () => {
   })
 
   it("decodes GET Datastar query signals natively", async () => {
-    const router = HttpRouter.get(
-      HttpRouter.empty,
-      "/signals",
-      platformReadSignals(CounterSignals).pipe(
-        Effect.map(({ count }) => platformJsonSignalsResponse({ count }, { onlyIfMissing: true }))
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/signals",
+        platformReadSignals(CounterSignals).pipe(
+          Effect.map(({ count }) => platformJsonSignalsResponse({ count }, { onlyIfMissing: true }))
+        )
       )
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/signals?datastar=${encodeURIComponent('{"count":3}')}`)
 
     expect(response.headers.get("datastar-only-if-missing")).toBe("true")
@@ -63,14 +68,16 @@ describe("native Effect Platform signal decoding", () => {
   })
 
   it("surfaces native signal decode failures in the error channel", async () => {
-    const router = HttpRouter.post(
-      HttpRouter.empty,
-      "/signals",
-      Effect.either(platformReadSignals(CounterSignals)).pipe(
-        Effect.map((result) => platformJsonSignalsResponse({ ok: Either.isRight(result) }))
+    const router = platformRouter(
+      HttpRouter.route(
+        "POST",
+        "/signals",
+        Effect.result(platformReadSignals(CounterSignals)).pipe(
+          Effect.map((result) => platformJsonSignalsResponse({ ok: Result.isSuccess(result) }))
+        )
       )
     )
-    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(router))
+    const listener = await makePlatformListener(router)
     const response = await fetch(`${await serveListener(listener)}/signals`, {
       method: "POST",
       body: JSON.stringify({ count: "bad" })

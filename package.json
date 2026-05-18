@@ -26,9 +26,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@effect/platform": "^0.96.1",
-    "@effect/platform-node": "^0.106.0",
-    "effect": "^3.21.2"
+    "@effect/platform-node": "4.0.0-beta.67",
+    "effect": "4.0.0-beta.67"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
