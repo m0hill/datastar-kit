@@ -5,21 +5,22 @@ Actions are HTTP routes triggered by Datastar attributes. Commands are actions t
 ## Default command flow
 
 1. Render HTML with a Datastar action attribute such as `data-on:click="@post('/increment')"`.
-2. Decode request query/body/signals with Effect Schema.
-3. Check security/session/CSRF requirements for writes.
-4. Mutate backend state through an Effect service.
-5. Return `commandDone()` / `204`, a direct HTML patch, a validation/error patch, or an SSE stream.
+2. Decode request query/body/signals with Effect Schema through `read.*` helpers.
+3. Check security/session/CSRF requirements in app code when needed.
+4. Mutate backend state through an app-owned Effect service.
+5. Return `reply.done()` for no immediate UI feedback, or return a Datastar patch/stream through `reply.*`.
 
 ## Responses
 
-Use Datastar-safe helpers:
+Use `reply` helpers:
 
-- `commandDone()` or `datastarNoContentResponse()` for commands with no immediate patch.
-- `currentViewPatchResponse(selector, html)` or `datastarHtmlResponse(...)` for server-rendered replacement.
-- validation helpers from `Validation` for recoverable form errors.
-- `ErrorMapper` for malformed decode, security, or fatal domain errors.
+- `reply.done()` for successful commands with no body (`204`).
+- `reply.patch(...)` for the default SSE element patch response.
+- `reply.signals(...)` for the default SSE signal patch response.
+- `reply.stream(...)` for multiple events or long-lived streams such as live queries.
+- `reply.direct.*` only as explicit Datastar direct-response escape hatches.
 
-Datastar direct UI responses should be `200`. Use `204` only for no-body command completion.
+Datastar action responses with bodies should be successful `200` responses. Use normal Effect Platform responses for non-Datastar HTTP errors.
 
 ## State rule
 
@@ -27,4 +28,4 @@ Commands may read sparse browser signals, but durable state belongs in backend s
 
 ## Typed inputs
 
-Prefer `Contracts.defineSignals`, `defineAction`, `defineQueryAction`, and platform decode helpers so route URLs, signal names, and decoders come from one contract.
+Use `contract.signals(schema)` when a signal shape should produce typed Datastar refs, initial signal props, and typed patches. Decode at the request boundary with `read.signals(Contact.schema)` or `read.query(Search.schema)`.

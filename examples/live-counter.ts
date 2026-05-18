@@ -1,23 +1,18 @@
 import * as Effect from "effect/Effect"
-import * as HttpRouter from "effect/unstable/http/HttpRouter"
-import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
+import * as PubSub from "effect/PubSub"
 import type * as Scope from "effect/Scope"
+import * as Stream from "effect/Stream"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
-  commandDone,
   ds,
   h,
-  liveQueryResponse,
-  makeRealtimePubSub,
-  makeRealtimePubSubScoped,
-  props,
+  live,
   platformRouter,
-  reply,
-  publishRealtime,
+  props,
   render,
-  shutdownRealtime,
-  streamFromPubSub,
-  type RealtimePubSub
+  reply
 } from "../src/index.js"
 
 export interface LiveCounterApp {
@@ -29,7 +24,7 @@ export interface LiveCounterApp {
   readonly page: HttpServerResponse.HttpServerResponse
   readonly increment: Effect.Effect<HttpServerResponse.HttpServerResponse>
   readonly live: Effect.Effect<HttpServerResponse.HttpServerResponse>
-  readonly updates: RealtimePubSub<void>
+  readonly updates: PubSub.PubSub<void>
   readonly shutdown: Effect.Effect<void>
   readonly currentCount: () => number
 }
@@ -47,9 +42,9 @@ export const pageNode = () =>
 
 export const pageView = (): string => render(pageNode())
 
-const liveCounterPubSubOptions = { capacity: 16, replay: 1, strategy: "sliding" as const }
+const liveCounterPubSubOptions = { capacity: 16, replay: 1 } as const
 
-const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<RealtimePubSub<void>, never, R>): Effect.Effect<LiveCounterApp, never, R> =>
+const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<PubSub.PubSub<void>, never, R>): Effect.Effect<LiveCounterApp, never, R> =>
   Effect.gen(function*() {
     const updates = yield* updatesEffect
     let count = 0
@@ -61,39 +56,51 @@ const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<RealtimePubSub<void
       Effect.sync(() => {
         count += 1
       }).pipe(
-        Effect.andThen(publishRealtime(updates, undefined)),
-        Effect.as(commandDone())
+        Effect.andThen(PubSub.publish(updates, undefined)),
+        Effect.as(reply.done())
       )
     )
 
-    const live = Effect.sync(() =>
-      liveQueryResponse({
-        invalidations: streamFromPubSub(updates),
-        load: loadCount,
-        render: countFragment
-      })
+    const liveRoute = Effect.sync(() =>
+      reply.stream(
+        live.query({
+          invalidations: Stream.fromPubSub(updates),
+          load: loadCount,
+          render: countFragment
+        })
+      )
     )
-    const shutdown = shutdownRealtime(updates)
+    const shutdown = PubSub.shutdown(updates)
 
     return {
       app: platformRouter(
         HttpRouter.route("GET", "/", page),
         HttpRouter.route("POST", "/increment", increment),
-        HttpRouter.route("GET", "/live", live)
+        HttpRouter.route("GET", "/live", liveRoute)
       ),
       page,
       increment,
-      live,
+      live: liveRoute,
       updates,
       shutdown,
       currentCount: () => count
     }
   })
 
-export const makeLiveCounter = (): Effect.Effect<LiveCounterApp> =>
-  makeLiveCounterWith(makeRealtimePubSub<void>(liveCounterPubSubOptions))
+const makeLiveCounterPubSub = (): Effect.Effect<PubSub.PubSub<void>> =>
+  PubSub.sliding<void>(liveCounterPubSubOptions)
 
-export const makeLiveCounterScoped = () =>
-  makeLiveCounterWith(makeRealtimePubSubScoped<void>(liveCounterPubSubOptions))
+const makeLiveCounterPubSubScoped = () =>
+  Effect.gen(function*() {
+    const pubsub = yield* makeLiveCounterPubSub()
+    yield* Effect.addFinalizer(() => PubSub.shutdown(pubsub))
+    return pubsub
+  })
+
+export const makeLiveCounter = (): Effect.Effect<LiveCounterApp> =>
+  makeLiveCounterWith(makeLiveCounterPubSub())
+
+export const makeLiveCounterScoped = (): Effect.Effect<LiveCounterApp, never, Scope.Scope> =>
+  makeLiveCounterWith(makeLiveCounterPubSubScoped())
 
 export const createLiveCounter = (): LiveCounterApp => Effect.runSync(makeLiveCounter())

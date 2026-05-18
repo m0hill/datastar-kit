@@ -6,7 +6,7 @@ import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { platformRouter } from "../src/platform.js"
-import { eventStreamResponse } from "../src/realtime.js"
+import { stream } from "../src/reply.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 let server: Server | undefined
@@ -57,7 +57,7 @@ describe("Effect Platform HTTP runtime", () => {
     )
 
     const app = platformRouter(
-      HttpRouter.route("GET", "/events", Effect.succeed(eventStreamResponse(events)))
+      HttpRouter.route("GET", "/events", Effect.succeed(stream(events)))
     )
     const listener = await makePlatformListener(app)
     const origin = await serveListener(listener)

@@ -1,9 +1,7 @@
 import * as Context from "effect/Context"
 import * as Effect from "effect/Effect"
 import * as Layer from "effect/Layer"
-import * as PubSub from "effect/PubSub"
 import * as Schema from "effect/Schema"
-import * as Stream from "effect/Stream"
 import * as HttpServerError from "effect/unstable/http/HttpServerError"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
@@ -18,7 +16,6 @@ import {
   type SignalJsonError
 } from "./platform.js"
 import * as reply from "./reply.js"
-import { makeRealtimePubSubScoped, publishRealtime, shutdownRealtime, streamFromPubSub, type RealtimePubSubOptions } from "./realtime.js"
 import type { JsonObject, PatchElementsOptions, PatchSignalsOptions } from "./sse.js"
 
 export interface TsStarConfigValue {
@@ -212,27 +209,6 @@ export const catchMappedErrors = <E, R>(
         ),
       onSuccess: Effect.succeed
     })
-  )
-
-export interface LiveQueryHubValue {
-  readonly publish: (invalidation?: unknown) => Effect.Effect<boolean>
-  readonly invalidations: Stream.Stream<unknown>
-  readonly shutdown: Effect.Effect<void>
-  readonly isShutdown: Effect.Effect<boolean>
-}
-
-export class LiveQueryHub extends Context.Service<LiveQueryHub, LiveQueryHubValue>()("ts-star/LiveQueryHub") {}
-
-export const LiveQueryHubLive = (options: RealtimePubSubOptions = {}): Layer.Layer<LiveQueryHub> =>
-  Layer.effect(LiveQueryHub)(
-    makeRealtimePubSubScoped<unknown>(options).pipe(
-      Effect.map((pubsub) => ({
-        publish: (invalidation?: unknown) => publishRealtime(pubsub, invalidation),
-        invalidations: streamFromPubSub(pubsub),
-        shutdown: shutdownRealtime(pubsub),
-        isShutdown: PubSub.isShutdown(pubsub)
-      }))
-    )
   )
 
 export const runtimeCoreLayer = (config?: Partial<TsStarConfigValue>): Layer.Layer<

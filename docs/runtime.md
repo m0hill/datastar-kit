@@ -1,84 +1,64 @@
-# Effect-native runtime
+# Effect in ts-star applications
 
-`ts-star` runtime APIs should be natural Effect programs: handlers may require services in their context, applications assemble those services with `Layer`s, request-scoped services are derived per request, and framework errors stay typed until an error mapper turns them into responses.
-
-This direction follows the shape used by the Effect repository examples (`packages/platform-node/examples/http-router.ts`, `http-tag-router.ts`, and `api.ts`): route handlers remain `Effect`s, domain capabilities are services, and concrete runtime wiring happens at the edge with layers.
-
-## Runtime services
-
-`src/runtime.ts` introduces the smallest useful service set:
-
-- `TsStarConfig` — framework defaults such as the Datastar script path and runtime mode.
-- `DatastarProtocol` — service-backed constructors for Datastar page, element patch, signal patch, and no-content responses.
-- `RequestContext` — current Effect Platform request, parsed URL, method, Datastar request flag, and raw signal body/query effect.
-- `SignalDecoder` — schema-based signal decoding derived from `RequestContext`.
-- `ErrorMapper` — maps typed framework/domain errors to HTTP responses.
-- `LiveQueryHub` — scoped invalidation PubSub for current-state live queries.
-
-These services supplement the existing low-level helpers; they do not hide Effect behind promises or erase handler context types.
-
-## Layering
-
-Use `runtimeCoreLayer()` for services that are not request-scoped:
+`ts-star` does not expose a public runtime service catalog. Normal handlers use explicit framework helpers and ordinary app-owned Effect services:
 
 ```ts
-const program = Effect.gen(function* () {
-  const protocol = yield* DatastarProtocol
-  return yield* protocol.noContent()
-}).pipe(Effect.provide(runtimeCoreLayer()))
+const input = yield* read.signals(Form.schema)
+const store = yield* ContactStore
+yield* store.save(input)
+return reply.done()
 ```
 
-Use `requestRuntimeLayer()` inside route handlers that need request-derived services such as `RequestContext` or `SignalDecoder`:
+## App-owned services
+
+Use Effect services/layers for domain capabilities:
+
+- databases;
+- stores;
+- sessions;
+- queues;
+- caches;
+- broker subscriptions;
+- request-local app context when your app needs it.
+
+`ts-star` should not wrap pure rendering, response construction, signal decoding, config, or live-query hubs in public framework services.
+
+## Request boundary
+
+Use `read.*` for request-boundary decoding:
 
 ```ts
-const handler = catchMappedErrors(
-  Effect.gen(function* () {
-    const decoder = yield* SignalDecoder
-    const signals = yield* decoder.decode(MySignals)
-    // mutate backend state...
-    return yield* (yield* DatastarProtocol).patchSignals({ count: signals.count + 1 })
-  })
-).pipe(Effect.provide(requestRuntimeLayer(), { local: true }))
+const signals = yield* read.signals(Contact.schema)
+const query = yield* read.query(Search.schema)
 ```
 
-The `{ local: true }` option is intentional for request-scoped layers so a fresh `RequestContext` is derived for each request. Domain layers such as stores and live-query hubs should usually be provided separately at app scope.
+Handle expected errors locally in the route when they should produce Datastar UI feedback. Use normal Effect error handling and normal Effect Platform responses for non-Datastar HTTP errors.
 
-## Request lifecycle
+## Responses
 
-The intended lifecycle is:
+Use `reply.*` for response construction:
 
-1. Request enters the Effect Platform router.
-2. `requestRuntimeLayer()` derives `RequestContext` from `HttpServerRequest`.
-3. Security/session/auth hooks can run once those services exist.
-4. Signals/query/body/form data are decoded at the boundary.
-5. User handlers run with typed service requirements.
-6. Typed errors are handled by `catchMappedErrors` / `ErrorMapper`.
-7. A Web/Datastar response is finalized.
-8. Request scopes close; streaming resources remain tied to their stream/layer scopes and are released on shutdown or cancellation.
+```ts
+return reply.page(view)
+return reply.patch(fragment, { selector: "#result" })
+return reply.signals({ saved: true })
+return reply.stream(events, { heartbeat: { interval: "15 seconds" } })
+return reply.done()
+```
 
-## Error mapping
+## Live-query resources
 
-Framework code should prefer typed error channels over throws. The default mapper handles:
+Apps own invalidation resources directly. For example, use Effect `PubSub` and adapt it to a stream:
 
-- `SignalJsonError` → `400 Invalid Datastar signals`
-- `Schema.SchemaError` → `400 Invalid request input`
-- `ValidationError` → `400 <message>`
-- `DatastarResponseStatusError` → `500 Invalid Datastar response status`
-- unknown errors → `500 Internal Server Error`
+```ts
+const updates = yield* PubSub.sliding<void>(16)
+const invalidations = Stream.fromPubSub(updates)
 
-Applications can provide a custom `ErrorMapper` layer to return Datastar patches for validation UX instead of plain text responses.
+return reply.stream(live.query({ invalidations, load, render }))
+```
 
-## Live query hub lifecycle
-
-`LiveQueryHubLive()` creates a scoped PubSub. Closing the layer scope shuts down the PubSub, and streams created with `hub.invalidations` use Effect Stream/PubSub subscription scopes. Use the hub as an invalidation source, not as authoritative state.
+Database notifications, Redis, NATS, or other brokers should follow the same pattern: adapt to an Effect `Stream` and pass that stream into `live.query`.
 
 ## Example
 
-`examples/runtime-counter.ts` is the first Effect-native runtime example:
-
-- `CounterStore` is a domain service backed by an Effect `Ref`.
-- The app is wired with `CounterStoreLive` plus `requestRuntimeLayer()`.
-- Handlers require `DatastarProtocol`, `SignalDecoder`, and `CounterStore` in their Effect context.
-- Missing service provision is visible in the handler type and covered by compile-time tests.
-
-This keeps the framework close to idiomatic Effect while leaving larger application containers and tag-router DSLs for future tasks.
+`examples/runtime-counter.ts` demonstrates ordinary app-owned Effect services with `ts-star` helpers. The point of the example is that Effect services compose naturally with `h`, `ds`, `read`, and `reply`; there is no ts-star runtime layer to provide.

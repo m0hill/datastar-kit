@@ -68,15 +68,15 @@ Owns Effect-native request handling, decoding, errors, streaming, resources, and
 
 Current files:
 
-- `src/platform.ts` adapts Effect Platform HTTP requests/responses, decodes query params and Datastar signals, exposes router composition, and provides HTML/SSE/direct response helpers.
-- `src/runtime.ts` provides Effect service tags/layers for config, HTML rendering, Datastar protocol responses, request context, signal decoding, error mapping, and live-query invalidation hubs.
-- `src/realtime.ts` provides Effect `PubSub`/`Stream` helpers, heartbeats, and live element patch responses.
+- `src/platform.ts` adapts Effect Platform HTTP requests/responses, decodes query params and Datastar signals, and exposes router composition.
+- `src/read.ts` provides concise request-boundary decoding helpers.
+- `src/reply.ts` provides Datastar-safe page, patch, stream, direct-response, and no-content helpers.
 
 Future runtime work should introduce services/layers only when they simplify lifecycle, typed error handling, cancellation, security boundaries, or shared dependencies.
 
 ### 4. Programming model layer
 
-This is the intended framework surface and now exists as a minimal semantic layer in `src/model.ts`.
+This is the intended framework surface and now exists as small primitives rather than a broad model namespace.
 
 Applications should start from:
 
@@ -84,7 +84,7 @@ Applications should start from:
 2. **Actions/commands** that decode trusted request inputs, mutate backend state, and return `204` or Datastar patches/direct responses for local feedback.
 3. **Live queries** that stream current rendered state on connect and after invalidation, making reconnects safe.
 
-The current helpers (`commandDone`, `currentViewPatchResponse`, `liveQuery`, `liveQueryResponse`) define the semantics while leaving a higher-level `Page`/route DSL flexible.
+The current helpers (`reply.done`, `reply.patch`, `reply.stream`, and `live.query`) define the semantics while leaving a higher-level `Page`/route DSL flexible.
 
 ## Public module boundary proposal
 
@@ -94,6 +94,7 @@ The public boundary is being simplified before release. The current app-facing d
 - `read` for request-boundary decoding.
 - `reply` for Datastar-safe responses.
 - `contract` for narrow schema-derived signal contracts.
+- `live` for current-state live query event streams.
 - top-level `h`, `render`, `fragment`, `raw`, `props`, and `page` for server HTML.
 
 JSX is an explicit experimental adapter, not a root API.
@@ -103,8 +104,8 @@ Implementation-only code should live under `src/internal/**` or stay unexported 
 ## Naming conventions
 
 - Keep low-level helpers named after the Datastar concept they generate: `patchSignals`, `dataSignals`, `on`, `post`, `indicator`, etc.
-- Prefix Effect Platform-specific helpers with `platform` while this is the only runtime adapter (`platformHtmlResponse`, `platformReadSignals`).
-- Use unprefixed framework names in the programming model layer only when they express framework semantics (`commandDone`, `liveQuery`). Keep route DSL names such as `page` and `action` reserved until the abstraction exists.
+- Prefix Effect Platform-specific helpers with `platform` while this is the only runtime adapter.
+- Use short contextual namespaces for app-facing helpers: `ds`, `read`, `reply`, `contract`, and `live`. Keep route DSL names such as `action` reserved until the abstraction exists.
 - Prefer explicit names over magic conventions at module boundaries.
 
 ## Default request flow

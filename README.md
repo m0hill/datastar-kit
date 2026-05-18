@@ -15,13 +15,14 @@ The package root exposes small contextual namespaces such as `ds`, `read`, `repl
 - `src/ds.ts` / `src/datastar.ts` — thin Datastar mirrors for expressions, signal references, fetch actions, modifiers, and attributes.
 - `src/html.ts` — tiny HTML node builder/renderer: `h`, `render`, `fragment`, `raw`, `props`, and `page`.
 - `src/jsx.ts` — experimental JSX adapter over the same HTML node model.
-- `src/platform.ts` — Effect Platform HTTP integration: route composition, Datastar request detection, signal/query/form decoding with Effect Schema, generic HTTP helpers, and Datastar-safe action response helpers.
-- `src/model.ts` — minimal backend-state/CQRS helpers for command completion, current-view patches, and live queries with render-on-connect, heartbeat response support, and invalidation coalescing.
-- `src/observability.ts` — OpenTelemetry-friendly telemetry service boundary, span helpers, stream observation, noop runtime layer, and in-memory test telemetry.
-- `src/runtime.ts` — Effect-native service tags/layers for config, HTML rendering, Datastar protocol responses, request context, signal decoding, error mapping, and live-query invalidation hubs.
+- `src/platform.ts` — Effect Platform HTTP integration: route composition, Datastar request detection, signal/query/form decoding with Effect Schema, and generic HTTP helpers still under cleanup.
+- `src/read.ts` — concise request-boundary signal/query decoding helpers over Effect Platform.
+- `src/reply.ts` — Datastar-safe response helpers: pages, SSE patches, event streams, no-content command completion, and explicit direct-response escape hatches.
+- `src/live.ts` — current-state live queries that emit Datastar element patch events and compose with `reply.stream`.
+- `src/observability.ts` — OpenTelemetry-friendly telemetry service boundary still under cleanup.
+- `src/runtime.ts` — legacy/internal runtime service experiments still under cleanup, not app-facing root API.
 - `src/security.ts` — request security helpers for CSRF integration, auth context, body limits, abort signals, and safe navigation URL/script generation.
 - `src/validation.ts` — typed validation/domain errors plus Datastar signal/element patch helpers for recoverable error UX.
-- `src/realtime.ts` — optional Effect `PubSub`/`Stream` helpers, heartbeats, and live element patch responses.
 - `src/client.ts` — Datastar script/document helpers and Effect Platform routes for serving a pinned Datastar client asset.
 
 ## Layered model
@@ -30,10 +31,10 @@ The package root exposes small contextual namespaces such as `ds`, `read`, `repl
 
 1. **Protocol layer** — Datastar wire format and response semantics (`Sse`, protocol-facing `Platform` helpers).
 2. **View layer** — server-rendered HTML helpers, Datastar attributes (`ds`), optional JSX adapter, and client document helpers.
-3. **Runtime layer** — Effect request decoding, responses, scopes, streams, and realtime resources (`Platform`, `Realtime`).
-4. **Programming model layer** — backend-source-of-truth commands, query views, and live queries (`Model`).
+3. **Runtime layer** — Effect request decoding, responses, scopes, and app-owned streams (`read`, `reply`, `Platform`).
+4. **Programming model layer** — backend-source-of-truth commands, query views, and current-state live queries (`live`).
 
-All four layers now exist in small form; the programming model layer is intentionally minimal while the higher-level page/action DSL remains open.
+The programming model layer is intentionally minimal while any higher-level page/action DSL remains open.
 
 ## Minimal counter
 
@@ -73,7 +74,7 @@ export const app = platformRouter(
 )
 ```
 
-See `examples/counter.ts` for the smallest backend-state element patch flow, `examples/tsx-counter.tsx` for a TSX syntax variant, `examples/search.ts` for appropriate query-input signals and direct HTML patch responses, `examples/live-counter.ts` for current-state live queries, `examples/runtime-counter.ts` for service/layer-based runtime wiring, and `examples/validation-form.ts` for recoverable validation patches.
+See `examples/counter.ts` for the smallest backend-state element patch flow, `examples/tsx-counter.tsx` for a TSX syntax variant, `examples/search.ts` for query-input signals, `examples/live-counter.ts` for current-state live queries, `examples/runtime-counter.ts` for app-owned Effect services, and `examples/validation-form.ts` for recoverable validation patches.
 
 ## Checking examples
 
@@ -116,6 +117,6 @@ The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or 
 
 ## Open questions
 
-- What exact shape should the future `Page`, `Action`, and `LiveQuery` APIs take?
+- What exact shape should future `Page` and `Action` APIs take?
 - How far should the typed expression DSL go before it becomes its own language?
 - Whether real-world usage justifies a public renderer adapter later.

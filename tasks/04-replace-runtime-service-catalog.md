@@ -74,7 +74,7 @@ This creates an enterprise-style service catalog and duplicates concepts that sh
 - `reply.*` should own response construction.
 - `read.*` should own request-boundary decoding.
 - app-owned Effect services should own domain dependencies.
-- `liveQuery` should consume streams owned by the app.
+- `live.query` should consume streams owned by the app.
 
 ## Settled decisions
 
@@ -115,7 +115,7 @@ Do not keep `TsStarConfig` or `HtmlRenderer` as public services until real rende
 
 ### Live-query resources belong to the app
 
-Remove public `LiveQueryHub`. Apps own `PubSub`/`Stream` resources and pass invalidation streams into `liveQuery`.
+Remove public `LiveQueryHub`. Apps own `PubSub`/`Stream` resources and pass invalidation streams into `live.query`.
 
 ## Public API changes to plan
 

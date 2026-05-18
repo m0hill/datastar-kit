@@ -28,16 +28,16 @@ JSX is an explicit experimental adapter from `src/jsx.ts`, not a root API.
 
 Docs: `html-rendering.md`.
 
-## Contracts and model
+## Contracts and live queries
 
 - `contract` — schema-derived signal handles, initial props, and typed patches.
-- `Model` — command completion, current-view patch responses, live-query helpers.
+- `live` — current-state live queries that emit Datastar element patch events and compose with `reply.stream`.
 
 Docs: `type-contracts.md`, `programming-model.md`, `actions-commands.md`, `live-queries.md`.
 
 ## Still under cleanup
 
-- `Realtime`, `Security`, `Validation`, and `Observability` still exist in source while the simplification roadmap decides whether they stay public.
+- `Security`, `Validation`, and `Observability` still exist in source while the simplification roadmap decides whether they stay public.
 
 Docs: `runtime.md`, `security.md`, `errors-validation.md`, `observability-testing.md`, `public-api.md`.
 

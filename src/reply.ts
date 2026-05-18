@@ -1,3 +1,5 @@
+import type * as Duration from "effect/Duration"
+import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 import * as Headers from "effect/unstable/http/Headers"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
@@ -39,6 +41,16 @@ export interface PageOptions extends DatastarDocumentOptions, ResponseOptions {}
 
 export type EventSource = AsyncIterable<string> | Stream.Stream<string, unknown>
 export type StreamInput = ReadonlyArray<string> | EventSource
+
+export interface HeartbeatOptions {
+  readonly interval?: Duration.Input
+  readonly initialDelay?: Duration.Input
+  readonly comment?: string
+}
+
+export interface StreamOptions extends BodyOptions {
+  readonly heartbeat?: HeartbeatOptions
+}
 
 export interface DirectHtmlOptions extends BodyOptions {
   readonly selector?: string
@@ -90,10 +102,43 @@ const sseOptions = (options: BodyOptions = {}): ResponseOptions => ({
 const isEffectStream = (source: EventSource): source is Stream.Stream<string, unknown> =>
   typeof source === "object" && source !== null && "channel" in source
 
-const eventSourceStream = (source: EventSource): Stream.Stream<Uint8Array, unknown> =>
-  (isEffectStream(source) ? source : Stream.fromAsyncIterable(source, (cause) => cause)).pipe(Stream.encodeText)
-
 const isEventArray = (events: StreamInput): events is ReadonlyArray<string> => Array.isArray(events)
+
+const toEventStream = (source: StreamInput): Stream.Stream<string, unknown> => {
+  if (isEventArray(source)) {
+    return Stream.fromIterable(source)
+  }
+
+  return isEffectStream(source) ? source : Stream.fromAsyncIterable(source, (cause) => cause)
+}
+
+const sseComment = (comment = ""): string =>
+  comment.length === 0 ? ":\n\n" : `: ${comment.replaceAll("\n", "\n: ")}\n\n`
+
+const heartbeatStream = (options: HeartbeatOptions = {}): Stream.Stream<string> => {
+  const ticks = Stream.tick(options.interval ?? "15 seconds").pipe(
+    Stream.map(() => sseComment(options.comment ?? "heartbeat"))
+  )
+
+  if (options.initialDelay === undefined) {
+    return ticks
+  }
+
+  return Stream.fromEffect(Effect.sleep(options.initialDelay)).pipe(
+    Stream.flatMap(() => ticks)
+  )
+}
+
+const withHeartbeat = <E = never, R = never>(
+  events: Stream.Stream<string, E, R>,
+  options?: HeartbeatOptions
+): Stream.Stream<string, E, R> =>
+  events.pipe(Stream.merge(heartbeatStream(options), { haltStrategy: "left" }))
+
+const withoutHeartbeat = (options: StreamOptions): BodyOptions => {
+  const { heartbeat: _heartbeat, ...responseOptions } = options
+  return responseOptions
+}
 
 export const page = (body: Child, options: PageOptions = {}): HttpServerResponse.HttpServerResponse =>
   HttpServerResponse.text(datastarDocument(body, options), {
@@ -117,12 +162,19 @@ export const signals = (
 
 export const stream = (
   events: StreamInput,
-  options?: BodyOptions
+  options: StreamOptions = {}
 ): HttpServerResponse.HttpServerResponse => {
-  const responseOptions = sseOptions(options)
-  return isEventArray(events)
-    ? HttpServerResponse.text(eventStream(...events), responseOptions)
-    : HttpServerResponse.stream(eventSourceStream(events), responseOptions)
+  const responseOptions = sseOptions(withoutHeartbeat(options))
+
+  if (options.heartbeat === undefined && isEventArray(events)) {
+    return HttpServerResponse.text(eventStream(...events), responseOptions)
+  }
+
+  const eventsWithHeartbeat = options.heartbeat === undefined
+    ? toEventStream(events)
+    : withHeartbeat(toEventStream(events), options.heartbeat)
+
+  return HttpServerResponse.stream(eventsWithHeartbeat.pipe(Stream.encodeText), responseOptions)
 }
 
 export const done = (options: DoneOptions = {}): HttpServerResponse.HttpServerResponse => {

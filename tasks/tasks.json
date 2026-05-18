@@ -263,7 +263,7 @@
       "order": 8,
       "id": "T008",
       "title": "Define live.query as the only core realtime abstraction",
-      "status": "pending",
+      "status": "done",
       "phase": "realtime",
       "priority": "critical",
       "grill_level": 4,

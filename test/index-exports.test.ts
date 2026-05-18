@@ -7,11 +7,10 @@ import {
   Client,
   contract,
   ds,
-  Model,
+  live,
   Observability,
   Platform,
   read,
-  Realtime,
   reply,
   Security,
   Sse,
@@ -45,16 +44,18 @@ describe("package root exports", () => {
     expect("Jsx" in Root).toBe(false)
     expect("jsx" in Root).toBe(false)
     expect("Fragment" in Root).toBe(false)
-    expect(Model.LiveQuery.make).toBeDefined()
+    expect("Model" in Root).toBe(false)
+    expect("Realtime" in Root).toBe(false)
+    expect("liveQuery" in Root).toBe(false)
+    expect("liveQueryResponse" in Root).toBe(false)
+    expect("commandDone" in Root).toBe(false)
+    expect("makeRealtimePubSub" in Root).toBe(false)
+    expect(live.query).toBeDefined()
     expect(Observability.Telemetry).toBeDefined()
     expect(read.signals).toBeDefined()
     expect(reply.patch).toBeDefined()
     expect(Security.requireCsrfToken).toBeDefined()
     expect(Validation.FormValidationError).toBeDefined()
-    expect(Realtime.makeRealtimePubSub).toBeDefined()
-    expect(Realtime.makeRealtimePubSubScoped).toBeDefined()
-    expect(Realtime.heartbeatStream).toBeDefined()
-    expect(Realtime.makeBroadcaster).toBeDefined()
     expect(Sse.patchSignals).toBeDefined()
 
     await expect(Effect.runPromise(Effect.succeed("ok"))).resolves.toBe("ok")
