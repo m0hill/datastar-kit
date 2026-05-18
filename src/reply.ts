@@ -181,11 +181,6 @@ const readableStreamFrom = (source: AsyncIterable<EventChunk>): ReadableStream<U
   })
 }
 
-const withoutHeartbeat = (options: StreamOptions): DatastarResponseInit => {
-  const { heartbeat: _heartbeat, ...init } = options
-  return init
-}
-
 export const page = (
   options: HtmlPageOptions = {},
   init: ResponseInit = {}
@@ -213,10 +208,10 @@ export const stream = (
   events: StreamInput,
   options: StreamOptions = {}
 ): Response => {
-  const init = withoutHeartbeat(options)
-  const eventSource = options.heartbeat === undefined
+  const { heartbeat, ...init } = options
+  const eventSource = heartbeat === undefined
     ? toAsyncIterable(events)
-    : withHeartbeat(toAsyncIterable(events), options.heartbeat)
+    : withHeartbeat(toAsyncIterable(events), heartbeat)
 
   return response(readableStreamFrom(eventSource), init, 200, sseHeader)
 }
