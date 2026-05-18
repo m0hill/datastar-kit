@@ -1,7 +1,5 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec"
 
-const methodsWithQuerySignals = new Set(["GET", "DELETE"])
-
 export class SignalParseError extends Error {
   readonly _tag = "SignalParseError"
 
@@ -22,7 +20,8 @@ export class SignalValidationError extends Error {
 }
 
 export const rawSignals = async (request: Request): Promise<string> => {
-  if (methodsWithQuerySignals.has(request.method.toUpperCase())) {
+  const method = request.method.toUpperCase()
+  if (method === "GET" || method === "DELETE") {
     return new URL(request.url).searchParams.get("datastar") ?? "{}"
   }
 
