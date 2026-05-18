@@ -274,13 +274,9 @@ export interface BindModifiers extends CaseModifierOptions {
   readonly events?: string | ReadonlyArray<string>
 }
 
-export interface SignalKeyModifiers extends CaseModifierOptions {}
-
 export interface DataSignalModifiers extends CaseModifierOptions {
   readonly ifMissing?: boolean
 }
-
-export interface ClassModifiers extends CaseModifierOptions {}
 
 const durationModifier = (duration: Duration): string => typeof duration === "number" ? `${duration}ms` : duration
 
@@ -455,13 +451,13 @@ export const bind = <T, Name extends string>(name: Name | Signal<T, Name>, modif
   return { [`data-bind:${signalName}${bindModifiers(modifiers)}`]: true }
 }
 
-export const ref = <Name extends string>(name: Name | Signal<unknown, Name>, modifiers: SignalKeyModifiers = {}): Props => {
+export const ref = <Name extends string>(name: Name | Signal<unknown, Name>, modifiers: CaseModifierOptions = {}): Props => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
   return { [`data-ref:${signalName}${caseModifierSuffix(modifiers)}`]: true }
 }
 
-export const indicator = <Name extends string>(name: Name | Signal<boolean, Name>, modifiers: SignalKeyModifiers = {}): Props => {
+export const indicator = <Name extends string>(name: Name | Signal<boolean, Name>, modifiers: CaseModifierOptions = {}): Props => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
   return { [`data-indicator:${signalName}${caseModifierSuffix(modifiers)}`]: true }
@@ -475,7 +471,7 @@ export const dataAttrs = (mapping: Readonly<Record<string, ExprInput<unknown>>>)
   "data-attr": toJs(mapping)
 })
 
-export const dataClass = (name: string, expression: ExprInput<unknown>, modifiers?: ClassModifiers): Props => ({
+export const dataClass = (name: string, expression: ExprInput<unknown>, modifiers?: CaseModifierOptions): Props => ({
   [`data-class:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression)
 })
 
@@ -483,7 +479,7 @@ export const dataClasses = (mapping: Readonly<Record<string, ExprInput<unknown>>
   "data-class": toJs(mapping)
 })
 
-export const dataComputed = <T>(name: string, expression: ExprInput<T>, modifiers: SignalKeyModifiers = {}): Props => {
+export const dataComputed = <T>(name: string, expression: ExprInput<T>, modifiers: CaseModifierOptions = {}): Props => {
   assertUnmodifiedSignalName(name, modifiers)
   return { [`data-computed:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression) }
 }
