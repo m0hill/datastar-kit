@@ -16,6 +16,23 @@ describe("direct Datastar response helpers", () => {
     expect(await response.text()).toBe("<p>Updated</p>")
   })
 
+  it("supports status and custom headers for direct HTML patch responses", async () => {
+    const response = htmlPatchResponse("<p>Accepted</p>", {
+      selector: "#slot",
+      init: {
+        status: 202,
+        headers: {
+          "x-patch": "yes"
+        }
+      }
+    })
+
+    expect(response.status).toBe(202)
+    expect(response.headers.get("x-patch")).toBe("yes")
+    expect(response.headers.get("datastar-selector")).toBe("#slot")
+    expect(await response.text()).toBe("<p>Accepted</p>")
+  })
+
   it("builds application/json signal responses", async () => {
     const response = jsonSignalsResponse({ count: 1 }, { onlyIfMissing: true })
 
@@ -30,6 +47,21 @@ describe("direct Datastar response helpers", () => {
     expect(await response.text()).toBe('{"count":2}')
   })
 
+  it("supports status and custom headers for JSON signal responses", async () => {
+    const response = jsonSignalsResponse({ saved: true }, {
+      init: {
+        status: 202,
+        headers: {
+          "x-signals": "queued"
+        }
+      }
+    })
+
+    expect(response.status).toBe(202)
+    expect(response.headers.get("x-signals")).toBe("queued")
+    expect(await response.text()).toBe('{"saved":true}')
+  })
+
   it("builds text/javascript responses with script attributes", async () => {
     const response = scriptResponse("console.log('hello')", {
       attributes: {
@@ -41,5 +73,20 @@ describe("direct Datastar response helpers", () => {
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
     expect(response.headers.get("datastar-script-attributes")).toBe('{"type":"module","async":true}')
     expect(await response.text()).toBe("console.log('hello')")
+  })
+
+  it("supports status and custom headers for script responses", async () => {
+    const response = scriptResponse("console.log('queued')", {
+      init: {
+        status: 202,
+        headers: {
+          "x-script": "queued"
+        }
+      }
+    })
+
+    expect(response.status).toBe(202)
+    expect(response.headers.get("x-script")).toBe("queued")
+    expect(await response.text()).toBe("console.log('queued')")
   })
 })
