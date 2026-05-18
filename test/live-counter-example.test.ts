@@ -1,8 +1,29 @@
 import * as Effect from "effect/Effect"
-import { describe, expect, it } from "vitest"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
+import { createServer, type RequestListener, type Server } from "node:http"
+import type { AddressInfo } from "node:net"
+import { afterEach, describe, expect, it } from "vitest"
 import { countFragment, createLiveCounter, pageView } from "../examples/live-counter.js"
 import { render } from "../src/html.js"
-import { closeServer, serve, serverOrigin } from "../src/node.js"
+import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
+
+let server: Server | undefined
+
+const serveListener = async (listener: RequestListener): Promise<string> => {
+  server = createServer(listener)
+  await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve))
+  const address = server.address() as AddressInfo
+  return `http://127.0.0.1:${address.port}`
+}
+
+afterEach(async () => {
+  const current = server
+  server = undefined
+  if (current !== undefined) {
+    await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
+  }
+  await closePlatformListeners()
+})
 
 describe("live counter example", () => {
   it("renders a page that opens a Datastar SSE stream", () => {
@@ -22,10 +43,10 @@ describe("live counter example", () => {
 
   it("publishes increments to live SSE subscribers", async () => {
     const liveCounter = createLiveCounter()
-    const liveResponse = await Effect.runPromise(liveCounter.live(new Request("http://localhost/live")))
-    const body = liveResponse.text()
+    const liveResponse = await Effect.runPromise(liveCounter.live)
+    const body = HttpServerResponse.toWeb(liveResponse).text()
 
-    await Effect.runPromise(liveCounter.increment(new Request("http://localhost/increment", { method: "POST" })))
+    await Effect.runPromise(liveCounter.increment)
     await Effect.runPromise(liveCounter.broadcaster.closeAll())
 
     expect(await body).toBe('event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n')
@@ -34,8 +55,10 @@ describe("live counter example", () => {
 
   it("dispatches page and increment routes", async () => {
     const liveCounter = createLiveCounter()
-    const page = await Effect.runPromise(liveCounter.app(new Request("http://localhost/")))
-    const increment = await Effect.runPromise(liveCounter.app(new Request("http://localhost/increment", { method: "POST" })))
+    const listener = await makePlatformListener(liveCounter.app)
+    const origin = await serveListener(listener)
+    const page = await fetch(origin)
+    const increment = await fetch(`${origin}/increment`, { method: "POST" })
     const html = await page.text()
 
     expect(page.status).toBe(200)
@@ -48,30 +71,29 @@ describe("live counter example", () => {
 
   it("streams live counter updates through node:http", async () => {
     const liveCounter = createLiveCounter()
-    const server = await Effect.runPromise(serve(liveCounter.app))
+    const listener = await makePlatformListener(liveCounter.app)
+    const origin = await serveListener(listener)
+    const liveResponsePromise = fetch(`${origin}/live`)
 
-    try {
-      const origin = serverOrigin(server)
-      const liveResponse = await fetch(`${origin}/live`)
-      const reader = liveResponse.body?.getReader()
-
-      expect(liveResponse.headers.get("content-type")).toBe("text/event-stream")
-      expect(reader).toBeDefined()
-
-      const increment = await fetch(`${origin}/increment`, { method: "POST" })
-      expect(increment.status).toBe(204)
-
-      const first = await reader!.read()
-      expect(first.done).toBe(false)
-      expect(new TextDecoder().decode(first.value)).toBe(
-        'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
-      )
-
-      await Effect.runPromise(liveCounter.broadcaster.closeAll())
-      await expect(reader!.read()).resolves.toEqual({ done: true, value: undefined })
-    } finally {
-      await Effect.runPromise(liveCounter.broadcaster.closeAll())
-      await Effect.runPromise(closeServer(server))
+    for (let attempt = 0; attempt < 20 && Effect.runSync(liveCounter.broadcaster.size()) === 0; attempt++) {
+      await new Promise((resolve) => setTimeout(resolve, 10))
     }
+
+    const increment = await fetch(`${origin}/increment`, { method: "POST" })
+    const liveResponse = await liveResponsePromise
+    const reader = liveResponse.body?.getReader()
+
+    expect(liveResponse.headers.get("content-type")).toBe("text/event-stream")
+    expect(reader).toBeDefined()
+    expect(increment.status).toBe(204)
+
+    const first = await reader!.read()
+    expect(first.done).toBe(false)
+    expect(new TextDecoder().decode(first.value)).toBe(
+      'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
+    )
+
+    await Effect.runPromise(liveCounter.broadcaster.closeAll())
+    await expect(reader!.read()).resolves.toEqual({ done: true, value: undefined })
   })
 })

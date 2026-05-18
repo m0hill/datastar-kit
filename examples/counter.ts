@@ -1,19 +1,23 @@
 import * as Effect from "effect/Effect"
+import * as Result from "effect/Result"
 import * as Schema from "effect/Schema"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
-  datastarPageResponse,
+  datastarDocument,
   dataSignals,
   h,
   mergeAttrs,
   on,
-  patchSignalsResponse,
+  platformHtmlResponse,
+  platformPatchSignalsResponse,
+  platformReadSignals,
+  platformRouter,
   post,
   render,
-  route,
-  router,
   signal,
-  text,
-  withSignals
+  text
 } from "../src/index.js"
 
 export const CounterSignals = Schema.Struct({
@@ -34,13 +38,24 @@ export const counterNode = () => {
 
 export const counterView = (): string => render(counterNode())
 
-export const page = (): Response => datastarPageResponse(counterNode())
+export const page = (): HttpServerResponse.HttpServerResponse =>
+  platformHtmlResponse(datastarDocument(counterNode()))
 
-export const increment = withSignals(CounterSignals, (signals) =>
-  Effect.succeed(patchSignalsResponse({ count: signals.count + 1 }))
-)
+export const increment: Effect.Effect<
+  HttpServerResponse.HttpServerResponse,
+  never,
+  HttpServerRequest.HttpServerRequest
+> = Effect.gen(function* () {
+  const decoded = yield* Effect.result(platformReadSignals(CounterSignals))
 
-export const app = router(
-  route("GET", "/", () => Effect.succeed(page())),
-  route("POST", "/increment", increment)
+  if (Result.isFailure(decoded)) {
+    return HttpServerResponse.text("Bad signals", { status: 400 })
+  }
+
+  return platformPatchSignalsResponse({ count: decoded.success.count + 1 })
+})
+
+export const app = platformRouter(
+  HttpRouter.route("GET", "/", page()),
+  HttpRouter.route("POST", "/increment", increment)
 )

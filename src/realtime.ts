@@ -1,7 +1,8 @@
 import * as Effect from "effect/Effect"
+import type * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type { Child } from "./html.js"
 import { render } from "./html.js"
-import { sseHeaders } from "./response.js"
+import { platformEventStreamResponse, type PlatformResponseOptions } from "./platform.js"
 import { patchElements, type PatchElementsOptions } from "./sse.js"
 
 export interface Subscription<A> extends AsyncIterable<A>, AsyncIterator<A> {
@@ -114,46 +115,15 @@ export async function* mapToElementPatches<A>(
   }
 }
 
-export const eventStreamResponse = (events: AsyncIterable<string>, init?: ResponseInit): Response => {
-  const encoder = new TextEncoder()
-  const iterator = events[Symbol.asyncIterator]()
-  let closed = false
-
-  return new Response(
-    new ReadableStream<Uint8Array>({
-      async pull(controller) {
-        if (closed) {
-          return
-        }
-
-        try {
-          const result = await iterator.next()
-          if (result.done === true) {
-            closed = true
-            controller.close()
-            return
-          }
-          controller.enqueue(encoder.encode(result.value))
-        } catch (cause) {
-          closed = true
-          controller.error(cause)
-        }
-      },
-      async cancel() {
-        closed = true
-        await iterator.return?.()
-      }
-    }),
-    {
-      ...init,
-      headers: sseHeaders(init?.headers)
-    }
-  )
-}
+export const eventStreamResponse = (
+  events: AsyncIterable<string>,
+  options?: PlatformResponseOptions
+): HttpServerResponse.HttpServerResponse => platformEventStreamResponse(events, options)
 
 export const liveElementsResponse = <A>(
   source: AsyncIterable<A>,
   renderValue: (value: A) => string | Child,
   options?: PatchElementsOptions,
-  init?: ResponseInit
-): Response => eventStreamResponse(mapToElementPatches(source, renderValue, options), init)
+  responseOptions?: PlatformResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  eventStreamResponse(mapToElementPatches(source, renderValue, options), responseOptions)

@@ -1,4 +1,5 @@
 import * as Effect from "effect/Effect"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { describe, expect, it } from "vitest"
 import { h } from "../src/html.js"
 import { Broadcaster, eventStreamResponse, liveElementsResponse, makeBroadcaster, mapToElementPatches } from "../src/realtime.js"
@@ -8,6 +9,8 @@ async function* values<T>(...items: ReadonlyArray<T>): AsyncIterable<T> {
     yield item
   }
 }
+
+const toWeb = (response: HttpServerResponse.HttpServerResponse): Response => HttpServerResponse.toWeb(response)
 
 describe("realtime SSE helpers", () => {
   it("broadcasts published values to subscribers", async () => {
@@ -34,14 +37,14 @@ describe("realtime SSE helpers", () => {
   })
 
   it("streams text/event-stream responses from async events", async () => {
-    const response = eventStreamResponse(values("event: one\n\n", "event: two\n\n"))
+    const response = toWeb(eventStreamResponse(values("event: one\n\n", "event: two\n\n")))
 
     expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(await response.text()).toBe("event: one\n\nevent: two\n\n")
   })
 
   it("renders HTML nodes for live element responses", async () => {
-    const response = liveElementsResponse(values("Ada"), (name) => h("div", { id: "person" }, name))
+    const response = toWeb(liveElementsResponse(values("Ada"), (name) => h("div", { id: "person" }, name)))
 
     expect(await response.text()).toBe('event: datastar-patch-elements\ndata: elements <div id="person">Ada</div>\n\n')
   })
@@ -49,7 +52,7 @@ describe("realtime SSE helpers", () => {
   it("can bridge a broadcaster subscription into an SSE response", async () => {
     const broadcaster = new Broadcaster<number>()
     const subscription = Effect.runSync(broadcaster.subscribe())
-    const response = liveElementsResponse(subscription, (n) => `<div id="count">${n}</div>`)
+    const response = toWeb(liveElementsResponse(subscription, (n) => `<div id="count">${n}</div>`))
     const body = response.text()
 
     Effect.runSync(broadcaster.publish(3))
@@ -61,7 +64,7 @@ describe("realtime SSE helpers", () => {
   it("closes broadcaster subscriptions when SSE response bodies are canceled", async () => {
     const broadcaster = new Broadcaster<string>()
     const subscription = Effect.runSync(broadcaster.subscribe())
-    const response = eventStreamResponse(subscription)
+    const response = toWeb(eventStreamResponse(subscription))
     const reader = response.body?.getReader()
 
     expect(reader).toBeDefined()

@@ -1,21 +1,22 @@
 import * as Effect from "effect/Effect"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { describe, expect, it } from "vitest"
-import type { Handler } from "../src/index.js"
-import { Handlers, route, textResponse } from "../src/index.js"
+import { Client, Datastar, Html, Jsx, Platform, Realtime, Sse, platformRouter } from "../src/index.js"
 
-if (false) {
-  const handlerFromIndex: Handler = () => Effect.succeed(new Response())
-  void handlerFromIndex
-}
+describe("package root exports", () => {
+  it("exports native Effect Platform helpers and namespaces", async () => {
+    const app = platformRouter(HttpRouter.route("GET", "/", HttpServerResponse.text("ok")))
 
-describe("public index exports", () => {
-  it("exports Handler as a type without namespace collision", () => {
-    const handler: Handler = () => Effect.succeed(textResponse("ok"))
+    expect(app).toBeDefined()
+    expect(Platform.platformRouter).toBe(platformRouter)
+    expect(Client.datastarDocument).toBeDefined()
+    expect(Datastar.signal).toBeDefined()
+    expect(Html.h).toBeDefined()
+    expect(Jsx.jsx).toBeDefined()
+    expect(Realtime.makeBroadcaster).toBeDefined()
+    expect(Sse.patchSignals).toBeDefined()
 
-    expect(typeof handler).toBe("function")
-  })
-
-  it("exports handler helpers through a plural namespace", () => {
-    expect(Handlers.route).toBe(route)
+    await expect(Effect.runPromise(Effect.succeed("ok"))).resolves.toBe("ok")
   })
 })

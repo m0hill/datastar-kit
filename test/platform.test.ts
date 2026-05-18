@@ -1,9 +1,10 @@
 import * as Effect from "effect/Effect"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { route, router, textResponse } from "../src/handler.js"
-import { PlatformPathError, toPlatformApp, toPlatformRouter } from "../src/platform.js"
+import { platformRouter } from "../src/platform.js"
 import { eventStreamResponse } from "../src/realtime.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
@@ -25,23 +26,13 @@ afterEach(async () => {
   await closePlatformListeners()
 })
 
-describe("Effect Platform HTTP adapter", () => {
-  it("runs ts-star handlers through NodeHttpServer.makeHandler", async () => {
-    const app = router(route("GET", "/", () => Effect.succeed(textResponse("platform"))))
-    const listener = await makePlatformListener(toPlatformApp(app))
-    const origin = await serveListener(listener)
-    const response = await fetch(origin)
-
-    expect(response.status).toBe(200)
-    expect(await response.text()).toBe("platform")
-  })
-
-  it("converts exact ts-star routes to an Effect Platform HttpRouter", async () => {
-    const platformRouter = toPlatformRouter(
-      route("GET", "/", () => Effect.succeed(textResponse("home"))),
-      route("POST", "/submit", () => Effect.succeed(textResponse("submitted", { status: 201 })))
+describe("Effect Platform HTTP runtime", () => {
+  it("dispatches native Effect Platform routes", async () => {
+    const app = platformRouter(
+      HttpRouter.route("GET", "/", HttpServerResponse.text("home")),
+      HttpRouter.route("POST", "/submit", HttpServerResponse.text("submitted", { status: 201 }))
     )
-    const listener = await makePlatformListener(platformRouter)
+    const listener = await makePlatformListener(app)
     const origin = await serveListener(listener)
 
     const home = await fetch(origin)
@@ -55,7 +46,7 @@ describe("Effect Platform HTTP adapter", () => {
     expect(missing.status).toBe(404)
   })
 
-  it("streams Datastar SSE responses through Effect Platform routing", async () => {
+  it("streams Datastar SSE responses through native Effect Platform routing", async () => {
     let releaseSecond!: () => void
     const second = new Promise<void>((resolve) => {
       releaseSecond = resolve
@@ -66,10 +57,10 @@ describe("Effect Platform HTTP adapter", () => {
       yield "event: second\n\n"
     }
 
-    const platformRouter = toPlatformRouter(
-      route("GET", "/events", () => Effect.succeed(eventStreamResponse(events())))
+    const app = platformRouter(
+      HttpRouter.route("GET", "/events", Effect.succeed(eventStreamResponse(events())))
     )
-    const listener = await makePlatformListener(platformRouter)
+    const listener = await makePlatformListener(app)
     const origin = await serveListener(listener)
     const response = await fetch(`${origin}/events`)
     const reader = response.body?.getReader()
@@ -87,11 +78,5 @@ describe("Effect Platform HTTP adapter", () => {
     expect(next.done).toBe(false)
     expect(decoder.decode(next.value)).toBe("event: second\n\n")
     await expect(reader!.read()).resolves.toEqual({ done: true, value: undefined })
-  })
-
-  it("rejects invalid platform route paths early", () => {
-    expect(() => toPlatformRouter(route("GET", "relative", () => Effect.succeed(textResponse("bad"))))).toThrow(
-      PlatformPathError
-    )
   })
 })

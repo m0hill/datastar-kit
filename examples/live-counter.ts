@@ -1,27 +1,32 @@
 import * as Effect from "effect/Effect"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
+import type * as Scope from "effect/Scope"
+import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import {
   datastarPageResponse,
   dataSignals,
-  emptyResponse,
   get,
   h,
   init,
   liveElementsResponse,
   mergeAttrs,
   on,
+  platformRouter,
   post,
-  render,
-  route,
-  router
+  render
 } from "../src/index.js"
-import type { Handler } from "../src/handler.js"
 import { Broadcaster } from "../src/realtime.js"
 
 export interface LiveCounterApp {
-  readonly app: Handler<never, never>
-  readonly page: Handler<never, never>
-  readonly increment: Handler<never, never>
-  readonly live: Handler<never, never>
+  readonly app: Effect.Effect<
+    HttpServerResponse.HttpServerResponse,
+    unknown,
+    Scope.Scope | HttpServerRequest.HttpServerRequest
+  >
+  readonly page: HttpServerResponse.HttpServerResponse
+  readonly increment: Effect.Effect<HttpServerResponse.HttpServerResponse>
+  readonly live: Effect.Effect<HttpServerResponse.HttpServerResponse>
   readonly broadcaster: Broadcaster<number>
   readonly currentCount: () => number
 }
@@ -43,20 +48,24 @@ export const createLiveCounter = (): LiveCounterApp => {
   const broadcaster = new Broadcaster<number>()
   let count = 0
 
-  const page: Handler<never, never> = () => Effect.succeed(datastarPageResponse(pageNode()))
+  const page = datastarPageResponse(pageNode())
 
-  const increment: Handler<never, never> = () =>
+  const increment = Effect.suspend(() =>
     broadcaster.publish(++count).pipe(
-      Effect.as(emptyResponse())
+      Effect.as(HttpServerResponse.empty())
     )
+  )
 
-  const live: Handler<never, never> = () =>
-    broadcaster.subscribe().pipe(
-      Effect.map((subscription) => liveElementsResponse(subscription, countFragment))
-    )
+  const live = broadcaster.subscribe().pipe(
+    Effect.map((subscription) => liveElementsResponse(subscription, countFragment))
+  )
 
   return {
-    app: router(route("GET", "/", page), route("POST", "/increment", increment), route("GET", "/live", live)),
+    app: platformRouter(
+      HttpRouter.route("GET", "/", page),
+      HttpRouter.route("POST", "/increment", increment),
+      HttpRouter.route("GET", "/live", live)
+    ),
     page,
     increment,
     live,

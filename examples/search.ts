@@ -1,19 +1,21 @@
 import * as Effect from "effect/Effect"
 import * as Schema from "effect/Schema"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   bind,
-  datastarPageResponse,
+  datastarDocument,
   dataSignals,
   get,
   h,
-  htmlPatchResponse,
+  platformHtmlPatchResponse,
+  platformHtmlResponse,
+  platformReadQuery,
+  platformRouter,
   mergeAttrs,
   on,
   queryUrl,
-  readQuery,
   render,
-  route,
-  router,
   signal
 } from "../src/index.js"
 
@@ -68,15 +70,18 @@ export const searchNode = () => {
 
 export const searchView = (): string => render(searchNode())
 
-export const searchPage = (): Response => datastarPageResponse(searchNode())
+export const searchPage = (): HttpServerResponse.HttpServerResponse =>
+  platformHtmlResponse(datastarDocument(searchNode()))
 
-export const searchRoute = route("GET", "/search", (request) =>
-  readQuery(request, SearchQuery).pipe(
-    Effect.map(({ q }) => htmlPatchResponse(resultsView(q), { selector: "#results", mode: "outer" }))
+export const searchRoute = HttpRouter.route(
+  "GET",
+  "/search",
+  platformReadQuery(SearchQuery).pipe(
+    Effect.map(({ q }) => platformHtmlPatchResponse(resultsView(q), { selector: "#results", mode: "outer" }))
   )
 )
 
-export const app = router(
-  route("GET", "/", () => Effect.succeed(searchPage())),
+export const app = platformRouter(
+  HttpRouter.route("GET", "/", searchPage()),
   searchRoute
 )

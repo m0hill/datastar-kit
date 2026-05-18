@@ -1,7 +1,10 @@
-import * as Effect from "effect/Effect"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { readFileSync } from "node:fs"
+import { createServer, type RequestListener, type Server } from "node:http"
+import type { AddressInfo } from "node:net"
 import { resolve } from "node:path"
-import { describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 import {
   DATASTAR_CDN,
   datastarClientFileRoute,
@@ -13,10 +16,28 @@ import {
   datastarPageResponse,
   datastarScript
 } from "../src/client.js"
-import { route, router } from "../src/handler.js"
 import { h, render } from "../src/html.js"
+import { platformRouter } from "../src/platform.js"
+import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 const datastarJsPath = resolve("..", "datastar.js")
+let server: Server | undefined
+
+const serveListener = async (listener: RequestListener): Promise<string> => {
+  server = createServer(listener)
+  await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve))
+  const address = server.address() as AddressInfo
+  return `http://127.0.0.1:${address.port}`
+}
+
+afterEach(async () => {
+  const current = server
+  server = undefined
+  if (current !== undefined) {
+    await new Promise<void>((resolve, reject) => current.close((error) => error ? reject(error) : resolve()))
+  }
+  await closePlatformListeners()
+})
 
 describe("Datastar client asset helpers", () => {
   it("renders the default self-hosted Datastar script tag", () => {
@@ -34,7 +55,7 @@ describe("Datastar client asset helpers", () => {
   })
 
   it("builds Datastar page responses", async () => {
-    const response = datastarPageResponse(h("main", {}, "Hello"))
+    const response = HttpServerResponse.toWeb(datastarPageResponse(h("main", {}, "Hello")))
 
     expect(response.headers.get("content-type")).toBe("text/html; charset=utf-8")
     expect(await response.text()).toBe(
@@ -43,7 +64,7 @@ describe("Datastar client asset helpers", () => {
   })
 
   it("serves provided Datastar client content with JavaScript headers", async () => {
-    const response = datastarClientResponse("console.log('datastar')", { cacheControl: "public, max-age=60" })
+    const response = HttpServerResponse.toWeb(datastarClientResponse("console.log('datastar')", { cacheControl: "public, max-age=60" }))
 
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
     expect(response.headers.get("cache-control")).toBe("public, max-age=60")
@@ -51,23 +72,26 @@ describe("Datastar client asset helpers", () => {
   })
 
   it("creates a route for provided Datastar client content", async () => {
-    const app = router(datastarClientRoute("export {}"))
-    const response = await Effect.runPromise(app(new Request("http://localhost/datastar.js")))
+    const app = platformRouter(datastarClientRoute("export {}"))
+    const listener = await makePlatformListener(app)
+    const response = await fetch(`${await serveListener(listener)}/datastar.js`)
 
     expect(response.status).toBe(200)
     expect(await response.text()).toBe("export {}")
   })
 
   it("pairs app routes with a default Datastar client route", async () => {
-    const app = router(
+    const app = platformRouter(
       ...datastarClientRoutes(
         "export const datastar = true",
-        route("GET", "/", () => Effect.succeed(datastarPageResponse(h("main", {}, "Ready"))))
+        HttpRouter.route("GET", "/", datastarPageResponse(h("main", {}, "Ready")))
       )
     )
+    const listener = await makePlatformListener(app)
+    const origin = await serveListener(listener)
 
-    const page = await Effect.runPromise(app(new Request("http://localhost/")))
-    const client = await Effect.runPromise(app(new Request("http://localhost/datastar.js")))
+    const page = await fetch(`${origin}/`)
+    const client = await fetch(`${origin}/datastar.js`)
 
     expect(await page.text()).toContain('<script type="module" src="/datastar.js"></script>')
     expect(client.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
@@ -76,8 +100,9 @@ describe("Datastar client asset helpers", () => {
 
   it("can serve the included minified datastar.js file", async () => {
     const expected = readFileSync(datastarJsPath, "utf8")
-    const app = router(datastarClientFileRoute(datastarJsPath))
-    const response = await Effect.runPromise(app(new Request("http://localhost/datastar.js")))
+    const app = platformRouter(datastarClientFileRoute(datastarJsPath))
+    const listener = await makePlatformListener(app)
+    const response = await fetch(`${await serveListener(listener)}/datastar.js`)
 
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
     expect(await response.text()).toBe(expected)
@@ -85,15 +110,17 @@ describe("Datastar client asset helpers", () => {
 
   it("pairs app routes with a file-backed Datastar client route", async () => {
     const expected = readFileSync(datastarJsPath, "utf8")
-    const app = router(
+    const app = platformRouter(
       ...datastarClientFileRoutes(
         datastarJsPath,
-        route("GET", "/", () => Effect.succeed(datastarPageResponse(h("main", {}, "Ready"))))
+        HttpRouter.route("GET", "/", datastarPageResponse(h("main", {}, "Ready")))
       )
     )
+    const listener = await makePlatformListener(app)
+    const origin = await serveListener(listener)
 
-    const page = await Effect.runPromise(app(new Request("http://localhost/")))
-    const client = await Effect.runPromise(app(new Request("http://localhost/datastar.js")))
+    const page = await fetch(`${origin}/`)
+    const client = await fetch(`${origin}/datastar.js`)
 
     expect(await page.text()).toContain('<script type="module" src="/datastar.js"></script>')
     expect(await client.text()).toBe(expected)

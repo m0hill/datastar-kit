@@ -1,8 +1,9 @@
 import * as Effect from "effect/Effect"
+import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { readFile } from "node:fs/promises"
-import { route, type Route } from "./handler.js"
 import { h, htmlDocument, type Child, type HtmlDocumentOptions, type HtmlNode } from "./html.js"
-import { htmlResponse } from "./response.js"
+import { platformHtmlResponse } from "./platform.js"
 
 export const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -38,58 +39,61 @@ export const datastarDocument = (body: Child, options: DatastarDocumentOptions =
   return htmlDocument(documentOptions)
 }
 
-export const datastarPageResponse = (body: Child, options: DatastarDocumentOptions = {}): Response =>
-  htmlResponse(datastarDocument(body, options))
+export const datastarPageResponse = (
+  body: Child,
+  options: DatastarDocumentOptions = {}
+): HttpServerResponse.HttpServerResponse => platformHtmlResponse(datastarDocument(body, options))
 
 export interface DatastarClientResponseOptions {
   readonly cacheControl?: string
 }
 
-const scriptBody = (script: string | Uint8Array): BodyInit => {
-  if (typeof script === "string") {
-    return script
-  }
-
-  return script.buffer.slice(script.byteOffset, script.byteOffset + script.byteLength) as ArrayBuffer
-}
+const datastarClientHeaders = (options: DatastarClientResponseOptions = {}) => ({
+  "cache-control": options.cacheControl ?? "no-cache"
+})
 
 export const datastarClientResponse = (
   script: string | Uint8Array,
   options: DatastarClientResponseOptions = {}
-): Response =>
-  new Response(scriptBody(script), {
-    headers: {
-      "content-type": "text/javascript; charset=utf-8",
-      "cache-control": options.cacheControl ?? "no-cache"
-    }
-  })
+): HttpServerResponse.HttpServerResponse => {
+  const responseOptions = {
+    contentType: "text/javascript; charset=utf-8",
+    headers: datastarClientHeaders(options)
+  }
+
+  return typeof script === "string"
+    ? HttpServerResponse.text(script, responseOptions)
+    : HttpServerResponse.uint8Array(script, responseOptions)
+}
 
 export const datastarClientRoute = (
   script: string | Uint8Array,
-  path = "/datastar.js",
+  path: HttpRouter.PathInput = "/datastar.js",
   options?: DatastarClientResponseOptions
-): Route<never, never> =>
-  route("GET", path, () => Effect.succeed(datastarClientResponse(script, options)))
+): HttpRouter.Route<never, never> =>
+  HttpRouter.route("GET", path, datastarClientResponse(script, options))
 
-export const datastarClientRoutes = <Routes extends ReadonlyArray<Route<any, any>>>(
+export const datastarClientRoutes = <Routes extends ReadonlyArray<HttpRouter.Route<unknown, unknown>>>(
   script: string | Uint8Array,
   ...routes: Routes
-): readonly [Route<never, never>, ...Routes] =>
-  [datastarClientRoute(script), ...routes] as readonly [Route<never, never>, ...Routes]
+): readonly [HttpRouter.Route<never, never>, ...Routes] =>
+  [datastarClientRoute(script), ...routes] as readonly [HttpRouter.Route<never, never>, ...Routes]
 
 export const datastarClientFileRoute = (
   filePath: string,
-  path = "/datastar.js",
+  path: HttpRouter.PathInput = "/datastar.js",
   options?: DatastarClientResponseOptions
-): Route<unknown, never> =>
-  route("GET", path, () =>
-    Effect.promise(() => readFile(filePath)).pipe(
+): HttpRouter.Route<unknown, never> =>
+  HttpRouter.route(
+    "GET",
+    path,
+    Effect.tryPromise(() => readFile(filePath)).pipe(
       Effect.map((script) => datastarClientResponse(script, options))
     )
   )
 
-export const datastarClientFileRoutes = <Routes extends ReadonlyArray<Route<any, any>>>(
+export const datastarClientFileRoutes = <Routes extends ReadonlyArray<HttpRouter.Route<unknown, unknown>>>(
   filePath: string,
   ...routes: Routes
-): readonly [Route<unknown, never>, ...Routes] =>
-  [datastarClientFileRoute(filePath), ...routes] as readonly [Route<unknown, never>, ...Routes]
+): readonly [HttpRouter.Route<unknown, never>, ...Routes] =>
+  [datastarClientFileRoute(filePath), ...routes] as readonly [HttpRouter.Route<unknown, never>, ...Routes]

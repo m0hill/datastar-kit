@@ -7,44 +7,29 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerError from "effect/unstable/http/HttpServerError"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
-import type { Handler, Route } from "./handler.js"
 import { render, type Child } from "./html.js"
 import type { ElementPatchMode } from "./sse.js"
-import { parseSignalsJson, type SignalJsonError } from "./request.js"
 import { eventStream, patchElements, patchSignals, type JsonObject, type PatchElementsOptions, type PatchSignalsOptions } from "./sse.js"
 
-export const toPlatformApp = <E, R>(
-  app: Handler<E, R>
-): Effect.Effect<HttpServerResponse.HttpServerResponse, E | HttpServerError.RequestError, R | HttpServerRequest.HttpServerRequest> =>
-  Effect.gen(function* () {
-    const request = yield* HttpServerRequest.HttpServerRequest
-    const webRequest = yield* HttpServerRequest.toWeb(request)
-    const webResponse = yield* app(webRequest)
-    return HttpServerResponse.fromWeb(webResponse)
+export class SignalJsonError {
+  readonly _tag = "SignalJsonError"
+
+  constructor(
+    readonly raw: string,
+    readonly cause: unknown
+  ) {}
+}
+
+export const DATASTAR_REQUEST_HEADER = "datastar-request"
+
+export const isDatastarRequest = (request: HttpServerRequest.HttpServerRequest): boolean =>
+  request.headers[DATASTAR_REQUEST_HEADER]?.toLowerCase() === "true"
+
+export const parseSignalsJson = (raw: string): Effect.Effect<unknown, SignalJsonError> =>
+  Effect.try({
+    try: () => JSON.parse(raw) as unknown,
+    catch: (cause) => new SignalJsonError(raw, cause)
   })
-
-export class PlatformPathError extends Error {
-  readonly _tag = "PlatformPathError"
-
-  constructor(readonly path: string) {
-    super(`Effect Platform routes must start with '/': ${JSON.stringify(path)}`)
-  }
-}
-
-type RouteError<RouteLike> = RouteLike extends Route<infer E, infer _> ? E : never
-type RouteContext<RouteLike> = RouteLike extends Route<infer _, infer R> ? R : never
-
-const toPlatformPath = (path: string): HttpRouter.PathInput => {
-  if (path === "*" || path.startsWith("/")) {
-    return path as HttpRouter.PathInput
-  }
-  throw new PlatformPathError(path)
-}
-
-export const toPlatformRoute = <E, R>(
-  route: Route<E, R>
-): HttpRouter.Route<E | HttpServerError.RequestError, R> =>
-  HttpRouter.route(route.method, toPlatformPath(route.path), toPlatformApp(route.handler))
 
 export const platformRouter = <Routes extends ReadonlyArray<HttpRouter.Route<unknown, unknown>>>(
   ...routes: Routes
@@ -57,19 +42,6 @@ export const platformRouter = <Routes extends ReadonlyArray<HttpRouter.Route<unk
     HttpServerResponse.HttpServerResponse,
     HttpServerError.HttpServerError | HttpRouter.Route.Error<Routes[number]>,
     Scope.Scope | HttpServerRequest.HttpServerRequest | HttpRouter.Route.Context<Routes[number]>
-  >
-
-export const toPlatformRouter = <Routes extends ReadonlyArray<Route<unknown, unknown>>>(
-  ...routes: Routes
-): Effect.Effect<
-  HttpServerResponse.HttpServerResponse,
-  HttpServerError.HttpServerError | HttpServerError.RequestError | RouteError<Routes[number]>,
-  Scope.Scope | HttpServerRequest.HttpServerRequest | RouteContext<Routes[number]>
-> =>
-  platformRouter(...routes.map(toPlatformRoute)) as Effect.Effect<
-    HttpServerResponse.HttpServerResponse,
-    HttpServerError.HttpServerError | HttpServerError.RequestError | RouteError<Routes[number]>,
-    Scope.Scope | HttpServerRequest.HttpServerRequest | RouteContext<Routes[number]>
   >
 
 const platformMethodsWithQuerySignals = new Set(["GET", "DELETE"])
@@ -98,6 +70,38 @@ export const platformReadSignals = <A, R>(
 ): Effect.Effect<A, HttpServerError.HttpServerError | SignalJsonError | Schema.SchemaError, R | HttpServerRequest.HttpServerRequest> =>
   HttpServerRequest.HttpServerRequest.pipe(
     Effect.flatMap((request) => platformReadSignalsFromRequest(request, schema))
+  )
+
+export type QueryValue = string | ReadonlyArray<string>
+export type QueryObject = Readonly<Record<string, QueryValue>>
+
+export const platformQueryFromRequest = (request: HttpServerRequest.HttpServerRequest): QueryObject => {
+  const result: Record<string, QueryValue> = {}
+
+  new URL(request.url, "http://localhost").searchParams.forEach((value, key) => {
+    const existing = result[key]
+    if (existing === undefined) {
+      result[key] = value
+    } else {
+      const existingValues = typeof existing === "string" ? [existing] : existing
+      result[key] = [...existingValues, value]
+    }
+  })
+
+  return result
+}
+
+export const platformReadQueryFromRequest = <A, R>(
+  request: HttpServerRequest.HttpServerRequest,
+  schema: Schema.Decoder<A, R>
+): Effect.Effect<A, Schema.SchemaError, R> =>
+  Schema.decodeUnknownEffect(schema)(platformQueryFromRequest(request))
+
+export const platformReadQuery = <A, R>(
+  schema: Schema.Decoder<A, R>
+): Effect.Effect<A, Schema.SchemaError, R | HttpServerRequest.HttpServerRequest> =>
+  HttpServerRequest.HttpServerRequest.pipe(
+    Effect.flatMap((request) => platformReadQueryFromRequest(request, schema))
   )
 
 export type PlatformResponseOptions = HttpServerResponse.Options
@@ -153,10 +157,10 @@ export const platformHtmlResponse = (
   html: string | Exclude<Child, string>,
   options: PlatformResponseOptions = {}
 ): HttpServerResponse.HttpServerResponse =>
-  HttpServerResponse.html(renderPlatformHtml(html)).pipe(
-    HttpServerResponse.setStatus(options.status ?? 200, options.statusText),
-    HttpServerResponse.setHeaders(Headers.fromInput(options.headers))
-  )
+  HttpServerResponse.text(renderPlatformHtml(html), {
+    ...options,
+    contentType: options.contentType ?? "text/html; charset=utf-8"
+  })
 
 export interface PlatformHtmlPatchResponseOptions extends PlatformResponseOptions {
   readonly selector?: string
