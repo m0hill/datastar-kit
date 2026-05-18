@@ -5,7 +5,6 @@ import type * as Scope from "effect/Scope"
 import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import {
   commandDone,
-  datastarPageResponse,
   get,
   h,
   init,
@@ -16,6 +15,7 @@ import {
   on,
   platformRouter,
   post,
+  reply,
   publishRealtime,
   render,
   shutdownRealtime,
@@ -57,7 +57,7 @@ const makeLiveCounterWith = <R>(updatesEffect: Effect.Effect<RealtimePubSub<void
     const updates = yield* updatesEffect
     let count = 0
 
-    const page = datastarPageResponse(pageNode())
+    const page = reply.page(pageNode())
 
     const loadCount = Effect.sync(() => count)
     const increment = Effect.suspend(() =>

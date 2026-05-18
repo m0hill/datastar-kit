@@ -2,13 +2,7 @@ import * as Effect from "effect/Effect"
 import * as Stream from "effect/Stream"
 import type * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { render, type Child } from "./html.js"
-import {
-  datastarEventStreamResponse,
-  datastarNoContentResponse,
-  datastarPatchElementsResponse,
-  type DatastarBodyResponseOptions,
-  type DatastarNoContentResponseOptions
-} from "./platform.js"
+import * as reply from "./reply.js"
 import { eventStreamResponse, type HeartbeatOptions } from "./realtime.js"
 import { patchElements, type PatchElementsOptions } from "./sse.js"
 
@@ -28,7 +22,7 @@ export interface LiveQueryOptions<State, InvalidationError = never, Invalidation
   readonly coalesce?: boolean | LiveQueryCoalesceOptions
 }
 
-export interface LiveQueryResponseOptions extends DatastarBodyResponseOptions {
+export interface LiveQueryResponseOptions extends reply.BodyOptions {
   readonly heartbeat?: HeartbeatOptions
 }
 
@@ -37,16 +31,16 @@ const renderView = <State>(state: State, view: View<State>): string => {
   return typeof rendered === "string" ? rendered : render(rendered)
 }
 
-export const commandDone = (options?: DatastarNoContentResponseOptions): HttpServerResponse.HttpServerResponse =>
-  datastarNoContentResponse(options)
+export const commandDone = (options?: reply.DoneOptions): HttpServerResponse.HttpServerResponse =>
+  reply.done(options)
 
 export const currentViewPatchResponse = <State>(
   state: State,
   view: View<State>,
   options?: PatchElementsOptions,
-  responseOptions?: DatastarBodyResponseOptions
+  responseOptions?: reply.BodyOptions
 ): HttpServerResponse.HttpServerResponse =>
-  datastarPatchElementsResponse(renderView(state, view), options, responseOptions)
+  reply.patch(renderView(state, view), options, responseOptions)
 
 const coalescedInvalidations = <E, R>(
   invalidations: Stream.Stream<unknown, E, R>,
@@ -81,7 +75,7 @@ export const liveQuery = <State, InvalidationError = never, InvalidationContext 
   )
 }
 
-const withoutLiveQueryHeartbeat = (options: LiveQueryResponseOptions): DatastarBodyResponseOptions => {
+const withoutLiveQueryHeartbeat = (options: LiveQueryResponseOptions): reply.BodyOptions => {
   const { heartbeat: _heartbeat, ...responseOptions } = options
   return responseOptions
 }
@@ -91,7 +85,7 @@ export const liveQueryResponse = <State, InvalidationError = never, StateError =
   responseOptions: LiveQueryResponseOptions = {}
 ): HttpServerResponse.HttpServerResponse => {
   if (responseOptions.heartbeat === undefined) {
-    return datastarEventStreamResponse(liveQuery(options), responseOptions)
+    return reply.stream(liveQuery(options), responseOptions)
   }
 
   return eventStreamResponse(liveQuery(options), {

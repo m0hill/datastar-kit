@@ -53,8 +53,9 @@ describe("search example", () => {
     const origin = await serveListener(listener)
     const response = await fetch(`${origin}/search?q=grace`)
 
-    expect(response.headers.get("datastar-selector")).toBe("#results")
-    expect(response.headers.get("datastar-mode")).toBe("outer")
-    expect(await response.text()).toBe('<tbody id="results"><tr><td>Grace</td><td>Hopper</td></tr></tbody>')
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
+    expect(await response.text()).toBe(
+      'event: datastar-patch-elements\ndata: selector #results\ndata: elements <tbody id="results"><tr><td>Grace</td><td>Hopper</td></tr></tbody>\n\n'
+    )
   })
 })

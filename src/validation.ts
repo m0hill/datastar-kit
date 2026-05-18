@@ -1,7 +1,7 @@
 import * as Effect from "effect/Effect"
 import type * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { h, type Child } from "./html.js"
-import { datastarPatchElementsResponse, datastarPatchSignalsResponse, type DatastarBodyResponseOptions } from "./platform.js"
+import * as reply from "./reply.js"
 import type { JsonObject, PatchElementsOptions, PatchSignalsOptions } from "./sse.js"
 
 export interface ValidationIssue<Field extends string = string> {
@@ -60,16 +60,16 @@ export const clearValidationSignalPayload = <Field extends string>(
 export const validationSignalsResponse = <Field extends string>(
   error: FormValidationError<Field>,
   options?: PatchSignalsOptions,
-  responseOptions?: DatastarBodyResponseOptions
+  responseOptions?: reply.BodyOptions
 ): HttpServerResponse.HttpServerResponse =>
-  datastarPatchSignalsResponse(validationSignalPayload(error) as JsonObject, options, responseOptions)
+  reply.signals(validationSignalPayload(error) as JsonObject, options, responseOptions)
 
 export const clearValidationSignalsResponse = <Field extends string>(
   fields: readonly Field[],
   options?: PatchSignalsOptions,
-  responseOptions?: DatastarBodyResponseOptions
+  responseOptions?: reply.BodyOptions
 ): HttpServerResponse.HttpServerResponse =>
-  datastarPatchSignalsResponse(clearValidationSignalPayload(...fields) as JsonObject, options, responseOptions)
+  reply.signals(clearValidationSignalPayload(...fields) as JsonObject, options, responseOptions)
 
 export const validationSummaryNode = <Field extends string>(
   error: FormValidationError<Field>,
@@ -89,9 +89,9 @@ export const validationSummaryNode = <Field extends string>(
 export const validationSummaryResponse = <Field extends string>(
   error: FormValidationError<Field>,
   options: PatchElementsOptions = { selector: "#form-errors", mode: "outer" },
-  responseOptions?: DatastarBodyResponseOptions
+  responseOptions?: reply.BodyOptions
 ): HttpServerResponse.HttpServerResponse =>
-  datastarPatchElementsResponse(validationSummaryNode(error), options, responseOptions)
+  reply.patch(validationSummaryNode(error), options, responseOptions)
 
 export const actionErrorNode = (
   error: ActionError,
@@ -101,9 +101,9 @@ export const actionErrorNode = (
 export const actionErrorResponse = (
   error: ActionError,
   options: PatchElementsOptions = { selector: "#action-error", mode: "outer" },
-  responseOptions?: DatastarBodyResponseOptions
+  responseOptions?: reply.BodyOptions
 ): HttpServerResponse.HttpServerResponse =>
-  datastarPatchElementsResponse(actionErrorNode(error), options, responseOptions)
+  reply.patch(actionErrorNode(error), options, responseOptions)
 
 export const recoverValidation = <R>(
   effect: Effect.Effect<HttpServerResponse.HttpServerResponse, FormValidationError, R>

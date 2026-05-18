@@ -4,18 +4,16 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
   bind,
-  datastarDocument,
-  datastarHtmlPatchResponse,
   dataSignals,
   get,
   h,
-  platformHtmlResponse,
   platformReadQuery,
   platformRouter,
   mergeAttrs,
   on,
   queryUrl,
   render,
+  reply,
   signal
 } from "../src/index.js"
 
@@ -76,13 +74,13 @@ export const searchNode = () => {
 export const searchView = (): string => render(searchNode())
 
 export const searchPage = (): HttpServerResponse.HttpServerResponse =>
-  platformHtmlResponse(datastarDocument(searchNode()))
+  reply.page(searchNode())
 
 export const searchRoute = HttpRouter.route(
   "GET",
   "/search",
   platformReadQuery(SearchQuery).pipe(
-    Effect.map(({ q }) => datastarHtmlPatchResponse(resultsView(q), { selector: "#results", mode: "outer" }))
+    Effect.map(({ q }) => reply.patch(resultsView(q), { selector: "#results", mode: "outer" }))
   )
 )
 

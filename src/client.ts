@@ -3,7 +3,6 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { readFile } from "node:fs/promises"
 import { h, htmlDocument, type Child, type HtmlDocumentOptions, type HtmlNode } from "./html.js"
-import { platformHtmlResponse } from "./platform.js"
 
 export const datastarScript = (src = "/datastar.js"): HtmlNode =>
   h("script", {
@@ -40,7 +39,8 @@ export const datastarDocument = (body: Child, options: DatastarDocumentOptions =
 export const datastarPageResponse = (
   body: Child,
   options: DatastarDocumentOptions = {}
-): HttpServerResponse.HttpServerResponse => platformHtmlResponse(datastarDocument(body, options))
+): HttpServerResponse.HttpServerResponse =>
+  HttpServerResponse.text(datastarDocument(body, options), { contentType: "text/html; charset=utf-8" })
 
 export interface DatastarClientResponseOptions {
   readonly cacheControl?: string

@@ -11,19 +11,13 @@ import { datastarDocument, type DatastarDocumentOptions } from "./client.js"
 import { render, type Child } from "./html.js"
 import { NoopTelemetryLive, type Telemetry } from "./observability.js"
 import {
-  type DatastarBodyResponseOptions,
-  datastarNoContentResponse,
-  type DatastarNoContentResponseOptions,
-  datastarPatchElementsResponse,
-  datastarPatchSignalsResponse,
-  DatastarResponseStatusError,
   isDatastarRequest,
   parseSignalsJson,
-  platformHtmlResponse,
   platformRawSignalsFromRequest,
   type PlatformResponseOptions,
   type SignalJsonError
 } from "./platform.js"
+import * as reply from "./reply.js"
 import { makeRealtimePubSubScoped, publishRealtime, shutdownRealtime, streamFromPubSub, type RealtimePubSubOptions } from "./realtime.js"
 import type { JsonObject, PatchElementsOptions, PatchSignalsOptions } from "./sse.js"
 
@@ -61,14 +55,14 @@ export interface DatastarProtocolValue {
   readonly patchElements: (
     elements: string | Exclude<Child, string>,
     options?: PatchElementsOptions,
-    responseOptions?: DatastarBodyResponseOptions
+    responseOptions?: reply.BodyOptions
   ) => Effect.Effect<HttpServerResponse.HttpServerResponse>
   readonly patchSignals: (
     signals: JsonObject | string,
     options?: PatchSignalsOptions,
-    responseOptions?: DatastarBodyResponseOptions
+    responseOptions?: reply.BodyOptions
   ) => Effect.Effect<HttpServerResponse.HttpServerResponse>
-  readonly noContent: (options?: DatastarNoContentResponseOptions) => Effect.Effect<HttpServerResponse.HttpServerResponse>
+  readonly noContent: (options?: reply.DoneOptions) => Effect.Effect<HttpServerResponse.HttpServerResponse>
 }
 
 export class DatastarProtocol extends Context.Service<DatastarProtocol, DatastarProtocolValue>()("ts-star/DatastarProtocol") {}
@@ -83,17 +77,17 @@ export const DatastarProtocolLive: Layer.Layer<DatastarProtocol, never, HtmlRend
     return {
       page: (body, options = {}, responseOptions) =>
         Effect.succeed(
-          platformHtmlResponse(
+          HttpServerResponse.text(
             datastarDocument(body, { scriptSrc: config.datastarScriptSrc, ...options }),
-            responseOptions
+            { ...responseOptions, contentType: responseOptions?.contentType ?? "text/html; charset=utf-8" }
           )
         ),
       patchElements: (elements, options, responseOptions) =>
         renderer.render(elements).pipe(
-          Effect.map((html) => datastarPatchElementsResponse(html, options, responseOptions))
+          Effect.map((html) => reply.patch(html, options, responseOptions))
         ),
-      patchSignals: (signals, options, responseOptions) => Effect.succeed(datastarPatchSignalsResponse(signals, options, responseOptions)),
-      noContent: (options) => Effect.succeed(datastarNoContentResponse(options))
+      patchSignals: (signals, options, responseOptions) => Effect.succeed(reply.signals(signals, options, responseOptions)),
+      noContent: (options) => Effect.succeed(reply.done(options))
     } satisfies DatastarProtocolValue
   })
 )
@@ -155,7 +149,7 @@ export class ValidationError extends Error {
   }
 }
 
-export type FrameworkError = SignalJsonError | Schema.SchemaError | DatastarResponseStatusError | ValidationError
+export type FrameworkError = SignalJsonError | Schema.SchemaError | reply.ResponseStatusError | ValidationError
 
 export interface ErrorMapperValue {
   readonly toResponse: (error: unknown) => Effect.Effect<HttpServerResponse.HttpServerResponse>
@@ -196,7 +190,7 @@ export const defaultErrorResponse = (error: unknown): HttpServerResponse.HttpSer
     return HttpServerResponse.text("Unsafe redirect URL", { status: 400 })
   }
 
-  if (error instanceof DatastarResponseStatusError) {
+  if (error instanceof reply.ResponseStatusError) {
     return HttpServerResponse.text("Invalid Datastar response status", { status: 500 })
   }
 

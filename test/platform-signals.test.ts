@@ -5,7 +5,8 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { platformJsonSignalsResponse, platformPatchSignalsResponse, platformReadSignals, platformRouter } from "../src/platform.js"
+import { platformReadSignals, platformRouter } from "../src/platform.js"
+import * as reply from "../src/reply.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 const CounterSignals = Schema.Struct({
@@ -37,7 +38,7 @@ describe("native Effect Platform signal decoding", () => {
         "POST",
         "/increment",
         platformReadSignals(CounterSignals).pipe(
-          Effect.map(({ count }) => platformPatchSignalsResponse({ count: count + 1 }))
+          Effect.map(({ count }) => reply.signals({ count: count + 1 }))
         )
       )
     )
@@ -56,7 +57,7 @@ describe("native Effect Platform signal decoding", () => {
         "GET",
         "/signals",
         platformReadSignals(CounterSignals).pipe(
-          Effect.map(({ count }) => platformJsonSignalsResponse({ count }, { onlyIfMissing: true }))
+          Effect.map(({ count }) => reply.direct.signals({ count }, { onlyIfMissing: true }))
         )
       )
     )
@@ -73,7 +74,7 @@ describe("native Effect Platform signal decoding", () => {
         "POST",
         "/signals",
         Effect.result(platformReadSignals(CounterSignals)).pipe(
-          Effect.map((result) => platformJsonSignalsResponse({ ok: Result.isSuccess(result) }))
+          Effect.map((result) => reply.direct.signals({ ok: Result.isSuccess(result) }))
         )
       )
     )

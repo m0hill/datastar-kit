@@ -6,14 +6,12 @@ import type * as Scope from "effect/Scope"
 import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
-  datastarDocument,
-  datastarPatchElementsResponse,
   mergeAttrs,
   on,
-  platformHtmlResponse,
   platformRouter,
   post,
   render,
+  reply,
   type Child
 } from "../src/index.js"
 import { Fragment, jsx } from "../src/jsx.js"
@@ -53,11 +51,11 @@ export const makeTsxCounter = (): TsxCounterExample => {
   let count = 0
 
   const tsxCounterPage = (): HttpServerResponse.HttpServerResponse =>
-    platformHtmlResponse(datastarDocument(tsxCounterNode(count)))
+    reply.page(tsxCounterNode(count))
 
   const tsxIncrement = Effect.sync(() => {
     count += 1
-    return datastarPatchElementsResponse(<CountOutput count={count} />, { selector: "#count", mode: "outer" })
+    return reply.patch(<CountOutput count={count} />, { selector: "#count", mode: "outer" })
   })
 
   return {

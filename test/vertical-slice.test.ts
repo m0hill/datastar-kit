@@ -6,7 +6,8 @@ import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { dataSignals, mergeAttrs, on, post, signal, text } from "../src/datastar.js"
 import { h, render } from "../src/html.js"
-import { platformPatchSignalsResponse, platformReadSignals, platformRouter } from "../src/platform.js"
+import { platformReadSignals, platformRouter } from "../src/platform.js"
+import * as reply from "../src/reply.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 const CounterSignals = Schema.Struct({
@@ -27,7 +28,7 @@ const counterView = () => {
 }
 
 const increment = platformReadSignals(CounterSignals).pipe(
-  Effect.map((signals) => platformPatchSignalsResponse({ count: signals.count + 1 }))
+  Effect.map((signals) => reply.signals({ count: signals.count + 1 }))
 )
 
 let server: Server | undefined

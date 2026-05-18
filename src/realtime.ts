@@ -5,7 +5,7 @@ import * as Stream from "effect/Stream"
 import type * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type { Child } from "./html.js"
 import { render } from "./html.js"
-import { platformEventStreamResponse, type PlatformEventSource, type PlatformResponseOptions } from "./platform.js"
+import * as reply from "./reply.js"
 import { patchElements, type PatchElementsOptions } from "./sse.js"
 
 export type RealtimePubSub<A> = PubSub.PubSub<A>
@@ -91,17 +91,24 @@ export const withHeartbeat = <E = never, R = never>(
 ): Stream.Stream<string, E, R> =>
   events.pipe(Stream.merge(heartbeatStream(options), { haltStrategy: "left" }))
 
-export interface RealtimeResponseOptions extends PlatformResponseOptions {
+export interface RealtimeResponseOptions extends reply.BodyOptions {
   readonly heartbeat?: HeartbeatOptions
 }
 
-const isRealtimeStream = (source: PlatformEventSource): source is Stream.Stream<string, unknown> =>
+const isRealtimeStream = (source: reply.EventSource): source is Stream.Stream<string, unknown> =>
   "channel" in source
 
-const toRealtimeStream = (source: PlatformEventSource): Stream.Stream<string, unknown> =>
-  isRealtimeStream(source) ? source : Stream.fromAsyncIterable(source, (cause) => cause)
+const isEventArray = (source: reply.StreamInput): source is ReadonlyArray<string> => Array.isArray(source)
 
-const withoutHeartbeat = (options: RealtimeResponseOptions): PlatformResponseOptions => {
+const toRealtimeStream = (source: reply.StreamInput): Stream.Stream<string, unknown> => {
+  if (isEventArray(source)) {
+    return Stream.fromIterable(source)
+  }
+
+  return isRealtimeStream(source) ? source : Stream.fromAsyncIterable(source, (cause) => cause)
+}
+
+const withoutHeartbeat = (options: RealtimeResponseOptions): reply.BodyOptions => {
   const { heartbeat: _heartbeat, ...responseOptions } = options
   return responseOptions
 }
@@ -119,14 +126,14 @@ export const mapToElementPatches = <A, E = never>(
   )
 
 export const eventStreamResponse = (
-  events: PlatformEventSource,
+  events: reply.StreamInput,
   options?: RealtimeResponseOptions
 ): HttpServerResponse.HttpServerResponse => {
   if (options?.heartbeat === undefined) {
-    return platformEventStreamResponse(events, options)
+    return reply.stream(events, options)
   }
 
-  return platformEventStreamResponse(withHeartbeat(toRealtimeStream(events), options.heartbeat), withoutHeartbeat(options))
+  return reply.stream(withHeartbeat(toRealtimeStream(events), options.heartbeat), withoutHeartbeat(options))
 }
 
 export const liveElementsResponse = <A, E = never>(

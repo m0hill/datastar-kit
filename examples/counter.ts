@@ -4,15 +4,13 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
-  datastarDocument,
-  datastarPatchElementsResponse,
   h,
   mergeAttrs,
   on,
-  platformHtmlResponse,
   platformRouter,
   post,
-  render
+  render,
+  reply
 } from "../src/index.js"
 
 export const countNode = (count: number) => h("output", { id: "count" }, count)
@@ -43,11 +41,11 @@ export const makeCounter = (): CounterExample => {
   let count = 0
 
   const page = (): HttpServerResponse.HttpServerResponse =>
-    platformHtmlResponse(datastarDocument(counterNode(count)))
+    reply.page(counterNode(count))
 
   const increment = Effect.sync(() => {
     count += 1
-    return datastarPatchElementsResponse(countNode(count), { selector: "#count", mode: "outer" })
+    return reply.patch(countNode(count), { selector: "#count", mode: "outer" })
   })
 
   return {

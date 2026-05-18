@@ -4,11 +4,11 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
-import { datastarDocument } from "../src/client.js"
 import { defineSignals } from "../src/contracts.js"
 import { bind, mergeAttrs, on, post, text, validationDataSignal, validationSignal } from "../src/datastar.js"
 import { h, render } from "../src/html.js"
-import { datastarPatchElementsResponse, platformHtmlResponse, platformRouter } from "../src/platform.js"
+import { platformRouter } from "../src/platform.js"
+import * as reply from "../src/reply.js"
 import { catchMappedErrors, requestRuntimeLayer, SignalDecoder } from "../src/runtime.js"
 import { clearValidationSignalPayload, FormValidationError, validationSignalsResponse, type ValidationIssue } from "../src/validation.js"
 
@@ -73,14 +73,14 @@ export const contactFormNode = () => {
 export const contactFormView = (): string => render(contactFormNode())
 
 export const contactFormPage = (): HttpServerResponse.HttpServerResponse =>
-  platformHtmlResponse(datastarDocument(contactFormNode()))
+  reply.page(contactFormNode())
 
 const submitContactInner = Effect.gen(function*() {
   const decoder = yield* SignalDecoder
   const input = yield* ContactForm.decode(decoder)
   const valid = yield* validateContact(input)
 
-  return datastarPatchElementsResponse(
+  return reply.patch(
     h("div", { id: "contact-result", role: "status" }, `Saved ${valid.name} <${valid.email}>`),
     { selector: "#contact-result", mode: "outer" }
   )

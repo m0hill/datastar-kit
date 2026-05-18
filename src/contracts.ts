@@ -3,6 +3,7 @@ import * as Schema from "effect/Schema"
 import * as HttpServerError from "effect/unstable/http/HttpServerError"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import type * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
+import * as reply from "./reply.js"
 import {
   dataSignals,
   fetchAction,
@@ -16,12 +17,10 @@ import {
 } from "./datastar.js"
 import type { Attributes } from "./html.js"
 import {
-  datastarPatchSignalsResponse,
   platformReadQuery,
   platformReadQueryFromRequest,
   platformReadSignals,
   platformReadSignalsFromRequest,
-  type DatastarBodyResponseOptions,
   type SignalJsonError
 } from "./platform.js"
 import type { SignalDecoderValue } from "./runtime.js"
@@ -57,7 +56,7 @@ export interface SignalContract<Name extends string, Shape extends object, R> {
   readonly patchResponse: (
     values: SignalPatch<Shape>,
     options?: PatchSignalsOptions,
-    responseOptions?: DatastarBodyResponseOptions
+    responseOptions?: reply.BodyOptions
   ) => HttpServerResponse.HttpServerResponse
 }
 
@@ -74,7 +73,7 @@ export const defineSignals = <Name extends string, Shape extends object, R>(
   decode: (decoder) => decoder.decode(schema),
   patch: (values) => values,
   patchResponse: (values, options, responseOptions) =>
-    datastarPatchSignalsResponse(values as JsonObject, options, responseOptions)
+    reply.signals(values as JsonObject, options, responseOptions)
 })
 
 export type QueryInput<Shape extends object> = {
