@@ -1,10 +1,14 @@
+import * as Headers from "@effect/platform/Headers"
 import type * as HttpApp from "@effect/platform/HttpApp"
 import * as HttpRouter from "@effect/platform/HttpRouter"
 import * as HttpServerError from "@effect/platform/HttpServerError"
 import * as HttpServerRequest from "@effect/platform/HttpServerRequest"
 import * as HttpServerResponse from "@effect/platform/HttpServerResponse"
 import * as Effect from "effect/Effect"
+import * as Stream from "effect/Stream"
 import type { Handler, Route } from "./handler.js"
+import { render, type Child } from "./html.js"
+import { eventStream, patchElements, patchSignals, type JsonObject, type PatchElementsOptions, type PatchSignalsOptions } from "./sse.js"
 
 export const toPlatformApp = <E, R>(
   app: Handler<E, R>
@@ -46,3 +50,52 @@ export const toPlatformRouter = <Routes extends ReadonlyArray<Route<unknown, unk
     HttpServerError.RequestError | RouteError<Routes[number]>,
     RouteContext<Routes[number]>
   >
+
+export type PlatformResponseOptions = HttpServerResponse.Options
+
+const renderPlatformHtml = (content: string | Exclude<Child, string>): string =>
+  typeof content === "string" ? content : render(content)
+
+const platformSseHeaders = (headers: Headers.Input | undefined): Headers.Headers => {
+  const existing = Headers.fromInput(headers)
+  return Headers.fromInput({
+    ...existing,
+    "cache-control": existing["cache-control"] ?? "no-cache",
+    connection: existing.connection ?? "keep-alive"
+  })
+}
+
+const platformSseOptions = (options: PlatformResponseOptions = {}): PlatformResponseOptions => ({
+  ...options,
+  contentType: options.contentType ?? "text/event-stream",
+  headers: platformSseHeaders(options.headers)
+})
+
+export const platformSseResponse = (
+  events: ReadonlyArray<string>,
+  options?: PlatformResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  HttpServerResponse.text(eventStream(...events), platformSseOptions(options))
+
+export const platformEventStreamResponse = (
+  events: AsyncIterable<string>,
+  options?: PlatformResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  HttpServerResponse.stream(
+    Stream.fromAsyncIterable(events, (cause) => cause).pipe(Stream.encodeText),
+    platformSseOptions(options)
+  )
+
+export const platformPatchElementsResponse = (
+  elements: string | Exclude<Child, string>,
+  options?: PatchElementsOptions,
+  responseOptions?: PlatformResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  platformSseResponse([patchElements(renderPlatformHtml(elements), options)], responseOptions)
+
+export const platformPatchSignalsResponse = (
+  signals: JsonObject | string,
+  options?: PatchSignalsOptions,
+  responseOptions?: PlatformResponseOptions
+): HttpServerResponse.HttpServerResponse =>
+  platformSseResponse([patchSignals(signals, options)], responseOptions)
