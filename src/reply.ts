@@ -54,11 +54,9 @@ const textEncoder = new TextEncoder()
 
 const mergeHeaders = (defaults: HeadersInit, headers: HeadersInit | undefined): Headers => {
   const merged = new Headers(defaults)
-  if (headers !== undefined) {
-    new Headers(headers).forEach((value, key) => {
-      merged.set(key, value)
-    })
-  }
+  new Headers(headers).forEach((value, key) => {
+    merged.set(key, value)
+  })
   return merged
 }
 
