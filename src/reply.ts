@@ -78,14 +78,11 @@ const response = (
     headers: mergeHeaders(defaultHeaders, init?.headers)
   })
 
-const htmlHeaders = (init?: ResponseInit | DatastarResponseInit): Headers =>
-  mergeHeaders({ "content-type": "text/html; charset=utf-8" }, init?.headers)
-
-const sseHeaders = (init?: DatastarResponseInit): Headers =>
-  mergeHeaders({
-    "cache-control": "no-cache",
-    "content-type": "text/event-stream"
-  }, init?.headers)
+const htmlHeader = { "content-type": "text/html; charset=utf-8" } as const
+const sseHeader = {
+  "cache-control": "no-cache",
+  "content-type": "text/event-stream"
+} as const
 
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
 
@@ -198,7 +195,7 @@ export const page = (
 ): Response =>
   new Response(htmlPage(options), {
     ...init,
-    headers: htmlHeaders(init)
+    headers: mergeHeaders(htmlHeader, init.headers)
   })
 
 export const patch = (
@@ -206,14 +203,14 @@ export const patch = (
   options?: PatchElementsOptions,
   init?: DatastarResponseInit
 ): Response =>
-  response(patchElements(render(elements), options), init, 200, sseHeaders(init))
+  response(patchElements(render(elements), options), init, 200, sseHeader)
 
 export const signals = (
   value: JsonObject | string,
   options?: PatchSignalsOptions,
   init?: DatastarResponseInit
 ): Response =>
-  response(patchSignals(value, options), init, 200, sseHeaders(init))
+  response(patchSignals(value, options), init, 200, sseHeader)
 
 export const stream = (
   events: StreamInput,
@@ -224,7 +221,7 @@ export const stream = (
     ? toAsyncIterable(events)
     : withHeartbeat(toAsyncIterable(events), options.heartbeat)
 
-  return response(readableStreamFrom(eventSource), init, 200, sseHeaders(init))
+  return response(readableStreamFrom(eventSource), init, 200, sseHeader)
 }
 
 export const done = (init: DatastarResponseInit = {}): Response =>
