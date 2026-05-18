@@ -224,7 +224,7 @@
     {
       "order": 7,
       "id": "T007",
-      "title": "Simplify the HTML and JSX boundary",
+      "title": "Define the tiny HTML boundary and explicit JSX adapter",
       "status": "pending",
       "phase": "view-api",
       "priority": "high",
@@ -235,20 +235,28 @@
         "T006"
       ],
       "markdown": "07-simplify-html-jsx-boundary.md",
-      "goal": "Expose a small server HTML API and prevent JSX from becoming a React-like component runtime direction.",
-      "canonical_direction": "Make h/render the conceptual default; keep JSX internal or explicitly experimental syntax sugar.",
+      "goal": "Expose a tiny top-level server HTML API named h/render/fragment/raw/props/page while keeping JSX as an explicit experimental adapter, not a React-like framework direction.",
+      "canonical_direction": "Public app code uses top-level h, render, fragment, raw, props, and page. raw is raw HTML; props composes HTML props/attributes; page builds a full HTML document/page string. JSX is a separate experimental adapter/subpath with only pure server render functions. Renderer, ordered-attr, strict-merge, and patchable-ID helpers are not public core.",
       "deliverables": [
-        "Minimal public HTML API",
-        "Renderer/ordered-attribute details hidden unless proven necessary",
-        "JSX docs demoted or removed",
-        "Tests updated around the chosen boundary"
+        "Top-level tiny HTML public surface: h, render, fragment, raw, props, page",
+        "Minimal public HTML types: Child, HtmlNode, Props, PropValue",
+        "Replacement map applied: rawHtml->raw, mergeAttrs->props, htmlDocument->page, Attributes->Props, AttributeValue->PropValue",
+        "JSX moved out of root exports into an explicit experimental adapter/subpath",
+        "Renderer/htmlRenderer removed from public API/docs",
+        "Ordered-attribute, strict-merge, and patchable-ID helpers hidden or deleted",
+        "Docs/examples updated so h is canonical and JSX is opt-in syntax sugar"
       ],
       "removal_targets": [
-        "Renderer public interface until adapter evidence exists",
-        "htmlRenderer",
-        "OrderedAttributes/attrs/mergeOrderedAttrs public exposure if unnecessary",
-        "patchableNode/requirePatchId public helpers",
-        "Jsx root namespace if not intentionally experimental"
+        "Html root namespace if top-level primitives are the blessed API",
+        "Jsx root namespace and root jsx/Fragment exports",
+        "Renderer public interface and htmlRenderer public value",
+        "OrderedAttributes/old attrs/mergeOrderedAttrs public APIs",
+        "AttributeEntry/AttributeInput public types unless still required internally",
+        "Attributes/AttributeValue public names after Props/PropValue replacement",
+        "isOrderedAttributes/isRawHtml/isHtmlNode public guards",
+        "patchableNode/requirePatchId/MissingPatchIdError public helpers",
+        "mergeAttrs/mergeAttrsStrict/AttributeConflictError public APIs",
+        "duplicate prop/attribute composition helpers under ds/old Datastar modules"
       ]
     },
     {
