@@ -152,7 +152,7 @@
     {
       "order": 5,
       "id": "T005",
-      "title": "Narrow Contracts to typed signal contracts only",
+      "title": "Replace Contracts with a narrow contract.signals API",
       "status": "pending",
       "phase": "types",
       "priority": "high",
@@ -162,21 +162,25 @@
         "T004"
       ],
       "markdown": "05-narrow-contracts.md",
-      "goal": "Keep the useful type-safety win while removing premature route/action/runtime coupling.",
-      "canonical_direction": "A contract may derive signal refs, initial signal attributes, and typed patch shapes. Request reading and response construction should stay in Platform/Model.",
+      "goal": "Keep schema-derived signal type safety while removing request decoding, response construction, route/action contracts, and runtime coupling from contracts.",
+      "canonical_direction": "Expose lowercase contract.signals(schema). It returns { schema, $, initial, patch }. Decode with read.signals(Contact.schema), respond with reply.signals(Contact.patch(...)), and type patches as contract.Patch<typeof Contact>. No route/action DSL or contract-owned read/reply methods.",
       "deliverables": [
-        "defineSignals narrowed",
-        "Action/query contract DSL removed unless a concrete example proves it",
-        "Examples updated to call Platform.readSignals/readQuery directly",
-        "Dead cast helpers removed"
+        "Lowercase contract namespace/file replacing public Contracts",
+        "contract.signals(schema) factory returning { schema, $, initial, patch }",
+        "contract.Signals<Shape> public return type",
+        "contract.Patch<typeof Contact> public patch type with hidden recursive internals",
+        "Action/query contract DSL removed",
+        "Examples updated to use Contact.$, read.signals(Contact.schema), and reply.signals(Contact.patch(...))"
       ],
       "removal_targets": [
-        "defineAction",
-        "defineQueryAction",
-        "SignalContract.read/readFromRequest/decode/patchResponse",
-        "signalPatchJson",
-        "signalPatchValue",
-        "route/action source-of-truth claims before a real route DSL exists"
+        "Contracts namespace and defineSignals public name",
+        "required signal contract name string",
+        "SignalContract public name and read/readFromRequest/decode/patchResponse fields",
+        "public SignalPatchValue/PatchValue recursive internals",
+        "signalPatchJson and signalPatchValue cast helpers",
+        "defineAction/defineQueryAction and related ActionContract/QueryActionContract/QueryInput types",
+        "contract/read/reply coupling through convenience methods",
+        "refs/signals aliases for Contact.$"
       ]
     },
     {
