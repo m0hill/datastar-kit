@@ -4,12 +4,7 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
-import * as contract from "../src/contract.js"
-import * as ds from "../src/ds.js"
-import { h, props, render } from "../src/html.js"
-import * as reply from "../src/reply.js"
-import * as read from "../src/read.js"
-import type { JsonObject } from "../src/sse.js"
+import { contract, ds, h, props, read, render, reply } from "../src/index.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -40,36 +35,36 @@ class FormValidationError<Field extends string = string> extends Error {
   }
 }
 
-type ValidationSignalPayload<Field extends string = string> = {
-  readonly _validation: Partial<Record<Field | "form", string | null>>
+type ValidationSignalPayload = {
+  readonly _validation: Readonly<Record<string, string | null>>
 }
 
 const validationSignalPayload = <Field extends string>(
   error: FormValidationError<Field>
-): ValidationSignalPayload<Field> => {
+): ValidationSignalPayload => {
   const validation: Record<string, string | null> = { form: error.message }
 
   for (const issue of error.issues) {
     validation[issue.field ?? "form"] = issue.message
   }
 
-  return { _validation: validation as Partial<Record<Field | "form", string | null>> }
+  return { _validation: validation }
 }
 
 const clearValidationSignalPayload = <Field extends string>(
   ...fields: readonly Field[]
-): ValidationSignalPayload<Field> => {
+): ValidationSignalPayload => {
   const validation: Record<string, null> = { form: null }
   for (const field of fields) {
     validation[field] = null
   }
-  return { _validation: validation as Partial<Record<Field | "form", null>> }
+  return { _validation: validation }
 }
 
 const validationSignalsResponse = <Field extends string>(
   error: FormValidationError<Field>
 ): HttpServerResponse.HttpServerResponse =>
-  reply.signals(validationSignalPayload(error) as JsonObject)
+  reply.signals(validationSignalPayload(error))
 
 const validateContact = (input: typeof ContactForm.schema.Type): Effect.Effect<typeof input, FormValidationError<ContactField>> => {
   const issues: Array<ValidationIssue<ContactField>> = []
