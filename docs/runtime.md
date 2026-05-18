@@ -43,6 +43,7 @@ return reply.page(view)
 return reply.patch(fragment, { selector: "#result" })
 return reply.signals({ saved: true })
 return reply.stream(events, { heartbeat: { interval: "15 seconds" } })
+return reply.navigate("/dashboard")
 return reply.done()
 ```
 

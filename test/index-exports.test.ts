@@ -8,13 +8,10 @@ import {
   contract,
   ds,
   live,
-  Observability,
   Platform,
   read,
   reply,
-  Security,
   Sse,
-  Validation,
   fragment,
   h,
   page,
@@ -51,11 +48,15 @@ describe("package root exports", () => {
     expect("commandDone" in Root).toBe(false)
     expect("makeRealtimePubSub" in Root).toBe(false)
     expect(live.query).toBeDefined()
-    expect(Observability.Telemetry).toBeDefined()
+    expect("Security" in Root).toBe(false)
+    expect("Validation" in Root).toBe(false)
+    expect("Observability" in Root).toBe(false)
+    expect("requireCsrfToken" in Root).toBe(false)
+    expect("FormValidationError" in Root).toBe(false)
+    expect("Telemetry" in Root).toBe(false)
     expect(read.signals).toBeDefined()
     expect(reply.patch).toBeDefined()
-    expect(Security.requireCsrfToken).toBeDefined()
-    expect(Validation.FormValidationError).toBeDefined()
+    expect(reply.navigate).toBeDefined()
     expect(Sse.patchSignals).toBeDefined()
 
     await expect(Effect.runPromise(Effect.succeed("ok"))).resolves.toBe("ok")

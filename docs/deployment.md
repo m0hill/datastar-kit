@@ -23,16 +23,15 @@ The dev server serves `/datastar.js` with no-cache headers. Production apps can 
 
 ## Runtime configuration
 
-Use Effect layers for app dependencies:
+Use Effect layers for app-owned dependencies:
 
-- HTML rendering boundary (`h`, `render`, `page`; external renderers can pass strings);
 - security/session/auth services;
 - domain repositories;
 - realtime notification streams;
 - error mapping;
-- telemetry.
+- telemetry/tracing.
 
-`runtimeCoreLayer()` provides framework defaults such as Datastar protocol responses, error mapping, config, renderer, and noop telemetry.
+`ts-star` does not provide a runtime service catalog. App code composes ordinary Effect services with `read.*`, `reply.*`, and `live.query(...)`.
 
 ## HTTP concerns
 
@@ -43,7 +42,7 @@ Production adapters should set normal platform concerns outside framework helper
 - cache-control for static assets;
 - request body limits before and after reading;
 - graceful shutdown and scoped resource cleanup;
-- logs/traces/metrics through `Observability.Telemetry`.
+- logs/traces/metrics through Effect tracing/OpenTelemetry or your platform tooling.
 
 ## Datastar asset policy
 

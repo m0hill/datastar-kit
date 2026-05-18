@@ -1,5 +1,6 @@
 import * as Effect from "effect/Effect"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
+import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
@@ -107,6 +108,34 @@ describe("reply direct Datastar responses", () => {
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
     expect(response.headers.get("datastar-script-attributes")).toBe('{"type":"module","async":true}')
     expect(await response.text()).toBe("console.log('hello')")
+  })
+
+  it("serves safe navigation script responses", async () => {
+    const router = platformRouter(
+      HttpRouter.route(
+        "GET",
+        "/navigate",
+        Effect.succeed(reply.navigate("/dashboard?from=login#top", { baseUrl: "https://app.example" }))
+      )
+    )
+    const listener = await makePlatformListener(router)
+    const response = await fetch(`${await serveListener(listener)}/navigate`)
+
+    expect(response.status).toBe(200)
+    expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
+    expect(await response.text()).toBe('window.location.href = "/dashboard?from=login#top"')
+  })
+
+  it("allows navigation to explicit origin allowlists only", async () => {
+    const response = HttpServerResponse.toWeb(reply.navigate("https://docs.example/start", {
+      baseUrl: "https://app.example",
+      allowedOrigins: ["https://docs.example"]
+    }))
+
+    expect(await response.text()).toBe('window.location.href = "https://docs.example/start"')
+    expect(() => reply.navigate("https://evil.example/phish", { baseUrl: "https://app.example" })).toThrow(reply.NavigationUrlError)
+    expect(() => reply.navigate("javascript:alert(1)", { baseUrl: "https://app.example" })).toThrow(reply.NavigationUrlError)
+    expect(() => reply.navigate("/safe\nSet-Cookie: bad", { baseUrl: "https://app.example" })).toThrow(reply.NavigationUrlError)
   })
 
   it("keeps Datastar action replies on 200-with-body or 204-without-body status semantics", async () => {

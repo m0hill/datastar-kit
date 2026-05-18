@@ -17,13 +17,11 @@ The package root exposes small contextual namespaces such as `ds`, `read`, `repl
 - `src/jsx.ts` — experimental JSX adapter over the same HTML node model.
 - `src/platform.ts` — Effect Platform HTTP integration: route composition, Datastar request detection, signal/query/form decoding with Effect Schema, and generic HTTP helpers still under cleanup.
 - `src/read.ts` — concise request-boundary signal/query decoding helpers over Effect Platform.
-- `src/reply.ts` — Datastar-safe response helpers: pages, SSE patches, event streams, no-content command completion, and explicit direct-response escape hatches.
+- `src/reply.ts` — Datastar-safe response helpers: pages, SSE patches, event streams, no-content command completion, safe navigation, and explicit direct-response escape hatches.
 - `src/live.ts` — current-state live queries that emit Datastar element patch events and compose with `reply.stream`.
-- `src/observability.ts` — OpenTelemetry-friendly telemetry service boundary still under cleanup.
-- `src/runtime.ts` — legacy/internal runtime service experiments still under cleanup, not app-facing root API.
-- `src/security.ts` — request security helpers for CSRF integration, auth context, body limits, abort signals, and safe navigation URL/script generation.
-- `src/validation.ts` — typed validation/domain errors plus Datastar signal/element patch helpers for recoverable error UX.
 - `src/client.ts` — Datastar script/document helpers and Effect Platform routes for serving a pinned Datastar client asset.
+
+Validation is demonstrated as an app-local recipe. Auth/session/CSRF/request limits are app-owned boundary concerns. Observability should use Effect/OpenTelemetry directly rather than a `ts-star` facade.
 
 ## Layered model
 

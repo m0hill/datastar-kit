@@ -11,7 +11,7 @@ This document is the baseline for future roadmap work. New APIs should fit one o
 1. **Low-level SDK surface** for Datastar events, attributes, signal decoding, HTML rendering, and Effect Platform responses.
 2. **Framework surface** that should guide applications toward backend-source-of-truth pages, actions, and live queries.
 
-The low-level surface remains available for escape hatches and small apps. The framework surface is where defaults, lifecycle, security, typed errors, and realtime semantics should converge.
+The low-level surface remains available for escape hatches and small apps. The framework surface is where request decoding, response semantics, and realtime semantics should converge without taking over app-owned security or observability policy.
 
 ## Foundational decisions
 
@@ -64,7 +64,7 @@ External renderers can pass rendered strings at response boundaries. A public re
 
 ### 3. Runtime layer
 
-Owns Effect-native request handling, decoding, errors, streaming, resources, and later security/session concerns.
+Owns Effect-native request handling, decoding, responses, streaming, and resource composition. Security/session policy remains app-owned.
 
 Current files:
 
@@ -72,7 +72,7 @@ Current files:
 - `src/read.ts` provides concise request-boundary decoding helpers.
 - `src/reply.ts` provides Datastar-safe page, patch, stream, direct-response, and no-content helpers.
 
-Future runtime work should introduce services/layers only when they simplify lifecycle, typed error handling, cancellation, security boundaries, or shared dependencies.
+Future runtime work should introduce framework services only when they simplify lifecycle, typed error handling, cancellation, or shared dependencies enough to justify the added surface area.
 
 ### 4. Programming model layer
 

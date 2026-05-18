@@ -2,16 +2,18 @@
 
 Recoverable user-facing errors should usually be returned as successful Datastar responses so the browser runtime applies the UI update. Do not rely on `400`/`422` response bodies to patch the page.
 
+Validation is currently a **recipe**, not a public `ts-star` module. Define app-local error types and response helpers when you need them.
+
 ## Categories
 
-- **Validation errors** — user input is syntactically valid enough to understand, but fails form/domain validation. Return `200` Datastar patches near the relevant fields.
-- **Domain/action errors** — the action cannot complete (stale version, cannot delete last owner, etc.). Return a predictable UI patch or a mapped status depending on whether the current Datastar action should update the UI.
-- **Decode errors** — malformed JSON signals, schema failures, invalid query params. These are typed and can map to `400` unless a handler deliberately converts them to UI patches.
-- **Fatal errors** — unexpected defects should log/trace internally and return safe generic responses, not stack traces.
+- **Validation errors** — input is syntactically valid enough to understand, but fails form/domain validation. Return `200` Datastar patches near the relevant fields.
+- **Domain/action errors** — the action cannot complete. Return a predictable UI patch if the current Datastar action should update the page, otherwise return an ordinary status response.
+- **Decode errors** — malformed JSON signals, schema failures, invalid query params. These can map to `400` unless a handler deliberately converts them to UI patches.
+- **Fatal errors** — unexpected defects should be logged/traced by the app and return safe generic responses, not stack traces.
 
 ## Validation signal convention
 
-`src/validation.ts` uses `_validation` signals by default:
+A useful pattern is to keep recoverable validation feedback in local/private signals:
 
 ```json
 {
@@ -24,30 +26,46 @@ Recoverable user-facing errors should usually be returned as successful Datastar
 
 This follows the signal policy: validation state is local UI state and `_validation.*` is excluded from default Datastar requests.
 
-Helpers:
+Example app-local helper:
 
-- `FormValidationError(issues, message)` — typed recoverable validation error.
-- `validationSignalPayload(error)` — JSON signal patch payload.
-- `validationSignalsResponse(error)` — `200` Datastar signal patch response.
-- `clearValidationSignalPayload(...fields)` / `clearValidationSignalsResponse(fields)` — `null` removal semantics.
-- `validationSummaryResponse(error)` — element patch for a summary region.
+```ts
+type ValidationIssue<Field extends string> = {
+  readonly field?: Field
+  readonly message: string
+}
 
-## Domain/action errors
+class FormValidationError<Field extends string> extends Error {
+  constructor(readonly issues: readonly ValidationIssue<Field>[], message = "Validation failed") {
+    super(message)
+  }
+}
 
-`ActionError` represents a recoverable domain/action failure. Use `actionErrorResponse(error)` to patch `#action-error` by default, or pass a selector for another region.
+const validationPayload = <Field extends string>(error: FormValidationError<Field>) => {
+  const validation: Record<string, string | null> = { form: error.message }
+  for (const issue of error.issues) {
+    validation[issue.field ?? "form"] = issue.message
+  }
+  return { _validation: validation }
+}
+```
+
+Return the patch with core response primitives:
+
+```ts
+return reply.signals(validationPayload(error))
+```
 
 ## Reference form
 
 `examples/validation-form.ts` demonstrates:
 
-- schema-derived input signals via `defineSignals`;
-- `_validation.form`, `_validation.name`, and `_validation.email` signals;
+- schema-derived input signals with `contract.signals(...)`;
+- app-local validation errors and payload helpers;
+- `_validation.form`, `_validation.name`, and `_validation.email` local signals;
 - recoverable validation failures returned as `200` Datastar signal patches;
 - malformed input/schema decode failures mapped to `400 Invalid request input`;
 - successful submissions returned as element patches.
 
-## Error mapper role
+## Error handling posture
 
-`ErrorMapper` remains the final boundary for errors that are not intentionally recovered by a handler. Form validation is commonly recovered inside the action so Datastar can patch the UI. Decode/security/fatal errors can continue through `catchMappedErrors` to status responses.
-
-Applications can provide a custom mapper if they want schema decode failures to render a form-level patch instead of a plain `400`.
+Keep expected validation/domain failures local to the handler so it is obvious which UI patch they produce. Use app-level middleware or Effect error handling for generic decode/security/fatal failures.

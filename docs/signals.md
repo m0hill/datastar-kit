@@ -4,11 +4,11 @@ Datastar signals are useful browser-side state, but they are not the application
 
 ## Use signals for
 
-- user input state (`inputSignal`);
+- user input state (`ds.signal(...)` plus `ds.bind(...)`);
 - small request parameters sent to commands;
-- local disclosure/menu/dialog state (`privateSignal` / `localSignal`);
-- validation and error messages (`validationSignal`);
-- loading/indicator flags (`loadingSignal`);
+- local disclosure/menu/dialog state (`ds.local(...)`);
+- validation and error messages stored in app-chosen local signal paths such as `_validation.email`;
+- loading/indicator flags stored in app-chosen local signal paths such as `_loading.save`;
 - temporary browser state that can be recreated from a server render.
 
 ## Do not use signals for
@@ -42,24 +42,22 @@ This is appropriate for input defaults and local UI flags. Avoid repeatedly push
 
 ## Helper conventions
 
-`src/datastar.ts` includes small naming helpers that make intent visible:
+Use `ds.signal(...)` for normal request input and `ds.local(...)` for browser-local state. `ds.local(...)` prefixes `_` so Datastar excludes that signal from default backend requests.
 
-- `inputSignal(name)` — a normal signal expected to be posted as request input.
-- `privateSignal(name)` / `localSignal(name)` — prefixes `_` so Datastar excludes it from default backend requests.
-- `validationSignal(name)` — creates `_validation.<name>`.
-- `loadingSignal(name)` — creates `_loading.<name>`.
-- `privateDataSignal`, `validationDataSignal`, `loadingDataSignal` — initialize those scoped signals.
+Validation and loading conventions are app patterns, not dedicated core helpers. Use explicit local paths and initialize them with `ds.dataSignal(...)` when needed.
 
 Example local disclosure state:
 
 ```ts
-const open = localSignal<boolean, "menuOpen">("menuOpen")
+const open = ds.local<boolean, "menuOpen">("menuOpen")
 
 h(
   "details",
-  privateDataSignal("menuOpen", false, { ifMissing: true }),
+  props(
+    ds.dataSignal("_menuOpen", false, { ifMissing: true })
+  ),
   h("summary", {}, "Menu"),
-  h("div", show(open), "Panel")
+  h("div", ds.show(open), "Panel")
 )
 ```
 
@@ -81,4 +79,4 @@ Never put passwords, tokens, API keys, private session data, or authorization de
 - `examples/counter.ts` and `examples/tsx-counter.tsx` keep count on the backend and patch the rendered `<output>` element.
 - `examples/live-counter.ts` renders current backend state on stream connect and after invalidation.
 - `examples/search.ts` uses a `q` signal as user input for a query, which is an appropriate signal use.
-- `test/signal-policy.test.ts` demonstrates private/local, validation, and loading signal helpers.
+- `test/signal-policy.test.ts` demonstrates local validation/loading signal patterns without dedicated core helpers.

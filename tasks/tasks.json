@@ -300,7 +300,7 @@
       "order": 9,
       "id": "T009",
       "title": "Resolve cross-cutting cleanup: validation recipe, reply.navigate, and observability removal",
-      "status": "pending",
+      "status": "done",
       "phase": "cross-cutting",
       "priority": "high",
       "grill_level": 5,

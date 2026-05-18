@@ -35,9 +35,12 @@ Docs: `html-rendering.md`.
 
 Docs: `type-contracts.md`, `programming-model.md`, `actions-commands.md`, `live-queries.md`.
 
-## Still under cleanup
+## Cross-cutting guidance
 
-- `Security`, `Validation`, and `Observability` still exist in source while the simplification roadmap decides whether they stay public.
+- Validation is a recipe/pattern built from `read.*`, app-local errors, local Datastar signals, and `reply.signals(...)` / `reply.patch(...)`.
+- Auth, sessions, CSRF, and request limits are app-owned security boundary concerns, not public framework modules.
+- Safe Datastar-driven navigation is handled by `reply.navigate(...)`.
+- Observability should use Effect tracing/OpenTelemetry directly; browser/runtime testing guidance lives in `observability-testing.md`.
 
 Docs: `runtime.md`, `security.md`, `errors-validation.md`, `observability-testing.md`, `public-api.md`.
 

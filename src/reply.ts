@@ -67,6 +67,20 @@ export interface DirectScriptOptions extends BodyOptions {
   readonly attributes?: Readonly<Record<string, string | number | boolean>>
 }
 
+export interface NavigateOptions extends BodyOptions {
+  readonly baseUrl?: string | URL
+  readonly allowedOrigins?: readonly (string | URL)[]
+  readonly attributes?: Readonly<Record<string, string | number | boolean>>
+}
+
+export class NavigationUrlError extends Error {
+  readonly _tag = "NavigationUrlError"
+
+  constructor(readonly url: string) {
+    super(`Unsafe navigation URL: ${JSON.stringify(url)}`)
+  }
+}
+
 const renderHtml = (content: string | Exclude<Child, string>): string =>
   typeof content === "string" ? content : render(content)
 
@@ -235,6 +249,70 @@ const directScript = (
     contentType: options.contentType ?? "text/javascript; charset=utf-8",
     headers
   })
+}
+
+const hasControlCharacters = (value: string): boolean => /[\u0000-\u001F\u007F]/u.test(value)
+
+const originOf = (value: string | URL): string => {
+  const raw = value.toString()
+  try {
+    const url = new URL(raw)
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new NavigationUrlError(raw)
+    }
+    return url.origin
+  } catch (error) {
+    if (error instanceof NavigationUrlError) {
+      throw error
+    }
+    throw new NavigationUrlError(raw)
+  }
+}
+
+const safeNavigationUrl = (
+  input: string | URL,
+  options: {
+    readonly baseUrl?: string | URL | undefined
+    readonly allowedOrigins?: readonly (string | URL)[] | undefined
+  } = {}
+): string => {
+  const raw = input.toString()
+  if (hasControlCharacters(raw)) {
+    throw new NavigationUrlError(raw)
+  }
+
+  let base: URL
+  let url: URL
+  try {
+    base = new URL(options.baseUrl?.toString() ?? "http://localhost")
+    url = new URL(raw, base)
+  } catch {
+    throw new NavigationUrlError(raw)
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new NavigationUrlError(raw)
+  }
+
+  if (url.origin === base.origin) {
+    return `${url.pathname}${url.search}${url.hash}`
+  }
+
+  const allowedOrigins = options.allowedOrigins ?? []
+  if (allowedOrigins.some((origin) => originOf(origin) === url.origin)) {
+    return url.toString()
+  }
+
+  throw new NavigationUrlError(raw)
+}
+
+export const navigate = (
+  url: string | URL,
+  options: NavigateOptions = {}
+): HttpServerResponse.HttpServerResponse => {
+  const { baseUrl, allowedOrigins, ...responseOptions } = options
+  const safeUrl = safeNavigationUrl(url, { baseUrl, allowedOrigins })
+  return directScript(`window.location.href = ${JSON.stringify(safeUrl)}`, responseOptions)
 }
 
 export const direct = {

@@ -23,9 +23,11 @@ import { ds, read, reply, contract, live, h, props } from "ts-star"
 
 JSX is an explicit experimental adapter, not a root API and not a component runtime. If used, import it deliberately from the adapter/subpath. JSX function components are plain server render functions only.
 
-## Internal or still under cleanup
+## Internal or recipe-only concerns
 
-The simplification roadmap is still deciding the final status of `Client`, `Security`, `Validation`, and `Observability`.
+The simplification roadmap is still deciding the final status of `Client`.
+
+Validation is a recipe/pattern, not a public namespace. Auth/session/CSRF/request policy belongs to the application. Observability should use Effect/OpenTelemetry directly rather than a `ts-star` facade.
 
 Do not add new root exports by default. Implementation-only helpers should stay unexported or move under an internal path.
 

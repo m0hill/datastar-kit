@@ -21,7 +21,7 @@ pnpm run check:example:runtime-counter
 
 Files: `examples/search.ts`, `test/search-example.test.ts`.
 
-The search example uses a query schema, a debounced Datastar `GET`, URL query behavior, direct HTML replacement of `#results`, filtered rows, and an empty state.
+The search example uses a query schema, a debounced Datastar `GET`, URL query behavior, an SSE element patch for `#results`, filtered rows, and an empty state.
 
 Run:
 
@@ -34,7 +34,7 @@ pnpm run check:example:search
 
 Files: `examples/validation-form.ts`, `test/validation-form-example.test.ts`.
 
-The form uses input signals, Effect Schema decode, typed `FormValidationError`, validation signal patches, server-rendered error summaries, and a success patch that updates backend state.
+The form uses input signals, Effect Schema decode, app-local validation errors, validation signal patches, and a success patch that updates backend state.
 
 Run:
 
@@ -58,15 +58,14 @@ pnpm run check:example:live-counter
 
 ## Security/session sketch
 
-Use `src/security.ts` with app-specific services:
+Security policy belongs to the app:
 
-1. Read the current user/session in your platform adapter.
-2. Provide `Security.AuthContext` or your richer app-specific auth service.
-3. Require write actions to pass `requireCsrfToken`.
-4. Decode browser signals as untrusted input and keep backend state authoritative.
-5. Use `safeRedirectResponse` / `safeNavigatePatch` for navigation targets.
+1. Read the current user/session in your platform adapter or app services.
+2. Run permission and CSRF checks at the router/command boundary.
+3. Decode browser signals as untrusted input and keep backend state authoritative.
+4. Use `reply.navigate(...)` for Datastar-driven navigation targets instead of hand-written scripts.
 
-`ts-star` does not own your auth/session store; it provides hooks where write actions cross the trust boundary.
+`ts-star` does not own your auth/session store or request-policy middleware.
 
 ## Browser integration
 

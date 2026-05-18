@@ -10,7 +10,7 @@ import { h, props, render } from "../src/html.js"
 import { platformRouter } from "../src/platform.js"
 import * as reply from "../src/reply.js"
 import * as read from "../src/read.js"
-import { clearValidationSignalPayload, FormValidationError, validationSignalsResponse, type ValidationIssue } from "../src/validation.js"
+import type { JsonObject } from "../src/sse.js"
 
 export const ContactForm = contract.signals(
   Schema.Struct({
@@ -22,6 +22,53 @@ export const ContactForm = contract.signals(
 type ContactField = keyof typeof ContactForm.schema.Type
 
 const fields: readonly ContactField[] = ["name", "email"]
+
+interface ValidationIssue<Field extends string = string> {
+  readonly field?: Field
+  readonly message: string
+}
+
+class FormValidationError<Field extends string = string> extends Error {
+  readonly _tag = "FormValidationError"
+
+  constructor(
+    readonly issues: readonly ValidationIssue<Field>[],
+    message = "Validation failed"
+  ) {
+    super(message)
+  }
+}
+
+type ValidationSignalPayload<Field extends string = string> = {
+  readonly _validation: Partial<Record<Field | "form", string | null>>
+}
+
+const validationSignalPayload = <Field extends string>(
+  error: FormValidationError<Field>
+): ValidationSignalPayload<Field> => {
+  const validation: Record<string, string | null> = { form: error.message }
+
+  for (const issue of error.issues) {
+    validation[issue.field ?? "form"] = issue.message
+  }
+
+  return { _validation: validation as Partial<Record<Field | "form", string | null>> }
+}
+
+const clearValidationSignalPayload = <Field extends string>(
+  ...fields: readonly Field[]
+): ValidationSignalPayload<Field> => {
+  const validation: Record<string, null> = { form: null }
+  for (const field of fields) {
+    validation[field] = null
+  }
+  return { _validation: validation as Partial<Record<Field | "form", null>> }
+}
+
+const validationSignalsResponse = <Field extends string>(
+  error: FormValidationError<Field>
+): HttpServerResponse.HttpServerResponse =>
+  reply.signals(validationSignalPayload(error) as JsonObject)
 
 const validateContact = (input: typeof ContactForm.schema.Type): Effect.Effect<typeof input, FormValidationError<ContactField>> => {
   const issues: Array<ValidationIssue<ContactField>> = []
