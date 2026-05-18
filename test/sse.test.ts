@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { eventStream, patchElements, patchSignals, removeElements } from "../src/sse.js"
+import { eventStream, patchElements, patchSignals } from "../src/sse.js"
 
 describe("Datastar SSE encoding", () => {
   it("encodes default element patches like the SDK fixture", () => {
@@ -26,9 +26,9 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
-  it("encodes remove element events", () => {
-    expect(removeElements("#target")).toBe(
-      "event: datastar-patch-elements\ndata: mode remove\ndata: selector #target\n\n"
+  it("encodes element removal through patch options", () => {
+    expect(patchElements("", { selector: "#target", mode: "remove" })).toBe(
+      "event: datastar-patch-elements\ndata: selector #target\ndata: mode remove\ndata: elements \n\n"
     )
   })
 

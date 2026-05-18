@@ -93,12 +93,6 @@ export const patchElements = (elements: string, options: PatchElementsOptions = 
   return serializeEvent(PATCH_ELEMENTS_EVENT, options, lines)
 }
 
-export const removeElements = (selector: string, options: SseOptions = {}): string =>
-  serializeEvent(PATCH_ELEMENTS_EVENT, options, [
-    { key: "mode", value: "remove" },
-    { key: "selector", value: selector }
-  ])
-
 export const patchSignals = (signals: JsonObject | string, options: PatchSignalsOptions = {}): string => {
   const lines: Array<EventLine> = []
 
@@ -109,35 +103,6 @@ export const patchSignals = (signals: JsonObject | string, options: PatchSignals
   lines.push(...dataLines("signals", encodeJson(signals)))
 
   return serializeEvent(PATCH_SIGNALS_EVENT, options, lines)
-}
-
-const setPathToNull = (target: Record<string, JsonValue>, path: string): void => {
-  const parts = path.split(".").filter(Boolean)
-  let current: Record<string, JsonValue> = target
-
-  for (const [index, part] of parts.entries()) {
-    if (index === parts.length - 1) {
-      current[part] = null
-      return
-    }
-
-    const next = current[part]
-    if (typeof next !== "object" || next === null || Array.isArray(next)) {
-      current[part] = {}
-    }
-    current = current[part] as Record<string, JsonValue>
-  }
-}
-
-export const removeSignals = (paths: string | ReadonlyArray<string>, options: SseOptions = {}): string => {
-  const payload: Record<string, JsonValue> = {}
-  const pathList = typeof paths === "string" ? [paths] : paths
-
-  for (const path of pathList) {
-    setPathToNull(payload, path)
-  }
-
-  return patchSignals(payload, options)
 }
 
 const escapeAttribute = (value: string): string =>
