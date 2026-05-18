@@ -7,7 +7,7 @@ This is intentionally small. The current shape favors explicit backend-driven HT
 ## Current architecture
 
 - `src/client.ts` — helpers for script tags, full Datastar documents/pages, serving the self-hosted Datastar client asset, and pairing exact routes with that asset route.
-- `src/response.ts` — Web `Response` helpers for empty command responses, rendered HTML nodes, Datastar SSE patches, and direct `text/html`, `application/json`, and `text/javascript` action responses with status/header customization.
+- `src/response.ts` — Web `Response` helpers for empty command responses, rendered HTML nodes, Datastar SSE patches/streams, and direct `text/html`, `application/json`, and `text/javascript` action responses with status/header customization.
 - `src/sse.ts` — pure Datastar SSE event encoding (`patchElements`, `patchSignals`, `removeSignals`, `executeScript`). Tested against included Datastar SDK fixtures.
 - `src/datastar.ts` — typed signal/action/attribute/style helpers for generating/composing Datastar expressions and action URLs, validating signal names, merging attributes, inspector/ref/ignore helpers, object-form bindings, modifier suffixes, and `data-*` attributes.
 - `src/html.ts` — tiny HTML builder/renderer and document helper used while templating choices are still open.
@@ -15,7 +15,7 @@ This is intentionally small. The current shape favors explicit backend-driven HT
 - `src/request.ts` — detects Datastar action requests, reads Datastar signals/query params from Web `Request`s, decodes them with Effect Schema, and exposes request abort helpers.
 - `src/handler.ts` — plain Effect handlers returning Web `Response`s, plus exact-route dispatch, route prefixing, typed error mapping, and `withSignals`.
 - `src/node.ts` — boundary adapter plus unscoped/scoped serve helpers from `node:http` to Web `Request`/`Response`.
-- `src/realtime.ts` — optional in-process broadcaster + AsyncIterable-to-SSE helpers for CQRS-style live updates.
+- `src/realtime.ts` — optional in-process broadcaster + AsyncIterable-to-SSE helpers for CQRS-style live updates with customizable streaming response headers.
 
 ## Minimal counter
 

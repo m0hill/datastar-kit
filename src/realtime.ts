@@ -1,6 +1,7 @@
 import * as Effect from "effect/Effect"
 import type { Child } from "./html.js"
 import { render } from "./html.js"
+import { sseHeaders } from "./response.js"
 import { patchElements, type PatchElementsOptions } from "./sse.js"
 
 export interface Subscription<A> extends AsyncIterable<A>, AsyncIterator<A> {
@@ -113,7 +114,7 @@ export async function* mapToElementPatches<A>(
   }
 }
 
-export const eventStreamResponse = (events: AsyncIterable<string>): Response => {
+export const eventStreamResponse = (events: AsyncIterable<string>, init?: ResponseInit): Response => {
   const encoder = new TextEncoder()
   const iterator = events[Symbol.asyncIterator]()
   let closed = false
@@ -144,11 +145,8 @@ export const eventStreamResponse = (events: AsyncIterable<string>): Response => 
       }
     }),
     {
-      headers: {
-        "content-type": "text/event-stream",
-        "cache-control": "no-cache",
-        connection: "keep-alive"
-      }
+      ...init,
+      headers: sseHeaders(init?.headers)
     }
   )
 }
@@ -156,5 +154,6 @@ export const eventStreamResponse = (events: AsyncIterable<string>): Response => 
 export const liveElementsResponse = <A>(
   source: AsyncIterable<A>,
   renderValue: (value: A) => string | Child,
-  options?: PatchElementsOptions
-): Response => eventStreamResponse(mapToElementPatches(source, renderValue, options))
+  options?: PatchElementsOptions,
+  init?: ResponseInit
+): Response => eventStreamResponse(mapToElementPatches(source, renderValue, options), init)

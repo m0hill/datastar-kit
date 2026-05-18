@@ -1,17 +1,32 @@
 import { render, type Child } from "./html.js"
 import { eventStream, patchElements, patchSignals, type ElementPatchMode, type JsonObject, type PatchElementsOptions, type PatchSignalsOptions } from "./sse.js"
 
-export const sseHeaders = (): Headers =>
-  new Headers({
-    "content-type": "text/event-stream",
-    "cache-control": "no-cache",
-    connection: "keep-alive"
+const headersWithDefault = (headersInit: HeadersInit | undefined, name: string, value: string): Headers => {
+  const headers = new Headers(headersInit)
+  if (!headers.has(name)) {
+    headers.set(name, value)
+  }
+  return headers
+}
+
+export const sseHeaders = (headersInit?: HeadersInit): Headers => {
+  const headers = headersWithDefault(headersInit, "content-type", "text/event-stream")
+  if (!headers.has("cache-control")) {
+    headers.set("cache-control", "no-cache")
+  }
+  if (!headers.has("connection")) {
+    headers.set("connection", "keep-alive")
+  }
+  return headers
+}
+
+export const sseResponseWithInit = (init: ResponseInit | undefined, ...events: ReadonlyArray<string>): Response =>
+  new Response(eventStream(...events), {
+    ...init,
+    headers: sseHeaders(init?.headers)
   })
 
-export const sseResponse = (...events: ReadonlyArray<string>): Response =>
-  new Response(eventStream(...events), {
-    headers: sseHeaders()
-  })
+export const sseResponse = (...events: ReadonlyArray<string>): Response => sseResponseWithInit(undefined, ...events)
 
 export const emptyResponse = (status = 204, init?: Omit<ResponseInit, "status">): Response =>
   new Response(null, {
@@ -22,14 +37,6 @@ export const emptyResponse = (status = 204, init?: Omit<ResponseInit, "status">)
 export type HtmlContent = string | Exclude<Child, string>
 
 const renderHtmlContent = (content: HtmlContent): string => typeof content === "string" ? content : render(content)
-
-const headersWithDefault = (headersInit: HeadersInit | undefined, name: string, value: string): Headers => {
-  const headers = new Headers(headersInit)
-  if (!headers.has(name)) {
-    headers.set(name, value)
-  }
-  return headers
-}
 
 export const htmlResponse = (html: HtmlContent, init?: ResponseInit): Response =>
   new Response(renderHtmlContent(html), {
@@ -89,8 +96,8 @@ export const scriptResponse = (script: string, options: ScriptResponseOptions = 
   return new Response(script, { ...options.init, headers })
 }
 
-export const patchElementsResponse = (elements: HtmlContent, options?: PatchElementsOptions): Response =>
-  sseResponse(patchElements(renderHtmlContent(elements), options))
+export const patchElementsResponse = (elements: HtmlContent, options?: PatchElementsOptions, init?: ResponseInit): Response =>
+  sseResponseWithInit(init, patchElements(renderHtmlContent(elements), options))
 
-export const patchSignalsResponse = (signals: JsonObject | string, options?: PatchSignalsOptions): Response =>
-  sseResponse(patchSignals(signals, options))
+export const patchSignalsResponse = (signals: JsonObject | string, options?: PatchSignalsOptions, init?: ResponseInit): Response =>
+  sseResponseWithInit(init, patchSignals(signals, options))
