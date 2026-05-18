@@ -10,6 +10,7 @@ import {
   liveElementsResponse,
   makeBroadcaster,
   makeRealtimePubSub,
+  makeRealtimePubSubScoped,
   mapToElementPatches,
   publishRealtime,
   shutdownRealtime,
@@ -50,6 +51,12 @@ describe("realtime SSE helpers", () => {
 
   it("keeps the old makeBroadcaster alias backed by Effect PubSub", () => {
     expect(Effect.runSync(makeBroadcaster<number>())).toBeDefined()
+  })
+
+  it("shuts down scoped realtime PubSubs when the scope closes", async () => {
+    const pubsub = await Effect.runPromise(Effect.scoped(makeRealtimePubSubScoped<number>()))
+
+    await expect(Effect.runPromise(PubSub.isShutdown(pubsub))).resolves.toBe(true)
   })
 
   it("maps Effect Stream values to Datastar element patches", async () => {

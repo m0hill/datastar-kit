@@ -43,6 +43,13 @@ export const makeRealtimePubSub = <A>(options: RealtimePubSubOptions = {}): Effe
   }
 }
 
+export const makeRealtimePubSubScoped = <A>(options: RealtimePubSubOptions = {}) =>
+  Effect.gen(function*() {
+    const pubsub = yield* makeRealtimePubSub<A>(options)
+    yield* Effect.addFinalizer(() => shutdownRealtime(pubsub))
+    return pubsub
+  })
+
 export const makeBroadcaster = makeRealtimePubSub
 
 export const publishRealtime = <A>(pubsub: RealtimePubSub<A>, value: A): Effect.Effect<boolean> =>
