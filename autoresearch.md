@@ -6,7 +6,7 @@ Convert the experimental `experiment/web-standards-core` branch from an Effect-n
 
 ## Metrics
 
-- **Primary**: `migration_debt` (unitless, lower is better) — forbidden Effect references in code/package files plus public root exports that belong to the old Effect-oriented core.
+- **Primary**: `migration_debt` (unitless, lower is better) — forbidden Effect library/runtime references in code/package files plus public root exports that belong to the old Effect-oriented core. Datastar's `data-effect` attribute is not counted.
 - **Secondary**: `forbidden_effect_refs`, `old_root_exports`, `src_bytes`, `test_files` — tradeoff monitors for migration completeness and accidental deletion.
 
 ## How to Run

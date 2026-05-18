@@ -4,7 +4,7 @@ set -euo pipefail
 # Count forbidden Effect/runtime references in implementation-facing files.
 # Docs may discuss the comparison; source, examples, tests, and package metadata must not require Effect.
 forbidden_effect_refs=$(rg -n \
-  '(@effect|effect/|"effect"|\beffect\b|\bEffect\.|\bLayer\.|\bContext\.|\bScope\.|\bStream\.|\bSchema\.)' \
+  '(@effect|effect/|"effect"|\bEffect\.|\bLayer\.|\bContext\.|\bScope\.|\bStream\.|\bSchema\.)' \
   src examples test package.json pnpm-lock.yaml tsconfig.json \
   --glob '!dist/**' \
   --glob '!node_modules/**' \
