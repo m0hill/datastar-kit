@@ -178,7 +178,7 @@
       "order": 10,
       "id": "T010",
       "title": "Design validation and error UX",
-      "status": "pending",
+      "status": "done",
       "phase": "runtime",
       "priority": "high",
       "depends_on": ["T004", "T005", "T009"],
