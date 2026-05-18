@@ -3,7 +3,7 @@ import { contactFormView, handle } from "../examples/validation-form.js"
 
 describe("validation form example", () => {
   it("renders input and validation signals without trusting them as durable state", () => {
-    expect(contactFormView()).toContain('data-signals__ifmissing="{&quot;name&quot;: &quot;&quot;, &quot;email&quot;: &quot;&quot;}"')
+    expect(contactFormView()).toContain('data-signals__ifmissing="{&quot;name&quot;: &quot;&quot;, &quot;email&quot;: &quot;&quot;, &quot;_validation&quot;: {&quot;form&quot;: &quot;&quot;, &quot;name&quot;: &quot;&quot;, &quot;email&quot;: &quot;&quot;}}"')
     expect(contactFormView()).toContain('data-text="$_validation.email"')
   })
 
@@ -27,6 +27,7 @@ describe("validation form example", () => {
 
     expect(response.status).toBe(200)
     expect(await response.text()).toBe(
+      'event: datastar-patch-signals\ndata: signals {"_validation":{"form":null,"name":null,"email":null}}\n\n' +
       'event: datastar-patch-elements\ndata: selector #contact-result\ndata: elements <div id="contact-result" role="status">Saved Ada &lt;ada@example.com&gt;</div>\n\n'
     )
   })

@@ -1,16 +1,14 @@
 /** @jsx jsx */
-/** @jsxFrag Fragment */
 import { serve, type ServerType } from "@hono/node-server"
-import { zValidator } from "@hono/zod-validator"
 import { Hono } from "hono"
 import { compress } from "hono/compress"
 import { pathToFileURL } from "node:url"
 import * as z from "zod"
-import { ds, render, reply, type Child } from "../src/index.js"
-import { Fragment, jsx } from "../src/jsx.js"
+import { ds, read, render, reply, type Child } from "../src/index.js"
+import { jsx } from "../src/jsx.js"
 import { patchElements, patchSignals } from "../src/sse.js"
-import { DATASTAR_CDN } from "./counter.js"
 
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 const TAILWIND_CDN = "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"
 
 export const CreateTodoSchema = z.object({
@@ -28,6 +26,10 @@ export interface Todo {
   readonly createdAt: string
 }
 
+const datastarScript = (): Child => <script type="module" src={DATASTAR_CDN}></script>
+
+// Demo-only invalidation source. Real apps can replace this with Redis,
+// database notifications, a queue, or any other AsyncIterable trigger.
 interface Subscriber {
   queued: number
   closed: boolean
@@ -131,7 +133,7 @@ class TodoStore {
 const pageHead = (): readonly Child[] => [
   <meta charset="UTF-8" />,
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />,
-  <script type="module" src={DATASTAR_CDN}></script>,
+  datastarScript(),
   <script src={TAILWIND_CDN}></script>,
   <style type="text/tailwindcss">{`
 @theme {
@@ -244,18 +246,41 @@ export const todoPageNode = (todos: readonly Todo[] = []): Child => {
 }
 
 const todoListPatch = (todos: readonly Todo[]): string =>
-  patchElements(render(todoListNode(todos)), { selector: "#todo-sync-list", mode: "outer" })
+  patchElements(render(todoListNode(todos)), { selector: "#todo-sync-list" })
 
 const validationResponse = (message: string): Response =>
-  reply.patch(<ErrorMessage message={message} />, { selector: "#todo-errors", mode: "outer" })
+  reply.patch(<ErrorMessage message={message} />, { selector: "#todo-errors" })
 
 const createSuccessResponse = (): Response =>
   reply.stream([
     patchSignals({ title: "" }),
-    patchElements(render(<ErrorMessage />), { selector: "#todo-errors", mode: "outer" })
+    patchElements(render(<ErrorMessage />), { selector: "#todo-errors" })
   ])
 
 const notFound = (): Response => new Response("Todo not found", { status: 404 })
+
+type CreateTodoInput = z.infer<typeof CreateTodoSchema>
+
+const readCreateTodo = async (request: Request): Promise<CreateTodoInput | Response> => {
+  try {
+    return await read.signals(request, CreateTodoSchema)
+  } catch (error) {
+    if (error instanceof read.SignalValidationError) {
+      return validationResponse(error.issues[0]?.message ?? "Invalid todo")
+    }
+
+    if (error instanceof read.SignalParseError) {
+      return validationResponse("Invalid todo")
+    }
+
+    throw error
+  }
+}
+
+const parseTodoId = (id: string): string | Response => {
+  const result = TodoParamSchema.safeParse({ id })
+  return result.success ? result.data.id : notFound()
+}
 
 export const makeTodoSync = () => {
   const app = new Hono()
@@ -283,39 +308,35 @@ export const makeTodoSync = () => {
     return reply.stream(events(), { heartbeat: { intervalMs: 15_000, comment: "todos" } })
   })
 
-  app.post(
-    "/todos",
-    zValidator("json", CreateTodoSchema, (result) => {
-      if (!result.success) return validationResponse(result.error.issues[0]?.message ?? "Invalid todo")
-    }),
-    (context) => {
-      const { title } = context.req.valid("json")
-      store.create(title)
-      bus.publish()
-      return createSuccessResponse()
-    }
-  )
+  app.post("/todos", async (context) => {
+    const input = await readCreateTodo(context.req.raw)
+    if (input instanceof Response) return input
 
-  app.post(
-    "/todos/:id/toggle",
-    zValidator("param", TodoParamSchema),
-    (context) => {
-      const todo = store.toggle(context.req.valid("param").id)
-      if (todo === undefined) return notFound()
-      bus.publish()
-      return reply.done()
-    }
-  )
+    store.create(input.title)
+    bus.publish()
+    return createSuccessResponse()
+  })
 
-  app.delete(
-    "/todos/:id",
-    zValidator("param", TodoParamSchema),
-    (context) => {
-      if (!store.delete(context.req.valid("param").id)) return notFound()
-      bus.publish()
-      return reply.done()
-    }
-  )
+  app.post("/todos/:id/toggle", (context) => {
+    const id = parseTodoId(context.req.param("id"))
+    if (id instanceof Response) return id
+
+    const todo = store.toggle(id)
+    if (todo === undefined) return notFound()
+
+    bus.publish()
+    return reply.done()
+  })
+
+  app.delete("/todos/:id", (context) => {
+    const id = parseTodoId(context.req.param("id"))
+    if (id instanceof Response) return id
+
+    if (!store.delete(id)) return notFound()
+
+    bus.publish()
+    return reply.done()
+  })
 
   return {
     app,

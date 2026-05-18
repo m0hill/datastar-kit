@@ -28,4 +28,4 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 
 ## Todo sync
 
-`examples/todo-sync.tsx` is a full-stack Hono Node example. It uses the explicit TSX adapter for server-rendered views, Tailwind browser CSS, Hono `compress()` middleware, Zod request validation via `@hono/zod-validator`, backend-owned todo state, and `reply.stream(...)` SSE fan-out so multiple tabs receive create/toggle/delete updates in real time.
+`examples/todo-sync.tsx` is a full-stack Hono Node example. It uses the explicit TSX adapter for server-rendered views, Tailwind browser CSS, Hono `compress()` middleware, `read.signals(...)` with Zod validation, backend-owned todo state, and `reply.stream(...)` SSE fan-out so multiple tabs receive create/toggle/delete updates in real time.

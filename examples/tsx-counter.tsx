@@ -1,30 +1,28 @@
 /** @jsx jsx */
-/** @jsxFrag Fragment */
-import {
-  ds,
-  h,
-  props as htmlProps,
-  render,
-  reply,
-  type Child
-} from "../src/index.js"
-import { Fragment, jsx } from "../src/jsx.js"
-import { DATASTAR_CDN } from "./counter.js"
+import { ds, render, reply, type Child } from "../src/index.js"
+import { jsx } from "../src/jsx.js"
+
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
+const datastarScript = (): Child => <script type="module" src={DATASTAR_CDN}></script>
+const notFound = (): Response => new Response("Not Found", { status: 404 })
 
 export interface CounterButtonProps {
   readonly action: string
   readonly children?: Child | readonly Child[]
 }
 
-export const CounterButton = (button: CounterButtonProps) =>
-  <button {...htmlProps({ type: "button" }, ds.on("click", ds.post(button.action)))}>{button.children ?? "+"}</button>
+export const CounterButton = ({ action, children = "+" }: CounterButtonProps) => (
+  <button type="button" {...ds.on("click", ds.post(action))}>{children}</button>
+)
 
-export const CountOutput = (output: { readonly count: number }) => <output id="count">{output.count}</output>
+export const CountOutput = ({ count }: { readonly count: number }) =>
+  <output id="count">{count}</output>
 
-export const tsxCounterNode = (count = 0) => (
+export const tsxCounterNode = (count = 0): Child => (
   <main id="tsx-counter" className="counter-shell">
     <h1>ts-star TSX counter</h1>
-    <CounterButton action="/increment">+</CounterButton>
+    <CounterButton action="/increment" />
     <CountOutput count={count} />
   </main>
 )
@@ -43,24 +41,22 @@ export const makeTsxCounter = (): TsxCounterExample => {
 
   const page = (): Response =>
     reply.page({
-      head: h("script", { type: "module", src: DATASTAR_CDN }),
+      head: datastarScript(),
       body: tsxCounterNode(count)
     })
 
   const increment = (): Response => {
     count += 1
-    return reply.patch(<CountOutput count={count} />, { selector: "#count", mode: "outer" })
+    return reply.patch(<CountOutput count={count} />, { selector: "#count" })
   }
 
   const handle = (request: Request): Response => {
     const url = new URL(request.url)
-    if (request.method === "GET" && url.pathname === "/") {
-      return page()
-    }
-    if (request.method === "POST" && url.pathname === "/increment") {
-      return increment()
-    }
-    return new Response("Not Found", { status: 404 })
+
+    if (request.method === "GET" && url.pathname === "/") return page()
+    if (request.method === "POST" && url.pathname === "/increment") return increment()
+
+    return notFound()
   }
 
   return {

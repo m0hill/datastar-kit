@@ -1,21 +1,34 @@
 import { Hono } from "hono"
-import { countNode, counterNode, DATASTAR_CDN } from "./counter.js"
-import { h, reply } from "../src/index.js"
+import { ds, h, props, reply, type Child } from "../src/index.js"
+
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
+const datastarScript = (): Child => h("script", { type: "module", src: DATASTAR_CDN })
+const countNode = (count: number): Child => h("output", { id: "count" }, count)
+
+const counterNode = (count = 0): Child =>
+  h(
+    "main",
+    { id: "counter" },
+    h("h1", {}, "ts-star counter"),
+    h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
+    countNode(count)
+  )
 
 export const makeHonoCounter = () => {
   const app = new Hono()
   let count = 0
 
-  app.get("/", (context) =>
+  app.get("/", () =>
     reply.page({
-      head: h("script", { type: "module", src: DATASTAR_CDN }),
+      head: datastarScript(),
       body: counterNode(count)
     })
   )
 
-  app.post("/increment", (context) => {
+  app.post("/increment", () => {
     count += 1
-    return reply.patch(countNode(count), { selector: "#count", mode: "outer" })
+    return reply.patch(countNode(count), { selector: "#count" })
   })
 
   return {

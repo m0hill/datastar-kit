@@ -53,7 +53,7 @@ export function handle(request: Request): Response {
 
   if (request.method === "POST" && url.pathname === "/increment") {
     count += 1
-    return reply.patch(countNode(), { selector: "#count", mode: "outer" })
+    return reply.patch(countNode(), { selector: "#count" })
   }
 
   return new Response("Not Found", { status: 404 })
@@ -103,7 +103,7 @@ Reference examples live in `examples/`:
 - `validation-form.ts` — recoverable validation patches using Standard Schema-compatible Zod.
 - `hono-counter.ts` — Hono as an application-framework integration around `Request -> Response` helpers.
 - `hono-live-counter.ts` — Hono routing around the app-owned live counter SSE recipe.
-- `todo-sync.tsx` — full-stack Hono todo sync with TSX views, Tailwind browser CSS, Zod validation, compression middleware, and realtime SSE fan-out.
+- `todo-sync.tsx` — full-stack Hono todo sync with TSX views, Tailwind browser CSS, `read.signals(...)` + Zod validation, compression middleware, and realtime SSE fan-out.
 
 ## Checking examples
 
