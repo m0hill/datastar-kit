@@ -1,0 +1,263 @@
+{
+  "project": "ts-star",
+  "purpose": "Implementation roadmap for turning the current Datastar + Effect prototype into a coherent server-driven framework.",
+  "generated_at": "2026-05-18",
+  "status_values": ["pending", "running", "blocked", "done", "deferred"],
+  "current_task": null,
+  "implementation_order": [
+    "T001",
+    "T002",
+    "T003",
+    "T004",
+    "T005",
+    "T006",
+    "T007",
+    "T008",
+    "T009",
+    "T010",
+    "T011",
+    "T012",
+    "T013",
+    "T014"
+  ],
+  "tasks": [
+    {
+      "order": 1,
+      "id": "T001",
+      "title": "Define the framework architecture baseline",
+      "status": "pending",
+      "phase": "foundation",
+      "priority": "critical",
+      "depends_on": [],
+      "markdown": "01-architecture-baseline.md",
+      "goal": "Decide and document what ts-star is: a low-level SDK, a framework, or a layered system with both.",
+      "deliverables": [
+        "Architecture document",
+        "Updated README matching actual src files",
+        "Explicit foundational vs flexible decisions",
+        "Public module boundary proposal"
+      ]
+    },
+    {
+      "order": 2,
+      "id": "T002",
+      "title": "Lock down Datastar protocol semantics",
+      "status": "pending",
+      "phase": "foundation",
+      "priority": "critical",
+      "depends_on": ["T001"],
+      "markdown": "02-datastar-protocol-semantics.md",
+      "goal": "Make Datastar response behavior impossible to misuse and aligned with the actual browser runtime.",
+      "deliverables": [
+        "200/204 Datastar response policy",
+        "Direct response helpers with safe status behavior",
+        "Form and multipart request story",
+        "More runtime-backed integration tests"
+      ]
+    },
+    {
+      "order": 3,
+      "id": "T003",
+      "title": "Design the backend-state and CQRS programming model",
+      "status": "pending",
+      "phase": "foundation",
+      "priority": "critical",
+      "depends_on": ["T001", "T002"],
+      "markdown": "03-cqrs-programming-model.md",
+      "goal": "Define the default app model: backend state as truth, commands mutate, queries/render streams patch current views.",
+      "deliverables": [
+        "Command/query/live-query model",
+        "Guidelines for fat morph vs targeted patch",
+        "Server state invalidation pattern",
+        "Prototype page abstraction"
+      ]
+    },
+    {
+      "order": 4,
+      "id": "T004",
+      "title": "Make the runtime Effect-native",
+      "status": "pending",
+      "phase": "foundation",
+      "priority": "critical",
+      "depends_on": ["T001", "T003"],
+      "markdown": "04-effect-native-runtime.md",
+      "goal": "Move from helper functions around Effect to a real Effect architecture with Layers, services, Scope, and typed errors.",
+      "deliverables": [
+        "Core service tags/layers",
+        "Request lifecycle abstraction",
+        "Typed error mapping",
+        "Scoped realtime resources"
+      ]
+    },
+    {
+      "order": 5,
+      "id": "T005",
+      "title": "Create end-to-end type contracts",
+      "status": "pending",
+      "phase": "foundation",
+      "priority": "critical",
+      "depends_on": ["T003", "T004"],
+      "markdown": "05-type-contracts.md",
+      "goal": "Tie signal definitions, request decoding, route/action helpers, and patches to one source of truth.",
+      "deliverables": [
+        "Typed signal contract API",
+        "Typed route/action URL helpers",
+        "Patch shape validation helpers",
+        "Examples showing schema-derived handles"
+      ]
+    },
+    {
+      "order": 6,
+      "id": "T006",
+      "title": "Define the HTML and templating boundary",
+      "status": "pending",
+      "phase": "foundation",
+      "priority": "high",
+      "depends_on": ["T003", "T005"],
+      "markdown": "06-html-rendering-boundary.md",
+      "goal": "Keep HTML generation simple while allowing external renderers and preserving Datastar attribute ordering semantics.",
+      "deliverables": [
+        "Renderer interface",
+        "Attribute ordering policy",
+        "Safe HTML/raw HTML distinction",
+        "Decision on JSX vs hyperscript vs renderer adapters"
+      ]
+    },
+    {
+      "order": 7,
+      "id": "T007",
+      "title": "Establish the signal policy and scoping model",
+      "status": "pending",
+      "phase": "foundation",
+      "priority": "critical",
+      "depends_on": ["T003", "T005", "T006"],
+      "markdown": "07-signal-policy.md",
+      "goal": "Prevent signals from becoming hidden client-side application state.",
+      "deliverables": [
+        "Signal philosophy document",
+        "Local/private signal helpers",
+        "Input/validation/loading signal conventions",
+        "Examples rewritten to reflect backend-source-of-truth defaults"
+      ]
+    },
+    {
+      "order": 8,
+      "id": "T008",
+      "title": "Build realtime live-query architecture",
+      "status": "pending",
+      "phase": "runtime",
+      "priority": "critical",
+      "depends_on": ["T003", "T004", "T007"],
+      "markdown": "08-realtime-live-query.md",
+      "goal": "Replace event-delta-first realtime with reconnect-safe live queries that render current backend state.",
+      "deliverables": [
+        "LiveQuery abstraction",
+        "Render-on-connect semantics",
+        "Heartbeat/backpressure/cancellation behavior",
+        "Current-state stream example"
+      ]
+    },
+    {
+      "order": 9,
+      "id": "T009",
+      "title": "Define request lifecycle, security, and boundaries",
+      "status": "pending",
+      "phase": "runtime",
+      "priority": "critical",
+      "depends_on": ["T003", "T004"],
+      "markdown": "09-request-security-lifecycle.md",
+      "goal": "Make server-driven UI safe by default: CSRF, sessions, auth context, request limits, aborts, and untrusted signals.",
+      "deliverables": [
+        "Security model",
+        "CSRF/session integration points",
+        "Request body/query/form decoding boundaries",
+        "Abort/cancellation propagation"
+      ]
+    },
+    {
+      "order": 10,
+      "id": "T010",
+      "title": "Design validation and error UX",
+      "status": "pending",
+      "phase": "runtime",
+      "priority": "high",
+      "depends_on": ["T004", "T005", "T009"],
+      "markdown": "10-error-validation-ux.md",
+      "goal": "Give applications a clear way to return validation errors, action failures, and fatal errors without ad-hoc responses.",
+      "deliverables": [
+        "Typed error ADTs",
+        "Error-to-Datastar response mapping",
+        "Validation signal/element patch conventions",
+        "Reference forms example"
+      ]
+    },
+    {
+      "order": 11,
+      "id": "T011",
+      "title": "Add observability and real browser testing",
+      "status": "pending",
+      "phase": "quality",
+      "priority": "high",
+      "depends_on": ["T002", "T004", "T008", "T010"],
+      "markdown": "11-observability-testing.md",
+      "goal": "Prove the framework against the actual Datastar runtime and make request/SSE behavior inspectable.",
+      "deliverables": [
+        "Browser integration test harness",
+        "OpenTelemetry spans",
+        "Runtime tests for direct responses and SSE streams",
+        "Regression tests for reconnect/error behavior"
+      ]
+    },
+    {
+      "order": 12,
+      "id": "T012",
+      "title": "Define extensibility and public API stabilization",
+      "status": "pending",
+      "phase": "api",
+      "priority": "high",
+      "depends_on": ["T001", "T003", "T004", "T005"],
+      "markdown": "12-extensibility-api-stabilization.md",
+      "goal": "Create extension points without turning the framework into a plugin-heavy frontend framework clone.",
+      "deliverables": [
+        "Public/internal module split",
+        "Extension registry or service pattern",
+        "Renderer/realtime/security adapter interfaces",
+        "Versioning and deprecation policy"
+      ]
+    },
+    {
+      "order": 13,
+      "id": "T013",
+      "title": "Build reference examples and documentation",
+      "status": "pending",
+      "phase": "docs",
+      "priority": "high",
+      "depends_on": ["T001", "T002", "T003", "T004", "T005", "T006", "T007", "T008", "T009", "T010", "T012"],
+      "markdown": "13-examples-docs.md",
+      "goal": "Show the intended programming model through realistic apps, not just low-level helper snippets.",
+      "deliverables": [
+        "Counter rewritten with backend state",
+        "Search/form validation example",
+        "Live dashboard or chat example",
+        "Framework guide and API docs"
+      ]
+    },
+    {
+      "order": 14,
+      "id": "T014",
+      "title": "Prepare performance and deployment story",
+      "status": "pending",
+      "phase": "production",
+      "priority": "medium",
+      "depends_on": ["T008", "T011", "T013"],
+      "markdown": "14-performance-deployment.md",
+      "goal": "Make deployment choices explicit: compression, caching, self-hosted Datastar, reverse proxy behavior, and stream scalability.",
+      "deliverables": [
+        "Compression guidance",
+        "Client asset caching/versioning",
+        "Load/backpressure notes",
+        "Deployment checklist"
+      ]
+    }
+  ]
+}
