@@ -81,6 +81,7 @@ const sseHeader = {
 } as const
 
 const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+const heartbeat = { done: "heartbeat" } as const
 
 const isReadableStream = (source: unknown): source is ReadableStream<EventChunk> =>
   typeof source === "object" && source !== null && "getReader" in source
@@ -136,21 +137,21 @@ async function* withHeartbeat(
   try {
     while (true) {
       const result = await Promise.race([
-        next.then((event) => ({ _tag: "event" as const, event })),
-        delay(heartbeatDelay).then(() => ({ _tag: "heartbeat" as const }))
+        next,
+        delay(heartbeatDelay).then(() => heartbeat)
       ])
 
-      if (result._tag === "heartbeat") {
+      if (result.done === "heartbeat") {
         yield sseComment(options.comment ?? "heartbeat")
         heartbeatDelay = options.intervalMs ?? 15_000
         continue
       }
 
-      if (result.event.done === true) {
+      if (result.done === true) {
         return
       }
 
-      yield result.event.value
+      yield result.value
       next = iterator.next()
       heartbeatDelay = options.intervalMs ?? 15_000
     }
