@@ -46,3 +46,4 @@ Correctness backpressure is in `./autoresearch.checks.sh`, which runs TypeScript
 ## What's Been Tried
 
 - Session initialized from `tasks/tasks.json`; no tasks completed yet.
+- T001 implemented with a rewritten `README.md` and new `docs/architecture.md` documenting layered architecture, public/experimental/internal API boundaries, foundational/flexible decisions, default request flow, and non-goals. Tracker status updated to `done` only after the deliverables were present.

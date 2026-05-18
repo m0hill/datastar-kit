@@ -25,7 +25,7 @@
       "order": 1,
       "id": "T001",
       "title": "Define the framework architecture baseline",
-      "status": "pending",
+      "status": "done",
       "phase": "foundation",
       "priority": "critical",
       "depends_on": [],
