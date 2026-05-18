@@ -5,6 +5,7 @@ import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { route, router, textResponse } from "../src/handler.js"
 import { PlatformPathError, toPlatformApp, toPlatformRouter } from "../src/platform.js"
+import { eventStreamResponse } from "../src/realtime.js"
 
 let server: Server | undefined
 
@@ -51,6 +52,40 @@ describe("Effect Platform HTTP adapter", () => {
     expect(submitted.status).toBe(201)
     expect(await submitted.text()).toBe("submitted")
     expect(missing.status).toBe(404)
+  })
+
+  it("streams Datastar SSE responses through Effect Platform routing", async () => {
+    let releaseSecond!: () => void
+    const second = new Promise<void>((resolve) => {
+      releaseSecond = resolve
+    })
+    async function* events(): AsyncIterable<string> {
+      yield "event: first\n\n"
+      await second
+      yield "event: second\n\n"
+    }
+
+    const platformRouter = toPlatformRouter(
+      route("GET", "/events", () => Effect.succeed(eventStreamResponse(events())))
+    )
+    const listener = await Effect.runPromise(NodeHttpServer.makeHandler(platformRouter))
+    const origin = await serveListener(listener)
+    const response = await fetch(`${origin}/events`)
+    const reader = response.body?.getReader()
+    const decoder = new TextDecoder()
+
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
+    expect(reader).toBeDefined()
+
+    const first = await reader!.read()
+    expect(first.done).toBe(false)
+    expect(decoder.decode(first.value)).toBe("event: first\n\n")
+
+    releaseSecond()
+    const next = await reader!.read()
+    expect(next.done).toBe(false)
+    expect(decoder.decode(next.value)).toBe("event: second\n\n")
+    await expect(reader!.read()).resolves.toEqual({ done: true, value: undefined })
   })
 
   it("rejects invalid platform route paths early", () => {
