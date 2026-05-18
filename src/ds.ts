@@ -105,25 +105,10 @@ const toJs = (value: ExprInput<unknown>): string => {
   return JSON.stringify(String(value))
 }
 
-export type RetryMode = "auto" | "error" | "always" | "never"
-export type RequestCancellation = "auto" | "cleanup" | "disabled" | Expr<AbortController>
-export type SignalPattern = Expr<RegExp> | string
-
 export interface SignalFilter {
-  readonly include?: SignalPattern
-  readonly exclude?: SignalPattern
+  readonly include?: Expr<RegExp> | string
+  readonly exclude?: Expr<RegExp> | string
 }
-
-export type FetchResponseOverrides =
-  | {
-      readonly selector?: string
-      readonly mode?: ElementPatchMode
-      readonly namespace?: ElementNamespace
-      readonly useViewTransition?: boolean
-    }
-  | {
-      readonly onlyIfMissing?: boolean
-    }
 
 export interface FetchOptions {
   readonly filterSignals?: SignalFilter
@@ -131,13 +116,22 @@ export interface FetchOptions {
   readonly headers?: Readonly<Record<string, string>>
   readonly openWhenHidden?: boolean
   readonly payload?: DatastarObject
-  readonly responseOverrides?: FetchResponseOverrides
-  readonly retry?: RetryMode
+  readonly responseOverrides?:
+    | {
+        readonly selector?: string
+        readonly mode?: ElementPatchMode
+        readonly namespace?: ElementNamespace
+        readonly useViewTransition?: boolean
+      }
+    | {
+        readonly onlyIfMissing?: boolean
+      }
+  readonly retry?: "auto" | "error" | "always" | "never"
   readonly retryInterval?: number
   readonly retryScaler?: number
   readonly retryMaxWait?: number
   readonly retryMaxCount?: number
-  readonly requestCancellation?: RequestCancellation
+  readonly requestCancellation?: "auto" | "cleanup" | "disabled" | Expr<AbortController>
 }
 
 export const regex = (pattern: string, flags = ""): Expr<RegExp> => raw(`/${pattern}/${flags}`)
