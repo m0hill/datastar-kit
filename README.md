@@ -79,6 +79,19 @@ pnpm run check:example:live-counter
 
 The `check:*` scripts run `typecheck` first, then the matching example test. Use `test:examples` or `test:example:*` when you only need Vitest.
 
+## Running example dev servers
+
+Each dev script builds the TypeScript examples, then starts one example through Effect Platform's Node HTTP server:
+
+```sh
+pnpm run dev:counter
+pnpm run dev:tsx-counter
+pnpm run dev:search
+pnpm run dev:live-counter
+```
+
+The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or `HOST=0.0.0.0`.
+
 ## Open questions
 
 - Should JSX remain a thin alternative over the builder, or should the builder stay the primary API?

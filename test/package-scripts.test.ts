@@ -16,6 +16,10 @@ describe("package scripts", () => {
     const scripts = (await readPackageJson()).scripts ?? {}
 
     expect(scripts["check:examples"]).toBe("pnpm run typecheck && pnpm run test:examples")
+    expect(scripts["dev:counter"]).toBe("pnpm run build && node dist/examples/dev-server.js counter")
+    expect(scripts["dev:tsx-counter"]).toBe("pnpm run build && node dist/examples/dev-server.js tsx-counter")
+    expect(scripts["dev:search"]).toBe("pnpm run build && node dist/examples/dev-server.js search")
+    expect(scripts["dev:live-counter"]).toBe("pnpm run build && node dist/examples/dev-server.js live-counter")
     expect(scripts["check:example:counter"]).toBe("pnpm run typecheck && pnpm run test:example:counter")
     expect(scripts["check:example:tsx-counter"]).toBe("pnpm run typecheck && pnpm run test:example:tsx-counter")
     expect(scripts["check:example:search"]).toBe("pnpm run typecheck && pnpm run test:example:search")
@@ -33,6 +37,8 @@ describe("package scripts", () => {
     expect(readme).toContain("## Checking examples")
     expect(readme).toContain("pnpm run check:examples")
     expect(readme).toContain("pnpm run check:example:tsx-counter")
+    expect(readme).toContain("pnpm run dev:tsx-counter")
+    expect(readme).toContain("PORT=4000")
     expect(readme).toContain("The `check:*` scripts run `typecheck` first")
   })
 })
