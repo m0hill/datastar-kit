@@ -4,12 +4,11 @@ import * as Schema from "effect/Schema"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { describe, expect, it } from "vitest"
-import { defineQueryAction, defineSignals } from "../src/contracts.js"
-import { h } from "../src/html.js"
-import { DatastarProtocol, requestRuntimeLayer, SignalDecoder } from "../src/runtime.js"
+import * as contract from "../src/contract.js"
+import * as read from "../src/read.js"
+import * as reply from "../src/reply.js"
 
-const Counter = defineSignals(
-  "Counter",
+const Counter = contract.signals(
   Schema.Struct({
     count: Schema.Number,
     draft: Schema.String,
@@ -17,35 +16,28 @@ const Counter = defineSignals(
   })
 )
 
-const Search = defineQueryAction({
-  name: "search",
-  method: "get",
-  path: "/search",
-  querySchema: Schema.Struct({
-    q: Schema.String,
-    page: Schema.FiniteFromString
-  })
-})
-
 if (false) {
   // @ts-expect-error Initial signals must match the schema-derived shape.
   Counter.initial({ count: 0, draft: "" })
   // @ts-expect-error Signal patches must use schema-compatible value types.
   Counter.patch({ count: "wrong" })
   // @ts-expect-error Unknown signal handles are not exposed by the contract.
-  Counter.signals.missing
-  // @ts-expect-error Query actions require all schema-derived query keys.
-  Search.actionWithQuery({ q: "ada" })
-  // @ts-expect-error Query actions reject unknown query keys.
-  Search.actionWithQuery({ q: "ada", page: 1, extra: "nope" })
+  Counter.$.missing
+
+  type CounterPatch = contract.Patch<typeof Counter>
+  const _validPatch: CounterPatch = { count: 1, nested: { enabled: false } }
+
+  type RawPatch = contract.Patch<{ readonly count: number }>
+  // @ts-expect-error Patch only accepts a contract instance type.
+  const _rawPatch: RawPatch = { count: 1 }
 }
 
 const nativeRequest = (url: string, body?: BodyInit): HttpServerRequest.HttpServerRequest =>
   HttpServerRequest.fromWeb(new Request(url, body === undefined ? undefined : { method: "POST", body }))
 
-describe("end-to-end type contracts", () => {
-  it("derives signal handles and initial signal attributes from one schema", () => {
-    const s = Counter.signals
+describe("schema-derived signal contracts", () => {
+  it("derives signal refs and initial signal attributes from one schema", () => {
+    const s = Counter.$
 
     expect(s.count.toDatastarExpression()).toBe("$count")
     expect(s.nested.path("enabled").toDatastarExpression()).toBe("$nested.enabled")
@@ -54,13 +46,13 @@ describe("end-to-end type contracts", () => {
     })
   })
 
-  it("derives typed signal patches and Datastar patch responses", async () => {
-    const patch = Counter.patch({
+  it("derives typed signal patches without constructing responses", async () => {
+    const patch: contract.Patch<typeof Counter> = Counter.patch({
       count: 2,
       nested: { enabled: true },
       draft: null
     })
-    const response = HttpServerResponse.toWeb(Counter.patchResponse(patch))
+    const response = HttpServerResponse.toWeb(reply.signals(patch))
 
     expect(patch).toEqual({ count: 2, nested: { enabled: true }, draft: null })
     expect(await response.text()).toBe(
@@ -68,50 +60,18 @@ describe("end-to-end type contracts", () => {
     )
   })
 
-  it("uses the same signal schema for request boundary decoding", async () => {
+  it("uses the contract schema explicitly at the request boundary", async () => {
     const request = nativeRequest("http://localhost/increment", JSON.stringify({ count: 1, draft: "Ada", nested: { enabled: true } }))
 
-    await expect(Effect.runPromise(Counter.readFromRequest(request))).resolves.toEqual({
+    await expect(Effect.runPromise(read.signalsFrom(request, Counter.schema))).resolves.toEqual({
       count: 1,
       draft: "Ada",
       nested: { enabled: true }
     })
 
     const bad = nativeRequest("http://localhost/increment", JSON.stringify({ count: "bad", draft: "Ada", nested: { enabled: true } }))
-    const result = await Effect.runPromise(Effect.result(Counter.readFromRequest(bad)))
+    const result = await Effect.runPromise(Effect.result(read.signalsFrom(bad, Counter.schema)))
 
     expect(Result.isFailure(result)).toBe(true)
-  })
-
-  it("can decode contract signals through the Effect-native request runtime", async () => {
-    const request = nativeRequest("http://localhost/increment", JSON.stringify({ count: 3, draft: "Grace", nested: { enabled: false } }))
-
-    const decoded = await Effect.runPromise(
-      Effect.gen(function*() {
-        const decoder = yield* SignalDecoder
-        const signals = yield* Counter.decode(decoder)
-        const protocol = yield* DatastarProtocol
-        const response = yield* protocol.patchElements(h("output", {}, signals.count))
-        return { signals, response }
-      }).pipe(
-        Effect.provide(requestRuntimeLayer(), { local: true }),
-        Effect.provideService(HttpServerRequest.HttpServerRequest, request)
-      )
-    )
-
-    expect(decoded.signals.count).toBe(3)
-    await expect(HttpServerResponse.toWeb(decoded.response).text()).resolves.toContain("<output>3</output>")
-  })
-
-  it("ties query schemas to action URL helpers and route-side decoding", async () => {
-    expect(Search.url({ q: "ada", page: 2 }).toDatastarExpression()).toBe(
-      "`/search?q=${encodeURIComponent(\"ada\")}&page=${encodeURIComponent(2)}`"
-    )
-    expect(Search.actionWithQuery({ q: "ada", page: 2 }).toDatastarExpression()).toBe(
-      "@get(`/search?q=${encodeURIComponent(\"ada\")}&page=${encodeURIComponent(2)}`)"
-    )
-
-    const request = nativeRequest("http://localhost/search?q=ada&page=2")
-    await expect(Effect.runPromise(Search.readQueryFromRequest(request))).resolves.toEqual({ q: "ada", page: 2 })
   })
 })

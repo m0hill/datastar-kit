@@ -7,7 +7,7 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
-import { defineSignals } from "../src/contracts.js"
+import * as contract from "../src/contract.js"
 import { mergeAttrs, on, post, text } from "../src/datastar.js"
 import { h } from "../src/html.js"
 import { platformRouter } from "../src/platform.js"
@@ -28,8 +28,7 @@ export const CounterStoreLive: Layer.Layer<CounterStore> = Layer.effect(CounterS
   )
 )
 
-export const RuntimeCounter = defineSignals(
-  "RuntimeCounter",
+export const RuntimeCounter = contract.signals(
   Schema.Struct({
     count: Schema.Number
   })
@@ -43,7 +42,7 @@ export const runtimeCounterNode = (countValue: number) =>
     mergeAttrs({ id: "runtime-counter" }, RuntimeCounter.initial({ count: countValue }, { ifMissing: true })),
     h("h1", {}, "Effect services counter"),
     h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
-    h("output", text(RuntimeCounter.signals.count), countValue)
+    h("output", text(RuntimeCounter.$.count), countValue)
   )
 
 export const runtimeCounterPage = Effect.gen(function*() {

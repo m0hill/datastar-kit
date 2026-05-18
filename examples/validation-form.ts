@@ -4,7 +4,7 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
-import { defineSignals } from "../src/contracts.js"
+import * as contract from "../src/contract.js"
 import { bind, mergeAttrs, on, post, text, validationDataSignal, validationSignal } from "../src/datastar.js"
 import { h, render } from "../src/html.js"
 import { platformRouter } from "../src/platform.js"
@@ -12,8 +12,7 @@ import * as reply from "../src/reply.js"
 import * as read from "../src/read.js"
 import { clearValidationSignalPayload, FormValidationError, validationSignalsResponse, type ValidationIssue } from "../src/validation.js"
 
-export const ContactForm = defineSignals(
-  "ContactForm",
+export const ContactForm = contract.signals(
   Schema.Struct({
     name: Schema.String,
     email: Schema.String
@@ -41,7 +40,7 @@ const validateContact = (input: typeof ContactForm.schema.Type): Effect.Effect<t
 }
 
 export const contactFormNode = () => {
-  const s = ContactForm.signals
+  const s = ContactForm.$
   const nameError = validationSignal("name")
   const emailError = validationSignal("email")
   const formError = validationSignal("form")

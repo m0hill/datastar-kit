@@ -4,7 +4,7 @@ import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import { describe, expect, it } from "vitest"
 import {
   Client,
-  Contracts,
+  contract,
   Datastar,
   Html,
   Jsx,
@@ -27,7 +27,7 @@ describe("package root exports", () => {
     expect(app).toBeDefined()
     expect(Platform.platformRouter).toBe(platformRouter)
     expect(Client.datastarDocument).toBeDefined()
-    expect(Contracts.defineSignals).toBeDefined()
+    expect(contract.signals).toBeDefined()
     expect(Datastar.signal).toBeDefined()
     expect(Html.h).toBeDefined()
     expect(Jsx.jsx).toBeDefined()
