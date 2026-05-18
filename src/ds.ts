@@ -80,13 +80,8 @@ export const signal = <T, Name extends string>(name: Name): Signal<T, Name> => n
 
 type PrivateSignalName<Name extends string> = Name extends `_${string}` ? Name : `_${Name}`
 
-const privateSignalName = <Name extends string>(name: Name): PrivateSignalName<Name> =>
-  (name.startsWith("_") ? name : `_${name}`) as PrivateSignalName<Name>
-
-const privateSignal = <T, Name extends string>(name: Name): Signal<T, PrivateSignalName<Name>> =>
-  signal<T, PrivateSignalName<Name>>(privateSignalName(name))
-
-export const local = privateSignal
+export const local = <T, Name extends string>(name: Name): Signal<T, PrivateSignalName<Name>> =>
+  signal<T, PrivateSignalName<Name>>((name.startsWith("_") ? name : `_${name}`) as PrivateSignalName<Name>)
 
 const isExpr = (value: unknown): value is Expr<unknown> =>
   typeof value === "object" && value !== null && "toDatastarExpression" in value
