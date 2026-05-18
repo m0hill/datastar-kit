@@ -65,6 +65,20 @@ export const app = router(
 
 See `examples/counter.ts` for the smallest full-page Effect Platform signal patch flow, `examples/tsx-counter.tsx` for the same style of counter written with TSX instead of hyperscript calls, `examples/search.ts` for query decoding + direct HTML patch responses, and `examples/live-counter.ts` for PubSub-backed SSE patches.
 
+## Checking examples
+
+Use the focused package scripts when changing examples:
+
+```sh
+pnpm run check:examples
+pnpm run check:example:counter
+pnpm run check:example:tsx-counter
+pnpm run check:example:search
+pnpm run check:example:live-counter
+```
+
+The `check:*` scripts run `typecheck` first, then the matching example test. Use `test:examples` or `test:example:*` when you only need Vitest.
+
 ## Open questions
 
 - Should JSX remain a thin alternative over the builder, or should the builder stay the primary API?

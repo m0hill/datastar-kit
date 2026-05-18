@@ -15,6 +15,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "check": "pnpm run typecheck && pnpm run test",
+    "check:example:counter": "pnpm run typecheck && pnpm run test:example:counter",
+    "check:example:live-counter": "pnpm run typecheck && pnpm run test:example:live-counter",
+    "check:example:search": "pnpm run typecheck && pnpm run test:example:search",
+    "check:example:tsx-counter": "pnpm run typecheck && pnpm run test:example:tsx-counter",
     "check:examples": "pnpm run typecheck && pnpm run test:examples",
     "test": "vitest run",
     "test:example:counter": "vitest run test/example-counter.test.ts",
