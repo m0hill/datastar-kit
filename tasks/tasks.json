@@ -299,7 +299,7 @@
     {
       "order": 9,
       "id": "T009",
-      "title": "Move Security, Validation, and Observability out of public core",
+      "title": "Resolve cross-cutting cleanup: validation recipe, reply.navigate, and observability removal",
       "status": "pending",
       "phase": "cross-cutting",
       "priority": "high",
@@ -307,23 +307,49 @@
       "depends_on": [
         "T001",
         "T002",
+        "T003",
         "T004",
-        "T005"
+        "T005",
+        "T006",
+        "T007",
+        "T008"
       ],
       "markdown": "09-move-cross-cutting-modules-out-of-core.md",
-      "goal": "Prevent generic auth/security/validation/telemetry modules from defining the framework identity too early.",
-      "canonical_direction": "Move these concerns to recipes or internals. Core should expose primitives, not public subsystems.",
+      "goal": "Split cross-cutting concerns by identity fit: keep validation as a recipe, fold safe navigation into reply.navigate, and remove the public observability facade.",
+      "canonical_direction": "Remove public Validation/Security/Observability namespaces. Validation remains a recipe/example with app-local helpers. Auth/CSRF/request policy is app-owned. Safe Datastar-driven navigation is reply.navigate(...). Observability uses Effect/OpenTelemetry directly.",
       "deliverables": [
-        "Security namespace removed from public core",
-        "Validation namespace removed from public core or turned into a recipe",
-        "Observability namespace removed from public core",
-        "Docs clarify these are application concerns"
+        "Validation module removed from public API and validation-form rewritten with app-local helpers",
+        "Security policy/identity helpers removed from public API",
+        "reply.navigate(...) added as the only public safe navigation helper",
+        "Navigation URL validation is same-origin by default with allowedOrigins whitelist",
+        "Observability module and telemetry tests removed from public core",
+        "Browser/runtime testing guidance preserved without custom telemetry facade",
+        "Docs rewritten so validation/security/observability are patterns or app-owned concerns, not core subsystems"
       ],
       "removal_targets": [
-        "AuthContext/requireUser/requireCsrfToken as public core",
-        "FormValidationError/ActionError/fixed _validation helpers as public core",
-        "Telemetry service and observe* wrappers as public core",
-        "custom framework facades for concerns better owned by apps"
+        "Validation namespace and root named exports",
+        "FormValidationError/ActionError/fixed _validation helpers as public framework API",
+        "Security namespace and root named exports",
+        "AuthContext/AuthContextLive/requireUser",
+        "requireCsrfToken and request size helpers as public core",
+        "public safeRedirectUrl/navigationScript helpers outside reply.navigate",
+        "Observability namespace and root named exports",
+        "Telemetry/NoopTelemetryLive/makeInMemoryTelemetry/observe* custom facade",
+        "docs that catalog Security.*, Validation.*, or Observability.* APIs"
+      ],
+      "settled_decisions": [
+        "Split validation, security, and observability into separate decisions inside T009",
+        "Validation is recipe-only, not a public namespace",
+        "Keep validation-form as a first-class recipe-style example with app-local helpers",
+        "Remove security policy and identity helpers from public core",
+        "Do not keep a broad Security namespace",
+        "Fold pure safe navigation into reply.navigate(...) instead of a security module",
+        "reply.navigate(...) returns a Datastar-safe direct script response",
+        "Keep safe URL validation internal to reply.navigate unless future use proves otherwise",
+        "Default navigation policy is same-origin with explicit allowedOrigins for external URLs",
+        "Remove public Observability and use Effect/OpenTelemetry directly",
+        "Delete telemetry API/tests but keep browser/runtime testing guidance",
+        "Keep a security-boundaries guide with no Security API docs"
       ]
     },
     {
