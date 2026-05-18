@@ -68,6 +68,7 @@ Owns Effect-native request handling, decoding, errors, streaming, resources, and
 Current files:
 
 - `src/platform.ts` adapts Effect Platform HTTP requests/responses, decodes query params and Datastar signals, exposes router composition, and provides HTML/SSE/direct response helpers.
+- `src/runtime.ts` provides Effect service tags/layers for config, HTML rendering, Datastar protocol responses, request context, signal decoding, error mapping, and live-query invalidation hubs.
 - `src/realtime.ts` provides Effect `PubSub`/`Stream` helpers, heartbeats, and live element patch responses.
 
 Future runtime work should introduce services/layers only when they simplify lifecycle, typed error handling, cancellation, security boundaries, or shared dependencies.
@@ -100,6 +101,7 @@ The package root currently exports every source module both as namespaces and as
 - `Jsx` / `src/jsx.ts`: classic JSX factory over `Html` nodes.
 - `Client` / `src/client.ts`: script/document helpers and client asset routes.
 - `Model` / `src/model.ts`: minimal CQRS/live-query helpers; the semantics are foundational, but exact future page/action APIs remain flexible.
+- `Runtime` / `src/runtime.ts`: Effect-native service/layer boundary; foundational service names may evolve as later security/telemetry tasks add capabilities.
 - `Realtime` / `src/realtime.ts`: PubSub/Stream helpers that support live-query invalidation and streaming.
 - Root-level named re-exports: convenient for examples, but the namespace exports are the clearest way to communicate module ownership.
 

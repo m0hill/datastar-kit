@@ -76,7 +76,7 @@
       "order": 4,
       "id": "T004",
       "title": "Make the runtime Effect-native",
-      "status": "pending",
+      "status": "done",
       "phase": "foundation",
       "priority": "critical",
       "depends_on": ["T001", "T003"],
