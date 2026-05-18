@@ -1,8 +1,6 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec"
 
 export class SignalParseError extends Error {
-  readonly _tag = "SignalParseError"
-
   constructor(
     readonly input: string,
     options: { readonly cause?: unknown } = {}
@@ -12,8 +10,6 @@ export class SignalParseError extends Error {
 }
 
 export class SignalValidationError extends Error {
-  readonly _tag = "SignalValidationError"
-
   constructor(readonly issues: ReadonlyArray<StandardSchemaV1.Issue>) {
     super(issues[0]?.message ?? "Invalid Datastar signals")
   }

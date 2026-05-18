@@ -59,7 +59,6 @@ describe("Standard Schema Datastar signal boundary", () => {
     })
 
     await expect(read.signals(request, CounterSignals)).rejects.toMatchObject({
-      _tag: "SignalValidationError",
       issues: [{ message: "Expected numeric count", path: ["count"] }]
     })
   })

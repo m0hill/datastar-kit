@@ -17,8 +17,6 @@ export type DatastarObject = Readonly<Record<string, DatastarValue>>
 export type DatastarFunction<T = unknown> = (...args: ReadonlyArray<unknown>) => T
 
 export class SignalNameError extends Error {
-  readonly _tag = "SignalNameError"
-
   constructor(readonly signalName: string) {
     super(`Invalid Datastar signal name: ${JSON.stringify(signalName)}`)
   }

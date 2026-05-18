@@ -45,8 +45,6 @@ export type EventChunk = string | Uint8Array
 export type StreamInput = string | Iterable<string> | AsyncIterable<EventChunk> | ReadableStream<EventChunk>
 
 export class NavigationUrlError extends Error {
-  readonly _tag = "NavigationUrlError"
-
   constructor(readonly url: string) {
     super(`Unsafe navigation URL: ${JSON.stringify(url)}`)
   }
