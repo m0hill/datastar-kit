@@ -5,16 +5,13 @@ import type * as Scope from "effect/Scope"
 import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import {
   commandDone,
-  get,
+  ds,
   h,
-  init,
   liveQueryResponse,
   makeRealtimePubSub,
   makeRealtimePubSubScoped,
   mergeAttrs,
-  on,
   platformRouter,
-  post,
   reply,
   publishRealtime,
   render,
@@ -43,8 +40,8 @@ export const pageNode = () =>
   h(
     "main",
     { id: "live-counter" },
-    h("div", init(get("/live")), ""),
-    h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
+    h("div", ds.init(ds.get("/live")), ""),
+    h("button", mergeAttrs({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
     h("output", { id: "count" }, "0")
   )
 

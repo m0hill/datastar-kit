@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest"
 import {
   Client,
   contract,
-  Datastar,
+  ds,
   Html,
   Jsx,
   Model,
@@ -28,7 +28,8 @@ describe("package root exports", () => {
     expect(Platform.platformRouter).toBe(platformRouter)
     expect(Client.datastarDocument).toBeDefined()
     expect(contract.signals).toBeDefined()
-    expect(Datastar.signal).toBeDefined()
+    expect(ds.signal).toBeDefined()
+    expect(ds.delete).toBeDefined()
     expect(Html.h).toBeDefined()
     expect(Jsx.jsx).toBeDefined()
     expect(Model.LiveQuery.make).toBeDefined()

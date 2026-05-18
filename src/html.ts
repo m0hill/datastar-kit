@@ -9,6 +9,31 @@ export interface OrderedAttributes {
 
 export type AttributeInput = Attributes | OrderedAttributes
 
+export class AttributeConflictError extends Error {
+  readonly _tag = "AttributeConflictError"
+
+  constructor(readonly attribute: string) {
+    super(`Duplicate HTML attribute: ${attribute}`)
+  }
+}
+
+export const mergeAttrs = (...attrs: ReadonlyArray<Attributes>): Attributes => Object.assign({}, ...attrs)
+
+export const mergeAttrsStrict = (...attrs: ReadonlyArray<Attributes>): Attributes => {
+  const merged: Record<string, Attributes[string]> = {}
+
+  for (const group of attrs) {
+    for (const [key, value] of Object.entries(group)) {
+      if (key in merged) {
+        throw new AttributeConflictError(key)
+      }
+      merged[key] = value
+    }
+  }
+
+  return merged
+}
+
 export interface RawHtml {
   readonly _tag: "RawHtml"
   readonly html: string

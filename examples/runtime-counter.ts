@@ -8,8 +8,8 @@ import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
 import * as contract from "../src/contract.js"
-import { mergeAttrs, on, post, text } from "../src/datastar.js"
-import { h } from "../src/html.js"
+import * as ds from "../src/ds.js"
+import { h, mergeAttrs } from "../src/html.js"
 import { platformRouter } from "../src/platform.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
@@ -41,8 +41,8 @@ export const runtimeCounterNode = (countValue: number) =>
     "main",
     mergeAttrs({ id: "runtime-counter" }, RuntimeCounter.initial({ count: countValue }, { ifMissing: true })),
     h("h1", {}, "Effect services counter"),
-    h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
-    h("output", text(RuntimeCounter.$.count), countValue)
+    h("button", mergeAttrs({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
+    h("output", ds.text(RuntimeCounter.$.count), countValue)
   )
 
 export const runtimeCounterPage = Effect.gen(function*() {

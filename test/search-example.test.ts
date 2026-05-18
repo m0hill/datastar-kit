@@ -3,7 +3,7 @@ import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
 import { app, resultsView, searchPage, searchView } from "../examples/search.js"
-import { get, queryUrl, signal } from "../src/datastar.js"
+import * as ds from "../src/ds.js"
 import { closePlatformListeners, makePlatformListener } from "./platform-listener.js"
 
 let server: Server | undefined
@@ -26,9 +26,9 @@ afterEach(async () => {
 
 describe("search example", () => {
   it("supports dynamic Datastar action URLs", () => {
-    const q = signal<string, "q">("q")
+    const q = ds.signal<string, "q">("q")
 
-    expect(get(queryUrl("/search", { q })).toDatastarExpression()).toBe("@get(`/search?q=${encodeURIComponent($q)}`)")
+    expect(ds.get(ds.queryUrl("/search", { q })).toDatastarExpression()).toBe("@get(`/search?q=${encodeURIComponent($q)}`)")
   })
 
   it("renders a search shell with debounced Datastar requests", () => {

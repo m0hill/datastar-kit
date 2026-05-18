@@ -5,8 +5,8 @@ import * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import type * as Scope from "effect/Scope"
 import * as contract from "../src/contract.js"
-import { bind, mergeAttrs, on, post, text, validationDataSignal, validationSignal } from "../src/datastar.js"
-import { h, render } from "../src/html.js"
+import * as ds from "../src/ds.js"
+import { h, mergeAttrs, render } from "../src/html.js"
 import { platformRouter } from "../src/platform.js"
 import * as reply from "../src/reply.js"
 import * as read from "../src/read.js"
@@ -41,9 +41,9 @@ const validateContact = (input: typeof ContactForm.schema.Type): Effect.Effect<t
 
 export const contactFormNode = () => {
   const s = ContactForm.$
-  const nameError = validationSignal("name")
-  const emailError = validationSignal("email")
-  const formError = validationSignal("form")
+  const nameError = ds.local<string, "validation.name">("validation.name")
+  const emailError = ds.local<string, "validation.email">("validation.email")
+  const formError = ds.local<string, "validation.form">("validation.form")
 
   return h(
     "main",
@@ -53,16 +53,16 @@ export const contactFormNode = () => {
       mergeAttrs(
         { id: "contact-form" },
         ContactForm.initial({ name: "", email: "" }, { ifMissing: true }),
-        validationDataSignal("form", "", { ifMissing: true }),
-        validationDataSignal("name", "", { ifMissing: true }),
-        validationDataSignal("email", "", { ifMissing: true }),
-        on("submit", post("/contact"), { prevent: true })
+        ds.dataSignal("_validation.form", "", { ifMissing: true }),
+        ds.dataSignal("_validation.name", "", { ifMissing: true }),
+        ds.dataSignal("_validation.email", "", { ifMissing: true }),
+        ds.on("submit", ds.post("/contact"), { prevent: true })
       ),
-      h("p", mergeAttrs({ id: "form-error", role: "alert" }, text(formError))),
-      h("label", {}, "Name", h("input", mergeAttrs({ name: "name" }, bind(s.name)))),
-      h("p", mergeAttrs({ id: "name-error" }, text(nameError))),
-      h("label", {}, "Email", h("input", mergeAttrs({ name: "email", type: "email" }, bind(s.email)))),
-      h("p", mergeAttrs({ id: "email-error" }, text(emailError))),
+      h("p", mergeAttrs({ id: "form-error", role: "alert" }, ds.text(formError))),
+      h("label", {}, "Name", h("input", mergeAttrs({ name: "name" }, ds.bind(s.name)))),
+      h("p", mergeAttrs({ id: "name-error" }, ds.text(nameError))),
+      h("label", {}, "Email", h("input", mergeAttrs({ name: "email", type: "email" }, ds.bind(s.email)))),
+      h("p", mergeAttrs({ id: "email-error" }, ds.text(emailError))),
       h("button", { type: "submit" }, "Save")
     ),
     h("div", { id: "contact-result" })

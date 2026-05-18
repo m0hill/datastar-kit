@@ -65,26 +65,6 @@ export class Signal<T, Name extends string = string> implements Expr<T> {
     return this.toDatastarExpression()
   }
 
-  set(value: ExprInput<T>): Expr<void> {
-    return raw(`(${this.toDatastarExpression()} = ${toJs(value)})`)
-  }
-
-  eq(value: ExprInput<T>): Expr<boolean> {
-    return raw(`(${this.toDatastarExpression()} === ${toJs(value)})`)
-  }
-
-  neq(value: ExprInput<T>): Expr<boolean> {
-    return raw(`(${this.toDatastarExpression()} !== ${toJs(value)})`)
-  }
-
-  add(this: Signal<number, Name>, amount: ExprInput<number>): Expr<void> {
-    return amount === 1 ? raw(`${this.toDatastarExpression()}++`) : raw(`(${this.toDatastarExpression()} = ${this.toDatastarExpression()} + ${toJs(amount)})`)
-  }
-
-  toggle(this: Signal<boolean, Name>): Expr<void> {
-    return raw(`(${this.toDatastarExpression()} = !${this.toDatastarExpression()})`)
-  }
-
   path<Key extends keyof NonNullable<T> & string>(key: Key): Signal<NonNullable<T>[Key], `${Name}.${Key}`> {
     return new Signal(`${this.name}.${key}` as `${Name}.${Key}`)
   }

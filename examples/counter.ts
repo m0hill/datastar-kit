@@ -4,11 +4,10 @@ import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
+  ds,
   h,
   mergeAttrs,
-  on,
   platformRouter,
-  post,
   render,
   reply
 } from "../src/index.js"
@@ -20,7 +19,7 @@ export const counterNode = (count = 0) =>
     "main",
     { id: "counter" },
     h("h1", {}, "ts-star counter"),
-    h("button", mergeAttrs({ type: "button" }, on("click", post("/increment"))), "+"),
+    h("button", mergeAttrs({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
     countNode(count)
   )
 

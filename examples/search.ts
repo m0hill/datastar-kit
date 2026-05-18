@@ -3,18 +3,13 @@ import * as Schema from "effect/Schema"
 import * as HttpRouter from "effect/unstable/http/HttpRouter"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
-  bind,
-  dataSignals,
-  get,
+  ds,
   h,
   platformReadQuery,
   platformRouter,
   mergeAttrs,
-  on,
-  queryUrl,
   render,
-  reply,
-  signal
+  reply
 } from "../src/index.js"
 
 interface Contact {
@@ -54,17 +49,17 @@ export const resultsView = (q: string): string => {
 }
 
 export const searchNode = () => {
-  const q = signal<string, "q">("q")
+  const q = ds.signal<string, "q">("q")
 
   return h(
     "main",
-    mergeAttrs({ id: "search" }, dataSignals({ q: "" }, { ifMissing: true })),
+    mergeAttrs({ id: "search" }, ds.dataSignals({ q: "" }, { ifMissing: true })),
     h(
       "input",
       mergeAttrs(
         { type: "search", placeholder: "Search contacts" },
-        bind(q),
-        on("input", get(queryUrl("/search", { q })), { debounce: 200 })
+        ds.bind(q),
+        ds.on("input", ds.get(ds.queryUrl("/search", { q })), { debounce: 200 })
       )
     ),
     h("table", {}, h("tbody", { id: "results" }))

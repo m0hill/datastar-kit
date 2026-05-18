@@ -1,62 +1,48 @@
 import { describe, expect, it } from "vitest"
-import {
-  bind,
-  indicator,
-  inputSignal,
-  loadingDataSignal,
-  loadingSignal,
-  localSignal,
-  privateDataSignal,
-  privateSignal,
-  privateSignalName,
-  show,
-  validationDataSignal,
-  validationSignal
-} from "../src/datastar.js"
+import * as ds from "../src/ds.js"
 import { h, render } from "../src/html.js"
 
 describe("signal policy helpers", () => {
-  it("makes posted input signals explicit without changing Datastar names", () => {
-    const email = inputSignal<string, "email">("email")
+  it("keeps posted input signals explicit without changing Datastar names", () => {
+    const email = ds.signal<string, "email">("email")
 
     expect(email.toDatastarExpression()).toBe("$email")
-    expect(bind(email)).toEqual({ "data-bind:email": true })
+    expect(ds.bind(email)).toEqual({ "data-bind:email": true })
   })
 
-  it("prefixes private/local signal names so they are excluded from default Datastar requests", () => {
-    const menuOpen = privateSignal<boolean, "menuOpen">("menuOpen")
-    const alreadyPrivate = localSignal<boolean, "_dialogOpen">("_dialogOpen")
+  it("uses one canonical local signal helper for underscore-prefixed signals", () => {
+    const menuOpen = ds.local<boolean, "menuOpen">("menuOpen")
+    const alreadyLocal = ds.local<boolean, "_dialogOpen">("_dialogOpen")
 
-    expect(privateSignalName("menuOpen")).toBe("_menuOpen")
     expect(menuOpen.toDatastarExpression()).toBe("$_menuOpen")
-    expect(alreadyPrivate.toDatastarExpression()).toBe("$_dialogOpen")
-    expect(privateDataSignal("menuOpen", false, { ifMissing: true })).toEqual({
+    expect(alreadyLocal.toDatastarExpression()).toBe("$_dialogOpen")
+    expect(ds.dataSignal("_menuOpen", false, { ifMissing: true })).toEqual({
       "data-signals:_menuOpen__ifmissing": "false"
     })
   })
 
-  it("provides conventional validation and loading signal scopes", () => {
-    const emailError = validationSignal("email")
-    const saving = loadingSignal("save")
+  it("keeps validation and loading conventions in app code instead of core helpers", () => {
+    const emailError = ds.local<string, "validation.email">("validation.email")
+    const saving = ds.local<boolean, "loading.save">("loading.save")
 
     expect(emailError.toDatastarExpression()).toBe("$_validation.email")
     expect(saving.toDatastarExpression()).toBe("$_loading.save")
-    expect(validationDataSignal("email", "Required")).toEqual({
+    expect(ds.dataSignal("_validation.email", "Required")).toEqual({
       "data-signals:_validation.email": '"Required"'
     })
-    expect(loadingDataSignal("save", false)).toEqual({
+    expect(ds.dataSignal("_loading.save", false)).toEqual({
       "data-signals:_loading.save": "false"
     })
-    expect(indicator(saving)).toEqual({ "data-indicator:_loading.save": true })
+    expect(ds.indicator(saving)).toEqual({ "data-indicator:_loading.save": true })
   })
 
   it("keeps local disclosure state visibly private in rendered HTML", () => {
-    const open = localSignal<boolean, "menuOpen">("menuOpen")
+    const open = ds.local<boolean, "menuOpen">("menuOpen")
     const node = h(
       "details",
-      privateDataSignal("menuOpen", false, { ifMissing: true }),
+      ds.dataSignal("_menuOpen", false, { ifMissing: true }),
       h("summary", {}, "Menu"),
-      h("div", show(open), "Panel")
+      h("div", ds.show(open), "Panel")
     )
 
     expect(render(node)).toBe(

@@ -1,42 +1,27 @@
 import { describe, expect, it } from "vitest"
-import { and, dataClass, dataAttr, not, or, raw, signal, ternary, text } from "../src/datastar.js"
+import * as ds from "../src/ds.js"
 
-describe("expression helpers", () => {
-  it("builds negated expressions", () => {
-    const saving = signal<boolean, "saving">("saving")
+describe("expression escape hatches", () => {
+  it("keeps simple signal refs typed", () => {
+    const saving = ds.signal<boolean, "saving">("saving")
 
-    expect(not(saving).toDatastarExpression()).toBe("!($saving)")
+    expect(saving.toDatastarExpression()).toBe("$saving")
   })
 
-  it("builds conjunctions and disjunctions", () => {
-    const ready = signal<boolean, "ready">("ready")
-    const dirty = signal<boolean, "dirty">("dirty")
-
-    expect(and(ready, dirty).toDatastarExpression()).toBe("($ready) && ($dirty)")
-    expect(or(ready, dirty).toDatastarExpression()).toBe("($ready) || ($dirty)")
+  it("uses raw Datastar expressions instead of a framework expression DSL", () => {
+    expect(ds.raw("!($saving)").toDatastarExpression()).toBe("!($saving)")
+    expect(ds.raw("($ready) && ($dirty)").toDatastarExpression()).toBe("($ready) && ($dirty)")
+    expect(ds.raw("($enabled ? \"Enabled\" : \"Disabled\")").toDatastarExpression()).toBe('($enabled ? "Enabled" : "Disabled")')
   })
 
-  it("uses identity values for empty boolean folds", () => {
-    expect(and().toDatastarExpression()).toBe("true")
-    expect(or().toDatastarExpression()).toBe("false")
-  })
-
-  it("builds ternary expressions", () => {
-    const enabled = signal<boolean, "enabled">("enabled")
-
-    expect(ternary(enabled, "Enabled", "Disabled").toDatastarExpression()).toBe('($enabled ? "Enabled" : "Disabled")')
-  })
-
-  it("composes with Datastar attribute helpers", () => {
-    const enabled = signal<boolean, "enabled">("enabled")
-
-    expect(dataClass("enabled", and(enabled, raw("!$saving")))).toEqual({
+  it("composes raw expressions with Datastar attribute helpers", () => {
+    expect(ds.dataClass("enabled", ds.raw("($enabled) && (!$saving)"))).toEqual({
       "data-class:enabled": "($enabled) && (!$saving)"
     })
-    expect(dataAttr("aria-disabled", not(enabled))).toEqual({
+    expect(ds.dataAttr("aria-disabled", ds.raw("!($enabled)"))).toEqual({
       "data-attr:aria-disabled": "!($enabled)"
     })
-    expect(text(ternary(enabled, "On", "Off"))).toEqual({
+    expect(ds.text(ds.raw('($enabled ? "On" : "Off")'))).toEqual({
       "data-text": '($enabled ? "On" : "Off")'
     })
   })

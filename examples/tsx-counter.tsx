@@ -6,10 +6,9 @@ import type * as Scope from "effect/Scope"
 import type * as HttpServerRequest from "effect/unstable/http/HttpServerRequest"
 import * as HttpServerResponse from "effect/unstable/http/HttpServerResponse"
 import {
+  ds,
   mergeAttrs,
-  on,
   platformRouter,
-  post,
   render,
   reply,
   type Child
@@ -22,7 +21,7 @@ export interface CounterButtonProps {
 }
 
 export const CounterButton = (props: CounterButtonProps) =>
-  <button {...mergeAttrs({ type: "button" }, on("click", post(props.action)))}>{props.children ?? "+"}</button>
+  <button {...mergeAttrs({ type: "button" }, ds.on("click", ds.post(props.action)))}>{props.children ?? "+"}</button>
 
 export const CountOutput = (props: { readonly count: number }) => <output id="count">{props.count}</output>
 
