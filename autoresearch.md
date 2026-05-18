@@ -6,8 +6,8 @@ Convert the experimental `experiment/web-standards-core` branch from an Effect-n
 
 ## Metrics
 
-- **Primary**: `migration_debt` (unitless, lower is better) — forbidden Effect library/runtime references in code/package files plus public root exports that belong to the old Effect-oriented core. Datastar's `data-effect` attribute is not counted.
-- **Secondary**: `forbidden_effect_refs`, `old_root_exports`, `src_bytes`, `test_files` — tradeoff monitors for migration completeness and accidental deletion.
+- **Primary**: `maintenance_surface` (unitless, lower is better) — `migration_debt * 1,000,000 + src_bytes`, so any reintroduced forbidden runtime debt dominates small size changes.
+- **Secondary**: `migration_debt`, `forbidden_effect_refs`, `old_root_exports`, `src_bytes`, `test_files` — tradeoff monitors for migration completeness and accidental deletion. Datastar's `data-effect` attribute is not counted as runtime debt.
 
 ## How to Run
 
@@ -52,4 +52,5 @@ Convert the experimental `experiment/web-standards-core` branch from an Effect-n
 
 - Planning/grilling resolved the API boundary: `ts-star` is a Web Standards SDK, not an application framework.
 - Hono is allowed only as an example integration; no Hono-specific core API.
-- `contract` and `live` are removed from core rather than reimplemented as weaker non-Effect abstractions.
+- `contract` and `live` are removed from core rather than reimplemented as weaker runtime abstractions.
+- Kept experiment `a91b43c`: core now uses native `Request`/`Response`/`ReadableStream`, Standard Schema signal validation, fetch-compatible examples, flat direct response helpers, and no forbidden runtime references. Full typecheck/test/build passed.

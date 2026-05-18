@@ -16,7 +16,9 @@ src_bytes=$(find src -type f \( -name '*.ts' -o -name '*.tsx' \) -print0 | xargs
 test_files=$(find test -maxdepth 1 -type f \( -name '*.ts' -o -name '*.tsx' \) | wc -l | tr -d ' ')
 
 migration_debt=$(( forbidden_effect_refs * 1000 + old_root_exports * 100 ))
+maintenance_surface=$(( migration_debt * 1000000 + src_bytes ))
 
+printf 'METRIC maintenance_surface=%s\n' "$maintenance_surface"
 printf 'METRIC migration_debt=%s\n' "$migration_debt"
 printf 'METRIC forbidden_effect_refs=%s\n' "$forbidden_effect_refs"
 printf 'METRIC old_root_exports=%s\n' "$old_root_exports"
