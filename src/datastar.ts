@@ -148,7 +148,6 @@ export const toJs = (value: ExprInput<unknown>): string => {
 }
 
 export type HttpMethod = "get" | "post" | "put" | "patch" | "delete"
-export type ContentType = "json" | "form"
 export type RetryMode = "auto" | "error" | "always" | "never"
 export type RequestCancellation = "auto" | "cleanup" | "disabled" | Expr<AbortController>
 export type SignalPattern = Expr<RegExp> | string
@@ -170,7 +169,6 @@ export type FetchResponseOverrides =
     }
 
 export interface FetchOptions {
-  readonly contentType?: ContentType
   readonly filterSignals?: SignalFilter
   readonly selector?: string | null
   readonly headers?: Readonly<Record<string, string>>
@@ -204,7 +202,6 @@ export const ternary = <T>(
 const fetchOptionsToJs = (options: FetchOptions): string => {
   const entries: Array<[string, ExprInput<unknown>]> = []
 
-  if (options.contentType !== undefined) entries.push(["contentType", options.contentType])
   if (options.filterSignals !== undefined) entries.push(["filterSignals", options.filterSignals])
   if (options.selector !== undefined) entries.push(["selector", options.selector])
   if (options.headers !== undefined) entries.push(["headers", options.headers])

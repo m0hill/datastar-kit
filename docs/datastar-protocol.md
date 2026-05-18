@@ -56,9 +56,19 @@ Invalid JSON and schema mismatches fail through standard Effect Schema decoding 
 
 ## Forms and other request bodies
 
+Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions intentionally use Datastar's default JSON signal transport. This matches `read.signals(schema)`.
+
 `ts-star` does not expose generic form, multipart, body, or query readers. Use Effect Platform directly for those HTTP concerns until the framework has a concrete form/file-upload story.
 
 Datastar signals and form data are distinct request inputs. Use signals for sparse browser state sent by Datastar actions; use normal Effect Platform request APIs for ordinary form posts, file uploads, and non-Datastar HTTP endpoints.
+
+If you intentionally need Datastar's form transport, make the escape hatch visible in the view code:
+
+```ts
+ds.raw("@post('/avatar', { contentType: 'form' })")
+```
+
+Then read that request with native Effect Platform form/multipart APIs, not `read.signals(...)`.
 
 ## Runtime validation
 

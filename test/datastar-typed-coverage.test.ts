@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest"
 import * as ds from "../src/ds.js"
 
+if (false) {
+  // Structured Datastar actions intentionally support only the default JSON signal transport.
+  // Use ds.raw("@post('/upload', { contentType: 'form' })") and Effect Platform form readers for form uploads.
+  // @ts-expect-error Form transport is an explicit raw escape hatch, not a structured FetchOptions field.
+  ds.post("/upload", { contentType: "form" })
+}
+
 describe("Datastar typed helper coverage", () => {
   it("covers public thin mirrors of core attributes and modifiers", () => {
     expect(ds.effect(ds.raw("$foo = $bar"))).toEqual({

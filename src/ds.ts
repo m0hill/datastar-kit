@@ -45,7 +45,6 @@ export type {
   BindModifiers,
   CaseModifier,
   ClassModifiers,
-  ContentType,
   DataComputedObject,
   DataComputedValue,
   DataSignalModifiers,
