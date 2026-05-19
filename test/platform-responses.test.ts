@@ -17,15 +17,16 @@ describe("reply SSE responses", () => {
   })
 
   it("serves Datastar signal patch responses", async () => {
-    const response = reply.signals({ count: 1 }, undefined, { headers: { "x-signals": "yes" } })
+    const response = reply.signals({ count: 1 }, { headers: { "x-signals": "yes" } })
 
     expect(response.headers.get("x-signals")).toBe("yes")
     expect(await response.text()).toBe('event: datastar-patch-signals\ndata: signals {"count":1}\n\n')
   })
 
   it("renders HTML nodes in element patches", async () => {
-    const response = reply.patch(h("span", {}, "Ada & Grace"), { selector: "#name" })
+    const response = reply.patch(h("span", {}, "Ada & Grace"), { selector: "#name", headers: { "x-patch": "yes" } })
 
+    expect(response.headers.get("x-patch")).toBe("yes")
     expect(await response.text()).toBe(
       "event: datastar-patch-elements\ndata: selector #name\ndata: elements <span>Ada &amp; Grace</span>\n\n"
     )

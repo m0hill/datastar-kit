@@ -5,6 +5,10 @@ import * as reply from "../src/reply.js"
 if (false) {
   // @ts-expect-error Datastar action body replies own their protocol status.
   reply.directSignals({ count: 1 }, { status: 200 })
+  // @ts-expect-error Datastar action body replies own their protocol status.
+  reply.patch(h("p", {}, "Updated"), { status: 200 })
+  // @ts-expect-error Datastar action body replies own their protocol status.
+  reply.signals({ count: 1 }, { status: 200 })
   // @ts-expect-error Datastar no-content replies own their protocol status.
   reply.done({ status: 204 })
 }

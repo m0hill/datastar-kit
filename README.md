@@ -113,7 +113,7 @@ Core depends only on `@standard-schema/spec` for public types. Zod, Valibot, Ark
 - `reply.navigate(...)` — safe direct script navigation.
 - `reply.directHtml(...)`, `reply.directSignals(...)`, `reply.directScript(...)` — flat explicit Datastar direct-response escape hatches.
 
-Datastar action helpers own their protocol status codes. Use plain `new Response(...)` for non-Datastar HTTP semantics such as ordinary `404` or API JSON errors.
+Datastar action helpers own their protocol status codes. Protocol options and response headers live in one flattened options object, e.g. `reply.patch(view, { selector: "#count", headers })`. Use plain `new Response(...)` for non-Datastar HTTP semantics such as ordinary `404` or API JSON errors.
 
 ## Examples
 

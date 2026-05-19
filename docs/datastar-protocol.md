@@ -24,7 +24,12 @@ Use this policy for SDK helpers:
 - `reply.navigate(...)` — safe Datastar direct script response for browser navigation.
 - `reply.directHtml(...)`, `reply.directSignals(...)`, `reply.directScript(...)` — explicit direct-response escape hatches.
 
-Datastar action helpers own their protocol status codes and do not accept a `status` option.
+Datastar action helpers own their protocol status codes and do not accept a `status` option. Helpers take one flattened options object for Datastar protocol options and response headers:
+
+```tsx
+reply.patch(<Count />, { selector: "#count", headers: { "x-action": "increment" } })
+reply.signals({ saving: false }, { onlyIfMissing: true, headers: { "x-action": "save" } })
+```
 
 ## Signal decoding
 

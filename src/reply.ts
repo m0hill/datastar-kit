@@ -17,6 +17,10 @@ export interface HeartbeatOptions {
   readonly comment?: string
 }
 
+export interface PatchOptions extends DatastarResponseInit, PatchElementsOptions {}
+
+export interface SignalsOptions extends DatastarResponseInit, PatchSignalsOptions {}
+
 export interface StreamOptions extends DatastarResponseInit {
   readonly heartbeat?: HeartbeatOptions
 }
@@ -68,7 +72,6 @@ const response = (
   defaultHeaders: HeadersInit = {}
 ): Response =>
   new Response(body, {
-    ...init,
     status,
     headers: mergeHeaders(defaultHeaders, init?.headers)
   })
@@ -176,17 +179,15 @@ export const page = (
 
 export const patch = (
   elements: Child,
-  options?: PatchElementsOptions,
-  init?: DatastarResponseInit
+  options: PatchOptions = {}
 ): Response =>
-  response(patchElements(render(elements), options), init, 200, sseHeader)
+  response(patchElements(render(elements), options), options, 200, sseHeader)
 
 export const signals = (
   value: JsonObject | string,
-  options?: PatchSignalsOptions,
-  init?: DatastarResponseInit
+  options: SignalsOptions = {}
 ): Response =>
-  response(patchSignals(value, options), init, 200, sseHeader)
+  response(patchSignals(value, options), options, 200, sseHeader)
 
 export const stream = (
   events: StreamInput,
