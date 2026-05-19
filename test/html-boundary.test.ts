@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest"
 import { dataSignals, signal, text } from "../src/ds.js"
-import { fragment, h, page, props, raw, render } from "../src/html.js"
+import { fragment, h, page, props, render, unsafeHtml } from "../src/html.js"
 
 describe("HTML rendering boundary", () => {
-  it("escapes text by default and requires explicit raw HTML", () => {
+  it("escapes text by default and requires explicit unsafe HTML", () => {
     expect(render(h("p", {}, "<script>alert(1)</script>"))).toBe(
       "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>"
     )
-    expect(render(h("p", {}, raw("<strong>trusted</strong>")))).toBe("<p><strong>trusted</strong></p>")
+    expect(render(h("p", {}, unsafeHtml("<strong>trusted</strong>")))).toBe("<p><strong>trusted</strong></p>")
   })
 
   it("composes props with later values overriding earlier values", () => {

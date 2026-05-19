@@ -34,4 +34,4 @@ Validation is exposed only where the SDK owns a boundary: `read.signals(request,
 
 ## Extension posture
 
-Do not add plugin discovery or adapter interfaces before there is real pressure. For external renderers, render to a string and mark it as trusted HTML with `raw(rendered)` before passing it to response helpers.
+Do not add plugin discovery or adapter interfaces before there is real pressure. For external renderers, render to a string and mark it as unsafe HTML with `unsafeHtml(rendered)` before passing it to response helpers.

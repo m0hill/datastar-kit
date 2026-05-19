@@ -17,7 +17,7 @@ Docs: `datastar-philosophy.md`, `datastar-protocol.md`, `signals.md`.
 Server-side JSX is the canonical app/view authoring API:
 
 - `ts-star/jsx-runtime` / `ts-star/jsx-dev-runtime` for TypeScript automatic JSX (`jsxImportSource: "ts-star"`).
-- top-level `h`, `render`, `fragment`, `raw`, `props`, `page` as the low-level HTML primitive surface.
+- top-level `h`, `render`, `fragment`, `unsafeHtml`, `props`, `page` as the low-level HTML primitive surface.
 - `ts-star/jsx` for classic JSX factory compatibility.
 
 Docs: `html-rendering.md`.

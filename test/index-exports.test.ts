@@ -10,8 +10,8 @@ import {
   h,
   page,
   props,
-  raw,
-  render
+  render,
+  unsafeHtml
 } from "../src/index.js"
 
 describe("package root exports", () => {
@@ -31,7 +31,8 @@ describe("package root exports", () => {
     expect(h).toBeDefined()
     expect(render).toBeDefined()
     expect(fragment).toBeDefined()
-    expect(raw).toBeDefined()
+    expect("raw" in Root).toBe(false)
+    expect(unsafeHtml).toBeDefined()
     expect(props).toBeDefined()
     expect(page).toBeDefined()
     expect("Sse" in Root).toBe(false)

@@ -45,7 +45,7 @@ export const h = (tag: string, props: Props = {}, ...children: readonly Child[])
 
 export const fragment = (...children: readonly Child[]): readonly Child[] => children
 
-export const raw = (html: string): Child => ({
+export const unsafeHtml = (html: string): Child => ({
   _tag: "RawHtml",
   html
 })

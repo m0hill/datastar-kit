@@ -14,7 +14,7 @@ The package root exposes:
 - `event` — rendered Datastar SSE event helpers for streams.
 - `read` — Datastar signal decoding from a native `Request` with Standard Schema validation.
 - `reply` — Datastar-safe native `Response` helpers.
-- `h`, `render`, `fragment`, `raw`, `props`, `page` — low-level server HTML primitives used by the JSX runtime.
+- `h`, `render`, `fragment`, `unsafeHtml`, `props`, `page` — low-level server HTML primitives used by the JSX runtime.
 
 Explicit subpaths:
 
@@ -167,5 +167,5 @@ The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or 
 
 - Backend state should be the durable source of truth.
 - Datastar signals should stay sparse and mostly ephemeral.
-- Server-rendered HTML should stay simple; external renderer output should cross the trust boundary explicitly with `raw(renderedHtml)`.
+- Server-rendered HTML should stay simple; external renderer output should cross the trust boundary explicitly with `unsafeHtml(renderedHtml)`.
 - `ts-star` should not become a virtual DOM runtime, client router, React-style lifecycle system, complex browser store, plugin-heavy framework clone, or application runtime.

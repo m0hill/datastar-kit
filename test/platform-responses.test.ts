@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { h, raw } from "../src/html.js"
+import { h, unsafeHtml } from "../src/html.js"
 import * as reply from "../src/reply.js"
 
 describe("reply SSE responses", () => {
@@ -32,9 +32,9 @@ describe("reply SSE responses", () => {
     )
   })
 
-  it("escapes string patches unless raw HTML is explicit", async () => {
+  it("escapes string patches unless unsafe HTML is explicit", async () => {
     const text = reply.patch("<strong>Saved</strong>")
-    const html = reply.patch(raw("<strong>Saved</strong>"))
+    const html = reply.patch(unsafeHtml("<strong>Saved</strong>"))
 
     expect(await text.text()).toBe(
       "event: datastar-patch-elements\ndata: elements &lt;strong&gt;Saved&lt;/strong&gt;\n\n"

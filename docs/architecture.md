@@ -11,7 +11,7 @@ The SDK has one public job: make Datastar pleasant from fetch-compatible handler
 - **Backend state is the source of truth.** Browser signals are sparse request inputs and UI affordances, not the primary application store.
 - **Datastar is the browser runtime and patch protocol.** `ts-star` generates Datastar-compatible attributes, direct responses, and SSE events.
 - **Application frameworks own runtime concerns.** Routing, middleware, dependencies, cancellation policy, sessions, auth, and deployment belong to Hono, a custom fetch handler, Workers, Bun, Deno, Node, or another host.
-- **HTML is generated on the server.** Blessed view code uses the automatic JSX runtime over a tiny HTML node model; external renderer output can cross the trust boundary with `raw(renderedHtml)`.
+- **HTML is generated on the server.** Blessed view code uses the automatic JSX runtime over a tiny HTML node model; external renderer output can cross the trust boundary with `unsafeHtml(renderedHtml)`.
 - **Datastar direct responses and SSE streams are first-class.** The blessed path is SSE patches; direct responses remain flat explicit escape hatches.
 - **Signals are mostly ephemeral.** Use them for form/input state, validation feedback, loading flags, and request parameters without turning them into hidden app state.
 
@@ -25,7 +25,7 @@ The SDK has one public job: make Datastar pleasant from fetch-compatible handler
 
 ### 2. View layer
 
-- `src/html.ts` exposes `h`, `render`, `fragment`, `raw`, `props`, and `page` as the low-level node model.
+- `src/html.ts` exposes `h`, `render`, `fragment`, `unsafeHtml`, `props`, and `page` as the low-level node model.
 - `src/jsx-runtime.ts` and `src/jsx-dev-runtime.ts` provide the blessed automatic JSX runtime for `jsxImportSource: "ts-star"`.
 - `src/jsx.ts` keeps classic JSX factory compatibility over the same node model.
 - `src/ds.ts` exposes Datastar expressions, fetch actions, signal references, modifiers, and attributes.
@@ -52,7 +52,7 @@ Root exports:
 - `event`
 - `read`
 - `reply`
-- `h`, `render`, `fragment`, `raw`, `props`, `page`
+- `h`, `render`, `fragment`, `unsafeHtml`, `props`, `page`
 
 Explicit subpaths:
 

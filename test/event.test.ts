@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import * as event from "../src/event.js"
-import { h, raw } from "../src/html.js"
+import { h, unsafeHtml } from "../src/html.js"
 
 describe("Datastar SSE event helpers", () => {
   it("renders HTML nodes into patch events", () => {
@@ -9,8 +9,8 @@ describe("Datastar SSE event helpers", () => {
     )
   })
 
-  it("keeps raw trusted HTML explicit at the HTML boundary", () => {
-    expect(event.patch(raw("<strong>Saved</strong>"))).toBe(
+  it("keeps unsafe HTML explicit at the HTML boundary", () => {
+    expect(event.patch(unsafeHtml("<strong>Saved</strong>"))).toBe(
       "event: datastar-patch-elements\ndata: elements <strong>Saved</strong>\n\n"
     )
   })
