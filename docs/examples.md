@@ -4,7 +4,7 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 
 ## Counter
 
-`examples/counter.ts` stores `count` on the server. The click action mutates backend state and patches the rendered `#count` element. Stale browser signal payloads are ignored because backend state is authoritative.
+`examples/counter.ts` keeps one low-level `h(...)` hyperscript reference. It stores `count` on the server; the click action mutates backend state and patches the rendered `#count` element.
 
 ## TSX counter
 
@@ -12,19 +12,19 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 
 ## Search
 
-`examples/search.ts` demonstrates Datastar action URL generation with `ds.queryUrl(...)` and server-rendered result patches.
+`examples/search.tsx` demonstrates Datastar action URL generation with `ds.queryUrl(...)` and server-rendered JSX result patches.
 
 ## Live counter recipe
 
-`examples/live-counter.ts` demonstrates app-owned invalidation subscribers adapted into an SSE stream with `reply.stream(...)`. Core does not provide a live-query runtime.
+`examples/live-counter.tsx` demonstrates app-owned invalidation subscribers adapted into an SSE stream with `reply.stream(...)`. Core does not provide a live-query runtime.
 
 ## Validation form
 
-`examples/validation-form.ts` uses input signals, Standard Schema-compatible Zod validation, app-local validation errors, validation signal patches, and a success patch that updates backend state.
+`examples/validation-form.tsx` uses input signals, Standard Schema-compatible Zod validation, app-local validation errors, validation signal patches, and a success patch that updates backend state.
 
 ## Hono counter
 
-`examples/hono-counter.ts` shows Hono as an application framework around `ts-star` helpers. `examples/hono-live-counter.ts` uses Hono routes around the live counter SSE recipe. Hono is not imported by core.
+`examples/hono-counter.tsx` shows Hono as an application framework around `ts-star` helpers. `examples/hono-live-counter.tsx` uses Hono routes around the live counter SSE recipe. Hono is not imported by core.
 
 ## Todo sync
 

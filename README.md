@@ -119,13 +119,13 @@ Datastar action helpers own their protocol status codes. Protocol options and re
 
 Reference examples live in `examples/`:
 
-- `counter.ts` — smallest backend-state element patch flow.
+- `counter.ts` — low-level `h(...)` hyperscript example for the smallest backend-state element patch flow.
 - `tsx-counter.tsx` — smallest backend-state element patch flow using the blessed JSX runtime.
-- `search.ts` — Datastar-driven query URL example.
-- `live-counter.ts` — recipe-style app-owned SSE invalidation stream.
-- `validation-form.ts` — recoverable validation patches using Standard Schema-compatible Zod.
-- `hono-counter.ts` — Hono as an application-framework integration around `Request -> Response` helpers.
-- `hono-live-counter.ts` — Hono routing around the app-owned live counter SSE recipe.
+- `search.tsx` — Datastar-driven query URL example using the blessed JSX runtime.
+- `live-counter.tsx` — recipe-style app-owned SSE invalidation stream using the blessed JSX runtime.
+- `validation-form.tsx` — recoverable validation patches using Standard Schema-compatible Zod and JSX views.
+- `hono-counter.tsx` — Hono as an application-framework integration around `Request -> Response` helpers and JSX views.
+- `hono-live-counter.tsx` — Hono routing around the app-owned live counter SSE recipe.
 - `todo-sync.tsx` — full-stack Hono todo sync with blessed TSX views, Tailwind browser CSS, `read.signals(...)` + Zod validation, compression middleware, and realtime SSE fan-out.
 
 ## Checking examples

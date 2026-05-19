@@ -1,5 +1,5 @@
 import * as z from "zod"
-import { ds, event, h, props, read, reply } from "../src/index.js"
+import { ds, event, read, reply } from "../src/index.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -22,15 +22,12 @@ export async function handle(request: Request) {
     const emailError = ds.local<string>("validation.email")
 
     return reply.page({
-      head: h("script", { type: "module", src: DATASTAR_CDN }),
-      body: h(
-        "main",
-        { id: "contact-page" },
-        h(
-          "form",
-          props(
-            { id: "contact-form" },
-            ds.dataSignals({
+      head: <script type="module" src={DATASTAR_CDN} />,
+      body: (
+        <main id="contact-page">
+          <form
+            id="contact-form"
+            {...ds.dataSignals({
               name: "",
               email: "",
               _validation: {
@@ -38,17 +35,18 @@ export async function handle(request: Request) {
                 name: "",
                 email: ""
               }
-            }, { ifMissing: true }),
-            ds.on("submit", ds.post("/contact"), { prevent: true })
-          ),
-          h("p", props({ id: "form-error", role: "alert" }, ds.text(formError))),
-          h("label", {}, "Name", h("input", props({ name: "name" }, ds.bind(name)))),
-          h("p", props({ id: "name-error" }, ds.text(nameError))),
-          h("label", {}, "Email", h("input", props({ name: "email", type: "email" }, ds.bind(email)))),
-          h("p", props({ id: "email-error" }, ds.text(emailError))),
-          h("button", { type: "submit" }, "Save")
-        ),
-        h("div", { id: "contact-result" })
+            }, { ifMissing: true })}
+            {...ds.on("submit", ds.post("/contact"), { prevent: true })}
+          >
+            <p id="form-error" role="alert" {...ds.text(formError)} />
+            <label>Name<input name="name" {...ds.bind(name)} /></label>
+            <p id="name-error" {...ds.text(nameError)} />
+            <label>Email<input name="email" type="email" {...ds.bind(email)} /></label>
+            <p id="email-error" {...ds.text(emailError)} />
+            <button type="submit">Save</button>
+          </form>
+          <div id="contact-result" />
+        </main>
       )
     })
   }
@@ -74,7 +72,7 @@ export async function handle(request: Request) {
       return reply.stream([
         event.signals({ _validation: { form: null, name: null, email: null } }),
         event.patch(
-          h("div", { id: "contact-result", role: "status" }, `Saved ${input.name} <${input.email}>`),
+          <div id="contact-result" role="status">Saved {input.name} &lt;{input.email}&gt;</div>,
           { selector: "#contact-result" }
         )
       ])

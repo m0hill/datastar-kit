@@ -1,4 +1,4 @@
-import { ds, h, props, reply } from "../src/index.js"
+import { ds, reply } from "../src/index.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -15,19 +15,17 @@ export function handle(request: Request) {
     const q = ds.signal<string>("q")
 
     return reply.page({
-      head: h("script", { type: "module", src: DATASTAR_CDN }),
-      body: h(
-        "main",
-        props({ id: "search" }, ds.dataSignals({ q: "" }, { ifMissing: true })),
-        h(
-          "input",
-          props(
-            { type: "search", placeholder: "Search contacts" },
-            ds.bind(q),
-            ds.on("input", ds.get(ds.queryUrl("/search", { q })), { debounce: 200 })
-          )
-        ),
-        h("table", {}, h("tbody", { id: "results" }))
+      head: <script type="module" src={DATASTAR_CDN} />,
+      body: (
+        <main id="search" {...ds.dataSignals({ q: "" }, { ifMissing: true })}>
+          <input
+            type="search"
+            placeholder="Search contacts"
+            {...ds.bind(q)}
+            {...ds.on("input", ds.get(ds.queryUrl("/search", { q })), { debounce: 200 })}
+          />
+          <table><tbody id="results" /></table>
+        </main>
       )
     })
   }
@@ -40,13 +38,16 @@ export function handle(request: Request) {
     )
 
     return reply.patch(
-      h(
-        "tbody",
-        { id: "results" },
-        ...(matches.length === 0
-          ? [h("tr", {}, h("td", { colspan: 2 }, "No contacts found"))]
-          : matches.map((contact) => h("tr", {}, h("td", {}, contact.first), h("td", {}, contact.last))))
-      ),
+      <tbody id="results">
+        {matches.length === 0
+          ? <tr><td colspan={2}>No contacts found</td></tr>
+          : matches.map((contact) => (
+            <tr>
+              <td>{contact.first}</td>
+              <td>{contact.last}</td>
+            </tr>
+          ))}
+      </tbody>,
       { selector: "#results" }
     )
   }

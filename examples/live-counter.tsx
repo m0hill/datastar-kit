@@ -1,4 +1,4 @@
-import { ds, event, h, props, reply } from "../src/index.js"
+import { ds, event, reply } from "../src/index.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -6,18 +6,22 @@ export function makeLiveCounter() {
   const invalidations = new InvalidationBus()
   let count = 0
 
+  const Count = () => <output id="count">{count}</output>
+
+  const LiveCounter = () => (
+    <main id="live-counter" {...ds.init(ds.get("/live"))}>
+      <button type="button" {...ds.on("click", ds.post("/increment"))}>+</button>
+      <Count />
+    </main>
+  )
+
   function handle(request: Request) {
     const url = new URL(request.url)
 
     if (request.method === "GET" && url.pathname === "/") {
       return reply.page({
-        head: h("script", { type: "module", src: DATASTAR_CDN }),
-        body: h(
-          "main",
-          props({ id: "live-counter" }, ds.init(ds.get("/live"))),
-          h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
-          h("output", { id: "count" }, count)
-        )
+        head: <script type="module" src={DATASTAR_CDN} />,
+        body: <LiveCounter />
       })
     }
 
@@ -29,7 +33,7 @@ export function makeLiveCounter() {
 
     if (request.method === "GET" && url.pathname === "/live") {
       async function* events() {
-        const currentCountPatch = () => event.patch(h("output", { id: "count" }, count))
+        const currentCountPatch = () => event.patch(<Count />)
         const subscription = invalidations.subscribe()
 
         yield currentCountPatch()
