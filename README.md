@@ -19,7 +19,6 @@ The package root exposes:
 Explicit subpaths:
 
 - `ts-star/jsx-runtime` / `ts-star/jsx-dev-runtime` — automatic JSX runtime for `jsxImportSource: "ts-star"`.
-- `ts-star/jsx` — classic JSX factory compatibility and the underlying JSX node adapter.
 - `ts-star/sse` — low-level Datastar SSE event encoding for protocol tests and escape hatches.
 
 There is no core router, middleware system, dependency-injection context, runtime, PubSub, or application framework adapter. Hono is shown only as an example integration.

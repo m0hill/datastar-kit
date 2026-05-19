@@ -47,7 +47,7 @@ Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions us
 If you intentionally need Datastar's form transport, make the escape hatch visible in view code:
 
 ```ts
-ds.raw("@post('/avatar', { contentType: 'form' })")
+ds.expr("@post('/avatar', { contentType: 'form' })")
 ```
 
 Then read that request with your platform's form/multipart APIs, not `read.signals(...)`.

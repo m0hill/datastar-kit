@@ -13,14 +13,14 @@ describe("typed Datastar HTML helpers", () => {
     const count = ds.signal<number, "count">("count")
 
     expect(count.toDatastarExpression()).toBe("$count")
-    expect(ds.raw("$count++").toDatastarExpression()).toBe("$count++")
-    expect(ds.raw("($count = 3)").toDatastarExpression()).toBe("($count = 3)")
+    expect(ds.expr("$count++").toDatastarExpression()).toBe("$count++")
+    expect(ds.expr("($count = 3)").toDatastarExpression()).toBe("($count = 3)")
   })
 
   it("creates typed nested signal paths", () => {
     const form = ds.signal<{ email: string }, "form">("form")
 
-    expect(ds.raw("($count = $count + 2)").toDatastarExpression()).toBe("($count = $count + 2)")
+    expect(ds.expr("($count = $count + 2)").toDatastarExpression()).toBe("($count = $count + 2)")
     expect(form.path("email").toDatastarExpression()).toBe("$form.email")
   })
 

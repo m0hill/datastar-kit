@@ -36,7 +36,7 @@ describe("automatic JSX runtime", () => {
     expect(render(node)).toBe('<form><button data-on:click="@post(&quot;/increment&quot;)">+</button><input data-bind:count></form>')
   })
 
-  it("rejects raw expression objects as JSX prop values", () => {
+  it("rejects expression objects as JSX prop values", () => {
     expect(() => runtimeJsx("output", { "data-text": signal<number>("count") } as unknown as JsxProps)).toThrow(
       'Unsupported JSX prop value for "data-text"'
     )

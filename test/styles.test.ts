@@ -13,7 +13,7 @@ describe("Datastar style helpers", () => {
   it("builds object-form data-style bindings", () => {
     const color = ds.signal<string, "color">("color")
 
-    expect(ds.dataStyles({ color, display: ds.raw('($visible ? "block" : "none")') })).toEqual({
+    expect(ds.dataStyles({ color, display: ds.expr('($visible ? "block" : "none")') })).toEqual({
       "data-style": '{"color": $color, "display": ($visible ? "block" : "none")}'
     })
   })

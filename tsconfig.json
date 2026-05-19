@@ -18,7 +18,6 @@
     "jsxImportSource": "ts-star",
     "paths": {
       "ts-star": ["./src/index.ts"],
-      "ts-star/jsx": ["./src/jsx.ts"],
       "ts-star/jsx-runtime": ["./src/jsx-runtime.ts"],
       "ts-star/jsx-dev-runtime": ["./src/jsx-dev-runtime.ts"],
       "ts-star/sse": ["./src/sse.ts"]

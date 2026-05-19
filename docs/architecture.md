@@ -27,7 +27,7 @@ The SDK has one public job: make Datastar pleasant from fetch-compatible handler
 
 - `src/html.ts` exposes `h`, `render`, `fragment`, `unsafeHtml`, `props`, and `page` as the low-level node model.
 - `src/jsx-runtime.ts` and `src/jsx-dev-runtime.ts` provide the blessed automatic JSX runtime for `jsxImportSource: "ts-star"`.
-- `src/jsx.ts` keeps classic JSX factory compatibility over the same node model.
+- `src/jsx.ts` is the internal JSX node adapter used by the automatic runtime.
 - `src/ds.ts` exposes Datastar expressions, fetch actions, signal references, modifiers, and attributes.
 
 ### 3. Request boundary layer
@@ -58,6 +58,5 @@ Explicit subpaths:
 
 - `ts-star/sse`
 - `ts-star/jsx-runtime` / `ts-star/jsx-dev-runtime`
-- `ts-star/jsx`
 
 Core does not export `contract`, `live`, router, middleware, platform adapter, PubSub, or runtime services.

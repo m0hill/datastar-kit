@@ -8,10 +8,10 @@ describe("expression escape hatches", () => {
     expect(saving.toDatastarExpression()).toBe("$saving")
   })
 
-  it("uses raw Datastar expressions instead of a framework expression DSL", () => {
-    expect(ds.raw("!($saving)").toDatastarExpression()).toBe("!($saving)")
-    expect(ds.raw("($ready) && ($dirty)").toDatastarExpression()).toBe("($ready) && ($dirty)")
-    expect(ds.raw("($enabled ? \"Enabled\" : \"Disabled\")").toDatastarExpression()).toBe('($enabled ? "Enabled" : "Disabled")')
+  it("uses explicit Datastar expressions instead of a framework expression DSL", () => {
+    expect(ds.expr("!($saving)").toDatastarExpression()).toBe("!($saving)")
+    expect(ds.expr("($ready) && ($dirty)").toDatastarExpression()).toBe("($ready) && ($dirty)")
+    expect(ds.expr("($enabled ? \"Enabled\" : \"Disabled\")").toDatastarExpression()).toBe('($enabled ? "Enabled" : "Disabled")')
   })
 
   it("interpolates Datastar expressions with signals and JS literals", () => {
@@ -21,14 +21,14 @@ describe("expression escape hatches", () => {
     expect(ds.expr`${count} === ${"done"}`.toDatastarExpression()).toBe('$count === "done"')
   })
 
-  it("composes raw expressions with Datastar attribute helpers", () => {
-    expect(ds.dataClass("enabled", ds.raw("($enabled) && (!$saving)"))).toEqual({
+  it("composes explicit expressions with Datastar attribute helpers", () => {
+    expect(ds.dataClass("enabled", ds.expr("($enabled) && (!$saving)"))).toEqual({
       "data-class:enabled": "($enabled) && (!$saving)"
     })
-    expect(ds.dataAttr("aria-disabled", ds.raw("!($enabled)"))).toEqual({
+    expect(ds.dataAttr("aria-disabled", ds.expr("!($enabled)"))).toEqual({
       "data-attr:aria-disabled": "!($enabled)"
     })
-    expect(ds.text(ds.raw('($enabled ? "On" : "Off")'))).toEqual({
+    expect(ds.text(ds.expr('($enabled ? "On" : "Off")'))).toEqual({
       "data-text": '($enabled ? "On" : "Off")'
     })
   })

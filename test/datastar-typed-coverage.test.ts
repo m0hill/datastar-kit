@@ -3,14 +3,14 @@ import * as ds from "../src/ds.js"
 
 if (false) {
   // Structured Datastar actions intentionally support only the default JSON signal transport.
-  // Use ds.raw("@post('/upload', { contentType: 'form' })") and Effect Platform form readers for form uploads.
-  // @ts-expect-error Form transport is an explicit raw escape hatch, not a structured FetchOptions field.
+  // Use ds.expr("@post('/upload', { contentType: 'form' })") and Effect Platform form readers for form uploads.
+  // @ts-expect-error Form transport is an explicit expression escape hatch, not a structured FetchOptions field.
   ds.post("/upload", { contentType: "form" })
 }
 
 describe("Datastar typed helper coverage", () => {
   it("covers public thin mirrors of core attributes and modifiers", () => {
-    expect(ds.effect(ds.raw("$foo = $bar"))).toEqual({
+    expect(ds.effect(ds.expr("$foo = $bar"))).toEqual({
       "data-effect": "$foo = $bar"
     })
 
@@ -25,7 +25,7 @@ describe("Datastar typed helper coverage", () => {
     expect(ds.ref("panel")).toEqual({ "data-ref:panel": true })
     expect(ds.indicator("fetching")).toEqual({ "data-indicator:fetching": true })
 
-    expect(ds.dataClass("my-class", ds.raw("$active"), { case: "camel" })).toEqual({
+    expect(ds.dataClass("my-class", ds.expr("$active"), { case: "camel" })).toEqual({
       "data-class:my-class__case.camel": "$active"
     })
 
@@ -37,17 +37,17 @@ describe("Datastar typed helper coverage", () => {
       "data-signals:my-signal__case.camel": "1"
     })
 
-    expect(ds.dataComputed("full-name", ds.raw("$first + ' ' + $last"), { case: "camel" })).toEqual({
+    expect(ds.dataComputed("full-name", ds.expr("$first + ' ' + $last"), { case: "camel" })).toEqual({
       "data-computed:full-name__case.camel": "$first + ' ' + $last"
     })
 
-    expect(ds.dataComputeds({ fullName: ds.raw<ds.DatastarFunction<unknown>>("() => $first + ' ' + $last") })).toEqual({
+    expect(ds.dataComputeds({ fullName: ds.expr<ds.DatastarFunction<unknown>>("() => $first + ' ' + $last") })).toEqual({
       "data-computed": `{"fullName": () => $first + ' ' + $last}`
     })
   })
 
   it("covers public action mirrors and fetch response overrides", () => {
-    expect(ds.peek(ds.raw<ds.DatastarFunction<string>>("() => $bar")).toDatastarExpression()).toBe("@peek(() => $bar)")
+    expect(ds.peek(ds.expr<ds.DatastarFunction<string>>("() => $bar")).toDatastarExpression()).toBe("@peek(() => $bar)")
     expect(ds.setAll(true, { include: ds.regex("^foo$") }).toDatastarExpression()).toBe(
       '@setAll(true, {"include": /^foo$/})'
     )

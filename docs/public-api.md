@@ -20,7 +20,7 @@ Configure JSX consumers with `jsx: "react-jsx"` and `jsxImportSource: "ts-star"`
 - `reply` — native `Response` helpers for Datastar page, SSE, direct response, navigation, stream, and no-content semantics.
 - automatic JSX runtime from `ts-star/jsx-runtime` — blessed server view authoring over the same HTML node model.
 
-Low-level SSE encoding is available from `ts-star/sse`; classic JSX factory compatibility is available from `ts-star/jsx`. Neither `sse` nor JSX factories are root exports.
+Low-level SSE encoding is available from `ts-star/sse`. JSX factories and the internal JSX adapter are not public exports.
 
 ## Removed from core
 

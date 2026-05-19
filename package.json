@@ -10,10 +10,6 @@
       "types": "./dist/src/index.d.ts",
       "default": "./dist/src/index.js"
     },
-    "./jsx": {
-      "types": "./dist/src/jsx.d.ts",
-      "default": "./dist/src/jsx.js"
-    },
     "./jsx-runtime": {
       "types": "./dist/src/jsx-runtime.d.ts",
       "default": "./dist/src/jsx-runtime.js"

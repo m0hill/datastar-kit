@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { dataAttr, on, post, raw as dsRaw } from "../src/ds.js"
+import { dataAttr, on, post, expr } from "../src/ds.js"
 import { props } from "../src/html.js"
 
 describe("prop merging", () => {
@@ -11,7 +11,7 @@ describe("prop merging", () => {
   })
 
   it("composes independent Datastar prop fragments", () => {
-    expect(props(on("click", post("/save")), dataAttr("disabled", dsRaw("$saving")))).toEqual({
+    expect(props(on("click", post("/save")), dataAttr("disabled", expr("$saving")))).toEqual({
       "data-on:click": '@post("/save")',
       "data-attr:disabled": "$saving"
     })

@@ -9,7 +9,7 @@ describe("Datastar modifier helpers", () => {
   })
 
   it("builds tagged debounce and listener target modifiers", () => {
-    expect(ds.on("click", ds.raw("$count++"), { window: true, debounce: { duration: "500ms", leading: true } })).toEqual({
+    expect(ds.on("click", ds.expr("$count++"), { window: true, debounce: { duration: "500ms", leading: true } })).toEqual({
       "data-on:click__window__debounce.500ms.leading": "$count++"
     })
   })
@@ -21,19 +21,19 @@ describe("Datastar modifier helpers", () => {
   })
 
   it("builds intersection modifiers", () => {
-    expect(ds.onIntersect(ds.raw("$visible = true"), { once: true, full: true, delay: 100 })).toEqual({
+    expect(ds.onIntersect(ds.expr("$visible = true"), { once: true, full: true, delay: 100 })).toEqual({
       "data-on-intersect__once__full__delay.100ms": "$visible = true"
     })
   })
 
   it("builds interval duration modifiers", () => {
-    expect(ds.onInterval(ds.raw("$count++"), { duration: "500ms", leading: true })).toEqual({
+    expect(ds.onInterval(ds.expr("$count++"), { duration: "500ms", leading: true })).toEqual({
       "data-on-interval__duration.500ms.leading": "$count++"
     })
   })
 
   it("builds signal patch timing modifiers", () => {
-    expect(ds.onSignalPatch(ds.raw("console.log(patch)"), { debounce: { duration: "250ms", noTrailing: true } })).toEqual({
+    expect(ds.onSignalPatch(ds.expr("console.log(patch)"), { debounce: { duration: "250ms", noTrailing: true } })).toEqual({
       "data-on-signal-patch__debounce.250ms.notrailing": "console.log(patch)"
     })
   })

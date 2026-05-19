@@ -65,7 +65,7 @@ export class Signal<T, Name extends string = string> implements Expr<T> {
   }
 }
 
-export const raw = <T = unknown>(code: string): Expr<T> => new RawExpr<T>(code)
+const raw = <T = unknown>(code: string): Expr<T> => new RawExpr<T>(code)
 
 export const signal = <T = unknown, Name extends string = string>(name: Name): Signal<T, Name> => new Signal(name)
 
