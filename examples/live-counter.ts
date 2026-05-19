@@ -1,75 +1,51 @@
-import { ds, event, h, props, render, reply, type Child } from "../src/index.js"
+import { ds, event, h, props, reply } from "../src/index.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
-const datastarScript = (): Child => h("script", { type: "module", src: DATASTAR_CDN })
-const notFound = (): Response => new Response("Not Found", { status: 404 })
-
-export interface LiveCounterExample {
-  readonly page: () => Response
-  readonly increment: () => Response
-  readonly live: () => Response
-  readonly handle: (request: Request) => Response
-  readonly shutdown: () => void
-  readonly currentCount: () => number
-}
-
-export const countFragment = (count: number): Child => h("output", { id: "count" }, count)
-
-const countPatch = (count: number): string => event.patch(countFragment(count))
-
-export const pageNode = (): Child =>
-  h(
-    "main",
-    props({ id: "live-counter" }, ds.init(ds.get("/live"))),
-    h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
-    countFragment(0)
-  )
-
-export const pageView = (): string => render(pageNode())
-
-export const makeLiveCounter = (): LiveCounterExample => {
+export function makeLiveCounter() {
   const invalidations = new InvalidationBus()
   let count = 0
 
-  const page = (): Response =>
-    reply.page({
-      head: datastarScript(),
-      body: pageNode()
-    })
-
-  const increment = (): Response => {
-    count += 1
-    invalidations.publish()
-    return reply.done()
-  }
-
-  async function* liveEvents(): AsyncIterable<string> {
-    const subscription = invalidations.subscribe()
-
-    yield countPatch(count)
-
-    for await (const _ of subscription) {
-      yield countPatch(count)
-    }
-  }
-
-  const live = (): Response => reply.stream(liveEvents())
-
-  const handle = (request: Request): Response => {
+  function handle(request: Request) {
     const url = new URL(request.url)
 
-    if (request.method === "GET" && url.pathname === "/") return page()
-    if (request.method === "POST" && url.pathname === "/increment") return increment()
-    if (request.method === "GET" && url.pathname === "/live") return live()
+    if (request.method === "GET" && url.pathname === "/") {
+      return reply.page({
+        head: h("script", { type: "module", src: DATASTAR_CDN }),
+        body: h(
+          "main",
+          props({ id: "live-counter" }, ds.init(ds.get("/live"))),
+          h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
+          h("output", { id: "count" }, count)
+        )
+      })
+    }
 
-    return notFound()
+    if (request.method === "POST" && url.pathname === "/increment") {
+      count += 1
+      invalidations.publish()
+      return reply.done()
+    }
+
+    if (request.method === "GET" && url.pathname === "/live") {
+      async function* events() {
+        const currentCountPatch = () => event.patch(h("output", { id: "count" }, count))
+        const subscription = invalidations.subscribe()
+
+        yield currentCountPatch()
+
+        for await (const _ of subscription) {
+          yield currentCountPatch()
+        }
+      }
+
+      return reply.stream(events())
+    }
+
+    return new Response("Not Found", { status: 404 })
   }
 
   return {
-    page,
-    increment,
-    live,
     handle,
     shutdown: () => invalidations.close(),
     currentCount: () => count
@@ -142,5 +118,3 @@ class InvalidationBus {
     }
   }
 }
-
-export const createLiveCounter = makeLiveCounter

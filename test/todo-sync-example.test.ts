@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { makeTodoSync, startTodoSyncServer, todoListNode, todoPageNode } from "../examples/todo-sync.js"
-import { render } from "../src/html.js"
+import { makeTodoSync, startTodoSyncServer } from "../examples/todo-sync.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 const TAILWIND_CDN = "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"
@@ -30,14 +29,10 @@ describe("Hono todo sync example", () => {
       expect(html).toContain("Realtime todo sync")
       expect(html).toContain('data-init="@get(&quot;/todos/live&quot;)"')
       expect(html).toContain('data-on:submit__prevent="@post(&quot;/todos&quot;, {payload: {&quot;title&quot;: $title}})"')
+      expect(html).toContain("No todos yet")
     } finally {
       todoSync.shutdown()
     }
-  })
-
-  it("keeps todo fragments as composable JSX-rendered HTML nodes", () => {
-    expect(render(todoPageNode())).toContain("Realtime todo sync")
-    expect(render(todoListNode([{ id: crypto.randomUUID(), title: "Review TSX", completed: false, createdAt: new Date().toISOString() }]))).toContain("Review TSX")
   })
 
   it("validates create requests with Zod and patches validation errors", async () => {

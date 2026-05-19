@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest"
-import { contactFormView, handle } from "../examples/validation-form.js"
+import { handle } from "../examples/validation-form.js"
 
 describe("validation form example", () => {
-  it("renders input and validation signals without trusting them as durable state", () => {
-    expect(contactFormView()).toContain('data-signals__ifmissing="{&quot;name&quot;: &quot;&quot;, &quot;email&quot;: &quot;&quot;, &quot;_validation&quot;: {&quot;form&quot;: &quot;&quot;, &quot;name&quot;: &quot;&quot;, &quot;email&quot;: &quot;&quot;}}"')
-    expect(contactFormView()).toContain('data-text="$_validation.email"')
+  it("renders input and validation signals without trusting them as durable state", async () => {
+    const response = await handle(new Request("http://localhost/"))
+    const html = await response.text()
+
+    expect(response.status).toBe(200)
+    expect(html).toContain('data-signals__ifmissing="{&quot;name&quot;: &quot;&quot;, &quot;email&quot;: &quot;&quot;, &quot;_validation&quot;: {&quot;form&quot;: &quot;&quot;, &quot;name&quot;: &quot;&quot;, &quot;email&quot;: &quot;&quot;}}"')
+    expect(html).toContain('data-text="$_validation.email"')
   })
 
   it("returns 200 validation patches for recoverable form errors", async () => {
@@ -40,5 +44,12 @@ describe("validation form example", () => {
 
     expect(response.status).toBe(400)
     expect(await response.text()).toBe("Invalid request input")
+  })
+
+  it("returns a normal 404 response for unknown routes", async () => {
+    const response = await handle(new Request("http://localhost/missing"))
+
+    expect(response.status).toBe(404)
+    expect(await response.text()).toBe("Not Found")
   })
 })

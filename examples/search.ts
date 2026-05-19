@@ -1,79 +1,55 @@
-import { ds, h, props, render, reply, type Child } from "../src/index.js"
+import { ds, h, props, reply } from "../src/index.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
-const datastarScript = (): Child => h("script", { type: "module", src: DATASTAR_CDN })
-const notFound = (): Response => new Response("Not Found", { status: 404 })
-
-interface Contact {
-  readonly first: string
-  readonly last: string
-}
-
-const contacts: readonly Contact[] = [
+const contacts = [
   { first: "Ada", last: "Lovelace" },
   { first: "Grace", last: "Hopper" },
   { first: "Edsger", last: "Dijkstra" }
 ]
 
-const q = ds.signal<string, "q">("q")
-const searchUrl = ds.queryUrl("/search", { q })
+export function handle(request: Request) {
+  const url = new URL(request.url)
 
-const matchingContacts = (query: string): readonly Contact[] => {
-  const needle = query.toLowerCase()
-  return contacts.filter((contact) => `${contact.first} ${contact.last}`.toLowerCase().includes(needle))
-}
+  if (request.method === "GET" && url.pathname === "/") {
+    const q = ds.signal<string, "q">("q")
 
-const resultRow = (contact: Contact): Child =>
-  h("tr", {}, h("td", {}, contact.first), h("td", {}, contact.last))
-
-const emptyRow = (): Child =>
-  h("tr", {}, h("td", { colspan: 2 }, "No contacts found"))
-
-export const resultsNode = (query: string): Child => {
-  const matches = matchingContacts(query)
-  const rows = matches.length === 0 ? [emptyRow()] : matches.map(resultRow)
-
-  return h("tbody", { id: "results" }, ...rows)
-}
-
-export const resultsView = (query: string): string => render(resultsNode(query))
-
-export const searchNode = (): Child =>
-  h(
-    "main",
-    props({ id: "search" }, ds.dataSignals({ q: "" }, { ifMissing: true })),
-    h(
-      "input",
-      props(
-        { type: "search", placeholder: "Search contacts" },
-        ds.bind(q),
-        ds.on("input", ds.get(searchUrl), { debounce: 200 })
+    return reply.page({
+      head: h("script", { type: "module", src: DATASTAR_CDN }),
+      body: h(
+        "main",
+        props({ id: "search" }, ds.dataSignals({ q: "" }, { ifMissing: true })),
+        h(
+          "input",
+          props(
+            { type: "search", placeholder: "Search contacts" },
+            ds.bind(q),
+            ds.on("input", ds.get(ds.queryUrl("/search", { q })), { debounce: 200 })
+          )
+        ),
+        h("table", {}, h("tbody", { id: "results" }))
       )
-    ),
-    h("table", {}, h("tbody", { id: "results" }))
-  )
+    })
+  }
 
-export const searchView = (): string => render(searchNode())
+  if (request.method === "GET" && url.pathname === "/search") {
+    const query = url.searchParams.get("q") ?? ""
+    const needle = query.toLowerCase()
+    const matches = contacts.filter((contact) =>
+      `${contact.first} ${contact.last}`.toLowerCase().includes(needle)
+    )
 
-export const searchPage = (): Response =>
-  reply.page({
-    head: datastarScript(),
-    body: searchNode()
-  })
+    return reply.patch(
+      h(
+        "tbody",
+        { id: "results" },
+        ...(matches.length === 0
+          ? [h("tr", {}, h("td", { colspan: 2 }, "No contacts found"))]
+          : matches.map((contact) => h("tr", {}, h("td", {}, contact.first), h("td", {}, contact.last))))
+      ),
+      { selector: "#results" }
+    )
+  }
 
-export const searchResults = (request: Request): Response => {
-  const url = new URL(request.url)
-  const query = url.searchParams.get("q") ?? ""
-
-  return reply.patch(resultsNode(query), { selector: "#results" })
-}
-
-export const handle = (request: Request): Response => {
-  const url = new URL(request.url)
-
-  if (request.method === "GET" && url.pathname === "/") return searchPage()
-  if (request.method === "GET" && url.pathname === "/search") return searchResults(request)
-
-  return notFound()
+  return new Response("Not Found", { status: 404 })
 }

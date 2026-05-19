@@ -1,25 +1,32 @@
 import { describe, expect, it } from "vitest"
-import { countFragment, createLiveCounter, pageView } from "../examples/live-counter.js"
-import { render } from "../src/html.js"
+import { makeLiveCounter } from "../examples/live-counter.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+const decoder = new TextDecoder()
 
 describe("live counter recipe example", () => {
-  it("renders a page that opens a Datastar SSE stream", () => {
-    expect(pageView()).toContain('data-init="@get(&quot;/live&quot;)"')
-  })
+  it("renders a page that opens a Datastar SSE stream", async () => {
+    const liveCounter = makeLiveCounter()
 
-  it("keeps count fragments as composable HTML nodes", () => {
-    const fragment = countFragment(3)
+    try {
+      const response = liveCounter.handle(new Request("http://localhost/"))
+      const html = await response.text()
 
-    expect(typeof fragment).toBe("object")
-    expect(render(fragment)).toBe('<output id="count">3</output>')
+      expect(response.status).toBe(200)
+      expect(html).toContain("<!doctype html>")
+      expect(html).toContain("live-counter")
+      expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
+      expect(html).toContain('data-init="@get(&quot;/live&quot;)"')
+      expect(html).toContain('<output id="count">0</output>')
+    } finally {
+      liveCounter.shutdown()
+    }
   })
 
   it("publishes increments to live SSE subscribers", async () => {
-    const liveCounter = createLiveCounter()
-    const reader = liveCounter.live().body!.getReader()
-    const decoder = new TextDecoder()
+    const liveCounter = makeLiveCounter()
+    const live = liveCounter.handle(new Request("http://localhost/live"))
+    const reader = live.body!.getReader()
 
     const initial = await reader.read()
     expect(initial.done).toBe(false)
@@ -28,7 +35,9 @@ describe("live counter recipe example", () => {
     )
 
     const updated = reader.read()
-    liveCounter.increment()
+    const increment = liveCounter.handle(new Request("http://localhost/increment", { method: "POST" }))
+
+    expect(increment.status).toBe(204)
 
     const next = await updated
     expect(next.done).toBe(false)
@@ -41,33 +50,19 @@ describe("live counter recipe example", () => {
     await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
   })
 
-  it("dispatches page and increment routes", async () => {
-    const liveCounter = createLiveCounter()
-    const page = liveCounter.handle(new Request("http://localhost/"))
-    const increment = liveCounter.handle(new Request("http://localhost/increment", { method: "POST" }))
-    const html = await page.text()
-
-    expect(page.status).toBe(200)
-    expect(html).toContain("<!doctype html>")
-    expect(html).toContain("live-counter")
-    expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
-    expect(increment.status).toBe(204)
-    expect(liveCounter.currentCount()).toBe(1)
-    liveCounter.shutdown()
-  })
-
   it("renders current backend state on live reconnect without requiring missed deltas", async () => {
-    const liveCounter = createLiveCounter()
+    const liveCounter = makeLiveCounter()
 
-    liveCounter.increment()
+    liveCounter.handle(new Request("http://localhost/increment", { method: "POST" }))
 
-    const reader = liveCounter.live().body?.getReader()
+    const live = liveCounter.handle(new Request("http://localhost/live"))
+    const reader = live.body?.getReader()
 
     expect(reader).toBeDefined()
 
     const first = await reader!.read()
     expect(first.done).toBe(false)
-    expect(new TextDecoder().decode(first.value)).toBe(
+    expect(decoder.decode(first.value)).toBe(
       'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
     )
 
@@ -76,14 +71,13 @@ describe("live counter recipe example", () => {
   })
 
   it("streams live counter updates through the fetch-compatible handler", async () => {
-    const liveCounter = createLiveCounter()
-    const liveResponse = liveCounter.handle(new Request("http://localhost/live"))
-    const reader = liveResponse.body?.getReader()
+    const liveCounter = makeLiveCounter()
+    const live = liveCounter.handle(new Request("http://localhost/live"))
+    const reader = live.body?.getReader()
 
-    expect(liveResponse.headers.get("content-type")).toBe("text/event-stream")
+    expect(live.headers.get("content-type")).toBe("text/event-stream")
     expect(reader).toBeDefined()
 
-    const decoder = new TextDecoder()
     const initial = await reader!.read()
     expect(initial.done).toBe(false)
     let received = decoder.decode(initial.value)
@@ -104,5 +98,14 @@ describe("live counter recipe example", () => {
 
     liveCounter.shutdown()
     await expect(reader!.read()).resolves.toEqual({ done: true, value: undefined })
+  })
+
+  it("returns a normal 404 response for unknown routes", async () => {
+    const liveCounter = makeLiveCounter()
+    const response = liveCounter.handle(new Request("http://localhost/missing"))
+
+    expect(response.status).toBe(404)
+    expect(await response.text()).toBe("Not Found")
+    liveCounter.shutdown()
   })
 })

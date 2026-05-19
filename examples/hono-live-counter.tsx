@@ -1,29 +1,24 @@
+/** @jsx jsx */
 import { Hono } from "hono"
-import { ds, event, h, props, reply, type Child } from "../src/index.js"
+import { ds, event, reply } from "../src/index.js"
+import { jsx } from "../src/jsx.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
-const datastarScript = (): Child => h("script", { type: "module", src: DATASTAR_CDN })
-const countNode = (count: number): Child => h("output", { id: "count" }, count)
-const countPatch = (count: number): string => event.patch(countNode(count))
-
-const pageNode = (): Child =>
-  h(
-    "main",
-    props({ id: "live-counter" }, ds.init(ds.get("/live"))),
-    h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
-    countNode(0)
-  )
-
-export const makeHonoLiveCounter = () => {
+export function makeHonoLiveCounter() {
   const app = new Hono()
   const invalidations = new InvalidationBus()
   let count = 0
 
   app.get("/", () =>
     reply.page({
-      head: datastarScript(),
-      body: pageNode()
+      head: <script type="module" src={DATASTAR_CDN}></script>,
+      body: (
+        <main id="live-counter" {...ds.init(ds.get("/live"))}>
+          <button type="button" {...ds.on("click", ds.post("/increment"))}>+</button>
+          <output id="count">{count}</output>
+        </main>
+      )
     })
   )
 
@@ -34,13 +29,14 @@ export const makeHonoLiveCounter = () => {
   })
 
   app.get("/live", () => {
-    async function* events(): AsyncIterable<string> {
+    async function* events() {
+      const currentCountPatch = () => event.patch(<output id="count">{count}</output>)
       const subscription = invalidations.subscribe()
 
-      yield countPatch(count)
+      yield currentCountPatch()
 
       for await (const _ of subscription) {
-        yield countPatch(count)
+        yield currentCountPatch()
       }
     }
 
@@ -49,7 +45,7 @@ export const makeHonoLiveCounter = () => {
 
   return {
     app,
-    handle: (request: Request): Response | Promise<Response> => app.fetch(request),
+    handle: (request: Request) => app.fetch(request),
     shutdown: () => invalidations.close(),
     currentCount: () => count
   }
@@ -122,9 +118,14 @@ class InvalidationBus {
   }
 }
 
-const defaultCounter = makeHonoLiveCounter()
+const counter = makeHonoLiveCounter()
 
-export const app = defaultCounter.app
-export const handle = (request: Request): Response | Promise<Response> => defaultCounter.handle(request)
-export const shutdown = (): void => defaultCounter.shutdown()
-export const currentCount = (): number => defaultCounter.currentCount()
+export const app = counter.app
+
+export function handle(request: Request) {
+  return counter.handle(request)
+}
+
+export function shutdown() {
+  counter.shutdown()
+}
