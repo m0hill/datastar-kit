@@ -6,10 +6,20 @@ Datastar signals are browser-side values used as sparse request input or UI feed
 
 Use `ds.signal(...)` for typed signal references and `ds.dataSignals(...)` / `ds.dataSignal(...)` for initial values:
 
-```ts
-const q = ds.signal<string, "q">("q")
+```tsx
+const q = ds.signal<string>("q")
 
-h("main", props(ds.dataSignals({ q: "" }, { ifMissing: true })))
+<main {...ds.dataSignals({ q: "" }, { ifMissing: true })}>
+  <input {...ds.bind(q)} />
+</main>
+```
+
+For client-side Datastar expressions that need more than a bare signal, prefer the `ds.expr` tagged template so signal refs and JS literals are quoted consistently:
+
+```tsx
+const count = ds.signal<number>("count")
+
+<button {...ds.dataAttr("disabled", ds.expr`${count} >= ${10}`)}>+</button>
 ```
 
 Use private/local names such as `_validation.email` for UI-only feedback that should not be treated as durable state.

@@ -4,11 +4,13 @@
 
 ## Import style
 
-Use contextual namespaces for larger concepts and top-level names only for the tiny HTML authoring surface:
+Use contextual namespaces for larger concepts. Server-side JSX is the blessed view-authoring path; the top-level HTML helpers remain the low-level primitive surface.
 
-```ts
-import { ds, event, read, reply, h, props } from "ts-star"
+```tsx
+import { ds, event, read, reply } from "ts-star"
 ```
+
+Configure JSX consumers with `jsx: "react-jsx"` and `jsxImportSource: "ts-star"`.
 
 ## Current blessed path
 
@@ -16,9 +18,9 @@ import { ds, event, read, reply, h, props } from "ts-star"
 - `event` — rendered Datastar SSE event chunks for `reply.stream(...)`.
 - `read` — Datastar signal decoding from a native `Request` with Standard Schema validation.
 - `reply` — native `Response` helpers for Datastar page, SSE, direct response, navigation, stream, and no-content semantics.
-- `h`, `render`, `fragment`, `raw`, `props`, `page` — tiny server HTML boundary.
+- automatic JSX runtime from `ts-star/jsx-runtime` — blessed server view authoring over the same HTML node model.
 
-Low-level SSE encoding is available from `ts-star/sse`; JSX is available from `ts-star/jsx`. Neither `sse` nor JSX are root exports.
+Low-level SSE encoding is available from `ts-star/sse`; classic JSX factory compatibility is available from `ts-star/jsx`. Neither `sse` nor JSX factories are root exports.
 
 ## Removed from core
 

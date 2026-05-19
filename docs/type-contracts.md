@@ -2,23 +2,23 @@
 
 The Web Standards branch intentionally removes schema-derived signal contracts from core. Signals are authored directly with `ds.signal(...)` and `ds.dataSignals(...)`, while request payloads are validated at the boundary with `read.signals(request, schema)`.
 
-```ts
+```tsx
 import { z } from "zod"
-import { ds, h, props, read, reply } from "ts-star"
+import { ds, read, reply } from "ts-star"
 
 const ContactSchema = z.object({
   name: z.string(),
   email: z.string()
 })
 
-const name = ds.signal<string, "name">("name")
-const email = ds.signal<string, "email">("email")
+const name = ds.signal<string>("name")
+const email = ds.signal<string>("email")
 
-const form = h(
-  "form",
-  props(ds.dataSignals({ name: "", email: "" }, { ifMissing: true })),
-  h("input", props({ name: "name" }, ds.bind(name))),
-  h("input", props({ name: "email" }, ds.bind(email)))
+const form = (
+  <form {...ds.dataSignals({ name: "", email: "" }, { ifMissing: true })}>
+    <input name="name" {...ds.bind(name)} />
+    <input name="email" {...ds.bind(email)} />
+  </form>
 )
 
 async function submit(request: Request): Promise<Response> {

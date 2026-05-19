@@ -14,16 +14,11 @@ Docs: `datastar-philosophy.md`, `datastar-protocol.md`, `signals.md`.
 
 ## HTML and views
 
-Top-level HTML helpers are the canonical server-rendering API:
+Server-side JSX is the canonical app/view authoring API:
 
-- `h`
-- `render`
-- `fragment`
-- `raw`
-- `props`
-- `page`
-
-JSX is an explicit experimental adapter from `ts-star/jsx`, not a root API.
+- `ts-star/jsx-runtime` / `ts-star/jsx-dev-runtime` for TypeScript automatic JSX (`jsxImportSource: "ts-star"`).
+- top-level `h`, `render`, `fragment`, `raw`, `props`, `page` as the low-level HTML primitive surface.
+- `ts-star/jsx` for classic JSX factory compatibility.
 
 Docs: `html-rendering.md`.
 

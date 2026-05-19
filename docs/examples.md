@@ -8,7 +8,7 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 
 ## TSX counter
 
-`examples/tsx-counter.tsx` demonstrates the explicit server-only JSX adapter over the same HTML node model.
+`examples/tsx-counter.tsx` demonstrates the blessed automatic JSX runtime over the same HTML node model.
 
 ## Search
 
@@ -28,4 +28,4 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 
 ## Todo sync
 
-`examples/todo-sync.tsx` is a full-stack Hono Node example. It uses the explicit TSX adapter for server-rendered views, Tailwind browser CSS, Hono `compress()` middleware, `read.signals(...)` with Zod validation, backend-owned todo state, and `reply.stream(...)` SSE fan-out so multiple tabs receive create/toggle/delete updates in real time.
+`examples/todo-sync.tsx` is a full-stack Hono Node example. It uses blessed TSX views, Tailwind browser CSS, Hono `compress()` middleware, `read.signals(...)` with Zod validation, backend-owned todo state, and `reply.stream(...)` SSE fan-out so multiple tabs receive create/toggle/delete updates in real time.

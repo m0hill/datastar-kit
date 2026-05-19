@@ -14,51 +14,73 @@ The package root exposes:
 - `event` — rendered Datastar SSE event helpers for streams.
 - `read` — Datastar signal decoding from a native `Request` with Standard Schema validation.
 - `reply` — Datastar-safe native `Response` helpers.
-- `h`, `render`, `fragment`, `raw`, `props`, `page` — tiny server HTML helpers.
+- `h`, `render`, `fragment`, `raw`, `props`, `page` — low-level server HTML primitives used by the JSX runtime.
 
 Explicit subpaths:
 
+- `ts-star/jsx-runtime` / `ts-star/jsx-dev-runtime` — automatic JSX runtime for `jsxImportSource: "ts-star"`.
+- `ts-star/jsx` — classic JSX factory compatibility and the underlying JSX node adapter.
 - `ts-star/sse` — low-level Datastar SSE event encoding for protocol tests and escape hatches.
-- `ts-star/jsx` — optional server-only JSX adapter over the same HTML node model.
 
 There is no core router, middleware system, dependency-injection context, runtime, PubSub, or application framework adapter. Hono is shown only as an example integration.
 
 ## Minimal counter
 
-```ts
-import { ds, h, props, reply } from "ts-star"
+The blessed view-authoring path is server-side JSX. Configure TypeScript once:
+
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "ts-star"
+  }
+}
+```
+
+```tsx
+import { ds, reply } from "ts-star"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
 let count = 0
 
-const countNode = () => h("output", { id: "count" }, count)
+const Count = () => <output id="count">{count}</output>
 
-const counterNode = () =>
-  h(
-    "main",
-    { id: "counter" },
-    h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
-    countNode()
-  )
+const Counter = () => (
+  <main id="counter">
+    <button type="button" {...ds.on("click", ds.post("/increment"))}>+</button>
+    <Count />
+  </main>
+)
 
 export function handle(request: Request): Response {
   const url = new URL(request.url)
 
   if (request.method === "GET" && url.pathname === "/") {
     return reply.page({
-      head: h("script", { type: "module", src: DATASTAR_CDN }),
-      body: counterNode()
+      head: <script type="module" src={DATASTAR_CDN} />,
+      body: <Counter />
     })
   }
 
   if (request.method === "POST" && url.pathname === "/increment") {
     count += 1
-    return reply.patch(countNode(), { selector: "#count" })
+    return reply.patch(<Count />, { selector: "#count" })
   }
 
   return new Response("Not Found", { status: 404 })
 }
+```
+
+## Datastar expressions
+
+Common actions and attributes stay structured through `ds.*` helpers. When a client-side expression is actually needed, use `ds.expr` so signal refs and JS literals interpolate safely instead of hand-building attribute strings:
+
+```tsx
+const count = ds.signal<number>("count")
+const max = 10
+
+<button {...ds.dataAttr("disabled", ds.expr`${count} >= ${max}`)}>+</button>
 ```
 
 ## Reading Datastar signals
@@ -98,13 +120,13 @@ Datastar action helpers own their protocol status codes. Use plain `new Response
 Reference examples live in `examples/`:
 
 - `counter.ts` — smallest backend-state element patch flow.
-- `tsx-counter.tsx` — same model using the explicit JSX adapter.
+- `tsx-counter.tsx` — smallest backend-state element patch flow using the blessed JSX runtime.
 - `search.ts` — Datastar-driven query URL example.
 - `live-counter.ts` — recipe-style app-owned SSE invalidation stream.
 - `validation-form.ts` — recoverable validation patches using Standard Schema-compatible Zod.
 - `hono-counter.ts` — Hono as an application-framework integration around `Request -> Response` helpers.
 - `hono-live-counter.ts` — Hono routing around the app-owned live counter SSE recipe.
-- `todo-sync.tsx` — full-stack Hono todo sync with TSX views, Tailwind browser CSS, `read.signals(...)` + Zod validation, compression middleware, and realtime SSE fan-out.
+- `todo-sync.tsx` — full-stack Hono todo sync with blessed TSX views, Tailwind browser CSS, `read.signals(...)` + Zod validation, compression middleware, and realtime SSE fan-out.
 
 ## Checking examples
 
