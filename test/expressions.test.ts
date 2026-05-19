@@ -3,7 +3,7 @@ import * as ds from "../src/ds.js"
 
 describe("expression escape hatches", () => {
   it("keeps simple signal refs typed", () => {
-    const saving = ds.signal<boolean, "saving">("saving")
+    const saving = ds.signal<boolean>("saving")
 
     expect(saving.toDatastarExpression()).toBe("$saving")
   })
@@ -12,6 +12,13 @@ describe("expression escape hatches", () => {
     expect(ds.raw("!($saving)").toDatastarExpression()).toBe("!($saving)")
     expect(ds.raw("($ready) && ($dirty)").toDatastarExpression()).toBe("($ready) && ($dirty)")
     expect(ds.raw("($enabled ? \"Enabled\" : \"Disabled\")").toDatastarExpression()).toBe('($enabled ? "Enabled" : "Disabled")')
+  })
+
+  it("interpolates Datastar expressions with signals and JS literals", () => {
+    const count = ds.signal<number>("count")
+
+    expect(ds.expr`${count} >= ${10}`.toDatastarExpression()).toBe("$count >= 10")
+    expect(ds.expr`${count} === ${"done"}`.toDatastarExpression()).toBe('$count === "done"')
   })
 
   it("composes raw expressions with Datastar attribute helpers", () => {

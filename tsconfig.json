@@ -14,9 +14,15 @@
     "rootDir": ".",
     "types": ["node", "vitest/globals"],
     "skipLibCheck": true,
-    "jsx": "react",
-    "jsxFactory": "jsx",
-    "jsxFragmentFactory": "Fragment"
+    "jsx": "react-jsx",
+    "jsxImportSource": "ts-star",
+    "paths": {
+      "ts-star": ["./src/index.ts"],
+      "ts-star/jsx": ["./src/jsx.ts"],
+      "ts-star/jsx-runtime": ["./src/jsx-runtime.ts"],
+      "ts-star/jsx-dev-runtime": ["./src/jsx-dev-runtime.ts"],
+      "ts-star/sse": ["./src/sse.ts"]
+    }
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "test/**/*.tsx", "examples/**/*.ts", "examples/**/*.tsx"],
   "exclude": ["dist", "node_modules"]

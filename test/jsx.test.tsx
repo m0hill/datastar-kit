@@ -1,11 +1,10 @@
-/** @jsx jsx */
-/** @jsxFrag Fragment */
 import { describe, expect, it } from "vitest"
 import { bind, dataSignals, on, post, signal, text } from "../src/ds.js"
 import { props, render, type Child } from "../src/html.js"
-import { Fragment, jsx, type JsxProps } from "../src/jsx.js"
+import type { JsxProps } from "../src/jsx.js"
+import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
-describe("JSX templating experiment", () => {
+describe("automatic JSX runtime", () => {
   it("renders JSX through the same HTML renderer", () => {
     const node = <button type="button" disabled>Save</button>
 
@@ -13,7 +12,7 @@ describe("JSX templating experiment", () => {
   })
 
   it("supports Datastar attr fragments in JSX", () => {
-    const count = signal<number, "count">("count")
+    const count = signal<number>("count")
     const node = (
       <main {...props({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true }))}>
         <button {...props({ type: "button" }, on("click", post("/increment")))}>+</button>
@@ -38,7 +37,7 @@ describe("JSX templating experiment", () => {
   })
 
   it("rejects raw expression objects as JSX prop values", () => {
-    expect(() => jsx("output", { "data-text": signal<number, "count">("count") } as unknown as JsxProps)).toThrow(
+    expect(() => runtimeJsx("output", { "data-text": signal<number>("count") } as unknown as JsxProps)).toThrow(
       'Unsupported JSX prop value for "data-text"'
     )
   })
@@ -47,6 +46,12 @@ describe("JSX templating experiment", () => {
     const node = <div className="stack gap-2">Hello</div>
 
     expect(render(node)).toBe('<div class="stack gap-2">Hello</div>')
+  })
+
+  it("normalizes htmlFor to the HTML for attribute", () => {
+    const node = <label htmlFor="email">Email</label>
+
+    expect(render(node)).toBe('<label for="email">Email</label>')
   })
 
   it("renders fragments for sibling nodes", () => {

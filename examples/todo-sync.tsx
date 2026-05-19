@@ -1,11 +1,9 @@
-/** @jsx jsx */
 import { serve, type ServerType } from "@hono/node-server"
 import { Hono } from "hono"
 import { compress } from "hono/compress"
 import { pathToFileURL } from "node:url"
 import * as z from "zod"
 import { ds, event, read, reply } from "../src/index.js"
-import { jsx } from "../src/jsx.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 const TAILWIND_CDN = "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"
@@ -125,7 +123,7 @@ function pageHead() {
 }
 
 function TodoPage({ todos }: { todos: readonly Todo[] }) {
-  const title = ds.signal<string, "title">("title")
+  const title = ds.signal<string>("title")
 
   return (
     <main

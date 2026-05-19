@@ -27,7 +27,11 @@ export const Fragment = (props: { readonly children?: Child | readonly Child[] }
   return Array.isArray(children) ? children : [children]
 }
 
-const normalizePropName = (key: string): string => key === "className" ? "class" : key
+const normalizePropName = (key: string): string => {
+  if (key === "className") return "class"
+  if (key === "htmlFor") return "for"
+  return key
+}
 
 const isPropValue = (value: unknown): value is PropValue =>
   value === null || value === undefined || typeof value === "string" || typeof value === "number" || typeof value === "boolean"
@@ -73,14 +77,11 @@ const cleanComponentProps = (input: Readonly<Record<string, unknown>> | null, ch
   return cleaned
 }
 
-export function jsx(tag: typeof Fragment, props: null, ...children: readonly Child[]): readonly Child[]
-export function jsx(tag: string, props: JsxProps | null, ...children: readonly Child[]): HtmlNode
-export function jsx<P extends object>(
-  tag: (props: P) => JsxElement,
-  props: Omit<P, "children"> | null,
-  ...children: readonly Child[]
-): JsxElement
-export function jsx(tag: JsxTag, input: Readonly<Record<string, unknown>> | null, ...children: readonly Child[]): JsxElement {
+export const createJsxElement = (
+  tag: JsxTag,
+  input: Readonly<Record<string, unknown>> | null,
+  children: readonly Child[]
+): JsxElement => {
   if (tag === Fragment) {
     return fragment(...children)
   }
@@ -92,11 +93,25 @@ export function jsx(tag: JsxTag, input: Readonly<Record<string, unknown>> | null
   return h(tag, cleanElementProps(input), ...children)
 }
 
+export function jsx(tag: typeof Fragment, props: null, ...children: readonly Child[]): readonly Child[]
+export function jsx(tag: string, props: JsxProps | null, ...children: readonly Child[]): HtmlNode
+export function jsx<P extends object>(
+  tag: (props: P) => JsxElement,
+  props: Omit<P, "children"> | null,
+  ...children: readonly Child[]
+): JsxElement
+export function jsx(tag: JsxTag, input: Readonly<Record<string, unknown>> | null, ...children: readonly Child[]): JsxElement {
+  return createJsxElement(tag, input, children)
+}
+
 declare global {
   namespace JSX {
     type Element = JsxElement
     interface ElementChildrenAttribute {
       children: {}
+    }
+    interface IntrinsicAttributes {
+      key?: string | number
     }
     interface IntrinsicElements {
       [tagName: string]: JsxProps

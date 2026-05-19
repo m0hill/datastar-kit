@@ -1,6 +1,4 @@
-/** @jsx jsx */
 import { ds, reply } from "../src/index.js"
-import { jsx } from "../src/jsx.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 

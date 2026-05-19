@@ -67,11 +67,11 @@ export class Signal<T, Name extends string = string> implements Expr<T> {
 
 export const raw = <T = unknown>(code: string): Expr<T> => new RawExpr<T>(code)
 
-export const signal = <T, Name extends string>(name: Name): Signal<T, Name> => new Signal(name)
+export const signal = <T = unknown, Name extends string = string>(name: Name): Signal<T, Name> => new Signal(name)
 
 type PrivateSignalName<Name extends string> = Name extends `_${string}` ? Name : `_${Name}`
 
-export const local = <T, Name extends string>(name: Name): Signal<T, PrivateSignalName<Name>> =>
+export const local = <T = unknown, Name extends string = string>(name: Name): Signal<T, PrivateSignalName<Name>> =>
   signal<T, PrivateSignalName<Name>>((name.startsWith("_") ? name : `_${name}`) as PrivateSignalName<Name>)
 
 const isExpr = (value: unknown): value is Expr<unknown> =>
@@ -103,6 +103,23 @@ const toJs = (value: ExprInput<unknown>): string => {
   }
 
   return JSON.stringify(String(value))
+}
+
+export function expr<T = unknown>(code: string): Expr<T>
+export function expr<T = unknown>(parts: TemplateStringsArray, ...values: ReadonlyArray<ExprInput<unknown>>): Expr<T>
+export function expr<T = unknown>(
+  codeOrParts: string | TemplateStringsArray,
+  ...values: ReadonlyArray<ExprInput<unknown>>
+): Expr<T> {
+  if (typeof codeOrParts === "string") {
+    return raw<T>(codeOrParts)
+  }
+
+  let code = codeOrParts[0] ?? ""
+  for (const [index, value] of values.entries()) {
+    code += `${toJs(value)}${codeOrParts[index + 1] ?? ""}`
+  }
+  return raw<T>(code)
 }
 
 export interface SignalFilter {

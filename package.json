@@ -14,6 +14,14 @@
       "types": "./dist/src/jsx.d.ts",
       "default": "./dist/src/jsx.js"
     },
+    "./jsx-runtime": {
+      "types": "./dist/src/jsx-runtime.d.ts",
+      "default": "./dist/src/jsx-runtime.js"
+    },
+    "./jsx-dev-runtime": {
+      "types": "./dist/src/jsx-dev-runtime.d.ts",
+      "default": "./dist/src/jsx-dev-runtime.js"
+    },
     "./sse": {
       "types": "./dist/src/sse.d.ts",
       "default": "./dist/src/sse.js"

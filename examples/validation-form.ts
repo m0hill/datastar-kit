@@ -15,11 +15,11 @@ export async function handle(request: Request) {
   const url = new URL(request.url)
 
   if (request.method === "GET" && url.pathname === "/") {
-    const name = ds.signal<string, "name">("name")
-    const email = ds.signal<string, "email">("email")
-    const formError = ds.local<string, "validation.form">("validation.form")
-    const nameError = ds.local<string, "validation.name">("validation.name")
-    const emailError = ds.local<string, "validation.email">("validation.email")
+    const name = ds.signal<string>("name")
+    const email = ds.signal<string>("email")
+    const formError = ds.local<string>("validation.form")
+    const nameError = ds.local<string>("validation.name")
+    const emailError = ds.local<string>("validation.email")
 
     return reply.page({
       head: h("script", { type: "module", src: DATASTAR_CDN }),

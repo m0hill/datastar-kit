@@ -12,7 +12,7 @@ export function handle(request: Request) {
   const url = new URL(request.url)
 
   if (request.method === "GET" && url.pathname === "/") {
-    const q = ds.signal<string, "q">("q")
+    const q = ds.signal<string>("q")
 
     return reply.page({
       head: h("script", { type: "module", src: DATASTAR_CDN }),
