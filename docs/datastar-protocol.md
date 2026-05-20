@@ -27,8 +27,24 @@ Use this policy for SDK helpers:
 Datastar action helpers own their protocol status codes and do not accept a `status` option. Helpers take one flattened options object for Datastar protocol options and response headers:
 
 ```tsx
-reply.patch(<Count />, { selector: "#count", headers: { "x-action": "increment" } })
+reply.patch(<Count />, { headers: { "x-action": "increment" } })
 reply.signals({ saving: false }, { onlyIfMissing: true, headers: { "x-action": "save" } })
+```
+
+### Selector usage
+
+For ordinary component updates, omit `selector` and render stable IDs on each top-level element. Datastar matches those IDs in the default `outer` patch mode:
+
+```tsx
+reply.patch(<Count />)
+event.patch(<Count />)
+```
+
+Pass `selector` when the patch targets a container or CSS match instead of the returned element itself, such as appending or prepending list items, removing elements, patching `inner` HTML, or updating multiple targets:
+
+```tsx
+reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
+event.patch("", { selector: ".toast", mode: "remove" })
 ```
 
 ## Signal decoding

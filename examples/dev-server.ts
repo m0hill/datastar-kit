@@ -1,6 +1,7 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http"
 import type { AddressInfo } from "node:net"
 import { pathToFileURL } from "node:url"
+import { handle as appendListHandle } from "./append-list.js"
 import { handle as counterHandle } from "./counter.js"
 import { makeHonoCounter } from "./hono-counter.js"
 import { makeHonoLiveCounter } from "./hono-live-counter.js"
@@ -10,7 +11,7 @@ import { handle as todoSyncHandle, shutdown as shutdownTodoSync } from "./todo-s
 import { handle as tsxCounterHandle } from "./tsx-counter.js"
 import { handle as validationFormHandle } from "./validation-form.js"
 
-export const exampleNames = ["counter", "tsx-counter", "search", "live-counter", "validation-form", "hono-counter", "hono-live-counter", "todo-sync"] as const
+export const exampleNames = ["counter", "tsx-counter", "append-list", "search", "live-counter", "validation-form", "hono-counter", "hono-live-counter", "todo-sync"] as const
 export type ExampleName = typeof exampleNames[number]
 
 export interface DevServerOptions {
@@ -43,6 +44,8 @@ const makeExampleRuntime = (name: ExampleName): ExampleRuntime => {
       return { handle: counterHandle }
     case "tsx-counter":
       return { handle: tsxCounterHandle }
+    case "append-list":
+      return { handle: appendListHandle }
     case "search":
       return { handle: searchHandle }
     case "live-counter": {

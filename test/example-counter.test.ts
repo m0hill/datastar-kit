@@ -23,7 +23,7 @@ describe("counter example", () => {
     expect(response.status).toBe(200)
     expect(counter.currentCount()).toBe(1)
     expect(await response.text()).toBe(
-      'event: datastar-patch-elements\ndata: selector #count\ndata: elements <output id="count">1</output>\n\n'
+      'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
     )
   })
 
@@ -37,7 +37,7 @@ describe("counter example", () => {
     expect(response.status).toBe(200)
     expect(counter.currentCount()).toBe(1)
     expect(await response.text()).toBe(
-      'event: datastar-patch-elements\ndata: selector #count\ndata: elements <output id="count">1</output>\n\n'
+      'event: datastar-patch-elements\ndata: elements <output id="count">1</output>\n\n'
     )
   })
 

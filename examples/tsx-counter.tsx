@@ -23,7 +23,7 @@ export function makeTsxCounter() {
 
     if (request.method === "POST" && url.pathname === "/increment") {
       count += 1
-      return reply.patch(<output id="count">{count}</output>, { selector: "#count" })
+      return reply.patch(<output id="count">{count}</output>)
     }
 
     return new Response("Not Found", { status: 404 })

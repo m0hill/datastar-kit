@@ -64,7 +64,7 @@ export function handle(request: Request): Response {
 
   if (request.method === "POST" && url.pathname === "/increment") {
     count += 1
-    return reply.patch(<Count />, { selector: "#count" })
+    return reply.patch(<Count />)
   }
 
   return new Response("Not Found", { status: 404 })
@@ -112,7 +112,14 @@ Core depends only on `@standard-schema/spec` for public types. Zod, Valibot, Ark
 - `reply.navigate(...)` — safe direct script navigation.
 - `reply.directHtml(...)`, `reply.directSignals(...)`, `reply.directScript(...)` — flat explicit Datastar direct-response escape hatches.
 
-Datastar action helpers own their protocol status codes. Protocol options and response headers live in one flattened options object, e.g. `reply.patch(view, { selector: "#count", headers })`. Use plain `new Response(...)` for non-Datastar HTTP semantics such as ordinary `404` or API JSON errors.
+Datastar action helpers own their protocol status codes. Protocol options and response headers live in one flattened options object, e.g. `reply.patch(view, { headers })`. Use plain `new Response(...)` for non-Datastar HTTP semantics such as ordinary `404` or API JSON errors.
+
+For standard component updates, leave `selector` out and render stable IDs on the top-level elements you return; Datastar matches those IDs in the default outer patch mode. Pass `selector` when the patch targets a container or CSS match instead of the returned element itself, such as appending to a list, removing elements, updating inner HTML, or patching multiple targets.
+
+```tsx
+reply.patch(<Count />)
+reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
+```
 
 ## Examples
 
@@ -120,6 +127,7 @@ Reference examples live in `examples/`:
 
 - `counter.ts` — low-level `h(...)` hyperscript example for the smallest backend-state element patch flow.
 - `tsx-counter.tsx` — smallest backend-state element patch flow using the blessed JSX runtime.
+- `append-list.tsx` — explicit selector example that appends returned list items into a target container.
 - `search.tsx` — Datastar-driven query URL example using the blessed JSX runtime.
 - `live-counter.tsx` — recipe-style app-owned SSE invalidation stream using the blessed JSX runtime.
 - `validation-form.tsx` — recoverable validation patches using Standard Schema-compatible Zod and JSX views.
@@ -135,6 +143,7 @@ Use focused package scripts when changing examples:
 pnpm run check:examples
 pnpm run check:example:counter
 pnpm run check:example:tsx-counter
+pnpm run check:example:append-list
 pnpm run check:example:search
 pnpm run check:example:live-counter
 pnpm run check:example:validation-form
@@ -152,6 +161,7 @@ Each dev script builds the TypeScript examples, then starts one example through 
 ```sh
 pnpm run dev:counter
 pnpm run dev:tsx-counter
+pnpm run dev:append-list
 pnpm run dev:search
 pnpm run dev:live-counter
 pnpm run dev:validation-form

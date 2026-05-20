@@ -8,9 +8,9 @@ Core intentionally does not export a `live` namespace, PubSub, broker abstractio
 import { event, reply } from "ts-star"
 
 async function* liveEvents() {
-  yield event.patch(renderCurrentState(), { selector: "#view" })
+  yield event.patch(renderCurrentState())
   for await (const _ of invalidations) {
-    yield event.patch(renderCurrentState(), { selector: "#view" })
+    yield event.patch(renderCurrentState())
   }
 }
 
@@ -23,8 +23,8 @@ A live recipe has four parts:
 
 - `invalidations` — an app-owned `AsyncIterable` of triggers. Payloads are not authoritative state.
 - `load` — reads current backend state.
-- `render` — renders that current state to HTML.
-- patch options — optional Datastar element patch settings.
+- `render` — renders that current state to HTML with stable IDs on top-level elements.
+- patch options — optional Datastar element patch settings for container-targeted updates.
 
 ## Reconnect safety
 

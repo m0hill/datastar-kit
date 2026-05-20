@@ -7,8 +7,6 @@ export function makeHonoCounter() {
   const app = new Hono()
   let count = 0
 
-  const Count = () => <output id="count">{count}</output>
-
   app.get("/", () =>
     reply.page({
       head: <script type="module" src={DATASTAR_CDN} />,
@@ -16,7 +14,7 @@ export function makeHonoCounter() {
         <main id="counter">
           <h1>ts-star counter</h1>
           <button type="button" {...ds.on("click", ds.post("/increment"))}>+</button>
-          <Count />
+          <output id="count">{count}</output>
         </main>
       )
     })
@@ -24,7 +22,7 @@ export function makeHonoCounter() {
 
   app.post("/increment", () => {
     count += 1
-    return reply.patch(<Count />, { selector: "#count" })
+    return reply.patch(<output id="count">{count}</output>)
   })
 
   return {

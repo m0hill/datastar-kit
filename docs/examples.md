@@ -4,11 +4,15 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 
 ## Counter
 
-`examples/counter.ts` keeps one low-level `h(...)` hyperscript reference. It stores `count` on the server; the click action mutates backend state and patches the rendered `#count` element.
+`examples/counter.ts` keeps one low-level `h(...)` hyperscript reference. It stores `count` on the server; the click action mutates backend state and patches the self-identifying `#count` element without an explicit selector.
 
 ## TSX counter
 
 `examples/tsx-counter.tsx` demonstrates the blessed automatic JSX runtime over the same HTML node model.
+
+## Append list
+
+`examples/append-list.tsx` demonstrates the explicit-selector pattern: each action renders a new `<li>` and appends it into the `#items` container with `{ selector: "#items", mode: "append" }`.
 
 ## Search
 

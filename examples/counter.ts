@@ -23,7 +23,7 @@ export function makeCounter() {
 
     if (request.method === "POST" && url.pathname === "/increment") {
       count += 1
-      return reply.patch(h("output", { id: "count" }, count), { selector: "#count" })
+      return reply.patch(h("output", { id: "count" }, count))
     }
 
     return new Response("Not Found", { status: 404 })

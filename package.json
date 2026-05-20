@@ -31,6 +31,7 @@
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.json",
     "check": "pnpm run typecheck && pnpm run test",
+    "check:example:append-list": "pnpm run typecheck && pnpm run test:example:append-list",
     "check:example:counter": "pnpm run typecheck && pnpm run test:example:counter",
     "check:example:hono-counter": "pnpm run typecheck && pnpm run test:example:hono-counter",
     "check:example:hono-live-counter": "pnpm run typecheck && pnpm run test:example:hono-live-counter",
@@ -41,6 +42,7 @@
     "check:example:validation-form": "pnpm run typecheck && pnpm run test:example:validation-form",
     "check:examples": "pnpm run typecheck && pnpm run test:examples",
     "dev": "pnpm run dev:counter",
+    "dev:append-list": "pnpm run build && node dist/examples/dev-server.js append-list",
     "dev:counter": "pnpm run build && node dist/examples/dev-server.js counter",
     "dev:hono-counter": "pnpm run build && node dist/examples/dev-server.js hono-counter",
     "dev:hono-live-counter": "pnpm run build && node dist/examples/dev-server.js hono-live-counter",
@@ -50,6 +52,7 @@
     "dev:tsx-counter": "pnpm run build && node dist/examples/dev-server.js tsx-counter",
     "dev:validation-form": "pnpm run build && node dist/examples/dev-server.js validation-form",
     "test": "vitest run",
+    "test:example:append-list": "vitest run test/append-list-example.test.ts",
     "test:example:counter": "vitest run test/example-counter.test.ts",
     "test:example:hono-counter": "vitest run test/hono-counter-example.test.ts",
     "test:example:hono-live-counter": "vitest run test/hono-live-counter-example.test.ts",
@@ -58,7 +61,7 @@
     "test:example:todo-sync": "vitest run test/todo-sync-example.test.ts",
     "test:example:tsx-counter": "vitest run test/example-tsx-counter.test.ts",
     "test:example:validation-form": "vitest run test/validation-form-example.test.ts",
-    "test:examples": "vitest run test/example-counter.test.ts test/example-tsx-counter.test.ts test/search-example.test.ts test/live-counter-example.test.ts test/validation-form-example.test.ts test/hono-counter-example.test.ts test/hono-live-counter-example.test.ts test/todo-sync-example.test.ts",
+    "test:examples": "vitest run test/example-counter.test.ts test/example-tsx-counter.test.ts test/append-list-example.test.ts test/search-example.test.ts test/live-counter-example.test.ts test/validation-form-example.test.ts test/hono-counter-example.test.ts test/hono-live-counter-example.test.ts test/todo-sync-example.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [
