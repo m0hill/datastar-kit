@@ -11,7 +11,7 @@ This is the longer-form documentation for Datastar Kit. Start with the package [
 
 ### 2. Core guides
 
-3. [HTML and JSX](guides/html-and-jsx.md) — server-rendered views, escaping, JSX setup, and low-level HTML helpers.
+3. [HTML and JSX](guides/html-and-jsx.md) — server-rendered views, layouts, named slots, loader/view splits, escaping, and low-level HTML helpers.
 4. [Signals](guides/signals.md) — authoring, reading, validating, and patching Datastar signals.
 5. [Actions and responses](guides/actions-and-responses.md) — action flow, response helpers, status semantics, and selector usage.
 6. [Validation and errors](guides/validation-and-errors.md) — Standard Schema validation and recoverable UI feedback.
