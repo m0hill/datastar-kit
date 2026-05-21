@@ -11,12 +11,6 @@ interface Project {
   summary: string
 }
 
-interface DashboardLayoutProps {
-  title: string
-  toolbar?: HtmlChild
-  children?: HtmlChild
-}
-
 let nextProjectId = 4
 
 const projects: Project[] = [
@@ -43,7 +37,12 @@ const projects: Project[] = [
   }
 ]
 
-const DashboardLayout = (props: DashboardLayoutProps) => (
+const DashboardLayout = (props:
+  {
+    title: string;
+    toolbar?: HtmlChild;
+    children?: HtmlChild
+  }) => (
   <div class="shell" {...ds.dataSignals({ title: "" }, { ifMissing: true })}>
     <aside class="sidebar">
       <strong>Datastar Kit</strong>
