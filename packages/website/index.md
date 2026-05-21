@@ -135,7 +135,7 @@ Use:
 - `reply.done(init)` for a `204` command completion with no body.
 - `reply.navigate(url, options, init)` for safe Datastar-driven navigation.
 
-For normal component updates, omit `selector` and render stable IDs on the top-level elements you return. Pass `selector` when targeting a container or CSS match, such as appending to a list or removing elements.
+Use selectors when a patch targets a container or CSS match, such as appending to a list or removing elements. See [Actions and responses](guides/actions-and-responses.md) for patch-target rules.
 
 ```tsx
 reply.patch(<Count />)

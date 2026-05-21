@@ -41,20 +41,32 @@ Use this policy:
 
 `reply.page(...)` is normal HTTP and may use page-level statuses such as `404`.
 
-## Selector usage
+## Patch targets and stable IDs
 
-For ordinary component updates, omit `selector` and render stable IDs on each top-level element. Datastar matches those IDs in the default `outer` patch mode:
+For ordinary component updates, the element `id` is the patch contract. Render a stable `id` on each top-level element you return, then omit `selector`. Datastar matches those IDs in the browser and updates the existing elements in the default `outer` patch mode:
 
 ```tsx
+const Count = () => <output id="count">{count}</output>
+
 reply.patch(<Count />)
 event.patch(<Count />)
 ```
+
+This is the preferred shape for component replacement, live streams, and reconnect-safe current-state rendering. The initial page and later patches should render the same stable IDs for the same UI regions. Do not generate a fresh ID on every render.
 
 Pass `selector` when the patch targets a container or CSS match instead of the returned element itself, such as appending or prepending list items, removing elements, patching `inner` HTML, or updating multiple targets:
 
 ```tsx
 reply.patch(<TodoItem todo={todo} />, { selector: '#todos', mode: 'append' })
 event.patch('', { selector: '.toast', mode: 'remove' })
+```
+
+For repeated items, use stable item IDs when those items may be patched individually:
+
+```tsx
+const TodoItem = (props: { todo: Todo }) => (
+  <li id={`todo-${props.todo.id}`}>{props.todo.title}</li>
+)
 ```
 
 ## State rule

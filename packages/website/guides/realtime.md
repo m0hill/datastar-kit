@@ -21,7 +21,7 @@ A live recipe has four parts:
 
 - `invalidations` — an app-owned `AsyncIterable` of triggers.
 - `load` — reads current backend state.
-- `render` — renders that current state to HTML with stable IDs on top-level elements.
+- `render` — renders that current state to HTML.
 - patch options — optional Datastar element patch settings for container-targeted updates.
 
 ## Reconnect safety

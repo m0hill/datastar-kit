@@ -137,12 +137,16 @@ Common helpers:
 - `reply.done(init)` — `204` command completion with no body.
 - `reply.navigate(url, options, init)` — safe Datastar-driven navigation.
 
-For ordinary component updates, omit `selector` and render stable IDs on the top-level elements you return. Pass `selector` when targeting a container or CSS match, such as appending to a list or removing elements.
+For ordinary component updates, the element `id` is the patch contract. Render a stable `id` on each top-level element you return, then omit `selector`. Pass `selector` when targeting a container or CSS match, such as appending to a list or removing elements.
 
 ```tsx
+const Count = () => <output id="count">{count}</output>
+
 reply.patch(<Count />)
 reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
 ```
+
+The initial page and later patches should render the same stable IDs for the same UI regions. Live streams use the same rule.
 
 ## Streaming events
 
