@@ -1,6 +1,6 @@
 # Programming model
 
-Datastar Kit is for server-driven UI where backend state is authoritative. Datastar gives the browser a small runtime for events, requests, signals, and DOM/signal patches; it should not become your application state store.
+Datastar Kit is for server-driven UI where backend state is authoritative. Datastar gives the browser a small runtime for events, requests, signals, and DOM/signal patches.
 
 Keep the mental model simple:
 
@@ -17,7 +17,7 @@ The default shape is close to CQRS:
 - **Pages / query views** render current backend state.
 - **Commands** receive user intent, validate input, mutate backend state, and return `204` or local feedback patches.
 - **Queries / live recipes** read current backend state and patch the view.
-- **Invalidations** say “something changed”; they are not durable state and do not need to carry every UI delta.
+- **Invalidations** say “something changed”; query and live views can reload current backend state after receiving them.
 
 The core invariant is:
 

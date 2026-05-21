@@ -1,19 +1,19 @@
 # Architecture
 
-Datastar Kit is a Web Standards Datastar SDK for server-driven TypeScript UI. It is not an application framework: application code supplies routing, middleware, auth, deployment, dependency ownership, and lifecycle.
+Datastar Kit is a Web Standards Datastar SDK for server-driven TypeScript UI. It focuses on Datastar authoring, server-rendered HTML, signal decoding, SSE event chunks, and native `Response` helpers.
 
 ## Architecture stance
 
-The SDK has one public job: make Datastar pleasant from fetch-compatible handlers. Core APIs use standard primitives such as `Request`, `Response`, `Headers`, `URL`, and `ReadableStream`.
+The SDK makes Datastar pleasant from fetch-compatible handlers. Core APIs use standard primitives such as `Request`, `Response`, `Headers`, `URL`, and `ReadableStream`.
 
 ## Foundational decisions
 
-- **Backend state is the source of truth.** Browser signals are sparse request inputs and UI affordances, not the primary application store.
+- **Backend state is the source of truth.** Browser signals are sparse request inputs and UI affordances.
 - **Datastar is the browser runtime and patch protocol.** Datastar Kit generates Datastar-compatible attributes, direct responses, and SSE events.
-- **Application frameworks own runtime concerns.** Routing, middleware, dependencies, cancellation policy, sessions, auth, and deployment belong to Hono, a custom fetch handler, Workers, Bun, Deno, Node, or another host.
-- **HTML is generated on the server.** Blessed view code uses the automatic JSX runtime over a tiny HTML node model; external renderer output can cross the trust boundary with `unsafeHtml(renderedHtml)`.
-- **Datastar direct responses and SSE streams are first-class.** The blessed path is SSE patches; direct responses remain flat explicit escape hatches.
-- **Signals are mostly ephemeral.** Use them for form/input state, validation feedback, loading flags, and request parameters without turning them into hidden app state.
+- **Fetch-compatible composition.** The helpers fit inside Hono, custom fetch handlers, Workers, Bun, Deno, Node, and similar hosts.
+- **HTML is generated on the server.** View code uses the automatic JSX runtime over a tiny HTML node model; external renderer output can cross the trust boundary with `unsafeHtml(renderedHtml)`.
+- **SSE patches are the default response style.** Direct responses remain available for integrations that need Datastar direct-response handling.
+- **Signals are mostly ephemeral.** Use them for form/input state, validation feedback, loading flags, and request parameters.
 
 ## Source layers
 
@@ -33,7 +33,7 @@ The SDK has one public job: make Datastar pleasant from fetch-compatible handler
 ### Request boundary layer
 
 - `src/read.ts` decodes JSON object Datastar signal payloads from an explicit `Request` and optionally validates them with Standard Schema.
-- Generic query params, forms, multipart bodies, JSON APIs, and auth/session inputs remain app-owned Web API concerns.
+- Generic query params, forms, multipart bodies, JSON APIs, and auth/session inputs use the host platform's Web APIs or framework utilities.
 
 ## Public module boundary
 
@@ -49,7 +49,5 @@ Explicit subpaths:
 
 - `datastar-kit/sse`
 - `datastar-kit/jsx-runtime` / `datastar-kit/jsx-dev-runtime`
-
-Core does not export `contract`, `live`, router, middleware, platform adapter, PubSub, or runtime services.
 
 Related: [API reference](api.md), [Runtime boundaries](../concepts/runtime-boundaries.md).

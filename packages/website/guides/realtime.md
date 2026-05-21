@@ -1,8 +1,6 @@
 # Realtime streams
 
-Realtime in Datastar Kit is current-state oriented. A live view should not be a stream of fragile UI deltas. It should reload current backend state on connect and after app-owned invalidation triggers.
-
-Core intentionally does not export a `live` namespace, PubSub, broker abstraction, or runtime service. Build the recipe locally and return it with `reply.stream(...)`.
+Realtime in Datastar Kit is current-state oriented. A live view reloads current backend state on connect and after app-owned invalidation triggers.
 
 ```ts
 import { event, reply } from 'datastar-kit'
@@ -21,14 +19,14 @@ return reply.stream(liveEvents(), {
 
 A live recipe has four parts:
 
-- `invalidations` — an app-owned `AsyncIterable` of triggers. Payloads are not authoritative state.
+- `invalidations` — an app-owned `AsyncIterable` of triggers.
 - `load` — reads current backend state.
 - `render` — renders that current state to HTML with stable IDs on top-level elements.
 - patch options — optional Datastar element patch settings for container-targeted updates.
 
 ## Reconnect safety
 
-Because each render reads current backend state, reconnecting does not need missed invalidations. The first event on a new live connection should patch the current view.
+Because each render reads current backend state, reconnecting can recover by rendering the latest view. The first event on a new live connection should patch the current view.
 
 ## App-owned invalidation resources
 
@@ -44,7 +42,7 @@ reply.stream(events, {
 })
 ```
 
-Use `initialDelayMs` when finite tests or one-shot streams should not emit a leading heartbeat before the first patch.
+Use `initialDelayMs` for finite tests or one-shot streams where the first patch should arrive before the first heartbeat.
 
 ## Deployment and scaling notes
 

@@ -31,8 +31,4 @@ Configure JSX consumers with `jsx: "react-jsx"` and `jsxImportSource: "datastar-
 - `datastar-kit/sse` — low-level event encoding (`patchElements`, `patchSignals`, `executeScript`) for protocol tests and custom encoders.
 - `datastar-kit/jsx-runtime` / `datastar-kit/jsx-dev-runtime` — TypeScript automatic JSX runtime entrypoints.
 
-## Non-goals
-
-Core does not export schema-derived signal contracts, live-query runtime helpers, router/middleware/context abstractions, platform adapters, validator-specific APIs, or plugin discovery.
-
 Related guides: [Actions and responses](../guides/actions-and-responses.md), [Signals](../guides/signals.md), [HTML and JSX](../guides/html-and-jsx.md).

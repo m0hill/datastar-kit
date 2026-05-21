@@ -17,23 +17,22 @@ import { ds, reply } from "datastar-kit"
 
 let count = 0
 
-const Count = () => <output id="count">{count}</output>
-
 export function handle(request: Request): Response {
   const url = new URL(request.url)
 
   if (request.method === "GET" && url.pathname === "/") {
     return reply.page(
-      <main>
-        <button type="button" {...ds.on("click", ds.post("/increment"))}>+</button>
-        <Count />
+      <main id="counter">
+        <h1>Fetch counter</h1>
+        <button type="button" {...ds.on("click", ds.post("/increment"))}>Increment</button>{" "}
+        <output id="count">{count}</output>
       </main>
     )
   }
 
   if (request.method === "POST" && url.pathname === "/increment") {
     count += 1
-    return reply.patch(<Count />)
+    return reply.patch(<output id="count">{count}</output>)
   }
 
   return new Response("Not Found", { status: 404 })

@@ -22,7 +22,7 @@ Use `reply` helpers:
 - `reply.navigate(...)` — safe Datastar-driven navigation.
 - `reply.directHtml(...)`, `reply.directSignals(...)`, and `reply.directScript(...)` — explicit Datastar direct-response escape hatches.
 
-Datastar action helpers own their protocol status codes and do not accept `status` or `statusText` in their native response init. Keep Datastar protocol options separate from native response options:
+Datastar action helpers own their protocol status codes. Keep Datastar protocol options separate from native response options:
 
 ```tsx
 reply.patch(<Count />, {}, { headers: { 'x-action': 'increment' } })
@@ -31,13 +31,13 @@ reply.signals({ saving: false }, { onlyIfMissing: true }, { headers: { 'x-action
 
 ## Status semantics
 
-Current Datastar fetch actions process response bodies as patches only when the HTTP status is `200`. They treat `204` as success with no body. Non-200 bodies should not be relied on for UI patches.
+Current Datastar fetch actions process response bodies as patches when the HTTP status is `200`. They treat `204` as success with no body.
 
 Use this policy:
 
 - **`200` with a body** — Datastar may process SSE, HTML, JSON signal, or JavaScript direct responses.
 - **`204` without a body** — the command succeeded and there is no browser patch to apply.
-- **Other statuses** — use normal HTTP semantics; do not expect Datastar to apply the body.
+- **Other statuses** — use normal HTTP semantics for errors, redirects, and API responses.
 
 `reply.page(...)` is normal HTTP and may use page-level statuses such as `404`.
 
@@ -59,12 +59,12 @@ event.patch('', { selector: '.toast', mode: 'remove' })
 
 ## State rule
 
-Commands may read sparse browser signals, but durable state belongs in backend resources. Do not increment a trusted count by accepting `$count` from the client; read the current count from the server and patch the rendered view.
+Commands may read sparse browser signals, while durable state belongs in backend resources. For trusted values such as counters, read the current value from the server, mutate it there, and patch the rendered view.
 
 ## Forms and other request bodies
 
 Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions use Datastar's default JSON signal transport. Datastar signals and form data are distinct request inputs. Use signals for sparse browser state sent by Datastar actions; use Web APIs or framework facilities for ordinary form posts, file uploads, and non-Datastar HTTP endpoints.
 
-If you intentionally need Datastar's form transport, pass `contentType: 'form'` in the fetch action options and read that request with your platform's form/multipart APIs, not `read.signals(...)`.
+For Datastar's form transport, pass `contentType: 'form'` in the fetch action options and read that request with your platform's form/multipart APIs.
 
 Next: [Validation and errors](validation-and-errors.md). Related: [Signals](signals.md), [Realtime streams](realtime.md).

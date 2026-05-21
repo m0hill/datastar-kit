@@ -19,10 +19,6 @@ npm i datastar-kit
 
 Add the Datastar browser runtime to your page from a pinned CDN URL or by serving your own copy of `@starfederation/datastar`.
 
-```tsx
-const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
-```
-
 For JSX, configure TypeScript once:
 
 ```json
@@ -41,31 +37,28 @@ A Datastar Kit handler is just a function that accepts a native `Request` and re
 ```tsx
 import { ds, reply } from "datastar-kit"
 
-const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
-
 let count = 0
-
-const Count = () => <output id="count">{count}</output>
-
-const Counter = () => (
-  <main id="counter">
-    <button type="button" {...ds.on("click", ds.post("/increment"))}>+</button>
-    <Count />
-  </main>
-)
 
 export function handle(request: Request): Response {
   const url = new URL(request.url)
 
   if (request.method === "GET" && url.pathname === "/") {
-    return reply.page(<Counter />, {
-      head: <script type="module" src={DATASTAR_CDN} />
-    })
+    return reply.page(
+      <main id="counter">
+        <h1>Fetch counter</h1>
+        <button type="button" {...ds.on("click", ds.post("/increment"))}>Increment</button>{" "}
+        <output id="count">{count}</output>
+      </main>,
+      {
+        title: "Fetch counter",
+        head: <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js" />
+      }
+    )
   }
 
   if (request.method === "POST" && url.pathname === "/increment") {
     count += 1
-    return reply.patch(<Count />)
+    return reply.patch(<output id="count">{count}</output>)
   }
 
   return new Response("Not Found", { status: 404 })
