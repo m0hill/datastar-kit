@@ -5,6 +5,11 @@ import { ds, event, read, reply } from "datastar-kit"
 
 const nameError = ds.signal<string, "errors.name">("errors.name")
 const emailError = ds.signal<string, "errors.email">("errors.email")
+const SignupSignals = z.object({
+  name: z.string().trim().min(2, "Enter your name"),
+  email: z.string().trim().email("Enter a valid email")
+})
+type SignupSignalsInput = z.input<typeof SignupSignals>
 const app = new Hono()
 
 app.get("/", () =>
@@ -45,29 +50,21 @@ app.get("/", () =>
 
 app.post("/signup", async (c) => {
   try {
-    const input = await read.signals(
-      c.req.raw,
-      z.object({
-        name: z.string().trim().min(2, "Enter your name"),
-        email: z.string().trim().email("Enter a valid email")
-      })
-    )
+    const input = SignupSignals.parse(await read.signals(c.req.raw))
 
     return reply.stream([
       event.signals({ name: "", email: "", errors: { name: "", email: "" } }),
       event.patch(<p id="result">Thanks {input.name}, check {input.email}.</p>)
     ])
   } catch (error) {
-    if (!(error instanceof read.SignalValidationError)) {
+    if (!(error instanceof z.ZodError)) {
       throw error
     }
 
-    const errors = { name: "", email: "" }
-    for (const issue of error.issues) {
-      const key = issue.path?.[0]
-      if (key === "name" || key === "email") {
-        errors[key] = issue.message
-      }
+    const { fieldErrors } = z.flattenError(error as z.ZodError<SignupSignalsInput>)
+    const errors = {
+      name: fieldErrors.name?.[0] ?? "",
+      email: fieldErrors.email?.[0] ?? ""
     }
 
     return reply.stream([

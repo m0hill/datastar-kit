@@ -1,4 +1,3 @@
-import type { StandardSchemaV1 } from "@standard-schema/spec"
 import type { SignalState, SignalValue } from "./types.js"
 
 /**
@@ -26,18 +25,6 @@ export class SignalShapeError extends Error {
    */
   constructor(readonly input: unknown) {
     super("Datastar signals must be a JSON object")
-  }
-}
-
-/**
- * Error thrown when decoded Datastar signals fail Standard Schema validation.
- */
-export class SignalValidationError extends Error {
-  /**
-   * @param issues Standard Schema issues returned by the validator.
-   */
-  constructor(readonly issues: ReadonlyArray<StandardSchemaV1.Issue>) {
-    super(issues[0]?.message ?? "Invalid Datastar signals")
   }
 }
 
@@ -84,34 +71,14 @@ const isSignalState = (value: unknown): value is SignalState =>
   typeof value === "object" && value !== null && !Array.isArray(value) && isSignalValue(value)
 
 /**
- * Parses Datastar signals from a request without Standard Schema validation.
+ * Parses Datastar signals from a request.
  *
  * @param request Native request received by a Datastar action handler.
  * @returns Parsed Datastar signal state.
  * @throws {@link SignalParseError} When the Datastar signal payload is not valid JSON.
  * @throws {@link SignalShapeError} When the parsed payload is not a JSON object signal tree.
  */
-export function signals(request: Request): Promise<SignalState>
-
-/**
- * Parses and validates Datastar signals from a request with a Standard Schema validator.
- *
- * @typeParam Schema Standard Schema-compatible validator used to infer the returned output.
- * @param request Native request received by a Datastar action handler.
- * @param schema Standard Schema-compatible validator for the signal payload.
- * @returns The schema-validated signal payload.
- * @throws {@link SignalParseError} When the Datastar signal payload is not valid JSON.
- * @throws {@link SignalValidationError} When the parsed payload fails Standard Schema validation.
- */
-export function signals<Schema extends StandardSchemaV1>(
-  request: Request,
-  schema: Schema
-): Promise<StandardSchemaV1.InferOutput<Schema>>
-
-export async function signals<Schema extends StandardSchemaV1>(
-  request: Request,
-  schema?: Schema
-): Promise<SignalState | StandardSchemaV1.InferOutput<Schema>> {
+export async function signals(request: Request): Promise<SignalState> {
   const raw = await rawSignals(request)
   let input: unknown
   try {
@@ -120,21 +87,9 @@ export async function signals<Schema extends StandardSchemaV1>(
     throw new SignalParseError(raw, { cause })
   }
 
-  if (schema === undefined) {
-    if (!isSignalState(input)) {
-      throw new SignalShapeError(input)
-    }
-    return input
+  if (!isSignalState(input)) {
+    throw new SignalShapeError(input)
   }
 
-  let result = schema["~standard"].validate(input)
-  if (result instanceof Promise) {
-    result = await result
-  }
-
-  if (result.issues !== undefined) {
-    throw new SignalValidationError(result.issues)
-  }
-
-  return result.value
+  return input
 }

@@ -5,7 +5,7 @@ Datastar Kit does not provide auth, sessions, CSRF protection, ownership checks,
 A safe Datastar command should:
 
 1. receive a native `Request` through the application framework;
-2. decode Datastar signals with `read.signals(request)`, optionally validate with `read.signals(request, schema)`, or use Web APIs/framework readers for other input;
+2. decode Datastar signals with `read.signals(request)` and validate decoded input with app-owned schema code, or use Web APIs/framework readers for other input;
 3. check session, authorization, CSRF, and rate-limit policy in app code;
 4. mutate backend state only after those checks pass;
 5. return a Datastar patch for recoverable UI feedback or a normal HTTP response for non-Datastar clients.

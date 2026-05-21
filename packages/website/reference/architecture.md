@@ -32,7 +32,7 @@ The SDK makes Datastar pleasant from fetch-compatible handlers. Public APIs stay
 
 ### Request boundary layer
 
-- `src/read.ts` decodes JSON object Datastar signal payloads from an explicit `Request` and optionally validates them with Standard Schema.
+- `src/read.ts` decodes JSON object Datastar signal payloads from an explicit `Request`.
 - Generic query params, forms, multipart bodies, JSON APIs, and auth/session inputs use the host platform's Web APIs or framework utilities.
 
 ## Public module boundary

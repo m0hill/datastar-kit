@@ -150,7 +150,7 @@ export const app = new Elysia()
     )
   })
   .post("/projects", async ({ request }) => {
-    const signals = await read.signals(request, z.object({ title: z.string() }))
+    const signals = z.object({ title: z.string() }).parse(await read.signals(request))
     const projectTitle = signals.title.trim()
 
     if (projectTitle.length > 0) {

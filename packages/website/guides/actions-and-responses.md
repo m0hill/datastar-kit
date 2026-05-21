@@ -5,7 +5,7 @@ Actions are HTTP requests triggered by Datastar attributes. Some actions are com
 ## Default command flow
 
 1. Render HTML with a Datastar action attribute, such as `data-on:click="@post('/increment')"`.
-2. Decode Datastar signals with `read.signals(request)` or `read.signals(request, schema)`. Use Web APIs directly for non-Datastar query/body/form inputs.
+2. Decode Datastar signals with `read.signals(request)`, then validate with app-owned schema code when needed. Use Web APIs directly for non-Datastar query/body/form inputs.
 3. Check security/session/CSRF requirements in app code.
 4. Mutate backend state through app-owned services/resources.
 5. Return `reply.done()` when there is nothing to update, or return a Datastar patch/stream through `reply.*`.

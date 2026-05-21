@@ -101,7 +101,7 @@ const routes: Route[] = [
     method: "GET",
     pattern: new URLPattern({ pathname: "/items/search" }),
     handler: async (request) => {
-      const signals = await read.signals(request, SearchSignals)
+      const signals = SearchSignals.parse(await read.signals(request))
       const query = signals.query.trim().toLowerCase()
       const results = query.length === 0 ? items : items.filter((item) => item.name.toLowerCase().includes(query))
 
@@ -112,7 +112,7 @@ const routes: Route[] = [
     method: "POST",
     pattern: new URLPattern({ pathname: "/items" }),
     handler: async (request) => {
-      const signals = await read.signals(request, ItemSignals)
+      const signals = ItemSignals.parse(await read.signals(request))
       const itemName = signals.name.trim()
 
       if (itemName.length === 0) {

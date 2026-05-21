@@ -10,7 +10,7 @@ Datastar Kit helps you author Datastar attributes, read signal payloads, render 
 - **Server-side JSX** — use `jsxImportSource: "datastar-kit"` for small server-rendered view functions.
 - **Native responses** — `reply` returns standard `Response` objects for pages, patches, signals, streams, direct responses, navigation, and `204` completion.
 - **SSE-first updates** — normal UI updates use `text/event-stream`; direct responses remain explicit escape hatches.
-- **Schema-optional signal reads** — parse JSON object signal state directly, or validate with any Standard Schema-compatible validator.
+- **Signal reads** — parse Datastar's JSON signal transport into a checked JSON object signal tree.
 - **Framework-friendly** — compose the helpers inside Hono, Workers, Bun, Deno, Node, or any fetch-compatible HTTP layer.
 
 ## Installation
@@ -104,7 +104,7 @@ const modalOpen = ds.signal<boolean>("modalOpen")
 
 ## Reading signals
 
-Without a schema, `read.signals(request)` parses Datastar's JSON transport and checks that the result is a JSON object signal tree.
+`read.signals(request)` parses Datastar's JSON transport and checks that the result is a JSON object signal tree.
 
 ```ts
 import { read } from "datastar-kit"
@@ -112,7 +112,7 @@ import { read } from "datastar-kit"
 const signals = await read.signals(request)
 ```
 
-For user input, prefer validating at the request boundary with any Standard Schema-compatible validator.
+For user input, validate the decoded signal state at the request boundary with the schema library your app already uses.
 
 ```ts
 import { z } from "zod"
@@ -121,7 +121,7 @@ import { read, reply } from "datastar-kit"
 const CounterSignals = z.object({ count: z.number() })
 
 export async function increment(request: Request): Promise<Response> {
-  const { count } = await read.signals(request, CounterSignals)
+  const { count } = CounterSignals.parse(await read.signals(request))
   return reply.signals({ count: count + 1 })
 }
 ```
@@ -229,7 +229,6 @@ Longer-form documentation lives in the VitePress site at [`../website`](../websi
 
 - [Datastar](https://data-star.dev/) — the browser runtime and hypermedia protocol this SDK targets.
 - [Datastar SDK reference](https://data-star.dev/reference/sdks) — official SDK overview across languages.
-- [Standard Schema](https://standardschema.dev/) — validator-agnostic schema interface used by optional signal validation.
 
 ## License
 

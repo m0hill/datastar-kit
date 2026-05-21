@@ -23,7 +23,7 @@ const counterView = () => {
 }
 
 const increment = async (request: Request): Promise<Response> => {
-  const signals = await read.signals(request, CounterSignals)
+  const signals = CounterSignals.parse(await read.signals(request))
   return reply.signals({ count: signals.count + 1 })
 }
 

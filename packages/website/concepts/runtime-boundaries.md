@@ -3,7 +3,7 @@
 Datastar Kit composes inside ordinary fetch-compatible handlers. The package owns Datastar-specific authoring and response details; your app owns the rest of the request lifecycle.
 
 ```ts
-const form = await read.signals(request, FormSchema)
+const form = FormSchema.parse(await read.signals(request))
 await store.save(form)
 return reply.done()
 ```
@@ -31,11 +31,11 @@ Keep these concerns in your framework, platform, or app-owned services:
 
 ## Request boundary
 
-Use `read.signals(request)` when the request is a Datastar action carrying JSON signal state. Add a Standard Schema validator when the handler needs a typed and checked payload:
+Use `read.signals(request)` when the request is a Datastar action carrying JSON signal state. Validate the decoded state with app-owned schema code when the handler needs a typed and checked payload:
 
 ```ts
 const state = await read.signals(request)
-const payload = await read.signals(request, FormSchema)
+const payload = FormSchema.parse(state)
 ```
 
 Use `new URL(request.url)`, `request.formData()`, `request.json()`, framework middleware, or specialized multipart parsers for other HTTP concerns.

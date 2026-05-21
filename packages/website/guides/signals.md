@@ -28,12 +28,14 @@ Use private/local names such as `_validation.email` for UI-only feedback that sh
 
 ## Reading signals
 
-Use `read.signals(request)` at Datastar action boundaries when you want parsed JSON object signal state without schema validation. Use `read.signals(request, schema)` when a Standard Schema-compatible validator should check and infer the payload.
+Use `read.signals(request)` at Datastar action boundaries when you want parsed JSON object signal state.
 
 ```ts
 const signals = await read.signals(request)
-const input = await read.signals(request, FormSchema)
+const input = FormSchema.parse(signals)
 ```
+
+For user input, validate the decoded state with the schema library your app already uses. Datastar Kit owns Datastar transport decoding; your app owns validation and validator-specific error handling.
 
 `GET` and `DELETE` actions read the `datastar` query parameter. Other methods read the request body as JSON.
 

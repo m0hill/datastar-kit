@@ -35,7 +35,7 @@ The core invariant is:
 
 For command handlers:
 
-- Decode Datastar signal input with `read.signals(request)`; validate with `read.signals(request, schema)` when the handler needs schema guarantees.
+- Decode Datastar signal input with `read.signals(request)`; validate the decoded state with app-owned schema code when the handler needs schema guarantees.
 - Use Web APIs or your framework directly for ordinary query params, form posts, files, JSON APIs, and framework-specific context.
 - Check auth, ownership, CSRF, and rate limits before mutating.
 - Return `reply.done()` by default when no immediate UI feedback is needed.

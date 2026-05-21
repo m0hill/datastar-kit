@@ -68,7 +68,7 @@ The interesting bit is the patch response. The returned `<output id="count">` ha
 ## Main Pieces
 
 - `ds` builds Datastar attributes, actions, expressions, modifiers, and typed signal refs.
-- `read` decodes Datastar signal payloads from a `Request`, optionally with Standard Schema validation.
+- `read` decodes Datastar signal payloads from a `Request`.
 - `reply` returns native `Response` objects for pages, patches, signal patches, streams, navigation, and `204` command completion.
 - `event` builds individual SSE chunks for `reply.stream(...)`.
 - The JSX runtime and low-level HTML helpers render server HTML without adding a browser framework.

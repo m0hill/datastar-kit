@@ -15,7 +15,7 @@ This page is the map. Start with [Getting Started](index.md) for install and a q
 4. [Signals](guides/signals.md) — authoring, reading, and patching browser signal state.
 5. [Actions and responses](guides/actions-and-responses.md) — command flow, status semantics, response helpers, and request bodies.
 6. [Patch elements](guides/patch-elements.md) — stable IDs, selectors, and DOM patch modes.
-7. [Validation and errors](guides/validation-and-errors.md) — Standard Schema validation and recoverable UI feedback.
+7. [Validation and errors](guides/validation-and-errors.md) — app-owned schema validation and recoverable UI feedback.
 8. [Realtime streams](guides/realtime.md) — app-owned live views with `reply.stream(...)`.
 
 ### 3. Operations
