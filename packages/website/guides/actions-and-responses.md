@@ -61,6 +61,8 @@ reply.patch(<TodoItem todo={todo} />, { selector: '#todos', mode: 'append' })
 event.patch('', { selector: '.toast', mode: 'remove' })
 ```
 
+For a visual walkthrough of every element patch mode, see [Patch elements](patch-elements.md).
+
 For repeated items, use stable item IDs when those items may be patched individually:
 
 ```tsx
@@ -79,4 +81,4 @@ Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions us
 
 For Datastar's form transport, pass `contentType: 'form'` in the fetch action options and read that request with your platform's form/multipart APIs.
 
-Next: [Validation and errors](validation-and-errors.md). Related: [Signals](signals.md), [Realtime streams](realtime.md).
+Next: [Patch elements](patch-elements.md). Related: [Signals](signals.md), [Realtime streams](realtime.md).

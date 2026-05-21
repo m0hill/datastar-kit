@@ -146,7 +146,7 @@ reply.patch(<Count />)
 reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
 ```
 
-The initial page and later patches should render the same stable IDs for the same UI regions. Live streams use the same rule.
+The initial page and later patches should render the same stable IDs for the same UI regions. Live streams use the same rule. The website docs include a visual guide to every patch mode in [`../website/guides/patch-elements.md`](../website/guides/patch-elements.md).
 
 ## Streaming events
 

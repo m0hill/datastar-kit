@@ -32,6 +32,7 @@ export default defineConfig({
           { text: "HTML and JSX", link: "/guides/html-and-jsx" },
           { text: "Signals", link: "/guides/signals" },
           { text: "Actions and responses", link: "/guides/actions-and-responses" },
+          { text: "Patch elements", link: "/guides/patch-elements" },
           { text: "Validation and errors", link: "/guides/validation-and-errors" },
           { text: "Realtime streams", link: "/guides/realtime" },
           { text: "Security", link: "/guides/security" },

@@ -16,7 +16,6 @@ export type PatchElementsMode =
   | "append"
   | "before"
   | "after"
-  | "upsertAttributes"
 
 /**
  * Datastar patch-elements namespace used when parsing returned markup.
