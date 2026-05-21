@@ -15,12 +15,12 @@
     "types": ["node", "vitest/globals"],
     "skipLibCheck": true,
     "jsx": "react-jsx",
-    "jsxImportSource": "ts-star",
+    "jsxImportSource": "datastar-kit",
     "paths": {
-      "ts-star": ["./src/index.ts"],
-      "ts-star/jsx-runtime": ["./src/jsx-runtime.ts"],
-      "ts-star/jsx-dev-runtime": ["./src/jsx-dev-runtime.ts"],
-      "ts-star/sse": ["./src/sse.ts"]
+      "datastar-kit": ["./src/index.ts"],
+      "datastar-kit/jsx-runtime": ["./src/jsx-runtime.ts"],
+      "datastar-kit/jsx-dev-runtime": ["./src/jsx-dev-runtime.ts"],
+      "datastar-kit/sse": ["./src/sse.ts"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "test/**/*.tsx", "examples/**/*.ts", "examples/**/*.tsx"],

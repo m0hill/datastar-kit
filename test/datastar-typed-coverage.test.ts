@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest"
 import * as ds from "../src/ds.js"
 
-if (false) {
-  // Structured Datastar actions intentionally support only the default JSON signal transport.
-  // Use ds.expr("@post('/upload', { contentType: 'form' })") and Effect Platform form readers for form uploads.
-  // @ts-expect-error Form transport is an explicit expression escape hatch, not a structured FetchOptions field.
-  ds.post("/upload", { contentType: "form" })
-}
-
 describe("Datastar typed helper coverage", () => {
   it("covers public thin mirrors of core attributes and modifiers", () => {
     expect(ds.effect(ds.expr("$foo = $bar"))).toEqual({
@@ -55,18 +48,19 @@ describe("Datastar typed helper coverage", () => {
       '@toggleAll({"exclude": /_temp$/})'
     )
     expect(ds.delete("/items/1").toDatastarExpression()).toBe('@delete("/items/1")')
+    expect(ds.post("/upload", { contentType: "form" }).toDatastarExpression()).toBe('@post("/upload", {contentType: "form"})')
     expect(
       ds.get("/fragment", {
         selector: null,
         responseOverrides: {
           selector: "#slot",
-          mode: "append",
-          namespace: "svg",
+          mergeMode: "append",
+          elementNamespace: "svg",
           useViewTransition: true
         }
       }).toDatastarExpression()
     ).toBe(
-      '@get("/fragment", {selector: null, responseOverrides: {"selector": "#slot", "mode": "append", "namespace": "svg", "useViewTransition": true}})'
+      '@get("/fragment", {selector: null, responseOverrides: {selector: "#slot", mode: "append", namespace: "svg", useViewTransition: true}})'
     )
   })
 })

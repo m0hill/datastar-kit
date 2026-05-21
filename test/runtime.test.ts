@@ -23,6 +23,24 @@ describe("request read helpers", () => {
     await expect(read.signals(request, CounterSignals)).resolves.toEqual({ count: 7 })
   })
 
+  it("decodes parsed signal state without forcing schema validation", async () => {
+    const request = new Request("http://localhost/increment", {
+      method: "POST",
+      body: JSON.stringify({ count: "7", nested: { ok: true } })
+    })
+
+    await expect(read.signals(request)).resolves.toEqual({ count: "7", nested: { ok: true } })
+  })
+
+  it("rejects non-object signal payloads without a schema", async () => {
+    const request = new Request("http://localhost/increment", {
+      method: "POST",
+      body: JSON.stringify(["not", "signals"])
+    })
+
+    await expect(read.signals(request)).rejects.toBeInstanceOf(read.SignalShapeError)
+  })
+
   it("throws typed validation failures", async () => {
     const request = new Request("http://localhost/increment", {
       method: "POST",

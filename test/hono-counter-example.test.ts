@@ -10,7 +10,7 @@ describe("Hono counter integration example", () => {
     const page = await counter.handle(new Request("http://localhost/"))
     const html = await page.text()
     expect(page.status).toBe(200)
-    expect(html).toContain("ts-star counter")
+    expect(html).toContain("Datastar Kit counter")
     expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
 
     const increment = await counter.handle(new Request("http://localhost/increment", { method: "POST" }))

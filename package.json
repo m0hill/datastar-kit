@@ -1,7 +1,7 @@
 {
-  "name": "ts-star",
+  "name": "datastar-kit",
   "version": "0.1.0",
-  "description": "Web Standards Datastar SDK for server-driven TypeScript applications",
+  "description": "Independent Datastar companion SDK for server-driven TypeScript applications",
   "type": "module",
   "main": "./dist/src/index.js",
   "types": "./dist/src/index.d.ts",

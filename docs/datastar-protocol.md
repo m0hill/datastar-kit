@@ -1,6 +1,6 @@
 # Datastar protocol and response semantics
 
-This document records the Datastar protocol policy for `ts-star` action handlers.
+This document records the Datastar protocol policy for Datastar Kit action handlers.
 
 ## Status policy for Datastar actions
 
@@ -19,16 +19,16 @@ Use this policy for SDK helpers:
 - `reply.page(...)` — full HTML page/document response.
 - `reply.patch(...)` — blessed SSE element patch response.
 - `reply.signals(...)` — blessed SSE signal patch response.
-- `reply.stream(...)` — SSE event stream response for multiple or long-lived events; use `event.patch(...)`, `event.signals(...)`, and `event.script(...)` to build rendered chunks.
+- `reply.stream(...)` — SSE event stream response for multiple or long-lived events; use `event.patchElements(...)`, `event.patchSignals(...)`, and `event.executeScript(...)` to build rendered chunks.
 - `reply.done(...)` — `204` command completion with no body.
 - `reply.navigate(...)` — safe Datastar direct script response for browser navigation.
 - `reply.directHtml(...)`, `reply.directSignals(...)`, `reply.directScript(...)` — explicit direct-response escape hatches.
 
-Datastar action helpers own their protocol status codes and do not accept a `status` option. Helpers take one flattened options object for Datastar protocol options and response headers:
+Datastar action helpers own their protocol status codes and do not accept `status` or `statusText` in their native response init. Helpers keep Datastar protocol options separate from native response options:
 
 ```tsx
-reply.patch(<Count />, { headers: { "x-action": "increment" } })
-reply.signals({ saving: false }, { onlyIfMissing: true, headers: { "x-action": "save" } })
+reply.patch(<Count />, {}, { headers: { "x-action": "increment" } })
+reply.signals({ saving: false }, { onlyIfMissing: true }, { headers: { "x-action": "save" } })
 ```
 
 ### Selector usage
@@ -37,33 +37,27 @@ For ordinary component updates, omit `selector` and render stable IDs on each to
 
 ```tsx
 reply.patch(<Count />)
-event.patch(<Count />)
+event.patchElements(<Count />)
 ```
 
 Pass `selector` when the patch targets a container or CSS match instead of the returned element itself, such as appending or prepending list items, removing elements, patching `inner` HTML, or updating multiple targets:
 
 ```tsx
-reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
-event.patch("", { selector: ".toast", mode: "remove" })
+reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mergeMode: "append" })
+event.patchElements("", { selector: ".toast", mergeMode: "remove" })
 ```
 
 ## Signal decoding
 
-Use `read.signals(request, schema)` for Datastar signal payloads. It hides Datastar's transport detail:
+Use `read.signals(request)` for parsed JSON object Datastar signal state, or `read.signals(request, schema)` when you want Standard Schema validation. It hides Datastar's transport detail:
 
 - `GET`/`DELETE` actions read the `datastar` query parameter.
 - Other methods read the request body as JSON.
 
-Invalid JSON throws `SignalParseError`. Standard Schema mismatches throw `SignalValidationError` with the original issues.
+Invalid JSON throws `SignalParseError`. Schema-free reads reject non-object payloads with `SignalShapeError`. Standard Schema mismatches throw `SignalValidationError` with the original issues when a schema is supplied.
 
 ## Forms and other request bodies
 
 Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions use Datastar's default JSON signal transport. Datastar signals and form data are distinct request inputs. Use signals for sparse browser state sent by Datastar actions; use Web APIs or framework facilities for ordinary form posts, file uploads, and non-Datastar HTTP endpoints.
 
-If you intentionally need Datastar's form transport, make the escape hatch visible in view code:
-
-```ts
-ds.expr("@post('/avatar', { contentType: 'form' })")
-```
-
-Then read that request with your platform's form/multipart APIs, not `read.signals(...)`.
+If you intentionally need Datastar's form transport, pass `contentType: "form"` in the fetch action options and read that request with your platform's form/multipart APIs, not `read.signals(...)`.

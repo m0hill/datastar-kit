@@ -1,5 +1,5 @@
 import * as z from "zod"
-import { ds, event, read, reply } from "../src/index.js"
+import { ds, event, read, reply } from "datastar-kit"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -21,34 +21,32 @@ export async function handle(request: Request) {
     const nameError = ds.local<string>("validation.name")
     const emailError = ds.local<string>("validation.email")
 
-    return reply.page({
-      head: <script type="module" src={DATASTAR_CDN} />,
-      body: (
-        <main id="contact-page">
-          <form
-            id="contact-form"
-            {...ds.dataSignals({
+    return reply.page(
+      <main id="contact-page">
+        <form
+          id="contact-form"
+          {...ds.dataSignals({
+            name: "",
+            email: "",
+            _validation: {
+              form: "",
               name: "",
-              email: "",
-              _validation: {
-                form: "",
-                name: "",
-                email: ""
-              }
-            }, { ifMissing: true })}
-            {...ds.on("submit", ds.post("/contact"), { prevent: true })}
-          >
-            <p id="form-error" role="alert" {...ds.text(formError)} />
-            <label>Name<input name="name" {...ds.bind(name)} /></label>
-            <p id="name-error" {...ds.text(nameError)} />
-            <label>Email<input name="email" type="email" {...ds.bind(email)} /></label>
-            <p id="email-error" {...ds.text(emailError)} />
-            <button type="submit">Save</button>
-          </form>
-          <div id="contact-result" />
-        </main>
-      )
-    })
+              email: ""
+            }
+          }, { ifMissing: true })}
+          {...ds.on("submit", ds.post("/contact"), { prevent: true })}
+        >
+          <p id="form-error" role="alert" {...ds.text(formError)} />
+          <label>Name<input name="name" {...ds.bind(name)} /></label>
+          <p id="name-error" {...ds.text(nameError)} />
+          <label>Email<input name="email" type="email" {...ds.bind(email)} /></label>
+          <p id="email-error" {...ds.text(emailError)} />
+          <button type="submit">Save</button>
+        </form>
+        <div id="contact-result" />
+      </main>,
+      { head: <script type="module" src={DATASTAR_CDN} /> }
+    )
   }
 
   if (request.method === "POST" && url.pathname === "/contact") {
@@ -70,8 +68,8 @@ export async function handle(request: Request) {
       }
 
       return reply.stream([
-        event.signals({ _validation: { form: null, name: null, email: null } }),
-        event.patch(
+        event.patchSignals({ _validation: { form: null, name: null, email: null } }),
+        event.patchElements(
           <div id="contact-result" role="status">Saved {input.name} &lt;{input.email}&gt;</div>,
           { selector: "#contact-result" }
         )

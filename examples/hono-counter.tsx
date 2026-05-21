@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, reply } from "../src/index.js"
+import { ds, reply } from "datastar-kit"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -8,16 +8,14 @@ export function makeHonoCounter() {
   let count = 0
 
   app.get("/", () =>
-    reply.page({
-      head: <script type="module" src={DATASTAR_CDN} />,
-      body: (
-        <main id="counter">
-          <h1>ts-star counter</h1>
-          <button type="button" {...ds.on("click", ds.post("/increment"))}>+</button>
-          <output id="count">{count}</output>
-        </main>
-      )
-    })
+    reply.page(
+      <main id="counter">
+        <h1>Datastar Kit counter</h1>
+        <button type="button" {...ds.on("click", ds.post("/increment"))}>+</button>
+        <output id="count">{count}</output>
+      </main>,
+      { head: <script type="module" src={DATASTAR_CDN} /> }
+    )
   )
 
   app.post("/increment", () => {

@@ -1,16 +1,16 @@
 # Realtime live query recipes
 
-Realtime in `ts-star` is current-state oriented. A live view should not be a stream of fragile UI deltas. It should reload current backend state on connect and after app-owned invalidation triggers.
+Realtime in Datastar Kit is current-state oriented. A live view should not be a stream of fragile UI deltas. It should reload current backend state on connect and after app-owned invalidation triggers.
 
 Core intentionally does not export a `live` namespace, PubSub, broker abstraction, or runtime service. Build the recipe locally and return it with `reply.stream(...)`.
 
 ```ts
-import { event, reply } from "ts-star"
+import { event, reply } from "datastar-kit"
 
 async function* liveEvents() {
-  yield event.patch(renderCurrentState())
+  yield event.patchElements(renderCurrentState())
   for await (const _ of invalidations) {
-    yield event.patch(renderCurrentState())
+    yield event.patchElements(renderCurrentState())
   }
 }
 

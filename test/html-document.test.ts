@@ -1,23 +1,26 @@
 import { describe, expect, it } from "vitest"
-import { h, page } from "../src/html.js"
+import { h } from "../src/html.js"
+import { page } from "../src/reply.js"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
-describe("HTML document helper", () => {
-  it("renders a doctype and basic document shell", () => {
-    expect(page({ body: h("main", {}, "Hello") })).toBe(
+describe("HTML document responses", () => {
+  it("renders a doctype and basic document shell", async () => {
+    await expect(page(h("main", {}, "Hello")).text()).resolves.toBe(
       '<!doctype html><html lang="en"><head></head><body><main>Hello</main></body></html>'
     )
   })
 
-  it("supports custom lang and head/body children", () => {
-    expect(
-      page({
-        lang: "en-US",
-        head: [h("title", {}, "Demo"), h("script", { type: "module", src: DATASTAR_CDN })],
-        body: [h("main", {}, "Datastar")]
-      })
-    ).toBe(
+  it("supports custom lang and head/body children", async () => {
+    await expect(
+      page(
+        [h("main", {}, "Datastar")],
+        {
+          lang: "en-US",
+          head: [h("title", {}, "Demo"), h("script", { type: "module", src: DATASTAR_CDN })]
+        }
+      ).text()
+    ).resolves.toBe(
       `<!doctype html><html lang="en-US"><head><title>Demo</title><script type="module" src="${DATASTAR_CDN}"></script></head><body><main>Datastar</main></body></html>`
     )
   })

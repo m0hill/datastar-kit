@@ -8,7 +8,7 @@ Validation is a recipe built from `read.signals(request, schema)`, app-local err
 
 - **Validation errors** — input is syntactically valid enough to understand, but fails form/domain validation. Return `200` Datastar patches near the relevant fields.
 - **Domain/action errors** — the action cannot complete. Return a predictable UI patch if the current Datastar action should update the page, otherwise return an ordinary status response.
-- **Decode errors** — malformed JSON signals or Standard Schema failures. These can map to `400` unless a handler deliberately converts them to UI patches.
+- **Decode errors** — malformed JSON signals, non-object signal payloads, or Standard Schema failures. These can map to `400` unless a handler deliberately converts them to UI patches.
 - **Fatal errors** — unexpected defects should be logged/traced by the app and return safe generic responses, not stack traces.
 
 ## Validation signal convention

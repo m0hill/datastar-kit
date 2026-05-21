@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
 import * as event from "../src/event.js"
-import { h, type Child } from "../src/html.js"
+import { h, type HtmlChild } from "../src/html.js"
 import { stream } from "../src/reply.js"
 import type { PatchElementsOptions } from "../src/sse.js"
 
-type View<State> = (state: State) => Child
+type View<State> = (state: State) => HtmlChild
 
 interface QueryRecipeOptions<State> {
   readonly invalidations: AsyncIterable<unknown>
@@ -14,9 +14,9 @@ interface QueryRecipeOptions<State> {
 }
 
 async function* currentStateRecipe<State>(options: QueryRecipeOptions<State>): AsyncIterable<string> {
-  yield event.patch(options.render(await options.load()), options.patch)
+  yield event.patchElements(options.render(await options.load()), options.patch)
   for await (const _ of options.invalidations) {
-    yield event.patch(options.render(await options.load()), options.patch)
+    yield event.patchElements(options.render(await options.load()), options.patch)
   }
 }
 
@@ -38,7 +38,7 @@ describe("live query recipe", () => {
       invalidations: values(["missed-delta", "refresh"]),
       load: () => states.shift() ?? -1,
       render: countView,
-      patch: { selector: "#count", mode: "outer" }
+      patch: { selector: "#count", mergeMode: "outer" }
     })) {
       patches.push(patch)
     }

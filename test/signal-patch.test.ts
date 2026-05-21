@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { onSignalPatch, onSignalPatchFilter, post, regex } from "../src/ds.js"
-import { props } from "../src/html.js"
+import { mergeProps } from "../src/html.js"
 
 describe("signal patch helpers", () => {
   it("builds signal patch filter attributes", () => {
@@ -11,7 +11,7 @@ describe("signal patch helpers", () => {
 
   it("composes signal patch listeners and filters", () => {
     expect(
-      props(
+      mergeProps(
         onSignalPatch(post("/autosave"), { debounce: 500 }),
         onSignalPatchFilter({ include: regex("^draft") })
       )

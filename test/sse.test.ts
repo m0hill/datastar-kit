@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { eventStream, patchElements, patchSignals } from "../src/sse.js"
+import { patchElements, patchSignals } from "../src/sse.js"
 
 describe("Datastar SSE encoding", () => {
   it("encodes default element patches like the SDK fixture", () => {
@@ -12,7 +12,7 @@ describe("Datastar SSE encoding", () => {
         id: "event1",
         retry: 2000,
         selector: "div",
-        mode: "append",
+        mergeMode: "append",
         useViewTransition: true
       })
     ).toBe(
@@ -27,7 +27,7 @@ describe("Datastar SSE encoding", () => {
   })
 
   it("encodes element removal through patch options", () => {
-    expect(patchElements("", { selector: "#target", mode: "remove" })).toBe(
+    expect(patchElements("", { selector: "#target", mergeMode: "remove" })).toBe(
       "event: datastar-patch-elements\ndata: selector #target\ndata: mode remove\ndata: elements \n\n"
     )
   })
@@ -50,8 +50,8 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
-  it("concatenates multiple events into one stream", () => {
-    expect(eventStream(patchElements("<div>One</div>"), patchElements("<div>Two</div>"))).toBe(
+  it("returns complete event strings that can be concatenated into a stream", () => {
+    expect([patchElements("<div>One</div>"), patchElements("<div>Two</div>")].join("")).toBe(
       "event: datastar-patch-elements\ndata: elements <div>One</div>\n\nevent: datastar-patch-elements\ndata: elements <div>Two</div>\n\n"
     )
   })

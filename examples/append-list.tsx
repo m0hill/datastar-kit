@@ -1,4 +1,4 @@
-import { ds, reply } from "../src/index.js"
+import { ds, reply } from "datastar-kit"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -15,19 +15,17 @@ export function makeAppendList() {
     const url = new URL(request.url)
 
     if (request.method === "GET" && url.pathname === "/") {
-      return reply.page({
-        head: <script type="module" src={DATASTAR_CDN} />,
-        body: (
-          <main id="append-list">
-            <h1>Append list</h1>
-            <p>Each click appends a new item into the list target.</p>
-            <button type="button" {...ds.on("click", ds.post("/items"))}>Add item</button>
-            <ul id="items">
-              {items.map((item) => <li id={`item-${item.id}`}>{item.label}</li>)}
-            </ul>
-          </main>
-        )
-      })
+      return reply.page(
+        <main id="append-list">
+          <h1>Append list</h1>
+          <p>Each click appends a new item into the list target.</p>
+          <button type="button" {...ds.on("click", ds.post("/items"))}>Add item</button>
+          <ul id="items">
+            {items.map((item) => <li id={`item-${item.id}`}>{item.label}</li>)}
+          </ul>
+        </main>,
+        { head: <script type="module" src={DATASTAR_CDN} /> }
+      )
     }
 
     if (request.method === "POST" && url.pathname === "/items") {
@@ -35,7 +33,7 @@ export function makeAppendList() {
       nextId += 1
       items.push(item)
 
-      return reply.patch(<li id={`item-${item.id}`}>{item.label}</li>, { selector: "#items", mode: "append" })
+      return reply.patch(<li id={`item-${item.id}`}>{item.label}</li>, { selector: "#items", mergeMode: "append" })
     }
 
     return new Response("Not Found", { status: 404 })

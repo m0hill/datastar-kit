@@ -1,18 +1,16 @@
 import { describe, expect, it } from "vitest"
-import * as Root from "../src/index.js"
-import * as sse from "../src/sse.js"
+import * as Root from "datastar-kit"
+import * as sse from "datastar-kit/sse"
 import {
   ds,
   event,
-  read,
-  reply,
-  fragment,
   h,
-  page,
-  props,
-  render,
+  mergeProps,
+  read,
+  renderToString,
+  reply,
   unsafeHtml
-} from "../src/index.js"
+} from "datastar-kit"
 
 describe("package root exports", () => {
   it("exports the tiny HTML surface and Web Standards SDK namespaces", () => {
@@ -26,15 +24,21 @@ describe("package root exports", () => {
     expect("live" in Root).toBe(false)
     expect(ds.signal).toBeDefined()
     expect(ds.delete).toBeDefined()
-    expect(event.patch).toBeDefined()
-    expect(event.signals).toBeDefined()
+    expect(event.patchElements).toBeDefined()
+    expect(event.patchSignals).toBeDefined()
+    expect(event.executeScript).toBeDefined()
+    expect("patch" in event).toBe(false)
+    expect("signals" in event).toBe(false)
+    expect("script" in event).toBe(false)
     expect(h).toBeDefined()
-    expect(render).toBeDefined()
-    expect(fragment).toBeDefined()
+    expect(renderToString).toBeDefined()
+    expect("fragment" in Root).toBe(false)
+    expect("page" in Root).toBe(false)
+    expect("render" in Root).toBe(false)
+    expect("props" in Root).toBe(false)
     expect("raw" in Root).toBe(false)
     expect(unsafeHtml).toBeDefined()
-    expect(props).toBeDefined()
-    expect(page).toBeDefined()
+    expect(mergeProps).toBeDefined()
     expect("Sse" in Root).toBe(false)
     expect("sse" in Root).toBe(false)
     expect("patchElements" in Root).toBe(false)
@@ -56,11 +60,14 @@ describe("package root exports", () => {
     expect("FormValidationError" in Root).toBe(false)
     expect("Telemetry" in Root).toBe(false)
     expect(read.signals).toBeDefined()
+    expect("rawSignals" in read).toBe(false)
     expect("query" in read).toBe(false)
     expect("signalsFrom" in read).toBe(false)
     expect(reply.patch).toBeDefined()
     expect(reply.navigate).toBeDefined()
     expect(reply.directHtml).toBeDefined()
     expect(sse.patchSignals).toBeDefined()
+    expect("encodeJson" in sse).toBe(false)
+    expect("eventStream" in sse).toBe(false)
   })
 })

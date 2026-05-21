@@ -3,7 +3,7 @@ import { Hono } from "hono"
 import { compress } from "hono/compress"
 import { pathToFileURL } from "node:url"
 import * as z from "zod"
-import { ds, event, read, reply } from "../src/index.js"
+import { ds, event, read, reply } from "datastar-kit"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 const TAILWIND_CDN = "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"
@@ -31,15 +31,12 @@ export function makeTodoSync() {
   app.use(compress())
 
   app.get("/", () =>
-    reply.page({
-      head: pageHead(),
-      body: <TodoPage todos={store.all()} />
-    })
+    reply.page(<TodoPage todos={store.all()} />, { head: pageHead() })
   )
 
   app.get("/todos/live", () => {
     async function* events() {
-      const currentTodoListPatch = () => event.patch(<TodoList todos={store.all()} />, { selector: "#todo-sync-list" })
+      const currentTodoListPatch = () => event.patchElements(<TodoList todos={store.all()} />, { selector: "#todo-sync-list" })
       const subscription = bus.subscribe()
 
       yield currentTodoListPatch()
@@ -60,8 +57,8 @@ export function makeTodoSync() {
       bus.publish()
 
       return reply.stream([
-        event.signals({ title: "" }),
-        event.patch(<ErrorMessage />, { selector: "#todo-errors" })
+        event.patchSignals({ title: "" }),
+        event.patchElements(<ErrorMessage />, { selector: "#todo-errors" })
       ])
     } catch (error) {
       if (error instanceof read.SignalValidationError) {
@@ -370,7 +367,7 @@ export const startTodoSyncServer = async (options: TodoSyncServerOptions = {}): 
     ready = resolve
   })
   const server = serve({ fetch: todoSync.handle, hostname: host, port }, (info) => {
-    console.log(`ts-star todo-sync example listening on http://${host}:${info.port}`)
+    console.log(`Datastar Kit todo-sync example listening on http://${host}:${info.port}`)
     ready()
   })
   await listening

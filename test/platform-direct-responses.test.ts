@@ -4,18 +4,18 @@ import * as reply from "../src/reply.js"
 
 if (false) {
   // @ts-expect-error Datastar action body replies own their protocol status.
-  reply.directSignals({ count: 1 }, { status: 200 })
+  reply.directSignals({ count: 1 }, {}, { status: 200 })
   // @ts-expect-error Datastar action body replies own their protocol status.
-  reply.patch(h("p", {}, "Updated"), { status: 200 })
+  reply.patch(h("p", {}, "Updated"), {}, { status: 200 })
   // @ts-expect-error Datastar action body replies own their protocol status.
-  reply.signals({ count: 1 }, { status: 200 })
+  reply.signals({ count: 1 }, {}, { status: 200 })
   // @ts-expect-error Datastar no-content replies own their protocol status.
   reply.done({ status: 204 })
 }
 
 describe("reply direct Datastar responses", () => {
   it("serves full Datastar pages with normal page status options", async () => {
-    const response = reply.page({ body: h("main", {}, "Ada & Grace") }, { status: 201, headers: { "x-html": "yes" } })
+    const response = reply.page(h("main", {}, "Ada & Grace"), {}, { status: 201, headers: { "x-html": "yes" } })
     const html = await response.text()
 
     expect(response.status).toBe(201)
@@ -27,8 +27,8 @@ describe("reply direct Datastar responses", () => {
   it("serves direct HTML patch responses as explicit escape hatches", async () => {
     const response = reply.directHtml(h("p", {}, "Updated"), {
       selector: "#slot",
-      mode: "inner",
-      namespace: "svg",
+      mergeMode: "inner",
+      elementNamespace: "svg",
       useViewTransition: true
     })
 

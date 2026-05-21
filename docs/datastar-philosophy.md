@@ -1,6 +1,6 @@
-# Datastar philosophy in ts-star
+# Datastar philosophy in Datastar Kit
 
-`ts-star` follows Datastar's server-driven model: the server renders HTML, Datastar sends user intent and sparse signals, and the browser applies DOM/signal patches.
+Datastar Kit follows Datastar's server-driven model: the server renders HTML, Datastar sends user intent and sparse signals, and the browser applies DOM/signal patches.
 
 Keep the mental model simple:
 

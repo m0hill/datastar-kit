@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import * as ds from "../src/ds.js"
-import { h, render } from "../src/html.js"
+import { h, renderToString } from "../src/html.js"
 
 describe("signal policy helpers", () => {
   it("keeps posted input signals explicit without changing Datastar names", () => {
@@ -45,7 +45,7 @@ describe("signal policy helpers", () => {
       h("div", ds.show(open), "Panel")
     )
 
-    expect(render(node)).toBe(
+    expect(renderToString(node)).toBe(
       '<details data-signals:_menuOpen__ifmissing="false"><summary>Menu</summary><div data-show="$_menuOpen">Panel</div></details>'
     )
   })

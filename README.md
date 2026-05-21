@@ -1,43 +1,45 @@
-# ts-star
+# datastar-kit
 
-Web Standards Datastar SDK for server-driven TypeScript applications.
+Datastar Kit is an independent TypeScript companion SDK for building server-driven Datastar UI with Web Standard `Request` and `Response` primitives. It gives you typed helpers for Datastar attributes, actions, signals, SSE events, and server-rendered HTML while your application framework owns routing, middleware, auth, deployment, and lifecycle.
 
-`ts-star` is intentionally small. It gives you Datastar-oriented HTML, attribute, signal-reading, SSE, and response helpers that compose inside any fetch-compatible JavaScript framework. Your app framework owns routing, middleware, auth, deployment, dependencies, and lifecycle.
+## Features
 
-See [`CONTEXT.md`](CONTEXT.md) and [`docs/adr/0001-web-standards-sdk-core.md`](docs/adr/0001-web-standards-sdk-core.md) for the experimental branch direction.
+- **Datastar-first helpers** — `ds` mirrors Datastar actions, attributes, signals, expressions, and modifiers.
+- **Server-side JSX** — Use `jsxImportSource: "datastar-kit"` for small server-rendered view functions.
+- **Native responses** — `reply` returns standard `Response` objects for pages, patches, signals, streams, direct responses, and command completion.
+- **SSE by default** — Normal Datastar updates use `text/event-stream`; direct responses stay available as explicit escape hatches.
+- **Optional schema validation** — Read parsed JSON object signal state directly, or validate it with any Standard Schema-compatible validator.
+- **Web standards only** — No router, middleware runtime, dependency injection container, client store, or framework adapter in core.
 
-## Current architecture
+## Installation
 
-The package root exposes:
+```sh
+npm i datastar-kit
+```
 
-- `ds` — Datastar actions, attributes, signal refs, and expression escape hatches.
-- `event` — rendered Datastar SSE event helpers for streams.
-- `read` — Datastar signal decoding from a native `Request` with Standard Schema validation.
-- `reply` — Datastar-safe native `Response` helpers.
-- `h`, `render`, `fragment`, `unsafeHtml`, `props`, `page` — low-level server HTML primitives used by the JSX runtime.
+Datastar Kit does not bundle the Datastar browser runtime. Include Datastar in your page explicitly, either from a pinned CDN URL or by serving your own copy of `@starfederation/datastar`.
 
-Explicit subpaths:
+```tsx
+const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+```
 
-- `ts-star/jsx-runtime` / `ts-star/jsx-dev-runtime` — automatic JSX runtime for `jsxImportSource: "ts-star"`.
-- `ts-star/sse` — low-level Datastar SSE event encoding for protocol tests and escape hatches.
-
-There is no core router, middleware system, dependency-injection context, runtime, PubSub, or application framework adapter. Hono is shown only as an example integration.
-
-## Minimal counter
-
-The blessed view-authoring path is server-side JSX. Configure TypeScript once:
+For JSX, configure TypeScript once:
 
 ```json
 {
   "compilerOptions": {
     "jsx": "react-jsx",
-    "jsxImportSource": "ts-star"
+    "jsxImportSource": "datastar-kit"
   }
 }
 ```
 
+## Usage
+
+A Datastar Kit handler is just a function that accepts a native `Request` and returns a native `Response`.
+
 ```tsx
-import { ds, reply } from "ts-star"
+import { ds, reply } from "datastar-kit"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -56,9 +58,8 @@ export function handle(request: Request): Response {
   const url = new URL(request.url)
 
   if (request.method === "GET" && url.pathname === "/") {
-    return reply.page({
-      head: <script type="module" src={DATASTAR_CDN} />,
-      body: <Counter />
+    return reply.page(<Counter />, {
+      head: <script type="module" src={DATASTAR_CDN} />
     })
   }
 
@@ -71,24 +72,47 @@ export function handle(request: Request): Response {
 }
 ```
 
-## Datastar expressions
+## Datastar helpers
 
-Common actions and attributes stay structured through `ds.*` helpers. When a client-side expression is actually needed, use `ds.expr` so signal refs and JS literals interpolate safely instead of hand-building attribute strings:
+Import the Datastar helper namespace as `ds`:
+
+```tsx
+import { ds } from "datastar-kit"
+
+const title = ds.signal<string>("title")
+
+<form
+  {...ds.dataSignals({ title: "" }, { ifMissing: true })}
+  {...ds.on("submit", ds.post("/todos", { payload: { title } }), { prevent: true })}
+>
+  <input {...ds.bind(title)} />
+  <button type="submit">Add</button>
+</form>
+```
+
+Use `ds.expr` when you need a client-side expression. Template interpolation serializes signal refs and JavaScript literals safely:
 
 ```tsx
 const count = ds.signal<number>("count")
-const max = 10
 
-<button {...ds.dataAttr("disabled", ds.expr`${count} >= ${max}`)}>+</button>
+<button {...ds.dataAttr("disabled", ds.expr`${count} >= ${10}`)}>+</button>
 ```
 
-## Reading Datastar signals
+## Reading signals
 
-`read.signals(request, schema)` hides Datastar's transport detail: `GET`/`DELETE` read the `datastar` query parameter, while mutating methods read the request body as JSON. The schema can come from any Standard Schema-compatible validator.
+Schema validation is optional. Without a schema, `read.signals(request)` returns parsed JSON object signal state:
+
+```ts
+import { read } from "datastar-kit"
+
+const signals = await read.signals(request)
+```
+
+For user input, prefer validating at the request boundary with any Standard Schema-compatible validator:
 
 ```ts
 import { z } from "zod"
-import { read, reply } from "ts-star"
+import { read, reply } from "datastar-kit"
 
 const CounterSignals = z.object({ count: z.number() })
 
@@ -98,42 +122,85 @@ export async function increment(request: Request): Promise<Response> {
 }
 ```
 
-Core depends only on `@standard-schema/spec` for public types. Zod, Valibot, ArkType, Effect Schema, or any compatible validator can be supplied by the application.
+`read.signals` hides Datastar's transport details: `GET` and `DELETE` read the `datastar` query parameter, while mutating methods read the request body as JSON.
 
 ## Responses
 
-`reply` helpers return native `Response` objects:
+`reply` helpers return native `Response` objects. Datastar action helpers own their protocol status codes, so protocol options and native response options are separate:
 
-- `reply.page(...)` — full HTML page/document response with normal HTTP status options.
-- `reply.patch(...)` — SSE element patch response.
-- `reply.signals(...)` — SSE signal patch response.
-- `reply.stream(...)` — SSE stream from iterable, async iterable, or `ReadableStream` event sources; pair with `event.patch(...)` / `event.signals(...)` for rendered event chunks.
-- `reply.done(...)` — `204` command completion with no body.
-- `reply.navigate(...)` — safe direct script navigation.
-- `reply.directHtml(...)`, `reply.directSignals(...)`, `reply.directScript(...)` — flat explicit Datastar direct-response escape hatches.
+```tsx
+reply.patch(<Count />, { selector: "#count" }, { headers: { "x-action": "increment" } })
+reply.signals({ saving: false }, { onlyIfMissing: true }, { headers: { "x-action": "save" } })
+```
 
-Datastar action helpers own their protocol status codes. Protocol options and response headers live in one flattened options object, e.g. `reply.patch(view, { headers })`. Use plain `new Response(...)` for non-Datastar HTTP semantics such as ordinary `404` or API JSON errors.
+Use:
 
-For standard component updates, leave `selector` out and render stable IDs on the top-level elements you return; Datastar matches those IDs in the default outer patch mode. Pass `selector` when the patch targets a container or CSS match instead of the returned element itself, such as appending to a list, removing elements, updating inner HTML, or patching multiple targets.
+- `reply.page(body, options, init)` for a full HTML document response. `init` is normal `ResponseInit`, including status.
+- `reply.patch(view, options, init)` for an SSE element patch response.
+- `reply.signals(state, options, init)` for an SSE signal patch response.
+- `reply.stream(events, options, init)` for multiple or long-lived SSE event chunks.
+- `reply.done(init)` for a `204` command completion with no body.
+- `reply.navigate(url, options, init)` for safe Datastar-driven navigation.
+
+For normal component updates, omit `selector` and render stable IDs on the top-level elements you return. Pass `selector` when targeting a container or CSS match, such as appending to a list or removing elements.
 
 ```tsx
 reply.patch(<Count />)
-reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
+reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mergeMode: "append" })
+```
+
+## Streaming events
+
+Use `event.*` helpers to build explicit SSE chunks for `reply.stream`:
+
+```tsx
+import { event, reply } from "datastar-kit"
+
+async function* events() {
+  yield event.patchElements(<output id="count">0</output>)
+  yield event.patchSignals({ ready: true })
+}
+
+return reply.stream(events(), {
+  heartbeat: { intervalMs: 15_000, comment: "count" }
+})
+```
+
+For protocol tests or custom encoders, `datastar-kit/sse` exposes low-level string builders: `patchElements`, `patchSignals`, and `executeScript`.
+
+## Direct response escape hatches
+
+Datastar Kit strongly recommends SSE helpers as the default path. Direct responses remain public for integrations that specifically need Datastar's direct-response handling:
+
+- `reply.directHtml(html, options, init)`
+- `reply.directSignals(state, options, init)`
+- `reply.directScript(script, options, init)`
+
+Security warning: only pass trusted or sanitized HTML to `unsafeHtml` / `directHtml`, and only pass trusted script text to `directScript`. Prefer `reply.navigate` for navigation and structured patches for ordinary UI updates.
+
+## Low-level HTML
+
+JSX is the primary authoring path. Low-level helpers are available for tests, code generation, and non-JSX environments:
+
+```ts
+import { ds, h, mergeProps, renderToString } from "datastar-kit"
+
+const view = h("button", mergeProps({ type: "button" }, ds.on("click", ds.post("/save"))), "Save")
+const html = renderToString(view)
 ```
 
 ## Examples
 
 Reference examples live in `examples/`:
 
-- `counter.ts` — low-level `h(...)` hyperscript example for the smallest backend-state element patch flow.
-- `tsx-counter.tsx` — smallest backend-state element patch flow using the blessed JSX runtime.
-- `append-list.tsx` — explicit selector example that appends returned list items into a target container.
-- `search.tsx` — Datastar-driven query URL example using the blessed JSX runtime.
-- `live-counter.tsx` — recipe-style app-owned SSE invalidation stream using the blessed JSX runtime.
-- `validation-form.tsx` — recoverable validation patches using Standard Schema-compatible Zod and JSX views.
-- `hono-counter.tsx` — Hono as an application-framework integration around `Request -> Response` helpers and JSX views.
-- `hono-live-counter.tsx` — Hono routing around the app-owned live counter SSE recipe.
-- `todo-sync.tsx` — full-stack Hono todo sync with blessed TSX views, Tailwind browser CSS, `read.signals(...)` + Zod validation, compression middleware, and realtime SSE fan-out.
+- `counter.ts` — low-level `h(...)` counter.
+- `tsx-counter.tsx` — JSX counter.
+- `append-list.tsx` — selector-based append patch.
+- `search.tsx` — reactive query URL search.
+- `live-counter.tsx` — app-owned SSE invalidation recipe.
+- `validation-form.tsx` — optional Standard Schema validation with recoverable UI patches.
+- `hono-counter.tsx` / `hono-live-counter.tsx` — Hono integration examples.
+- `todo-sync.tsx` — fuller Hono todo sync with realtime fan-out.
 
 ## Checking examples
 
@@ -156,7 +223,7 @@ The `check:*` scripts run `typecheck` first, then the matching example test. Use
 
 ## Running example dev servers
 
-Each dev script builds the TypeScript examples, then starts one example through a local Node server. Most examples use the shared Web `Request`/`Response` dev adapter; `todo-sync.tsx` uses Hono's Node adapter directly. Examples include the versioned Datastar CDN script explicitly in their page head:
+Each dev script builds the TypeScript examples, then starts one example through a local Node server:
 
 ```sh
 pnpm run dev:counter
@@ -172,9 +239,12 @@ pnpm run dev:hono-live-counter
 
 The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or `HOST=0.0.0.0`.
 
-## Design constraints
+## Related Work
 
-- Backend state should be the durable source of truth.
-- Datastar signals should stay sparse and mostly ephemeral.
-- Server-rendered HTML should stay simple; external renderer output should cross the trust boundary explicitly with `unsafeHtml(renderedHtml)`.
-- `ts-star` should not become a virtual DOM runtime, client router, React-style lifecycle system, complex browser store, plugin-heavy framework clone, or application runtime.
+- [Datastar](https://data-star.dev/) — the browser runtime and hypermedia protocol this SDK targets.
+- [Datastar SDK reference](https://data-star.dev/reference/sdks) — official SDK overview across languages.
+- [Standard Schema](https://standardschema.dev/) — validator-agnostic schema interface used by optional signal validation.
+
+## License
+
+MIT

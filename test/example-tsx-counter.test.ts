@@ -13,7 +13,7 @@ describe("TSX counter example", () => {
     expect(html).toContain("<!doctype html>")
     expect(html).toContain(`<script type="module" src="${DATASTAR_CDN}"></script>`)
     expect(html).toContain('id="tsx-counter"')
-    expect(html).toContain("ts-star TSX counter")
+    expect(html).toContain("Datastar Kit TSX counter")
     expect(html).toContain('<button type="button" data-on:click="@post(&quot;/increment&quot;)">+</button>')
     expect(html).toContain('<output id="count">0</output>')
   })

@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "../src/index.js"
+import { ds, event, reply } from "datastar-kit"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -9,15 +9,13 @@ export function makeHonoLiveCounter() {
   let count = 0
 
   app.get("/", () =>
-    reply.page({
-      head: <script type="module" src={DATASTAR_CDN}></script>,
-      body: (
-        <main id="live-counter" {...ds.init(ds.get("/live"))}>
-          <button type="button" {...ds.on("click", ds.post("/increment"))}>+</button>
-          <output id="count">{count}</output>
-        </main>
-      )
-    })
+    reply.page(
+      <main id="live-counter" {...ds.init(ds.get("/live"))}>
+        <button type="button" {...ds.on("click", ds.post("/increment"))}>+</button>
+        <output id="count">{count}</output>
+      </main>,
+      { head: <script type="module" src={DATASTAR_CDN}></script> }
+    )
   )
 
   app.post("/increment", () => {
@@ -28,7 +26,7 @@ export function makeHonoLiveCounter() {
 
   app.get("/live", () => {
     async function* events() {
-      const currentCountPatch = () => event.patch(<output id="count">{count}</output>)
+      const currentCountPatch = () => event.patchElements(<output id="count">{count}</output>)
       const subscription = invalidations.subscribe()
 
       yield currentCountPatch()

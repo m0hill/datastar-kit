@@ -12,7 +12,7 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 
 ## Append list
 
-`examples/append-list.tsx` demonstrates the explicit-selector pattern: each action renders a new `<li>` and appends it into the `#items` container with `{ selector: "#items", mode: "append" }`.
+`examples/append-list.tsx` demonstrates the explicit-selector pattern: each action renders a new `<li>` and appends it into the `#items` container with `{ selector: "#items", mergeMode: "append" }`.
 
 ## Search
 
@@ -28,7 +28,7 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 
 ## Hono counter
 
-`examples/hono-counter.tsx` shows Hono as an application framework around `ts-star` helpers. `examples/hono-live-counter.tsx` uses Hono routes around the live counter SSE recipe. Hono is not imported by core.
+`examples/hono-counter.tsx` shows Hono as an application framework around Datastar Kit helpers. `examples/hono-live-counter.tsx` uses Hono routes around the live counter SSE recipe. Hono is not imported by core.
 
 ## Todo sync
 

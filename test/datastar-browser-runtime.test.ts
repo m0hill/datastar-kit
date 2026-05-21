@@ -5,7 +5,7 @@ import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
 import { startExampleServer } from "../examples/dev-server.js"
 import { dataSignals, on, post, signal, text } from "../src/ds.js"
-import { h, page as htmlPage, props } from "../src/html.js"
+import { h, mergeProps, renderToString } from "../src/html.js"
 
 const execFile = promisify(execFileCallback)
 const agentBrowserAvailable = spawnSync("agent-browser", ["--version"], { stdio: "ignore" }).status === 0
@@ -15,16 +15,24 @@ const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1
 const runtimePage = (): string => {
   const count = signal<number, "count">("count")
 
-  return htmlPage({
-    head: h("script", { type: "module", src: DATASTAR_CDN }),
-    body: h(
-      "main",
-      props({ id: "app" }, dataSignals({ count: 0 }, { ifMissing: true })),
-      h("output", props({ id: "count" }, text(count)), "0"),
-      h("button", props({ id: "ignored", type: "button" }, on("click", post("/ignored"))), "ignored"),
-      h("button", props({ id: "increment", type: "button" }, on("click", post("/increment"))), "+")
+  return `<!doctype html>${renderToString(
+    h(
+      "html",
+      { lang: "en" },
+      h("head", {}, h("script", { type: "module", src: DATASTAR_CDN })),
+      h(
+        "body",
+        {},
+        h(
+          "main",
+          mergeProps({ id: "app" }, dataSignals({ count: 0 }, { ifMissing: true })),
+          h("output", mergeProps({ id: "count" }, text(count)), "0"),
+          h("button", mergeProps({ id: "ignored", type: "button" }, on("click", post("/ignored"))), "ignored"),
+          h("button", mergeProps({ id: "increment", type: "button" }, on("click", post("/increment"))), "+")
+        )
+      )
     )
-  })
+  )}`
 }
 
 const serveRuntimeFixture = async (): Promise<{ readonly server: Server; readonly url: string }> => {
@@ -74,7 +82,7 @@ const waitForSelector = async (
 
 describe("Datastar browser runtime integration", () => {
   browserIt("applies 200 direct JSON signal responses and ignores non-200 action bodies", async () => {
-    const session = `ts-star-runtime-${process.pid}-${Date.now()}`
+    const session = `datastar-kit-runtime-${process.pid}-${Date.now()}`
     const { server, url } = await serveRuntimeFixture()
     const browser = async (...args: ReadonlyArray<string>): Promise<string> => {
       const { stdout } = await execFile("agent-browser", ["--session-name", session, ...args], { timeout: 20_000 })
@@ -122,7 +130,7 @@ describe("Datastar browser runtime integration", () => {
   }, 30_000)
 
   browserIt("runs the backend-state counter reference example through Datastar", async () => {
-    const session = `ts-star-counter-example-${process.pid}-${Date.now()}`
+    const session = `datastar-kit-counter-example-${process.pid}-${Date.now()}`
     const server = await startExampleServer("counter", { port: 0 })
     const browser = async (...args: ReadonlyArray<string>): Promise<string> => {
       const { stdout } = await execFile("agent-browser", ["--session-name", session, ...args], { timeout: 20_000 })

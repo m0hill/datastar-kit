@@ -6,10 +6,10 @@ const fromRoot = (path: string): string => fileURLToPath(new URL(path, import.me
 export default defineConfig({
   resolve: {
     alias: [
-      { find: "ts-star/jsx-runtime", replacement: fromRoot("./src/jsx-runtime.ts") },
-      { find: "ts-star/jsx-dev-runtime", replacement: fromRoot("./src/jsx-dev-runtime.ts") },
-      { find: "ts-star/sse", replacement: fromRoot("./src/sse.ts") },
-      { find: "ts-star", replacement: fromRoot("./src/index.ts") }
+      { find: "datastar-kit/jsx-runtime", replacement: fromRoot("./src/jsx-runtime.ts") },
+      { find: "datastar-kit/jsx-dev-runtime", replacement: fromRoot("./src/jsx-dev-runtime.ts") },
+      { find: "datastar-kit/sse", replacement: fromRoot("./src/sse.ts") },
+      { find: "datastar-kit", replacement: fromRoot("./src/index.ts") }
     ]
   },
   test: {

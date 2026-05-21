@@ -1,4 +1,4 @@
-import { ds, event, reply } from "../src/index.js"
+import { ds, event, reply } from "datastar-kit"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -19,10 +19,7 @@ export function makeLiveCounter() {
     const url = new URL(request.url)
 
     if (request.method === "GET" && url.pathname === "/") {
-      return reply.page({
-        head: <script type="module" src={DATASTAR_CDN} />,
-        body: <LiveCounter />
-      })
+      return reply.page(<LiveCounter />, { head: <script type="module" src={DATASTAR_CDN} /> })
     }
 
     if (request.method === "POST" && url.pathname === "/increment") {
@@ -33,7 +30,7 @@ export function makeLiveCounter() {
 
     if (request.method === "GET" && url.pathname === "/live") {
       async function* events() {
-        const currentCountPatch = () => event.patch(<Count />)
+        const currentCountPatch = () => event.patchElements(<Count />)
         const subscription = invalidations.subscribe()
 
         yield currentCountPatch()

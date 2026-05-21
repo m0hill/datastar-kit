@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
 import * as ds from "../src/ds.js"
-import { h, props, render } from "../src/html.js"
+import { h, mergeProps, renderToString } from "../src/html.js"
 
 describe("typed Datastar HTML helpers", () => {
   it("renders escaped HTML and boolean attributes", () => {
-    expect(render(h("button", { disabled: true, title: "A & B" }, "Save <now>"))).toBe(
+    expect(renderToString(h("button", { disabled: true, title: "A & B" }, "Save <now>"))).toBe(
       '<button disabled title="A &amp; B">Save &lt;now&gt;</button>'
     )
   })
@@ -34,13 +34,13 @@ describe("typed Datastar HTML helpers", () => {
     const count = ds.signal<number, "count">("count")
     const view = h(
       "main",
-      props({ id: "counter" }, ds.dataSignals({ count: 0 }, { ifMissing: true })),
-      h("button", props({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
+      mergeProps({ id: "counter" }, ds.dataSignals({ count: 0 }, { ifMissing: true })),
+      h("button", mergeProps({ type: "button" }, ds.on("click", ds.post("/increment"))), "+"),
       h("output", ds.text(count), "0"),
-      h("input", props({ type: "number" }, ds.bind(count)))
+      h("input", mergeProps({ type: "number" }, ds.bind(count)))
     )
 
-    expect(render(view)).toBe(
+    expect(renderToString(view)).toBe(
       '<main id="counter" data-signals__ifmissing="{&quot;count&quot;: 0}"><button type="button" data-on:click="@post(&quot;/increment&quot;)">+</button><output data-text="$count">0</output><input type="number" data-bind:count></main>'
     )
   })

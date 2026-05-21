@@ -1,6 +1,6 @@
 # Deployment
 
-`ts-star` targets fetch-compatible JavaScript runtimes. The package stays server-driven: static assets are small, and most behavior is ordinary `Request -> Response` handlers.
+Datastar Kit targets fetch-compatible JavaScript runtimes. The package stays server-driven: static assets are small, and most behavior is ordinary `Request -> Response` handlers.
 
 ## Runtime adapters
 
@@ -15,15 +15,14 @@ Use your application framework or host adapter to connect handlers to the platfo
 Datastar runtime inclusion is explicit HTML. Pin a CDN URL or serve your own copy:
 
 ```ts
-reply.page({
-  head: h("script", { type: "module", src: DATASTAR_CDN }),
-  body: appShell
+reply.page(appShell, {
+  head: h("script", { type: "module", src: DATASTAR_CDN })
 })
 ```
 
 ## App-owned dependencies
 
-Databases, caches, sessions, queues, brokers, and request context belong to the application framework. `ts-star` helpers are plain functions that compose inside those handlers.
+Databases, caches, sessions, queues, brokers, and request context belong to the application framework. Datastar Kit helpers are plain functions that compose inside those handlers.
 
 ## Production checklist
 

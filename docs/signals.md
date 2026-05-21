@@ -26,7 +26,7 @@ Use private/local names such as `_validation.email` for UI-only feedback that sh
 
 ## Reading signals
 
-Use `read.signals(request, schema)` at Datastar action boundaries. The schema can come from any Standard Schema-compatible validator.
+Use `read.signals(request)` at Datastar action boundaries when you want parsed JSON object signal state without schema validation. Use `read.signals(request, schema)` when you want a Standard Schema-compatible validator to check and infer the payload.
 
 ## Patching signals
 

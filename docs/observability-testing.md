@@ -1,6 +1,6 @@
 # Observability and testing
 
-Observability is not a public `ts-star` API. Applications should use their platform's logging, tracing, metrics, and OpenTelemetry setup directly. Core SDK tests focus on protocol correctness and integration behavior.
+Observability is not a public Datastar Kit API. Applications should use their platform's logging, tracing, metrics, and OpenTelemetry setup directly. Core SDK tests focus on protocol correctness and integration behavior.
 
 ## Testing layers
 

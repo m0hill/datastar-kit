@@ -204,7 +204,7 @@ export const main = async (argv: readonly string[] = process.argv): Promise<void
     port: Number(process.env.PORT ?? "3000")
   })
 
-  console.log(`ts-star ${requested} example listening on ${server.origin}`)
+  console.log(`Datastar Kit ${requested} example listening on ${server.origin}`)
 
   const shutdown = async () => {
     await server.close()

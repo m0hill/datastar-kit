@@ -1,6 +1,6 @@
 # Backend-state and CQRS programming model
 
-`ts-star` applications should be designed as backend-source-of-truth systems. Datastar gives the browser a small runtime for events, requests, and DOM/signal patches; it should not become the application state store.
+Datastar Kit applications should be designed as backend-source-of-truth systems. Datastar gives the browser a small runtime for events, requests, and DOM/signal patches; it should not become the application state store.
 
 The default mental model is CQRS:
 
@@ -17,7 +17,7 @@ The core invariant is:
 
 1. A page renders initial HTML from backend state or renders a shell that opens a query/live stream.
 2. A browser event invokes a Datastar action URL such as `@post('/todos/add')`.
-3. A command decodes signals/form/query input at the request boundary, validates it, mutates backend state, and publishes an app-owned invalidation if a current-state view should rerender.
+3. A command decodes signals/form/query input at the request boundary, optionally validates it, mutates backend state, and publishes an app-owned invalidation if a current-state view should rerender.
 4. The command returns `reply.done()` or a patch response.
 5. A query/live recipe renders current backend state and returns a Datastar element patch.
 
@@ -25,7 +25,7 @@ The core invariant is:
 
 Guidelines:
 
-- Decode Datastar signal input with Standard Schema through `read.signals(request, schema)`.
+- Decode Datastar signal input with `read.signals(request)`; validate with `read.signals(request, schema)` when the handler needs schema guarantees.
 - Use Web APIs or your application framework directly for other request inputs.
 - Mutate backend state inside the command.
 - Return `reply.done()` by default when no immediate UI feedback is needed.

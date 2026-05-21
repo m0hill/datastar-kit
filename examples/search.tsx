@@ -1,4 +1,4 @@
-import { ds, reply } from "../src/index.js"
+import { ds, reply } from "datastar-kit"
 
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
@@ -14,20 +14,18 @@ export function handle(request: Request) {
   if (request.method === "GET" && url.pathname === "/") {
     const q = ds.signal<string>("q")
 
-    return reply.page({
-      head: <script type="module" src={DATASTAR_CDN} />,
-      body: (
-        <main id="search" {...ds.dataSignals({ q: "" }, { ifMissing: true })}>
-          <input
-            type="search"
-            placeholder="Search contacts"
-            {...ds.bind(q)}
-            {...ds.on("input", ds.get(ds.queryUrl("/search", { q })), { debounce: 200 })}
-          />
-          <table><tbody id="results" /></table>
-        </main>
-      )
-    })
+    return reply.page(
+      <main id="search" {...ds.dataSignals({ q: "" }, { ifMissing: true })}>
+        <input
+          type="search"
+          placeholder="Search contacts"
+          {...ds.bind(q)}
+          {...ds.on("input", ds.get(ds.queryUrl("/search", { q })), { debounce: 200 })}
+        />
+        <table><tbody id="results" /></table>
+      </main>,
+      { head: <script type="module" src={DATASTAR_CDN} /> }
+    )
   }
 
   if (request.method === "GET" && url.pathname === "/search") {

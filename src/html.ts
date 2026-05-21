@@ -1,25 +1,41 @@
-export type PropValue = string | number | boolean | null | undefined
-export type Props = Readonly<Record<string, PropValue>>
+/**
+ * A primitive value that can be serialized as an HTML attribute value.
+ */
+export type HtmlPropValue = string | number | boolean | null | undefined
 
+/**
+ * A readonly map of HTML attribute names to serializable values.
+ */
+export type HtmlProps = Readonly<Record<string, HtmlPropValue>>
+
+/**
+ * Internal marker for HTML that has deliberately crossed the trust boundary.
+ */
 interface RawHtml {
   readonly _tag: "RawHtml"
   readonly html: string
 }
 
-export type Child = HtmlNode | RawHtml | string | number | boolean | null | undefined | readonly Child[]
+/**
+ * A value that can be rendered by Datastar Kit's server-side HTML renderer.
+ */
+export type HtmlChild = HtmlNode | RawHtml | string | number | boolean | null | undefined | readonly HtmlChild[]
 
+/**
+ * A lightweight HTML element node used by the JSX runtime and `h()` factory.
+ */
 export interface HtmlNode {
+  /** The HTML tag name to render. */
   readonly tag: string
-  readonly props: Props
-  readonly children: readonly Child[]
+  /** The attributes rendered on the opening tag. */
+  readonly props: HtmlProps
+  /** The child nodes rendered inside this element. */
+  readonly children: readonly HtmlChild[]
 }
 
-export interface PageOptions {
-  readonly lang?: string
-  readonly head?: Child | readonly Child[]
-  readonly body?: Child | readonly Child[]
-}
-
+/**
+ * Tags that must not receive closing tags according to the HTML parsing model.
+ */
 const voidTags = new Set([
   "area",
   "base",
@@ -37,24 +53,52 @@ const voidTags = new Set([
   "wbr"
 ])
 
-export const h = (tag: string, props: Props = {}, ...children: readonly Child[]): HtmlNode => ({
+/**
+ * Creates a lightweight HTML element node without using JSX.
+ *
+ * @param tag The HTML tag name to render.
+ * @param props Attributes rendered on the element.
+ * @param children Child nodes rendered inside the element.
+ * @returns An HTML node that can be passed to `renderToString()` or response helpers.
+ */
+export const h = (tag: string, props: HtmlProps = {}, ...children: readonly HtmlChild[]): HtmlNode => ({
   tag,
   props,
   children
 })
 
-export const fragment = (...children: readonly Child[]): readonly Child[] => children
-
-export const unsafeHtml = (html: string): Child => ({
+/**
+ * Marks a string as trusted HTML so it is inserted without escaping.
+ *
+ * @remarks
+ * This is a trust-boundary escape hatch. Only pass HTML that your application has already
+ * sanitized or produced from a trusted source. User input must not be passed to this function.
+ *
+ * @param html Trusted HTML markup.
+ * @returns A renderable HTML child that bypasses text escaping.
+ */
+export const unsafeHtml = (html: string): HtmlChild => ({
   _tag: "RawHtml",
   html
 })
 
-export const props = (...groups: readonly Props[]): Props => Object.assign({}, ...groups)
+/**
+ * Merges multiple HTML prop objects from left to right.
+ *
+ * @param groups Prop objects to merge.
+ * @returns A new prop object containing all supplied properties.
+ */
+export const mergeProps = (...groups: readonly HtmlProps[]): HtmlProps => Object.assign({}, ...groups)
 
+/**
+ * Keeps trusted HTML detection tied to the internal marker rather than structural coincidence.
+ */
 const isRawHtml = (value: unknown): value is RawHtml =>
   typeof value === "object" && value !== null && "_tag" in value && value._tag === "RawHtml"
 
+/**
+ * Accepts only the node shape produced by this module so arbitrary objects are rendered as text.
+ */
 const isHtmlNode = (value: unknown): value is HtmlNode =>
   typeof value === "object" &&
   value !== null &&
@@ -62,18 +106,27 @@ const isHtmlNode = (value: unknown): value is HtmlNode =>
   "props" in value &&
   "children" in value
 
+/**
+ * Escapes text-node content while preserving ordinary Unicode text.
+ */
 const escapeText = (value: string): string =>
   value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
 
+/**
+ * Escapes attribute values for double-quoted HTML attributes.
+ */
 const escapeProp = (value: string): string =>
   escapeText(value)
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;")
 
-const renderProps = (props: Props): string => {
+/**
+ * Renders boolean/nullish attributes with HTML semantics instead of JavaScript object semantics.
+ */
+const renderProps = (props: HtmlProps): string => {
   const rendered: Array<string> = []
 
   for (const [key, value] of Object.entries(props)) {
@@ -92,9 +145,19 @@ const renderProps = (props: Props): string => {
   return rendered.length === 0 ? "" : ` ${rendered.join(" ")}`
 }
 
-export const render = (child: Child): string => {
+/**
+ * Renders an HTML child tree to a string.
+ *
+ * @remarks
+ * Text and attribute values are escaped by default. Use `unsafeHtml()` only for trusted markup that
+ * should cross the escaping boundary deliberately.
+ *
+ * @param child The child tree to render.
+ * @returns Serialized HTML markup.
+ */
+export const renderToString = (child: HtmlChild): string => {
   if (Array.isArray(child)) {
-    return child.map(render).join("")
+    return child.map(renderToString).join("")
   }
 
   if (child === null || child === undefined || child === false) {
@@ -119,22 +182,5 @@ export const render = (child: Child): string => {
     return `<${child.tag}${renderedProps}>`
   }
 
-  return `<${child.tag}${renderedProps}>${child.children.map(render).join("")}</${child.tag}>`
+  return `<${child.tag}${renderedProps}>${child.children.map(renderToString).join("")}</${child.tag}>`
 }
-
-const childrenArray = (child: Child | readonly Child[] | undefined): readonly Child[] => {
-  if (child === undefined) {
-    return []
-  }
-  return Array.isArray(child) ? child : [child]
-}
-
-export const page = (options: PageOptions = {}): string =>
-  `<!doctype html>${render(
-    h(
-      "html",
-      { lang: options.lang ?? "en" },
-      h("head", {}, ...childrenArray(options.head)),
-      h("body", {}, ...childrenArray(options.body))
-    )
-  )}`

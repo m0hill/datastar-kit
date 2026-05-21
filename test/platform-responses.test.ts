@@ -7,7 +7,7 @@ describe("reply SSE responses", () => {
     vi.useRealTimers()
   })
   it("serves Datastar SSE streams", async () => {
-    const response = reply.stream(["event: ready\n\n"], { headers: { "x-sse": "yes" } })
+    const response = reply.stream(["event: ready\n\n"], {}, { headers: { "x-sse": "yes" } })
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/event-stream")
@@ -17,14 +17,14 @@ describe("reply SSE responses", () => {
   })
 
   it("serves Datastar signal patch responses", async () => {
-    const response = reply.signals({ count: 1 }, { headers: { "x-signals": "yes" } })
+    const response = reply.signals({ count: 1 }, {}, { headers: { "x-signals": "yes" } })
 
     expect(response.headers.get("x-signals")).toBe("yes")
     expect(await response.text()).toBe('event: datastar-patch-signals\ndata: signals {"count":1}\n\n')
   })
 
   it("renders HTML nodes in element patches", async () => {
-    const response = reply.patch(h("span", {}, "Ada & Grace"), { selector: "#name", headers: { "x-patch": "yes" } })
+    const response = reply.patch(h("span", {}, "Ada & Grace"), { selector: "#name" }, { headers: { "x-patch": "yes" } })
 
     expect(response.headers.get("x-patch")).toBe("yes")
     expect(await response.text()).toBe(
@@ -56,6 +56,12 @@ describe("reply SSE responses", () => {
     expect(await response.text()).toBe("event: first\n\nevent: second\n\n")
   })
 
+  it("normalizes mixed stream chunks", async () => {
+    const response = reply.stream(["event: first\n\n", { content: "event: second\n\n" }, new TextEncoder().encode("event: third\n\n")])
+
+    expect(await response.text()).toBe("event: first\n\nevent: second\n\nevent: third\n\n")
+  })
+
   it("streams Web Stream responses with headers", async () => {
     const source = new ReadableStream<string>({
       start(controller) {
@@ -63,7 +69,7 @@ describe("reply SSE responses", () => {
         controller.close()
       }
     })
-    const response = reply.stream(source, { headers: { "x-stream": "web" } })
+    const response = reply.stream(source, {}, { headers: { "x-stream": "web" } })
 
     expect(response.status).toBe(200)
     expect(response.headers.get("x-stream")).toBe("web")

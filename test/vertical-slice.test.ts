@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { z } from "zod"
 import { dataSignals, on, post, signal, text } from "../src/ds.js"
-import { h, props, render } from "../src/html.js"
+import { h, mergeProps, renderToString } from "../src/html.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
 
@@ -12,11 +12,11 @@ const CounterSignals = z.object({
 const counterView = () => {
   const count = signal<number, "count">("count")
 
-  return render(
+  return renderToString(
     h(
       "main",
-      props({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
-      h("button", props({ type: "button" }, on("click", post("/increment"))), "+"),
+      mergeProps({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true })),
+      h("button", mergeProps({ type: "button" }, on("click", post("/increment"))), "+"),
       h("output", text(count), "0")
     )
   )

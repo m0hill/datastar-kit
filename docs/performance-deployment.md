@@ -1,6 +1,6 @@
 # Performance and deployment notes
 
-`ts-star` is small enough that most production performance work belongs around your application runtime: HTTP serving, data access, static assets, compression, and reverse proxy behavior.
+Datastar Kit is small enough that most production performance work belongs around your application runtime: HTTP serving, data access, static assets, compression, and reverse proxy behavior.
 
 ## Compression
 

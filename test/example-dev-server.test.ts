@@ -16,7 +16,7 @@ describe("example dev server", () => {
       const html = await response.text()
 
       expect(response.status).toBe(200)
-      expect(html).toContain("ts-star counter")
+      expect(html).toContain("Datastar Kit counter")
       expect(html).toContain(`src="${DATASTAR_CDN}"`)
       expect(server.port).toBeGreaterThan(0)
     } finally {
@@ -30,7 +30,7 @@ describe("example dev server", () => {
     try {
       const response = await fetch(server.origin)
       expect(response.status).toBe(200)
-      expect(await response.text()).toContain("ts-star counter")
+      expect(await response.text()).toContain("Datastar Kit counter")
     } finally {
       await server.close()
     }
