@@ -1,14 +1,52 @@
-<script setup>
-import PatchElementsVisual from '../.vitepress/components/PatchElementsVisual.vue'
-</script>
-
 # Patch elements
 
 Element patches are the core Datastar UI update. A handler renders HTML, Datastar Kit frames that HTML as a `datastar-patch-elements` event, and the browser runtime applies the patch to the current document.
 
 Most patches should use the default `outer` mode with stable top-level `id` attributes. Reach for the other modes when you are targeting a container, inserting siblings, appending rows, or removing elements.
 
-<PatchElementsVisual />
+## Patch flow
+
+1. A Datastar attribute runs an action such as `@post('/save')`.
+2. The handler reads inputs, changes backend state, and renders HTML.
+3. `reply.patch(...)` frames that HTML as a `datastar-patch-elements` SSE event.
+4. Datastar finds the target element and applies the selected patch mode.
+
+For example, a default `outer` patch can send the new element directly:
+
+```tsx
+reply.patch(
+  <section id="target" class="panel is-live">
+    <h2>Server view</h2>
+    <p>Fresh HTML from the handler.</p>
+  </section>
+)
+```
+
+Datastar Kit sends that as a patch event:
+
+```text
+event: datastar-patch-elements
+data: elements <section id="target" class="panel is-live">
+data: elements   <h2>Server view</h2>
+data: elements   <p>Fresh HTML from the handler.</p>
+data: elements </section>
+```
+
+The browser matches `#target` and morphs the existing element:
+
+```diff
+  <main id="app">
+    <nav id="filters">...</nav>
+-   <section id="target" class="panel">
+-     <h2>Current view</h2>
+-     <p>Rendered on page load.</p>
++   <section id="target" class="panel is-live">
++     <h2>Server view</h2>
++     <p>Fresh HTML from the handler.</p>
+    </section>
+    <footer id="status">Idle</footer>
+  </main>
+```
 
 ## Mental model
 
@@ -48,6 +86,63 @@ reply.patch(<ModalBody />, { selector: '#modal-slot', mode: 'inner' })
 | `before` | `selector` | Inserts payload as a sibling immediately before the target. |
 | `after` | `selector` | Inserts payload as a sibling immediately after the target. |
 | `remove` | `selector` | Removes the target. Datastar Kit does not send an `elements` payload for this mode. |
+
+## Mode shapes
+
+Use `inner` when the target is a stable shell and only the children should change:
+
+```tsx
+reply.patch(<PanelBody />, { selector: '#target', mode: 'inner' })
+```
+
+```diff
+  <section id="target" class="panel">
+-   <h2>Current view</h2>
+-   <p>Rendered on page load.</p>
++   <h2>Server view</h2>
++   <p>Only the children are patched.</p>
+  </section>
+```
+
+Use `append` or `prepend` when the payload belongs inside a container:
+
+```tsx
+reply.patch(<TodoItem todo={todo} />, { selector: '#todos', mode: 'append' })
+```
+
+```diff
+  <ul id="todos">
+    <li id="todo-1">Write docs</li>
++   <li id="todo-2">Ship example</li>
+  </ul>
+```
+
+Use `before` or `after` when the payload is a sibling of the target:
+
+```tsx
+reply.patch(
+  <p id="email-error" class="error">Enter a valid email.</p>,
+  { selector: '#email', mode: 'after' }
+)
+```
+
+```diff
+  <label for="email">Email</label>
+  <input id="email" name="email">
++ <p id="email-error" class="error">Enter a valid email.</p>
+```
+
+Use `remove` when the selected element should leave the document. No `elements` payload is sent for this mode:
+
+```tsx
+reply.patch('', { selector: '#toast-saved', mode: 'remove' })
+```
+
+```text
+event: datastar-patch-elements
+data: selector #toast-saved
+data: mode remove
+```
 
 ## Choosing a Mode
 

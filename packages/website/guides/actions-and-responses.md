@@ -61,7 +61,7 @@ reply.patch(<TodoItem todo={todo} />, { selector: '#todos', mode: 'append' })
 event.patch('', { selector: '.toast', mode: 'remove' })
 ```
 
-For a visual walkthrough of every element patch mode, see [Patch elements](patch-elements.md).
+For a guide to every element patch mode, see [Patch elements](patch-elements.md).
 
 For repeated items, use stable item IDs when those items may be patched individually:
 

@@ -118,7 +118,7 @@ return reply.patch(
 )
 ```
 
-For ordinary component replacement, prefer returning an element with a stable top-level `id` and omit `selector`. Use explicit selectors for container operations such as `inner`, `append`, `prepend`, or `remove`. See [Patch elements](patch-elements.md) for a visual guide to each mode.
+For ordinary component replacement, prefer returning an element with a stable top-level `id` and omit `selector`. Use explicit selectors for container operations such as `inner`, `append`, `prepend`, or `remove`. See [Patch elements](patch-elements.md) for a guide to each mode.
 
 ## Loading data before rendering
 
