@@ -6,7 +6,7 @@ This is a map to the current source modules and concept docs.
 
 - `datastar-kit/sse` — explicit subpath for low-level event encoding (`patchElements`, `patchSignals`, `executeScript`).
 - `ds` — thin Datastar mirrors for actions, attributes, signal refs, and expression escape hatches.
-- `event` — rendered Datastar SSE event chunks (`patchElements`, `patchSignals`, `executeScript`) for `reply.stream(...)`.
+- `event` — rendered Datastar SSE event chunks (`patch`, `signals`, `script`) for `reply.stream(...)`.
 - `read` — request-boundary Datastar signal decoding from native `Request` values.
 - `reply` — Datastar-safe native `Response` helpers. SSE patch helpers are the default path; flat `reply.direct*` helpers are explicit direct-response escape hatches.
 

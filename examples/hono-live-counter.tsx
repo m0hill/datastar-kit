@@ -26,7 +26,7 @@ export function makeHonoLiveCounter() {
 
   app.get("/live", () => {
     async function* events() {
-      const currentCountPatch = () => event.patchElements(<output id="count">{count}</output>)
+      const currentCountPatch = () => event.patch(<output id="count">{count}</output>)
       const subscription = invalidations.subscribe()
 
       yield currentCountPatch()

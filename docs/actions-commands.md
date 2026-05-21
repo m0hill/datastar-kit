@@ -17,7 +17,7 @@ Use `reply` helpers:
 - `reply.done()` for successful commands with no body (`204`).
 - `reply.patch(...)` for the default SSE element patch response.
 - `reply.signals(...)` for the default SSE signal patch response.
-- `reply.stream(...)` for multiple events or long-lived SSE streams, usually from `event.patchElements(...)` / `event.patchSignals(...)` chunks.
+- `reply.stream(...)` for multiple events or long-lived SSE streams, usually from `event.patch(...)` / `event.signals(...)` chunks.
 - `reply.directHtml(...)`, `reply.directSignals(...)`, and `reply.directScript(...)` only as explicit Datastar direct-response escape hatches.
 
 Datastar action responses with bodies should be successful `200` responses. Use plain `new Response(...)` for ordinary non-Datastar HTTP errors.

@@ -8,9 +8,9 @@ Core intentionally does not export a `live` namespace, PubSub, broker abstractio
 import { event, reply } from "datastar-kit"
 
 async function* liveEvents() {
-  yield event.patchElements(renderCurrentState())
+  yield event.patch(renderCurrentState())
   for await (const _ of invalidations) {
-    yield event.patchElements(renderCurrentState())
+    yield event.patch(renderCurrentState())
   }
 }
 

@@ -27,8 +27,8 @@ describe("reply direct Datastar responses", () => {
   it("serves direct HTML patch responses as explicit escape hatches", async () => {
     const response = reply.directHtml(h("p", {}, "Updated"), {
       selector: "#slot",
-      mergeMode: "inner",
-      elementNamespace: "svg",
+      mode: "inner",
+      namespace: "svg",
       useViewTransition: true
     })
 

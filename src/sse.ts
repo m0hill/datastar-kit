@@ -44,9 +44,9 @@ export interface PatchElementsOptions extends SseEventOptions {
   /** CSS selector for the elements that should receive the patch. */
   readonly selector?: string
   /** Patch operation used to merge returned elements into the DOM. @defaultValue `"outer"` */
-  readonly mergeMode?: PatchElementsMode
+  readonly mode?: PatchElementsMode
   /** Markup namespace used to parse the returned elements. @defaultValue `"html"` */
-  readonly elementNamespace?: PatchElementsNamespace
+  readonly namespace?: PatchElementsNamespace
   /** Whether Datastar should use the View Transition API when applying the patch. */
   readonly useViewTransition?: boolean
 }
@@ -71,38 +71,19 @@ export interface ExecuteScriptOptions extends SseEventOptions {
   readonly autoRemove?: boolean
 }
 
-/**
- * Datastar event type name for element patch events.
- */
 const PATCH_ELEMENTS_EVENT = "datastar-patch-elements"
-
-/**
- * Datastar event type name for signal patch events.
- */
 const PATCH_SIGNALS_EVENT = "datastar-patch-signals"
 
-/**
- * Internal representation keeps field assembly separate from SSE line serialization.
- */
 interface EventLine {
   readonly key: string
   readonly value: string
 }
 
-/**
- * Splits payloads into SSE-safe data lines without altering their content.
- */
 const splitLines = (value: string): ReadonlyArray<string> => value.split("\n")
 
-/**
- * Prefixes each payload line with the Datastar data-field key expected by the browser runtime.
- */
 const dataLines = (key: string, value: string): ReadonlyArray<EventLine> =>
   splitLines(value).map((line) => ({ key, value: line }))
 
-/**
- * Serializes Datastar event fields using standard SSE framing.
- */
 const serializeEvent = (event: string, options: SseEventOptions, lines: ReadonlyArray<EventLine>): string => {
   const out = [`event: ${event}`]
 
@@ -121,9 +102,6 @@ const serializeEvent = (event: string, options: SseEventOptions, lines: Readonly
   return `${out.join("\n")}\n\n`
 }
 
-/**
- * Keeps string escape hatches intact while serializing structured signal state.
- */
 const encodeSignals = (value: SignalState | string): string =>
   typeof value === "string" ? value : JSON.stringify(value)
 
@@ -142,12 +120,12 @@ export const patchElements = (elements: string, options: PatchElementsOptions = 
     lines.push({ key: "selector", value: options.selector })
   }
 
-  if (options.mergeMode !== undefined && options.mergeMode !== "outer") {
-    lines.push({ key: "mode", value: options.mergeMode })
+  if (options.mode !== undefined && options.mode !== "outer") {
+    lines.push({ key: "mode", value: options.mode })
   }
 
-  if (options.elementNamespace !== undefined && options.elementNamespace !== "html") {
-    lines.push({ key: "namespace", value: options.elementNamespace })
+  if (options.namespace !== undefined && options.namespace !== "html") {
+    lines.push({ key: "namespace", value: options.namespace })
   }
 
   if (options.useViewTransition === true) {
@@ -179,9 +157,6 @@ export const patchSignals = (signals: SignalState | string, options: PatchSignal
   return serializeEvent(PATCH_SIGNALS_EVENT, options, lines)
 }
 
-/**
- * Escapes generated script attributes without touching script text itself.
- */
 const escapeAttribute = (value: string): string =>
   value
     .replaceAll("&", "&amp;")
@@ -190,9 +165,6 @@ const escapeAttribute = (value: string): string =>
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;")
 
-/**
- * Builds attributes for the script element that Datastar appends to the document.
- */
 const scriptAttributes = (options: ExecuteScriptOptions): string => {
   const attrs: Array<string> = []
 

@@ -14,9 +14,9 @@ interface QueryRecipeOptions<State> {
 }
 
 async function* currentStateRecipe<State>(options: QueryRecipeOptions<State>): AsyncIterable<string> {
-  yield event.patchElements(options.render(await options.load()), options.patch)
+  yield event.patch(options.render(await options.load()), options.patch)
   for await (const _ of options.invalidations) {
-    yield event.patchElements(options.render(await options.load()), options.patch)
+    yield event.patch(options.render(await options.load()), options.patch)
   }
 }
 
@@ -38,7 +38,7 @@ describe("live query recipe", () => {
       invalidations: values(["missed-delta", "refresh"]),
       load: () => states.shift() ?? -1,
       render: countView,
-      patch: { selector: "#count", mergeMode: "outer" }
+      patch: { selector: "#count", mode: "outer" }
     })) {
       patches.push(patch)
     }

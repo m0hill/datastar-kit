@@ -33,7 +33,7 @@ export function makeAppendList() {
       nextId += 1
       items.push(item)
 
-      return reply.patch(<li id={`item-${item.id}`}>{item.label}</li>, { selector: "#items", mergeMode: "append" })
+      return reply.patch(<li id={`item-${item.id}`}>{item.label}</li>, { selector: "#items", mode: "append" })
     }
 
     return new Response("Not Found", { status: 404 })

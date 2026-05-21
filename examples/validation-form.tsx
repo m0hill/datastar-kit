@@ -68,8 +68,8 @@ export async function handle(request: Request) {
       }
 
       return reply.stream([
-        event.patchSignals({ _validation: { form: null, name: null, email: null } }),
-        event.patchElements(
+        event.signals({ _validation: { form: null, name: null, email: null } }),
+        event.patch(
           <div id="contact-result" role="status">Saved {input.name} &lt;{input.email}&gt;</div>,
           { selector: "#contact-result" }
         )

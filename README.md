@@ -146,7 +146,7 @@ For normal component updates, omit `selector` and render stable IDs on the top-l
 
 ```tsx
 reply.patch(<Count />)
-reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mergeMode: "append" })
+reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
 ```
 
 ## Streaming events
@@ -157,8 +157,8 @@ Use `event.*` helpers to build explicit SSE chunks for `reply.stream`:
 import { event, reply } from "datastar-kit"
 
 async function* events() {
-  yield event.patchElements(<output id="count">0</output>)
-  yield event.patchSignals({ ready: true })
+  yield event.patch(<output id="count">0</output>)
+  yield event.signals({ ready: true })
 }
 
 return reply.stream(events(), {

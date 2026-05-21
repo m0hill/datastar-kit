@@ -36,7 +36,7 @@ Use `reply.*` for Datastar response construction and `event.*` for individual SS
 return reply.page(view)
 return reply.patch(view)
 return reply.signals({ saved: true })
-return reply.stream([event.patchElements(view)])
+return reply.stream([event.patch(view)])
 return reply.stream(events, { heartbeat: { intervalMs: 15_000 } })
 return reply.navigate("/dashboard")
 return reply.done()

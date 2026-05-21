@@ -90,15 +90,9 @@ export const unsafeHtml = (html: string): HtmlChild => ({
  */
 export const mergeProps = (...groups: readonly HtmlProps[]): HtmlProps => Object.assign({}, ...groups)
 
-/**
- * Keeps trusted HTML detection tied to the internal marker rather than structural coincidence.
- */
 const isRawHtml = (value: unknown): value is RawHtml =>
   typeof value === "object" && value !== null && "_tag" in value && value._tag === "RawHtml"
 
-/**
- * Accepts only the node shape produced by this module so arbitrary objects are rendered as text.
- */
 const isHtmlNode = (value: unknown): value is HtmlNode =>
   typeof value === "object" &&
   value !== null &&
@@ -106,26 +100,17 @@ const isHtmlNode = (value: unknown): value is HtmlNode =>
   "props" in value &&
   "children" in value
 
-/**
- * Escapes text-node content while preserving ordinary Unicode text.
- */
 const escapeText = (value: string): string =>
   value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
 
-/**
- * Escapes attribute values for double-quoted HTML attributes.
- */
 const escapeProp = (value: string): string =>
   escapeText(value)
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;")
 
-/**
- * Renders boolean/nullish attributes with HTML semantics instead of JavaScript object semantics.
- */
 const renderProps = (props: HtmlProps): string => {
   const rendered: Array<string> = []
 

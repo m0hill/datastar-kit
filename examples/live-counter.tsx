@@ -30,7 +30,7 @@ export function makeLiveCounter() {
 
     if (request.method === "GET" && url.pathname === "/live") {
       async function* events() {
-        const currentCountPatch = () => event.patchElements(<Count />)
+        const currentCountPatch = () => event.patch(<Count />)
         const subscription = invalidations.subscribe()
 
         yield currentCountPatch()

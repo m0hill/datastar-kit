@@ -36,7 +36,7 @@ export function makeTodoSync() {
 
   app.get("/todos/live", () => {
     async function* events() {
-      const currentTodoListPatch = () => event.patchElements(<TodoList todos={store.all()} />, { selector: "#todo-sync-list" })
+      const currentTodoListPatch = () => event.patch(<TodoList todos={store.all()} />, { selector: "#todo-sync-list" })
       const subscription = bus.subscribe()
 
       yield currentTodoListPatch()
@@ -57,8 +57,8 @@ export function makeTodoSync() {
       bus.publish()
 
       return reply.stream([
-        event.patchSignals({ title: "" }),
-        event.patchElements(<ErrorMessage />, { selector: "#todo-errors" })
+        event.signals({ title: "" }),
+        event.patch(<ErrorMessage />, { selector: "#todo-errors" })
       ])
     } catch (error) {
       if (error instanceof read.SignalValidationError) {

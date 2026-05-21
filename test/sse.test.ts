@@ -12,7 +12,7 @@ describe("Datastar SSE encoding", () => {
         id: "event1",
         retry: 2000,
         selector: "div",
-        mergeMode: "append",
+        mode: "append",
         useViewTransition: true
       })
     ).toBe(
@@ -27,7 +27,7 @@ describe("Datastar SSE encoding", () => {
   })
 
   it("encodes element removal through patch options", () => {
-    expect(patchElements("", { selector: "#target", mergeMode: "remove" })).toBe(
+    expect(patchElements("", { selector: "#target", mode: "remove" })).toBe(
       "event: datastar-patch-elements\ndata: selector #target\ndata: mode remove\ndata: elements \n\n"
     )
   })

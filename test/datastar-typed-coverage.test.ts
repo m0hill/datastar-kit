@@ -54,8 +54,8 @@ describe("Datastar typed helper coverage", () => {
         selector: null,
         responseOverrides: {
           selector: "#slot",
-          mergeMode: "append",
-          elementNamespace: "svg",
+          mode: "append",
+          namespace: "svg",
           useViewTransition: true
         }
       }).toDatastarExpression()

@@ -263,9 +263,9 @@ export interface FetchActionResponseOverrides {
   /** CSS selector used when the response is handled as an element patch. */
   readonly selector?: string
   /** Patch mode used when merging elements into the DOM. */
-  readonly mergeMode?: PatchElementsMode
+  readonly mode?: PatchElementsMode
   /** Markup namespace used to parse returned markup. */
-  readonly elementNamespace?: PatchElementsNamespace
+  readonly namespace?: PatchElementsNamespace
   /** Whether to wrap the DOM update in a native browser View Transition. */
   readonly useViewTransition?: boolean
   /** Whether missing signal keys only should be patched. */
@@ -341,8 +341,8 @@ const fetchResponseOverridesToJs = (overrides: FetchActionResponseOverrides): st
   const entries: string[] = []
 
   if (overrides.selector !== undefined) entries.push(`selector: ${toJs(overrides.selector)}`)
-  if (overrides.mergeMode !== undefined) entries.push(`mode: ${toJs(overrides.mergeMode)}`)
-  if (overrides.elementNamespace !== undefined) entries.push(`namespace: ${toJs(overrides.elementNamespace)}`)
+  if (overrides.mode !== undefined) entries.push(`mode: ${toJs(overrides.mode)}`)
+  if (overrides.namespace !== undefined) entries.push(`namespace: ${toJs(overrides.namespace)}`)
   if (overrides.useViewTransition !== undefined) entries.push(`useViewTransition: ${toJs(overrides.useViewTransition)}`)
   if (overrides.onlyIfMissing !== undefined) entries.push(`onlyIfMissing: ${toJs(overrides.onlyIfMissing)}`)
 

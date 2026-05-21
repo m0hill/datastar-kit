@@ -12,7 +12,7 @@ The examples are tested reference slices for the Web Standards SDK direction. Ea
 
 ## Append list
 
-`examples/append-list.tsx` demonstrates the explicit-selector pattern: each action renders a new `<li>` and appends it into the `#items` container with `{ selector: "#items", mergeMode: "append" }`.
+`examples/append-list.tsx` demonstrates the explicit-selector pattern: each action renders a new `<li>` and appends it into the `#items` container with `{ selector: "#items", mode: "append" }`.
 
 ## Search
 

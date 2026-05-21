@@ -67,9 +67,9 @@ export interface DirectHtmlOptions {
   /** CSS selector for target elements when Datastar handles a direct HTML response. */
   readonly selector?: string
   /** Patch operation used for the direct HTML response. */
-  readonly mergeMode?: PatchElementsMode
+  readonly mode?: PatchElementsMode
   /** Markup namespace used to parse the direct HTML response. */
-  readonly elementNamespace?: PatchElementsNamespace
+  readonly namespace?: PatchElementsNamespace
   /** Whether Datastar should use the View Transition API when applying the direct patch. */
   readonly useViewTransition?: boolean
 }
@@ -108,9 +108,6 @@ export interface SseChunk {
   readonly content: string
 }
 
-/**
- * Raw chunk values accepted while adapting iterables into an SSE stream.
- */
 type SseChunkInput = string | SseChunk | Uint8Array
 
 /**
@@ -135,15 +132,9 @@ export class NavigationUrlError extends Error {
   }
 }
 
-/** Shared encoder instance avoids allocating per stream chunk. */
 const textEncoder = new TextEncoder()
-
-/** Timer type that works in both DOM and Node type environments. */
 type Timer = ReturnType<typeof setTimeout>
 
-/**
- * Merges caller headers over protocol defaults without losing default content types.
- */
 const mergeHeaders = (defaults: HeadersInit, headers: HeadersInit | undefined): Headers => {
   const merged = new Headers(defaults)
   new Headers(headers).forEach((value, key) => {
@@ -152,9 +143,6 @@ const mergeHeaders = (defaults: HeadersInit, headers: HeadersInit | undefined): 
   return merged
 }
 
-/**
- * Creates a Datastar action response while preserving SDK-owned status semantics.
- */
 const response = (
   body: BodyInit | null,
   init: StreamResponseInit | undefined,
@@ -166,15 +154,11 @@ const response = (
     headers: mergeHeaders(defaultHeaders, init?.headers)
   })
 
-/** Default headers required for Datastar SSE responses. */
 const sseHeaders = {
   "cache-control": "no-cache",
   "content-type": "text/event-stream"
 } as const
 
-/**
- * Normalizes optional singular/plural child inputs into a renderable array.
- */
 const childrenArray = (child: HtmlChild | readonly HtmlChild[] | undefined): readonly HtmlChild[] => {
   if (child === undefined) {
     return []
@@ -182,9 +166,6 @@ const childrenArray = (child: HtmlChild | readonly HtmlChild[] | undefined): rea
   return Array.isArray(child) ? child : [child]
 }
 
-/**
- * Renders the full document shell used by `reply.page()`.
- */
 const htmlDocument = (body: HtmlChild | readonly HtmlChild[], options: PageOptions): string =>
   `<!doctype html>${renderToString(
     h(
@@ -195,9 +176,6 @@ const htmlDocument = (body: HtmlChild | readonly HtmlChild[], options: PageOptio
     )
   )}`
 
-/**
- * Adapts all supported stream input forms into one async iteration path.
- */
 const normalizeSseChunk = (chunk: SseChunkInput): string | Uint8Array =>
   typeof chunk === "object" && !(chunk instanceof Uint8Array) ? chunk.content : chunk
 
@@ -238,21 +216,12 @@ async function* toAsyncIterable(source: SseStreamInput): AsyncIterable<string | 
   }
 }
 
-/**
- * Encodes an SSE comment heartbeat without creating a Datastar event.
- */
 const sseComment = (comment = ""): string =>
   comment.length === 0 ? ":\n\n" : `: ${comment.replaceAll("\n", "\n: ")}\n\n`
 
-/**
- * Converts string chunks to bytes while preserving already-encoded chunks.
- */
 const encodeChunk = (chunk: string | Uint8Array): Uint8Array =>
   typeof chunk === "string" ? textEncoder.encode(chunk) : chunk
 
-/**
- * Bridges async event chunks into a backpressure-aware Web `ReadableStream`.
- */
 const readableStreamFrom = (
   source: AsyncIterable<string | Uint8Array>,
   heartbeat?: SseHeartbeatOptions
@@ -397,12 +366,12 @@ export const directHtml = (
   options: DirectHtmlOptions = {},
   init: StreamResponseInit = {}
 ): Response => {
-  const { selector, mergeMode, elementNamespace, useViewTransition } = options
+  const { selector, mode, namespace, useViewTransition } = options
   return response(renderToString(html), init, 200, {
     "content-type": "text/html; charset=utf-8",
     ...(selector === undefined ? {} : { "datastar-selector": selector }),
-    ...(mergeMode === undefined ? {} : { "datastar-mode": mergeMode }),
-    ...(elementNamespace === undefined ? {} : { "datastar-namespace": elementNamespace }),
+    ...(mode === undefined ? {} : { "datastar-mode": mode }),
+    ...(namespace === undefined ? {} : { "datastar-namespace": namespace }),
     ...(useViewTransition === undefined ? {} : { "datastar-use-view-transition": String(useViewTransition) })
   })
 }
