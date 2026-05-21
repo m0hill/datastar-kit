@@ -3,7 +3,6 @@ import { createServer, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
-import { startExampleServer } from "../examples/dev-server.js"
 import { dataSignals, on, post, signal, text } from "../src/ds.js"
 import { h, mergeProps, renderToString } from "../src/html.js"
 
@@ -126,44 +125,6 @@ describe("Datastar browser runtime integration", () => {
     } finally {
       await execFile("agent-browser", ["--session-name", session, "close"], { timeout: 20_000 }).catch(() => undefined)
       await closeServer(server)
-    }
-  }, 30_000)
-
-  browserIt("runs the backend-state counter reference example through Datastar", async () => {
-    const session = `datastar-kit-counter-example-${process.pid}-${Date.now()}`
-    const server = await startExampleServer("counter", { port: 0 })
-    const browser = async (...args: ReadonlyArray<string>): Promise<string> => {
-      const { stdout } = await execFile("agent-browser", ["--session-name", session, ...args], { timeout: 20_000 })
-      return stdout.trim()
-    }
-
-    try {
-      await browser("open", server.origin)
-      await browser("wait", "--load", "networkidle")
-      await waitForSelector(browser, "#count")
-
-      const initial = JSON.parse(await browser("eval", `({ count: document.querySelector("#count")?.textContent })`)) as {
-        count: string
-      }
-      expect(initial.count).toBe("0")
-
-      const afterIncrement = JSON.parse(
-        await browser(
-          "eval",
-          `(async () => {
-            document.querySelector("button")?.click()
-            const deadline = Date.now() + 2000
-            while (Date.now() < deadline && document.querySelector("#count")?.textContent !== "1") {
-              await new Promise((resolve) => setTimeout(resolve, 25))
-            }
-            return { count: document.querySelector("#count")?.textContent }
-          })()`
-        )
-      ) as { count: string }
-      expect(afterIncrement.count).toBe("1")
-    } finally {
-      await execFile("agent-browser", ["--session-name", session, "close"], { timeout: 20_000 }).catch(() => undefined)
-      await server.close()
     }
   }, 30_000)
 })

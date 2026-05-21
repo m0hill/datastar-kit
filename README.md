@@ -202,25 +202,6 @@ Reference examples live in `examples/`:
 - `hono-counter.tsx` / `hono-live-counter.tsx` — Hono integration examples.
 - `todo-sync.tsx` — fuller Hono todo sync with realtime fan-out.
 
-## Checking examples
-
-Use focused package scripts when changing examples:
-
-```sh
-pnpm run check:examples
-pnpm run check:example:counter
-pnpm run check:example:tsx-counter
-pnpm run check:example:append-list
-pnpm run check:example:search
-pnpm run check:example:live-counter
-pnpm run check:example:validation-form
-pnpm run check:example:todo-sync
-pnpm run check:example:hono-counter
-pnpm run check:example:hono-live-counter
-```
-
-The `check:*` scripts run `typecheck` first, then the matching example test. Use `test:examples` or `test:example:*` when you only need Vitest.
-
 ## Running example dev servers
 
 Each dev script builds the TypeScript examples, then starts one example through a local Node server:

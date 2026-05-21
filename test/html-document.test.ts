@@ -11,13 +11,14 @@ describe("HTML document responses", () => {
     )
   })
 
-  it("supports custom lang and head/body children", async () => {
+  it("supports custom lang, title, and head/body children", async () => {
     await expect(
       page(
         [h("main", {}, "Datastar")],
         {
           lang: "en-US",
-          head: [h("title", {}, "Demo"), h("script", { type: "module", src: DATASTAR_CDN })]
+          title: "Demo",
+          head: h("script", { type: "module", src: DATASTAR_CDN })
         }
       ).text()
     ).resolves.toBe(

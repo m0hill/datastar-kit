@@ -1,6 +1,6 @@
 # Examples
 
-The examples are tested reference slices for the Web Standards SDK direction. Each first-party example exports a fetch-compatible handler that accepts a native `Request` and returns a native `Response` or promise.
+The examples are reference slices for the Web Standards SDK direction. Each first-party example exports a fetch-compatible handler that accepts a native `Request` and returns a native `Response` or promise.
 
 ## Counter
 

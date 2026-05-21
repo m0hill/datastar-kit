@@ -29,4 +29,20 @@ describe("dynamic URL helpers", () => {
       "@get(`/search?q=${encodeURIComponent($q)}`)"
     )
   })
+
+  it("serializes fetch action protocol options", () => {
+    expect(
+      get("/fragment", {
+        selector: null,
+        responseOverrides: {
+          selector: "#slot",
+          mode: "append",
+          namespace: "svg",
+          useViewTransition: true
+        }
+      }).toDatastarExpression()
+    ).toBe(
+      '@get("/fragment", {selector: null, responseOverrides: {selector: "#slot", mode: "append", namespace: "svg", useViewTransition: true}})'
+    )
+  })
 })

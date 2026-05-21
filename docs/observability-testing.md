@@ -6,8 +6,7 @@ Observability is not a public Datastar Kit API. Applications should use their pl
 
 - **Pure helper tests** — Datastar attributes, HTML escaping, SSE encoding, and response helper semantics.
 - **Request/response tests** — native `Request`, `read.signals`, `reply.*`, and Datastar response status semantics.
-- **Example tests** — fetch-compatible example handlers and the local Node dev server.
-- **Browser/runtime tests** — real Datastar browser behavior where JavaScript runtime semantics matter.
+- **Browser/runtime tests** — real Datastar browser behavior for protocol assumptions that unit tests cannot prove.
 
 ## Guidance
 
