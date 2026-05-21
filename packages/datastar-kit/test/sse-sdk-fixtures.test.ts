@@ -1,10 +1,9 @@
 import { readFileSync } from "node:fs"
-import { resolve } from "node:path"
 import { describe, expect, it } from "vitest"
 import { executeScript, patchElements, patchSignals } from "../src/sse.js"
 
 const fixture = (name: string): string =>
-  readFileSync(resolve("..", "datastar", "sdk", "test", "get-cases", name, "output.txt"), "utf8")
+  readFileSync(new URL(`../../../../datastar/sdk/test/get-cases/${name}/output.txt`, import.meta.url), "utf8")
 
 describe("additional Datastar SDK fixtures", () => {
   it("matches the multiline patch-elements fixture", () => {

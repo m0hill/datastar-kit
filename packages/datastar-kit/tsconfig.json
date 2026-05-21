@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node", "vitest/globals"],
+    "paths": {
+      "datastar-kit": ["./src/index.ts"],
+      "datastar-kit/jsx-runtime": ["./src/jsx-runtime.ts"],
+      "datastar-kit/jsx-dev-runtime": ["./src/jsx-dev-runtime.ts"],
+      "datastar-kit/sse": ["./src/sse.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"],
+  "exclude": ["dist", "node_modules"]
+}

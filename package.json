@@ -1,65 +1,27 @@
 {
-  "name": "datastar-kit",
-  "version": "0.1.0",
-  "description": "Independent Datastar companion SDK for server-driven TypeScript applications",
+  "name": "datastar-kit-workspace",
+  "private": true,
   "type": "module",
-  "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/src/index.d.ts",
-      "default": "./dist/src/index.js"
-    },
-    "./jsx-runtime": {
-      "types": "./dist/src/jsx-runtime.d.ts",
-      "default": "./dist/src/jsx-runtime.js"
-    },
-    "./jsx-dev-runtime": {
-      "types": "./dist/src/jsx-dev-runtime.d.ts",
-      "default": "./dist/src/jsx-dev-runtime.js"
-    },
-    "./sse": {
-      "types": "./dist/src/sse.d.ts",
-      "default": "./dist/src/sse.js"
-    }
-  },
-  "files": [
-    "dist/src",
-    "README.md"
-  ],
-  "sideEffects": false,
+  "packageManager": "pnpm@10.33.4",
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.json",
-    "check": "pnpm run typecheck && pnpm run test",
+    "build": "pnpm --filter datastar-kit build && pnpm --filter @datastar-kit/examples build:only",
+    "check": "pnpm run build && pnpm run typecheck && pnpm run test",
     "dev": "pnpm run dev:counter",
-    "dev:append-list": "pnpm run build && node dist/examples/dev-server.js append-list",
-    "dev:counter": "pnpm run build && node dist/examples/dev-server.js counter",
-    "dev:hono-counter": "pnpm run build && node dist/examples/dev-server.js hono-counter",
-    "dev:hono-live-counter": "pnpm run build && node dist/examples/dev-server.js hono-live-counter",
-    "dev:live-counter": "pnpm run build && node dist/examples/dev-server.js live-counter",
-    "dev:search": "pnpm run build && node dist/examples/dev-server.js search",
-    "dev:todo-sync": "pnpm run build && node dist/examples/todo-sync.js",
-    "dev:tsx-counter": "pnpm run build && node dist/examples/dev-server.js tsx-counter",
-    "dev:validation-form": "pnpm run build && node dist/examples/dev-server.js validation-form",
-    "test": "vitest run",
-    "typecheck": "tsc --noEmit"
-  },
-  "keywords": [
-    "datastar",
-    "sse",
-    "hypermedia",
-    "web-standards"
-  ],
-  "license": "MIT",
-  "dependencies": {
-    "@standard-schema/spec": "^1.1.0"
+    "dev:append-list": "pnpm --filter @datastar-kit/examples dev:append-list",
+    "dev:counter": "pnpm --filter @datastar-kit/examples dev:counter",
+    "dev:hono-counter": "pnpm --filter @datastar-kit/examples dev:hono-counter",
+    "dev:hono-live-counter": "pnpm --filter @datastar-kit/examples dev:hono-live-counter",
+    "dev:live-counter": "pnpm --filter @datastar-kit/examples dev:live-counter",
+    "dev:search": "pnpm --filter @datastar-kit/examples dev:search",
+    "dev:todo-sync": "pnpm --filter @datastar-kit/examples dev:todo-sync",
+    "dev:tsx-counter": "pnpm --filter @datastar-kit/examples dev:tsx-counter",
+    "dev:validation-form": "pnpm --filter @datastar-kit/examples dev:validation-form",
+    "test": "pnpm --filter datastar-kit test",
+    "typecheck": "pnpm --filter datastar-kit typecheck && pnpm --filter @datastar-kit/examples typecheck"
   },
   "devDependencies": {
-    "@hono/node-server": "^2.0.3",
     "@types/node": "^24.10.1",
-    "hono": "^4.12.19",
     "typescript": "^5.9.3",
-    "vitest": "^4.0.14",
-    "zod": "^4.4.3"
+    "vitest": "^4.0.14"
   }
 }

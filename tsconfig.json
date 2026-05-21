@@ -1,28 +1,4 @@
 {
-  "compilerOptions": {
-    "target": "ES2022",
-    "lib": ["ES2022", "DOM"],
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "strict": true,
-    "exactOptionalPropertyTypes": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "declaration": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "rootDir": ".",
-    "types": ["node", "vitest/globals"],
-    "skipLibCheck": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "datastar-kit",
-    "paths": {
-      "datastar-kit": ["./src/index.ts"],
-      "datastar-kit/jsx-runtime": ["./src/jsx-runtime.ts"],
-      "datastar-kit/jsx-dev-runtime": ["./src/jsx-dev-runtime.ts"],
-      "datastar-kit/sse": ["./src/sse.ts"]
-    }
-  },
-  "include": ["src/**/*.ts", "test/**/*.ts", "test/**/*.tsx", "examples/**/*.ts", "examples/**/*.tsx"],
-  "exclude": ["dist", "node_modules"]
+  "extends": "./tsconfig.base.json",
+  "files": []
 }

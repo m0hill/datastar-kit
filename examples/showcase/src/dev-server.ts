@@ -188,7 +188,7 @@ export const startExampleServer = async (
 }
 
 const usage = (): string =>
-  `Usage: node dist/examples/dev-server.js <${exampleNames.join("|")}>\nSet PORT and HOST to override the default 127.0.0.1:3000.`
+  `Usage: node dist/dev-server.js <${exampleNames.join("|")}>\nSet PORT and HOST to override the default 127.0.0.1:3000.`
 
 export const main = async (argv: readonly string[] = process.argv): Promise<void> => {
   const requested = argv[2] ?? "counter"
