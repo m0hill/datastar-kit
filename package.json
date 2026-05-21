@@ -15,7 +15,7 @@
     "dev:deno-search-list": "deno task --config examples/deno-search-list/deno.json dev",
     "check:deno-search-list": "deno task --config examples/deno-search-list/deno.json check",
     "website:build": "pnpm --filter @datastar-kit/website build",
-    "website:deploy": "pnpm --filter @datastar-kit/website deploy",
+    "website:deploy": "pnpm --filter @datastar-kit/website run deploy",
     "website:preview": "pnpm --filter @datastar-kit/website preview",
     "website:preview:cloudflare": "pnpm --filter @datastar-kit/website preview:cloudflare",
     "examples:check": "pnpm --filter @datastar-kit/example-hono-counter check && pnpm --filter @datastar-kit/example-hono-modal check && pnpm --filter @datastar-kit/example-hono-form-validation check && pnpm --filter @datastar-kit/example-elysia-layout check && pnpm run check:deno-search-list",
