@@ -18,20 +18,11 @@ importers:
         specifier: ^4.0.14
         version: 4.1.6(@types/node@24.12.4)(vite@8.0.13(@types/node@24.12.4)(yaml@2.9.0))
 
-  examples/showcase:
+  examples/fetch-counter:
     dependencies:
-      '@hono/node-server':
-        specifier: ^2.0.3
-        version: 2.0.3(hono@4.12.19)
       datastar-kit:
         specifier: workspace:*
         version: link:../../packages/datastar-kit
-      hono:
-        specifier: ^4.12.19
-        version: 4.12.19
-      zod:
-        specifier: ^4.4.3
-        version: 4.4.3
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
@@ -69,12 +60,6 @@ packages:
 
   '@emnapi/wasi-threads@1.2.1':
     resolution: {integrity: sha512-uTII7OYF+/Mes/MrcIOYp5yOtSMLBWSIoLPpcgwipoiKbli6k322tcoFsxoIIxPDqW01SQGAgko4EzZi2BNv2w==}
-
-  '@hono/node-server@2.0.3':
-    resolution: {integrity: sha512-a0jV+/HRe3G5zjFID3zObAQFdkl6zpxTuqktdDDXS3MJKcrZIkB8OkLpNBlY/WXFqv2HF4a0takPej+aNFczWA==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      hono: ^4
 
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
@@ -271,10 +256,6 @@ packages:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
-
-  hono@4.12.19:
-    resolution: {integrity: sha512-xa3eYXYXx68XTT4hZ7dRzsXBhaq85ToSrlUJNoR0gwz/1Ap/CNwX47wfvV7pc/xWhjKVVkLT7zBJy8chhNguqQ==}
-    engines: {node: '>=16.9.0'}
 
   lightningcss-android-arm64@1.32.0:
     resolution: {integrity: sha512-YK7/ClTt4kAK0vo6w3X+Pnm0D2cf2vPHbhOXdoNti1Ga0al1P4TBZhwjATvjNwLEBCnKvjJc2jQgHXH0NEwlAg==}
@@ -534,10 +515,6 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
-  '@hono/node-server@2.0.3(hono@4.12.19)':
-    dependencies:
-      hono: 4.12.19
-
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
   '@napi-rs/wasm-runtime@1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)':
@@ -683,8 +660,6 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
-
-  hono@4.12.19: {}
 
   lightningcss-android-arm64@1.32.0:
     optional: true

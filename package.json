@@ -4,20 +4,13 @@
   "type": "module",
   "packageManager": "pnpm@10.33.4",
   "scripts": {
-    "build": "pnpm --filter datastar-kit build && pnpm --filter @datastar-kit/examples build:only",
+    "build": "pnpm --filter datastar-kit build && pnpm --filter @datastar-kit/example-fetch-counter build:only",
     "check": "pnpm run build && pnpm run typecheck && pnpm run test",
-    "dev": "pnpm run dev:counter",
-    "dev:append-list": "pnpm --filter @datastar-kit/examples dev:append-list",
-    "dev:counter": "pnpm --filter @datastar-kit/examples dev:counter",
-    "dev:hono-counter": "pnpm --filter @datastar-kit/examples dev:hono-counter",
-    "dev:hono-live-counter": "pnpm --filter @datastar-kit/examples dev:hono-live-counter",
-    "dev:live-counter": "pnpm --filter @datastar-kit/examples dev:live-counter",
-    "dev:search": "pnpm --filter @datastar-kit/examples dev:search",
-    "dev:todo-sync": "pnpm --filter @datastar-kit/examples dev:todo-sync",
-    "dev:tsx-counter": "pnpm --filter @datastar-kit/examples dev:tsx-counter",
-    "dev:validation-form": "pnpm --filter @datastar-kit/examples dev:validation-form",
+    "dev": "pnpm run dev:fetch-counter",
+    "dev:fetch-counter": "pnpm --filter @datastar-kit/example-fetch-counter dev",
+    "examples:check": "pnpm --filter @datastar-kit/example-fetch-counter check",
     "test": "pnpm --filter datastar-kit test",
-    "typecheck": "pnpm --filter datastar-kit typecheck && pnpm --filter @datastar-kit/examples typecheck"
+    "typecheck": "pnpm --filter datastar-kit typecheck && pnpm --filter @datastar-kit/example-fetch-counter typecheck"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",

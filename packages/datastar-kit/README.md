@@ -191,31 +191,14 @@ const html = renderToString(view)
 
 ## Examples
 
-Reference examples live in the workspace package at `examples/showcase/src/`:
+Standalone examples live under `examples/*` in the repository workspace. The first example is:
 
-- `counter.ts` — low-level `h(...)` counter.
-- `tsx-counter.tsx` — JSX counter.
-- `append-list.tsx` — selector-based append patch.
-- `search.tsx` — reactive query URL search.
-- `live-counter.tsx` — app-owned SSE invalidation recipe.
-- `validation-form.tsx` — optional Standard Schema validation with recoverable UI patches.
-- `hono-counter.tsx` / `hono-live-counter.tsx` — Hono integration examples.
-- `todo-sync.tsx` — fuller Hono todo sync with realtime fan-out.
+- [`examples/fetch-counter`](../../examples/fetch-counter) — a plain Fetch-style `Request -> Response` counter using TSX views and a tiny local Node adapter for development.
 
-## Running example dev servers
-
-From the repository root, each dev script builds the SDK and examples, then starts one example through a local Node server:
+From the repository root:
 
 ```sh
-pnpm run dev:counter
-pnpm run dev:tsx-counter
-pnpm run dev:append-list
-pnpm run dev:search
-pnpm run dev:live-counter
-pnpm run dev:validation-form
-pnpm run dev:todo-sync
-pnpm run dev:hono-counter
-pnpm run dev:hono-live-counter
+pnpm run dev:fetch-counter
 ```
 
 The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or `HOST=0.0.0.0`.
