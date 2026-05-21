@@ -180,6 +180,8 @@ export async function statsRoute(): Promise<Response> {
 
 This keeps the core model simple: handlers load data, synchronous JSX renders HTML, and Datastar patches update deferred or changing regions.
 
+For a complete small app using these patterns with Bun and Elysia, see `examples/elysia-layout` in the repository.
+
 ## Escaping and trust boundaries
 
 Text and attribute values are escaped by default. Use `unsafeHtml(renderedHtml)` only for HTML that has already crossed your app's trust boundary, such as sanitized output or trusted renderer output.

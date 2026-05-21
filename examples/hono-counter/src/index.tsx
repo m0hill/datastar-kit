@@ -6,12 +6,14 @@ let count = 0
 
 const app = new Hono()
 
+const Count = () => <output id="count">{count}</output>
+
 app.get("/", () =>
   reply.page(
     <main id="counter">
       <h1>Hono counter</h1>
       <button type="button" {...ds.on("click", ds.post("/increment"))}>Increment</button>{" "}
-      <output id="count">{count}</output>
+      <Count />
     </main>,
     {
     title: "Hono counter",
@@ -21,11 +23,11 @@ app.get("/", () =>
 
 app.post("/increment", () => {
   count += 1
-  return reply.patch(<output id="count">{count}</output>)
+  return reply.patch(<Count />)
 })
 
 app.notFound((c) => c.text("Not Found", 404))
 
-serve(app, (info) => {
-  console.log(`Hono counter listening on http://localhost:${info.port}`)
+serve({ fetch: app.fetch, port: 3000 }, () => {
+  console.log("Hono counter listening on http://localhost:3000")
 })

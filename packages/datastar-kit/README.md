@@ -189,14 +189,16 @@ const html = renderToString(view)
 Standalone examples live under `examples/*` in the repository workspace.
 
 - [`examples/hono-counter`](../../examples/hono-counter) — a minimal Hono counter using TSX views, Datastar action helpers, and `reply.*` responses.
+- [`examples/elysia-layout`](../../examples/elysia-layout) — a Bun/Elysia app showing layout composition, named JSX slots, and focused Datastar patches.
 
 From the repository root:
 
 ```sh
 pnpm run dev:hono-counter
+pnpm run dev:elysia-layout
 ```
 
-Open <http://127.0.0.1:3000>.
+Open the logged URL, usually <http://localhost:3000>.
 
 ## Documentation
 

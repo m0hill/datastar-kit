@@ -9,6 +9,7 @@ This repository is a pnpm workspace containing the publishable SDK package, docu
 - [`packages/datastar-kit`](packages/datastar-kit) — the publishable SDK package, including source, tests, and package README.
 - [`packages/website`](packages/website) — the VitePress documentation site.
 - [`examples/hono-counter`](examples/hono-counter) — a standalone Hono counter example that consumes `datastar-kit` through a workspace dependency.
+- [`examples/elysia-layout`](examples/elysia-layout) — a Bun/Elysia layout example with named JSX slots and focused Datastar patches.
 
 ## SDK quick look
 
@@ -67,6 +68,7 @@ Run local development servers:
 
 ```sh
 pnpm run dev:hono-counter
+pnpm run dev:elysia-layout
 pnpm run dev:website
 ```
 
@@ -77,7 +79,8 @@ packages/
   datastar-kit/   # SDK source and package README
   website/        # VitePress docs
 examples/
-  hono-counter/   # Example app consuming the workspace package
+  hono-counter/   # Hono counter example consuming the workspace package
+  elysia-layout/  # Bun/Elysia layout and named-slot example
 ```
 
 Additional standalone examples can be added as new packages under `examples/*`.

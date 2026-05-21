@@ -4,7 +4,7 @@ Examples are standalone workspace packages under `examples/*`. Each example shou
 
 ## Hono counter
 
-`examples/hono-counter` is the current minimal workspace example. It uses TSX views, Hono routes, `ds` action helpers, and `reply.*` response helpers. It keeps `count` as backend-owned state and returns `reply.patch(...)` for the focused Datastar update.
+`examples/hono-counter` is the minimal workspace example. It uses TSX views, Hono routes, `ds` action helpers, and `reply.*` response helpers. It keeps `count` as backend-owned state and returns `reply.patch(...)` for the focused Datastar update.
 
 Run it from the repository root with:
 
@@ -12,7 +12,19 @@ Run it from the repository root with:
 pnpm run dev:hono-counter
 ```
 
-Open <http://127.0.0.1:3000>.
+Open `http://127.0.0.1:3000`.
+
+## Elysia layout
+
+`examples/elysia-layout` is a Bun/Elysia app focused on normal application structure: a shared shell, named layout slots (`sidebar`, `toolbar`, `children`), route-level data loading, and a Datastar form action that patches only the `#project-list` region.
+
+Run it from the repository root with:
+
+```sh
+pnpm run dev:elysia-layout
+```
+
+Open `http://localhost:3000`.
 
 ## Adding examples
 
