@@ -28,7 +28,7 @@ The SDK has one public job: make Datastar pleasant from fetch-compatible handler
 - `src/html.ts` exposes `h`, `mergeProps`, `renderToString`, and `unsafeHtml` as the low-level node model.
 - `src/jsx-runtime.ts` and `src/jsx-dev-runtime.ts` provide the blessed automatic JSX runtime for `jsxImportSource: "datastar-kit"`.
 - `src/jsx.ts` is the internal JSX node adapter used by the automatic runtime.
-- `src/ds.ts` exposes Datastar expressions, fetch actions, signal references, modifiers, and attributes.
+- `src/ds/index.ts` is the public `ds` barrel; sibling files in `src/ds/` group expressions, actions, attributes, modifiers, and signal references by concern.
 
 ### 3. Request boundary layer
 

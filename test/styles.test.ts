@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import * as ds from "../src/ds.js"
+import * as ds from "../src/ds/index.js"
 
 describe("Datastar style helpers", () => {
   it("builds keyed data-style bindings", () => {

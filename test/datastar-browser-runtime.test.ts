@@ -3,7 +3,7 @@ import { createServer, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
-import { dataSignals, on, post, signal, text } from "../src/ds.js"
+import { dataSignals, on, post, signal, text } from "../src/ds/index.js"
 import { h, mergeProps, renderToString } from "../src/html.js"
 
 const execFile = promisify(execFileCallback)

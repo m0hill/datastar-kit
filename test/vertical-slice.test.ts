@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { z } from "zod"
-import { dataSignals, on, post, signal, text } from "../src/ds.js"
+import { dataSignals, on, post, signal, text } from "../src/ds/index.js"
 import { h, mergeProps, renderToString } from "../src/html.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"

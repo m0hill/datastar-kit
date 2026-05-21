@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { get, queryUrl, signal } from "../src/ds.js"
+import { get, queryUrl, signal } from "../src/ds/index.js"
 
 describe("dynamic URL helpers", () => {
   it("builds encoded query URL expressions from signals", () => {

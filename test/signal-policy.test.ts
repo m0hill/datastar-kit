@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import * as ds from "../src/ds.js"
+import * as ds from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
 
 describe("signal policy helpers", () => {

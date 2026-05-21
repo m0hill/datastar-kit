@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { dataSignals, signal, SignalNameError } from "../src/ds.js"
+import { dataSignals, signal, SignalNameError } from "../src/ds/index.js"
 
 describe("Datastar signal name validation", () => {
   it("accepts normal, nested, and local signal names", () => {

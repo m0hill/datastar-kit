@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from "@standard-schema/spec"
 import { describe, expect, it } from "vitest"
-import { dataSignals, signal } from "../src/ds.js"
+import { dataSignals, signal } from "../src/ds/index.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
 

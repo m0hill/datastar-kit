@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import * as ds from "../src/ds.js"
+import * as ds from "../src/ds/index.js"
 
 describe("expression escape hatches", () => {
   it("keeps simple signal refs typed", () => {

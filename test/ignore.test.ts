@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { ignore, ignoreMorph } from "../src/ds.js"
+import { ignore, ignoreMorph } from "../src/ds/index.js"
 
 describe("Datastar ignore helpers", () => {
   it("builds data-ignore attributes", () => {

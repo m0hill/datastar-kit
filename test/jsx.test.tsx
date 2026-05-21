@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { bind, dataSignals, on, post, signal, text } from "../src/ds.js"
+import { bind, dataSignals, on, post, signal, text } from "../src/ds/index.js"
 import { mergeProps, renderToString, type HtmlChild } from "../src/html.js"
 import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"

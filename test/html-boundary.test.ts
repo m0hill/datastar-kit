@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { dataSignals, signal, text } from "../src/ds.js"
+import { dataSignals, signal, text } from "../src/ds/index.js"
 import { h, mergeProps, renderToString, unsafeHtml } from "../src/html.js"
 import { page } from "../src/reply.js"
 
