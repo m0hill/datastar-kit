@@ -14,6 +14,18 @@ pnpm run dev:hono-counter
 
 Open `http://127.0.0.1:3000`.
 
+## Hono modal
+
+`examples/hono-modal` shows a server-rendered native `<dialog>` controlled by Datastar signals. It uses Hono's `serveStatic` middleware for local CSS, patches the dialog into a modal slot, and uses `data-effect` to bridge the `modalOpen` signal to `showModal()` / `close()`.
+
+Run it from the repository root with:
+
+```sh
+pnpm run dev:hono-modal
+```
+
+Open `http://localhost:3000`.
+
 ## Elysia layout
 
 `examples/elysia-layout` is a Bun/Elysia app focused on normal application structure: a shared shell, named layout slots (`sidebar`, `toolbar`, `children`), route-level data loading, and a Datastar form action that patches only the `#project-list` region.
