@@ -8,9 +8,6 @@ export type HtmlPropValue = string | number | boolean | null | undefined
  */
 export type HtmlProps = Readonly<Record<string, HtmlPropValue>>
 
-/**
- * Internal marker for HTML that has deliberately crossed the trust boundary.
- */
 interface RawHtml {
   readonly _tag: "RawHtml"
   readonly html: string
@@ -33,9 +30,6 @@ export interface HtmlNode {
   readonly children: readonly HtmlChild[]
 }
 
-/**
- * Tags that must not receive closing tags according to the HTML parsing model.
- */
 const voidTags = new Set([
   "area",
   "base",
@@ -52,43 +46,6 @@ const voidTags = new Set([
   "track",
   "wbr"
 ])
-
-/**
- * Creates a lightweight HTML element node without using JSX.
- *
- * @param tag The HTML tag name to render.
- * @param props Attributes rendered on the element.
- * @param children Child nodes rendered inside the element.
- * @returns An HTML node that can be passed to `renderToString()` or response helpers.
- */
-export const h = (tag: string, props: HtmlProps = {}, ...children: readonly HtmlChild[]): HtmlNode => ({
-  tag,
-  props,
-  children
-})
-
-/**
- * Marks a string as trusted HTML so it is inserted without escaping.
- *
- * @remarks
- * This is a trust-boundary escape hatch. Only pass HTML that your application has already
- * sanitized or produced from a trusted source. User input must not be passed to this function.
- *
- * @param html Trusted HTML markup.
- * @returns A renderable HTML child that bypasses text escaping.
- */
-export const unsafeHtml = (html: string): HtmlChild => ({
-  _tag: "RawHtml",
-  html
-})
-
-/**
- * Merges multiple HTML prop objects from left to right.
- *
- * @param groups Prop objects to merge.
- * @returns A new prop object containing all supplied properties.
- */
-export const mergeProps = (...groups: readonly HtmlProps[]): HtmlProps => Object.assign({}, ...groups)
 
 const isRawHtml = (value: unknown): value is RawHtml =>
   typeof value === "object" && value !== null && "_tag" in value && value._tag === "RawHtml"
@@ -129,6 +86,43 @@ const renderProps = (props: HtmlProps): string => {
 
   return rendered.length === 0 ? "" : ` ${rendered.join(" ")}`
 }
+
+/**
+ * Creates a lightweight HTML element node without using JSX.
+ *
+ * @param tag The HTML tag name to render.
+ * @param props Attributes rendered on the element.
+ * @param children Child nodes rendered inside the element.
+ * @returns An HTML node that can be passed to `renderToString()` or response helpers.
+ */
+export const h = (tag: string, props: HtmlProps = {}, ...children: readonly HtmlChild[]): HtmlNode => ({
+  tag,
+  props,
+  children
+})
+
+/**
+ * Marks a string as trusted HTML so it is inserted without escaping.
+ *
+ * @remarks
+ * This is a trust-boundary escape hatch. Only pass HTML that your application has already
+ * sanitized or produced from a trusted source. User input must not be passed to this function.
+ *
+ * @param html Trusted HTML markup.
+ * @returns A renderable HTML child that bypasses text escaping.
+ */
+export const unsafeHtml = (html: string): HtmlChild => ({
+  _tag: "RawHtml",
+  html
+})
+
+/**
+ * Merges multiple HTML prop objects from left to right.
+ *
+ * @param groups Prop objects to merge.
+ * @returns A new prop object containing all supplied properties.
+ */
+export const mergeProps = (...groups: readonly HtmlProps[]): HtmlProps => Object.assign({}, ...groups)
 
 /**
  * Renders an HTML child tree to a string.

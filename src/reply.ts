@@ -276,6 +276,52 @@ const readableStreamFrom = (
 }
 
 /**
+ * Normalizes navigation targets and rejects cross-origin or non-HTTP(S) URLs by default.
+ */
+const safeNavigationUrl = (
+  input: string | URL,
+  options: {
+    readonly baseUrl?: string | URL | undefined
+    readonly allowedOrigins?: readonly (string | URL)[] | undefined
+  } = {}
+): string => {
+  const raw = input.toString()
+  if (/[\u0000-\u001F\u007F]/u.test(raw)) {
+    throw new NavigationUrlError(raw)
+  }
+
+  let base: URL
+  let url: URL
+  try {
+    base = new URL(options.baseUrl?.toString() ?? "http://localhost")
+    url = new URL(raw, base)
+  } catch {
+    throw new NavigationUrlError(raw)
+  }
+
+  if (url.protocol !== "http:" && url.protocol !== "https:") {
+    throw new NavigationUrlError(raw)
+  }
+
+  if (url.origin === base.origin) {
+    return `${url.pathname}${url.search}${url.hash}`
+  }
+
+  for (const origin of options.allowedOrigins ?? []) {
+    try {
+      const allowed = new URL(origin.toString())
+      if ((allowed.protocol === "http:" || allowed.protocol === "https:") && allowed.origin === url.origin) {
+        return url.toString()
+      }
+    } catch {
+      // Treat malformed allowlist entries as non-matches.
+    }
+  }
+
+  throw new NavigationUrlError(raw)
+}
+
+/**
  * Creates a full HTML document response.
  *
  * @param body Children rendered inside the document `<body>`.
@@ -422,52 +468,6 @@ export const directScript = (
     "content-type": "text/javascript; charset=utf-8",
     ...(attributes === undefined ? {} : { "datastar-script-attributes": JSON.stringify(attributes) })
   })
-}
-
-/**
- * Normalizes navigation targets and rejects cross-origin or non-HTTP(S) URLs by default.
- */
-const safeNavigationUrl = (
-  input: string | URL,
-  options: {
-    readonly baseUrl?: string | URL | undefined
-    readonly allowedOrigins?: readonly (string | URL)[] | undefined
-  } = {}
-): string => {
-  const raw = input.toString()
-  if (/[\u0000-\u001F\u007F]/u.test(raw)) {
-    throw new NavigationUrlError(raw)
-  }
-
-  let base: URL
-  let url: URL
-  try {
-    base = new URL(options.baseUrl?.toString() ?? "http://localhost")
-    url = new URL(raw, base)
-  } catch {
-    throw new NavigationUrlError(raw)
-  }
-
-  if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new NavigationUrlError(raw)
-  }
-
-  if (url.origin === base.origin) {
-    return `${url.pathname}${url.search}${url.hash}`
-  }
-
-  for (const origin of options.allowedOrigins ?? []) {
-    try {
-      const allowed = new URL(origin.toString())
-      if ((allowed.protocol === "http:" || allowed.protocol === "https:") && allowed.origin === url.origin) {
-        return url.toString()
-      }
-    } catch {
-      // Treat malformed allowlist entries as non-matches.
-    }
-  }
-
-  throw new NavigationUrlError(raw)
 }
 
 /**

@@ -109,6 +109,19 @@ const fetchOptionsToJs = (options: FetchActionOptions): string => {
 
 const escapeTemplateText = (value: string): string => value.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("${", "\\${")
 
+const urlToJs = (url: ExprInput<string>): string => typeof url === "string" ? JSON.stringify(url) : url.toDatastarExpression()
+
+const fetchAction = (method: "get" | "post" | "put" | "patch" | "delete", url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => {
+  if (options === undefined || Object.keys(options).length === 0) {
+    return raw(`@${method}(${urlToJs(url)})`)
+  }
+
+  return raw(`@${method}(${urlToJs(url)}, ${fetchOptionsToJs(options)})`)
+}
+
+const datastarAction = <T = unknown>(name: string, ...args: ReadonlyArray<ExprInput<unknown>>): Expr<T> =>
+  raw(`@${name}(${args.map((arg) => toJs(arg)).join(", ")})`)
+
 /**
  * Builds a Datastar expression for a URL with reactive query parameters.
  *
@@ -129,16 +142,6 @@ export const queryUrl = (path: string, params: Readonly<Record<string, ExprInput
   return raw(`\`${escapeTemplateText(path)}${separator}${query}\``)
 }
 
-const urlToJs = (url: ExprInput<string>): string => typeof url === "string" ? JSON.stringify(url) : url.toDatastarExpression()
-
-const fetchAction = (method: "get" | "post" | "put" | "patch" | "delete", url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => {
-  if (options === undefined || Object.keys(options).length === 0) {
-    return raw(`@${method}(${urlToJs(url)})`)
-  }
-
-  return raw(`@${method}(${urlToJs(url)}, ${fetchOptionsToJs(options)})`)
-}
-
 /** Creates a Datastar `@get()` action expression. @see https://data-star.dev/reference/actions#get */
 export const get = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => fetchAction("get", url, options)
 
@@ -153,9 +156,6 @@ export const patch = (url: ExprInput<string>, options?: FetchActionOptions): Exp
 
 /** Creates a Datastar `@delete()` action expression. @see https://data-star.dev/reference/actions#delete */
 export const del = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => fetchAction("delete", url, options)
-
-const datastarAction = <T = unknown>(name: string, ...args: ReadonlyArray<ExprInput<unknown>>): Expr<T> =>
-  raw(`@${name}(${args.map((arg) => toJs(arg)).join(", ")})`)
 
 /** Creates a Datastar `@peek()` action expression. @see https://data-star.dev/reference/actions#peek */
 export const peek = <T = unknown>(callback: Expr<DatastarFunction<T>>): Expr<T> => datastarAction<T>("peek", callback)

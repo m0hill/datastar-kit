@@ -105,6 +105,28 @@ const serializeEvent = (event: string, options: SseEventOptions, lines: Readonly
 const encodeSignals = (value: SignalState | string): string =>
   typeof value === "string" ? value : JSON.stringify(value)
 
+const escapeAttribute = (value: string): string =>
+  value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;")
+
+const scriptAttributes = (options: ExecuteScriptOptions): string => {
+  const attrs: Array<string> = []
+
+  if (options.autoRemove !== false) {
+    attrs.push('data-effect="el.remove()"')
+  }
+
+  for (const [key, value] of Object.entries(options.attributes ?? {})) {
+    attrs.push(`${key}="${escapeAttribute(String(value))}"`)
+  }
+
+  return attrs.length === 0 ? "" : ` ${attrs.join(" ")}`
+}
+
 /**
  * Encodes a Datastar `datastar-patch-elements` SSE event.
  *
@@ -155,28 +177,6 @@ export const patchSignals = (signals: SignalState | string, options: PatchSignal
   lines.push(...dataLines("signals", encodeSignals(signals)))
 
   return serializeEvent(PATCH_SIGNALS_EVENT, options, lines)
-}
-
-const escapeAttribute = (value: string): string =>
-  value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;")
-
-const scriptAttributes = (options: ExecuteScriptOptions): string => {
-  const attrs: Array<string> = []
-
-  if (options.autoRemove !== false) {
-    attrs.push('data-effect="el.remove()"')
-  }
-
-  for (const [key, value] of Object.entries(options.attributes ?? {})) {
-    attrs.push(`${key}="${escapeAttribute(String(value))}"`)
-  }
-
-  return attrs.length === 0 ? "" : ` ${attrs.join(" ")}`
 }
 
 /**

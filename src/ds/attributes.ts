@@ -1,4 +1,5 @@
 import type { HtmlProps } from "../html.js"
+import type { SignalFilter } from "./actions.js"
 import { isExpr, toJs, type DatastarFunction, type Expr, type ExprInput } from "./expression.js"
 import {
   appendTimingModifiers,
@@ -20,7 +21,6 @@ import {
   type TimingModifiers
 } from "./modifiers.js"
 import { assertSignalName, type Signal, type SignalStateInput, type SignalValueInput } from "./signals.js"
-import type { SignalFilter } from "./actions.js"
 
 /** Options for `ds.jsonSignals()`. */
 export interface JsonSignalsOptions {
@@ -40,6 +40,12 @@ export interface DataSignalsOptions {
   readonly ifMissing?: boolean
 }
 
+/** A nested object of computed signal functions. */
+export type DataComputedValue = Expr<DatastarFunction<unknown>> | { readonly [key: string]: DataComputedValue }
+
+/** Object-valued `data-computed` input. */
+export type DataComputedObject = Readonly<Record<string, DataComputedValue>>
+
 const assertUnmodifiedSignalName = (name: string, modifiers: CaseModifiers): void => {
   if (modifiers.case === undefined) {
     assertSignalName(name)
@@ -48,6 +54,26 @@ const assertUnmodifiedSignalName = (name: string, modifiers: CaseModifiers): voi
 
 const signalKeyName = <Name extends string>(name: Name | { readonly name: Name }): Name =>
   typeof name === "string" ? name : name.name
+
+const assertDataComputedObjectKeys = (values: DataComputedObject): void => {
+  for (const [key, value] of Object.entries(values)) {
+    assertSignalName(key)
+
+    if (!isExpr(value)) {
+      assertDataComputedObjectKeys(value)
+    }
+  }
+}
+
+const assertSignalObjectKeys = (values: SignalStateInput): void => {
+  for (const [key, value] of Object.entries(values)) {
+    assertSignalName(key)
+
+    if (typeof value === "object" && value !== null && !Array.isArray(value) && !isExpr(value)) {
+      assertSignalObjectKeys(value as SignalStateInput)
+    }
+  }
+}
 
 /** Creates a Datastar `data-on:*` attribute. @see https://data-star.dev/reference/attributes#data-on */
 export const on = (event: string, expression: ExprInput<unknown>, modifiers?: OnModifiers): HtmlProps => ({
@@ -163,22 +189,6 @@ export const dataComputed = <T>(name: string, expression: ExprInput<T>, modifier
   return { [`data-computed:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression) }
 }
 
-/** A nested object of computed signal functions. */
-export type DataComputedValue = Expr<DatastarFunction<unknown>> | { readonly [key: string]: DataComputedValue }
-
-/** Object-valued `data-computed` input. */
-export type DataComputedObject = Readonly<Record<string, DataComputedValue>>
-
-const assertDataComputedObjectKeys = (values: DataComputedObject): void => {
-  for (const [key, value] of Object.entries(values)) {
-    assertSignalName(key)
-
-    if (!isExpr(value)) {
-      assertDataComputedObjectKeys(value)
-    }
-  }
-}
-
 /** Creates an object-valued Datastar `data-computed` attribute. @see https://data-star.dev/reference/attributes#data-computed */
 export const dataComputeds = (mapping: DataComputedObject): HtmlProps => {
   assertDataComputedObjectKeys(mapping)
@@ -194,16 +204,6 @@ export const dataStyle = (name: string, expression: ExprInput<unknown>): HtmlPro
 export const dataStyles = (mapping: Readonly<Record<string, ExprInput<unknown>>>): HtmlProps => ({
   "data-style": toJs(mapping)
 })
-
-const assertSignalObjectKeys = (values: SignalStateInput): void => {
-  for (const [key, value] of Object.entries(values)) {
-    assertSignalName(key)
-
-    if (typeof value === "object" && value !== null && !Array.isArray(value) && !isExpr(value)) {
-      assertSignalObjectKeys(value as SignalStateInput)
-    }
-  }
-}
 
 /** Creates a keyed Datastar `data-signals:*` attribute. @see https://data-star.dev/reference/attributes#data-signals */
 export const dataSignal = (name: string, value: SignalValueInput, modifiers: DataSignalModifiers = {}): HtmlProps => {
