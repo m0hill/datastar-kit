@@ -1,18 +1,18 @@
 # Actions and responses
 
-Actions are HTTP routes triggered by Datastar attributes. Commands are actions that mutate backend state. Query actions and live streams read current backend state and patch the UI.
+Actions are HTTP requests triggered by Datastar attributes. Some actions are commands that mutate backend resources. Others are queries or streams that read current state and patch the UI.
 
 ## Default command flow
 
-1. Render HTML with a Datastar action attribute such as `data-on:click="@post('/increment')"`.
-2. Decode Datastar signals with `read.signals(request)`, validate with `read.signals(request, schema)` when needed, or use Web APIs directly for non-Datastar query/body/form inputs.
+1. Render HTML with a Datastar action attribute, such as `data-on:click="@post('/increment')"`.
+2. Decode Datastar signals with `read.signals(request)` or `read.signals(request, schema)`. Use Web APIs directly for non-Datastar query/body/form inputs.
 3. Check security/session/CSRF requirements in app code.
 4. Mutate backend state through app-owned services/resources.
-5. Return `reply.done()` for no immediate UI feedback, or return a Datastar patch/stream through `reply.*`.
+5. Return `reply.done()` when there is nothing to update, or return a Datastar patch/stream through `reply.*`.
 
 ## Response helpers
 
-Use `reply` helpers:
+Use `reply` helpers when a handler should produce Datastar-aware native `Response` objects:
 
 - `reply.page(...)` — full HTML page/document response with ordinary HTTP status semantics.
 - `reply.patch(...)` — default SSE element patch response.
@@ -31,7 +31,7 @@ reply.signals({ saving: false }, { onlyIfMissing: true }, { headers: { 'x-action
 
 ## Status semantics
 
-Current Datastar fetch actions process response bodies as patches when the HTTP status is `200`. They treat `204` as success with no body.
+Current Datastar fetch actions process response bodies as patches when the HTTP status is `200`. They treat `204` as successful completion with no body.
 
 Use this policy:
 
@@ -43,25 +43,21 @@ Use this policy:
 
 ## Patch targets and stable IDs
 
-For ordinary component updates, the element `id` is the patch contract. Render a stable `id` on each top-level element you return, then omit `selector`. Datastar matches those IDs in the browser and updates the existing elements in the default `outer` patch mode:
+For ordinary component updates, render a stable `id` on the top-level element you return and omit `selector`:
 
 ```tsx
-const Count = () => <output id="count">{count}</output>
+const CountView = () => <output id="count">{count}</output>
 
-reply.patch(<Count />)
-event.patch(<Count />)
+reply.patch(<CountView />)
+event.patch(<CountView />)
 ```
 
-This is the preferred shape for component replacement, live streams, and reconnect-safe current-state rendering. The initial page and later patches should render the same stable IDs for the same UI regions. Do not generate a fresh ID on every render.
-
-Pass `selector` when the patch targets a container or CSS match instead of the returned element itself, such as appending or prepending list items, removing elements, patching `inner` HTML, or updating multiple targets:
+Pass `selector` when the target is a container, sibling position, removable element, or CSS match:
 
 ```tsx
-reply.patch(<TodoItem todo={todo} />, { selector: '#todos', mode: 'append' })
+reply.patch(<TodoItem todo={todo} />, { selector: '#todo-list', mode: 'append' })
 event.patch('', { selector: '.toast', mode: 'remove' })
 ```
-
-For a guide to every element patch mode, see [Patch elements](patch-elements.md).
 
 For repeated items, use stable item IDs when those items may be patched individually:
 
@@ -71,13 +67,15 @@ const TodoItem = (props: { todo: Todo }) => (
 )
 ```
 
+The full selector/mode guide lives in [Patch elements](patch-elements.md).
+
 ## State rule
 
-Commands may read sparse browser signals, while durable state belongs in backend resources. For trusted values such as counters, read the current value from the server, mutate it there, and patch the rendered view.
+Commands may read sparse browser signals, but durable state belongs in backend resources. For trusted values such as counters, read the current value from the server, mutate it there, and patch the rendered view.
 
 ## Forms and other request bodies
 
-Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions use Datastar's default JSON signal transport. Datastar signals and form data are distinct request inputs. Use signals for sparse browser state sent by Datastar actions; use Web APIs or framework facilities for ordinary form posts, file uploads, and non-Datastar HTTP endpoints.
+Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions use Datastar's default JSON signal transport. Datastar signals and form data are distinct request inputs: use signals for sparse browser state sent by Datastar actions, and use Web APIs or framework facilities for ordinary form posts, file uploads, and non-Datastar HTTP endpoints.
 
 For Datastar's form transport, pass `contentType: 'form'` in the fetch action options and read that request with your platform's form/multipart APIs.
 

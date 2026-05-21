@@ -1,6 +1,6 @@
 # Testing
 
-Observability is not a public Datastar Kit API. Applications should use their platform's logging, tracing, metrics, and OpenTelemetry setup directly. Core SDK tests focus on protocol correctness and integration behavior.
+Datastar Kit is easiest to test at the same boundary it runs at: native `Request` in, native `Response` out. You usually do not need framework mocks for the SDK-shaped parts.
 
 ## Testing layers
 
@@ -14,5 +14,7 @@ Observability is not a public Datastar Kit API. Applications should use their pl
 Test with real `Request` and `Response` objects whenever possible. Avoid framework mocks when a plain fetch-compatible handler can be called directly.
 
 When changing examples, keep their tests close to the example package so the example remains copyable and honest about its dependencies.
+
+Observability is app-owned. Use your platform's logging, tracing, metrics, and OpenTelemetry setup directly; Datastar Kit does not wrap those APIs.
 
 Next: [Examples](examples.md). Related: [Deployment](deployment.md), [API reference](../reference/api.md).

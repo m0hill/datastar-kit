@@ -1,6 +1,6 @@
 # Validation and errors
 
-Schema validation is optional. Datastar Kit intentionally does not provide schema-derived signal contracts; signals are authored directly with `ds.signal(...)` and `ds.dataSignals(...)`. Validate at the request boundary when a handler needs shape guarantees.
+Schema validation is optional. Datastar Kit does not generate signal contracts from schemas; author signals directly with `ds.signal(...)` and `ds.dataSignals(...)`, then validate at the request boundary when a handler needs shape guarantees.
 
 ## Reading with Standard Schema
 
@@ -31,11 +31,11 @@ async function submit(request: Request): Promise<Response> {
 }
 ```
 
-This keeps core small and avoids coupling signal authoring to a specific validation library. Standard Schema remains available when request-boundary type inference and validator portability are useful.
+This keeps the core small and avoids coupling signal authoring to a specific validation library. Standard Schema remains available when request-boundary type inference and validator portability are useful.
 
 ## Error categories
 
-Recoverable user-facing errors should usually be returned as successful Datastar responses so the browser runtime applies the UI update. Do not rely on non-200 response bodies to patch the page.
+Recoverable user-facing errors should usually be returned as successful Datastar responses so the browser runtime applies the UI update. Do not rely on non-`200` response bodies to patch the page.
 
 - **Validation errors** — input is syntactically valid enough to understand, but fails form/domain validation. Return `200` Datastar patches near the relevant fields.
 - **Domain/action errors** — the action cannot complete. Return a predictable UI patch if the current Datastar action should update the page, otherwise return an ordinary status response.
@@ -55,7 +55,7 @@ A useful pattern is to keep recoverable validation feedback in local/private sig
 }
 ```
 
-Return the patch with core response primitives:
+Return the patch with normal response helpers:
 
 ```ts
 return reply.signals(validationPayload(error))

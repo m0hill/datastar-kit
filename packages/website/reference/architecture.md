@@ -1,18 +1,18 @@
 # Architecture
 
-Datastar Kit is a Web Standards Datastar SDK for server-driven TypeScript UI. It focuses on Datastar authoring, server-rendered HTML, signal decoding, SSE event chunks, and native `Response` helpers.
+Datastar Kit is a Web Standards Datastar SDK for server-driven TypeScript UI. This page is contributor-oriented: it explains the source layout and the boundaries that keep the package small.
 
 ## Architecture stance
 
-The SDK makes Datastar pleasant from fetch-compatible handlers. Core APIs use standard primitives such as `Request`, `Response`, `Headers`, `URL`, and `ReadableStream`.
+The SDK makes Datastar pleasant from fetch-compatible handlers. Public APIs stay close to standard primitives such as `Request`, `Response`, `Headers`, `URL`, and `ReadableStream`.
 
 ## Foundational decisions
 
 - **Backend state is the source of truth.** Browser signals are sparse request inputs and UI affordances.
-- **Datastar is the browser runtime and patch protocol.** Datastar Kit generates Datastar-compatible attributes, direct responses, and SSE events.
+- **Datastar is the browser runtime and patch protocol.** Datastar Kit generates Datastar-compatible attributes, direct responses, and SSE events; it does not replace Datastar.
 - **Fetch-compatible composition.** The helpers fit inside Hono, custom fetch handlers, Workers, Bun, Deno, Node, and similar hosts.
 - **HTML is generated on the server.** View code uses the automatic JSX runtime over a tiny HTML node model; external renderer output can cross the trust boundary with `unsafeHtml(renderedHtml)`.
-- **SSE patches are the default response style.** Direct responses remain available for integrations that need Datastar direct-response handling.
+- **SSE patches are the default response style.** Direct responses remain available for integrations that specifically need Datastar direct-response handling.
 - **Signals are mostly ephemeral.** Use them for form/input state, validation feedback, loading flags, and request parameters.
 
 ## Source layers

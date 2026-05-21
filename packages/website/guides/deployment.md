@@ -1,6 +1,6 @@
 # Deployment
 
-Datastar Kit targets fetch-compatible JavaScript runtimes. The package stays server-driven: static assets are small, and most behavior is ordinary `Request -> Response` handlers.
+Datastar Kit targets fetch-compatible JavaScript runtimes. The package stays server-driven: static assets are small, and most behavior is ordinary `Request -> Response` handling.
 
 ## Runtime adapters
 
@@ -12,7 +12,7 @@ Use your application framework or host adapter to connect handlers to the platfo
 
 ## Datastar browser runtime
 
-Datastar runtime inclusion is explicit HTML. Pin a CDN URL or serve your own copy:
+Include the Datastar browser runtime explicitly in HTML. Pin a CDN URL or serve your own copy:
 
 ```ts
 reply.page(appShell, {
@@ -42,7 +42,7 @@ Keep proxy/read idle timeouts longer than your heartbeat interval. A live view u
 
 Databases, caches, sessions, queues, brokers, and request context belong to the application framework. Datastar Kit helpers are plain functions that compose inside those handlers.
 
-Core does not include a live broker. Redis, NATS, Postgres notifications, in-memory subscribers, or app-specific channels should adapt into `AsyncIterable`/`ReadableStream` event sources owned by the application.
+Datastar Kit does not include a live broker. Redis, NATS, Postgres notifications, in-memory subscribers, or app-specific channels should adapt into `AsyncIterable`/`ReadableStream` event sources owned by the application.
 
 ## Production checklist
 

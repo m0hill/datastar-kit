@@ -1,6 +1,6 @@
 # Security
 
-Datastar Kit does not provide a public auth/session/CSRF subsystem. Those policies belong to the application router, middleware, or app-owned services.
+Datastar Kit does not provide auth, sessions, CSRF protection, ownership checks, or rate limiting. Those policies belong to the application router, middleware, or app-owned services.
 
 A safe Datastar command should:
 
@@ -10,7 +10,7 @@ A safe Datastar command should:
 4. mutate backend state only after those checks pass;
 5. return a Datastar patch for recoverable UI feedback or a normal HTTP response for non-Datastar clients.
 
-Schema validation proves shape, not authority. Handlers must still check ownership and permissions on the backend.
+Schema validation proves shape, not authority. Handlers must still check ownership and permissions on the backend before changing state.
 
 ## Trust boundaries
 

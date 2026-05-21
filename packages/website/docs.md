@@ -1,22 +1,22 @@
 # Datastar Kit documentation
 
-This is the longer-form documentation for Datastar Kit. Start with the package [README](index.md) for install and a quick counter, then read these pages in order as needed.
+This page is the map. Start with [Getting Started](index.md) for install and a quick counter, then use the sections below when you need the deeper version of a topic.
 
 ## Recommended reading order
 
 ### 1. Concepts
 
-1. [Programming model](concepts/programming-model.md) — backend-owned state, commands, queries, and the Datastar mental model.
-2. [Runtime boundaries](concepts/runtime-boundaries.md) — how Datastar Kit fits into your app's handlers and services.
+1. [Programming model](concepts/programming-model.md) — the server-driven shape: pages, commands, queries, live views, and invalidations.
+2. [Runtime boundaries](concepts/runtime-boundaries.md) — what Datastar Kit owns, and what stays in your app.
 
 ### 2. Core guides
 
-3. [HTML and JSX](guides/html-and-jsx.md) — server-rendered views, layouts, named slots, loader/view splits, escaping, and low-level HTML helpers.
-4. [Signals](guides/signals.md) — authoring, reading, validating, and patching Datastar signals.
-5. [Actions and responses](guides/actions-and-responses.md) — action flow, response helpers, status semantics, and selector usage.
-6. [Patch elements](guides/patch-elements.md) — guide to `outer`, `inner`, `append`, `remove`, and other DOM patch modes.
+3. [HTML and JSX](guides/html-and-jsx.md) — views, layouts, named slots, data loading, escaping, and low-level HTML helpers.
+4. [Signals](guides/signals.md) — authoring, reading, and patching browser signal state.
+5. [Actions and responses](guides/actions-and-responses.md) — command flow, status semantics, response helpers, and request bodies.
+6. [Patch elements](guides/patch-elements.md) — stable IDs, selectors, and DOM patch modes.
 7. [Validation and errors](guides/validation-and-errors.md) — Standard Schema validation and recoverable UI feedback.
-8. [Realtime streams](guides/realtime.md) — app-owned live query recipes with `reply.stream(...)`.
+8. [Realtime streams](guides/realtime.md) — app-owned live views with `reply.stream(...)`.
 
 ### 3. Operations
 
@@ -32,4 +32,4 @@ This is the longer-form documentation for Datastar Kit. Start with the package [
 
 ## Documentation style
 
-The user-facing path is: README → Concepts → Core guides → Operations → Reference. Design details and contributor-facing notes should live under `reference/`, not in the first-run learning path.
+The user-facing path is: Getting Started -> Concepts -> Core guides -> Operations -> Reference. Design details and contributor-facing notes should live under `reference/`, not in the first-run learning path.

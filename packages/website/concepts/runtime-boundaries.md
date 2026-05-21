@@ -1,24 +1,26 @@
 # Runtime boundaries
 
-Datastar Kit composes inside ordinary fetch-compatible handlers. Use the SDK helpers for Datastar-specific HTML, signal, event, and response work, then connect those helpers to your app's routing, services, and deployment setup.
+Datastar Kit composes inside ordinary fetch-compatible handlers. The package owns Datastar-specific authoring and response details; your app owns the rest of the request lifecycle.
 
 ```ts
-const input = await read.signals(request, FormSchema)
-await store.save(input)
+const form = await read.signals(request, FormSchema)
+await store.save(form)
 return reply.done()
 ```
 
 ## SDK surface
 
-- Datastar attribute/action/signal helpers through `ds`.
-- Server HTML nodes, JSX runtime glue, escaping, and `renderToString(...)`.
-- Datastar signal decoding from native `Request` values.
-- Datastar-compatible `Response` helpers through `reply`.
-- SSE event chunk helpers through `event` and low-level `datastar-kit/sse` encoders.
+Use Datastar Kit for:
+
+- Datastar attributes, actions, expressions, modifiers, and signal refs through `ds`.
+- Server HTML nodes, JSX runtime glue, escaping, prop merging, and `renderToString(...)`.
+- Datastar signal decoding from native `Request` values through `read`.
+- Native `Response` helpers for pages, patches, streams, navigation, and command completion through `reply`.
+- SSE event chunks through `event`, plus low-level `datastar-kit/sse` encoders for protocol tests or custom integrations.
 
 ## App integration points
 
-Use your application framework or platform code for domain/runtime capabilities:
+Keep these concerns in your framework, platform, or app-owned services:
 
 - routing and middleware;
 - authentication, sessions, CSRF, and rate limits;
@@ -29,7 +31,14 @@ Use your application framework or platform code for domain/runtime capabilities:
 
 ## Request boundary
 
-Use `read.signals(request)` for schema-free Datastar signal decoding with a JSON object shape check, or `read.signals(request, schema)` when a Standard Schema validator should check the payload. Use `new URL(request.url)`, `request.formData()`, `request.json()`, framework middleware, or specialized multipart parsers for other HTTP concerns.
+Use `read.signals(request)` when the request is a Datastar action carrying JSON signal state. Add a Standard Schema validator when the handler needs a typed and checked payload:
+
+```ts
+const state = await read.signals(request)
+const payload = await read.signals(request, FormSchema)
+```
+
+Use `new URL(request.url)`, `request.formData()`, `request.json()`, framework middleware, or specialized multipart parsers for other HTTP concerns.
 
 Handle expected errors locally when they should produce Datastar UI feedback. Use app-level middleware for generic decode/security/fatal failures.
 

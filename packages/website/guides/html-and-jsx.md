@@ -1,6 +1,6 @@
 # HTML and JSX
 
-Datastar Kit renders HTML on the server. The built-in HTML layer is intentionally tiny: HTML nodes, escaping, explicit unsafe HTML, prop merging, fragment rendering through child arrays, and the backing model for the JSX runtime.
+Datastar Kit renders HTML on the server. The built-in HTML layer is intentionally small: HTML nodes, escaping, explicit unsafe HTML, prop merging, fragment rendering through child arrays, and the backing model for the JSX runtime.
 
 ## JSX setup
 
@@ -24,7 +24,7 @@ const view = <button type="button" {...ds.on('click', ds.post('/save'))}>Save</b
 const html = renderToString(view)
 ```
 
-JSX here is a server rendering convenience, not a browser component lifecycle or virtual DOM runtime. Components should be plain synchronous view functions: load data in your handler or route loader, then pass the data into JSX.
+JSX here is a server rendering convenience, not a browser component lifecycle or virtual DOM runtime. Components should be plain synchronous view functions: load data in the handler or route loader, then pass the data into JSX.
 
 ## Layouts and nested views
 
@@ -67,7 +67,7 @@ return reply.page(<ProjectsPage projects={projects} />, {
 })
 ```
 
-Datastar Kit does not need a framework-owned layout system for this. Your router or handler chooses which page function to call, and page functions choose their layouts.
+Datastar Kit does not need a framework-owned layout system for this. Your router or handler chooses which page function to call, and page functions choose their own layouts.
 
 ## Named layout slots
 
@@ -136,25 +136,19 @@ async function loadDashboard(request: Request) {
   return { user, projects, notifications }
 }
 
-type DashboardData = Awaited<ReturnType<typeof loadDashboard>>
-
-const DashboardPage = (props: DashboardData) => (
-  <DashboardLayout
-    title="Dashboard"
-    sidebar={<Sidebar user={props.user} />}
-  >
-    <ProjectList projects={props.projects} />
-    <Notifications items={props.notifications} />
-  </DashboardLayout>
-)
-
 export async function dashboardRoute(request: Request): Promise<Response> {
   const data = await loadDashboard(request)
-  return reply.page(<DashboardPage {...data} />, { title: 'Dashboard' })
+  return reply.page(
+    <DashboardLayout title="Dashboard" sidebar={<Sidebar user={data.user} />}>
+      <ProjectList projects={data.projects} />
+      <Notifications items={data.notifications} />
+    </DashboardLayout>,
+    { title: 'Dashboard' }
+  )
 }
 ```
 
-Avoid async JSX components for now:
+Avoid async JSX components:
 
 ```tsx
 // Avoid: hides I/O inside rendering and would require async HTML serialization.
@@ -206,18 +200,6 @@ const view = h(
 )
 
 const html = renderToString(view)
-```
-
-## Pages and patches
-
-Use views with `reply.page(...)` for full documents and `reply.patch(...)` for Datastar updates:
-
-```tsx
-return reply.page(<Counter />, {
-  head: <script type="module" src={DATASTAR_CDN} />
-})
-
-return reply.patch(<Count />)
 ```
 
 Next: [Signals](signals.md). Related: [Actions and responses](actions-and-responses.md), [Security](security.md).

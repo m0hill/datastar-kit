@@ -9,6 +9,7 @@ export default defineConfig({
     nav: [
       { text: "Guide", link: "/docs" },
       { text: "API", link: "/reference/api" },
+      { text: "GitHub", link: "https://github.com/m0hill/datastar-kit" },
       { text: "Datastar", link: "https://data-star.dev/" }
     ],
     sidebar: [
@@ -50,7 +51,7 @@ export default defineConfig({
       }
     ],
     socialLinks: [
-      { icon: "github", link: "https://github.com/starfederation/datastar" }
+      { icon: "github", link: "https://github.com/m0hill/datastar-kit" }
     ],
     search: {
       provider: "local"
