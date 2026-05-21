@@ -28,7 +28,7 @@ describe("Datastar SSE encoding", () => {
 
   it("encodes element removal through patch options", () => {
     expect(patchElements("", { selector: "#target", mode: "remove" })).toBe(
-      "event: datastar-patch-elements\ndata: selector #target\ndata: mode remove\ndata: elements \n\n"
+      "event: datastar-patch-elements\ndata: selector #target\ndata: mode remove\n\n"
     )
   })
 

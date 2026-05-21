@@ -63,7 +63,7 @@ describe("reply direct Datastar responses", () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
-    expect(await response.text()).toBe('window.location.href = "/dashboard?from=login#top"')
+    expect(await response.text()).toBe('setTimeout(() => { window.location.href = "/dashboard?from=login#top" })')
   })
 
   it("allows navigation to explicit origin allowlists only", async () => {
@@ -72,7 +72,7 @@ describe("reply direct Datastar responses", () => {
       allowedOrigins: ["https://docs.example"]
     })
 
-    expect(await response.text()).toBe('window.location.href = "https://docs.example/start"')
+    expect(await response.text()).toBe('setTimeout(() => { window.location.href = "https://docs.example/start" })')
     expect(() => reply.navigate("https://evil.example/phish", { baseUrl: "https://app.example" })).toThrow(reply.NavigationUrlError)
     expect(() => reply.navigate("javascript:alert(1)", { baseUrl: "https://app.example" })).toThrow(reply.NavigationUrlError)
     expect(() => reply.navigate("/safe\nSet-Cookie: bad", { baseUrl: "https://app.example" })).toThrow(reply.NavigationUrlError)

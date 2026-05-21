@@ -154,7 +154,9 @@ export const patchElements = (elements: string, options: PatchElementsOptions = 
     lines.push({ key: "useViewTransition", value: "true" })
   }
 
-  lines.push(...dataLines("elements", elements))
+  if (options.mode !== "remove") {
+    lines.push(...dataLines("elements", elements))
+  }
 
   return serializeEvent(PATCH_ELEMENTS_EVENT, options, lines)
 }

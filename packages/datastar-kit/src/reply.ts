@@ -476,7 +476,7 @@ export const directScript = (
  * @param url Relative or allowlisted absolute URL to navigate to.
  * @param options Navigation and script options.
  * @param init Native response options excluding status fields.
- * @returns A `200` direct JavaScript `Response` that assigns `window.location.href`.
+ * @returns A `200` direct JavaScript `Response` that schedules a `window.location.href` assignment.
  * @throws {@link NavigationUrlError} When the URL is malformed, non-HTTP(S), or cross-origin without being allowlisted.
  */
 export const navigate = (
@@ -486,5 +486,5 @@ export const navigate = (
 ): Response => {
   const { baseUrl, allowedOrigins, ...scriptOptions } = options
   const safeUrl = safeNavigationUrl(url, { baseUrl, allowedOrigins })
-  return directScript(`window.location.href = ${JSON.stringify(safeUrl)}`, scriptOptions, init)
+  return directScript(`setTimeout(() => { window.location.href = ${JSON.stringify(safeUrl)} })`, scriptOptions, init)
 }

@@ -14,6 +14,18 @@ describe("additional Datastar SDK fixtures", () => {
     expect(patchSignals({ one: "first\n signal", two: "second signal" })).toBe(fixture("patchSignalsWithMultilineSignals"))
   })
 
+  it("matches remove-elements fixtures through remove mode", () => {
+    expect(
+      patchElements("", {
+        id: "event1",
+        retry: 2000,
+        selector: "#target",
+        mode: "remove",
+        useViewTransition: true
+      })
+    ).toBe(fixture("removeElementsWithAllOptions"))
+  })
+
   it("matches remove-signals fixtures through explicit null patches", () => {
     expect(patchSignals({ one: null })).toBe(fixture("removeSignalsWithDefaults"))
     expect(patchSignals({ one: null, two: { alpha: null } }, { id: "event1", retry: 2000 })).toBe(
