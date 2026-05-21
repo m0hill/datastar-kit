@@ -205,7 +205,7 @@ Open <http://127.0.0.1:3000>.
 
 ## Documentation
 
-Longer-form documentation lives in the VitePress site at [`../docs`](../docs).
+Longer-form documentation lives in the VitePress site at [`../website`](../website).
 
 ## Related Work
 

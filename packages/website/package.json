@@ -1,5 +1,5 @@
 {
-  "name": "@datastar-kit/docs",
+  "name": "@datastar-kit/website",
   "private": true,
   "type": "module",
   "scripts": {

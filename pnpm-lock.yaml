@@ -56,7 +56,7 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
 
-  packages/docs:
+  packages/website:
     devDependencies:
       '@types/node':
         specifier: ^24.10.1
@@ -64,9 +64,6 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
-      vite:
-        specifier: ^8.0.13
-        version: 8.0.13(@types/node@24.12.4)(yaml@2.9.0)
       vitepress:
         specifier: ^1.6.4
         version: 1.6.4(@algolia/client-search@5.52.1)(@types/node@24.12.4)(lightningcss@1.32.0)(postcss@8.5.14)(search-insights@2.17.3)(typescript@5.9.3)

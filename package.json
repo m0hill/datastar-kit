@@ -4,15 +4,15 @@
   "type": "module",
   "packageManager": "pnpm@10.33.4",
   "scripts": {
-    "build": "pnpm --filter datastar-kit build && pnpm --filter @datastar-kit/example-hono-counter build:only && pnpm --filter @datastar-kit/docs build",
+    "build": "pnpm --filter datastar-kit build && pnpm --filter @datastar-kit/example-hono-counter build:only && pnpm --filter @datastar-kit/website build",
     "check": "pnpm run build && pnpm run typecheck && pnpm run test",
-    "dev:docs": "pnpm --filter @datastar-kit/docs dev",
+    "dev:docs": "pnpm --filter @datastar-kit/website dev",
     "dev:hono-counter": "pnpm --filter @datastar-kit/example-hono-counter dev",
-    "docs:build": "pnpm --filter @datastar-kit/docs build",
-    "docs:preview": "pnpm --filter @datastar-kit/docs preview",
+    "docs:build": "pnpm --filter @datastar-kit/website build",
+    "docs:preview": "pnpm --filter @datastar-kit/website preview",
     "examples:check": "pnpm --filter @datastar-kit/example-hono-counter check",
     "test": "pnpm --filter datastar-kit test",
-    "typecheck": "pnpm --filter datastar-kit typecheck && pnpm --filter @datastar-kit/example-hono-counter typecheck && pnpm --filter @datastar-kit/docs typecheck"
+    "typecheck": "pnpm --filter datastar-kit typecheck && pnpm --filter @datastar-kit/example-hono-counter typecheck && pnpm --filter @datastar-kit/website typecheck"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
