@@ -26,12 +26,24 @@ pnpm run dev:elysia-layout
 
 Open `http://localhost:3000`.
 
+## Deno searchable list
+
+`examples/deno-search-list` is a Deno app using `Deno.serve(...)`, `@std/http` routing, Tailwind CSS, Datastar search patches, and `mode: 'append'` for adding list items.
+
+Run it from the repository root with:
+
+```sh
+pnpm run dev:deno-search-list
+```
+
+Open `http://localhost:3000`.
+
 ## Adding examples
 
 When adding a new example:
 
 - make it a standalone workspace package under `examples/*`;
-- keep dependencies in that example's `package.json`;
+- keep runtime dependencies in that example's `package.json`, `deno.json`, or equivalent runtime config;
 - document what the example demonstrates in its own README;
 - add root scripts for `dev:*` and checks when useful;
 - link it from this page and the package README.

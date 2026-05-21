@@ -187,11 +187,13 @@ const html = renderToString(view)
 Standalone examples live under `examples/*` in the repository workspace:
 
 - `examples/hono-counter` — a minimal Hono counter using TSX views, Datastar action helpers, and `reply.*` responses.
+- `examples/deno-search-list` — a Deno app using standard HTTP routing, Tailwind CSS, search patches, and append-based list updates.
 
 From the repository root:
 
 ```sh
 pnpm run dev:hono-counter
+pnpm run dev:deno-search-list
 ```
 
 Open <http://127.0.0.1:3000>.
