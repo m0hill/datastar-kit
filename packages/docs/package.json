@@ -1,0 +1,17 @@
+{
+  "name": "@datastar-kit/docs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vitepress build .",
+    "check": "pnpm run build",
+    "dev": "vitepress dev .",
+    "preview": "vitepress preview .",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3",
+    "vitepress": "^1.6.4"
+  }
+}

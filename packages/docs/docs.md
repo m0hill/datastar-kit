@@ -1,6 +1,6 @@
 # Datastar Kit documentation
 
-This is the longer-form documentation for Datastar Kit. Start with the package [README](../README.md) for install and a quick counter, then read these pages in order as needed.
+This is the longer-form documentation for Datastar Kit. Start with the package [README](index.md) for install and a quick counter, then read these pages in order as needed.
 
 ## Recommended reading order
 

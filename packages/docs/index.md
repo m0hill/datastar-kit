@@ -193,7 +193,7 @@ const html = renderToString(view)
 
 Standalone examples live under `examples/*` in the repository workspace:
 
-- [`examples/hono-counter`](../../examples/hono-counter) — a minimal Hono counter using TSX views, Datastar action helpers, and `reply.*` responses.
+- `examples/hono-counter` — a minimal Hono counter using TSX views, Datastar action helpers, and `reply.*` responses.
 
 From the repository root:
 
@@ -205,7 +205,7 @@ Open <http://127.0.0.1:3000>.
 
 ## Documentation
 
-Longer-form documentation lives in the VitePress site at [`../docs`](../docs).
+Longer-form documentation starts at [the documentation index](docs.md).
 
 ## Related Work
 
