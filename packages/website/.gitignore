@@ -2,5 +2,6 @@ node_modules/
 dist/
 coverage/
 *.tsbuildinfo
+.wrangler/
 .vitepress/cache/
 .vitepress/dist/

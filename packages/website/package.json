@@ -5,13 +5,16 @@
   "scripts": {
     "build": "vitepress build .",
     "check": "pnpm run build",
+    "deploy": "pnpm run build && wrangler deploy",
     "dev": "vitepress dev .",
     "preview": "vitepress preview .",
+    "preview:cloudflare": "pnpm run build && wrangler dev",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
     "typescript": "^5.9.3",
-    "vitepress": "^1.6.4"
+    "vitepress": "^1.6.4",
+    "wrangler": "^4.93.0"
   }
 }
