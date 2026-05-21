@@ -1,4 +1,4 @@
-# datastar-kit
+# Getting Started
 
 Datastar Kit is an independent TypeScript companion SDK for building server-driven Datastar UI with Web Standard `Request` and `Response` primitives. It gives you typed helpers for Datastar attributes, actions, signals, SSE events, and server-rendered HTML in any fetch-compatible server or router.
 
