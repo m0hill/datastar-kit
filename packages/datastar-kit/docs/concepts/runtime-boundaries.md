@@ -1,6 +1,6 @@
-# Runtime boundaries in Web Standards applications
+# Runtime boundaries
 
-Datastar Kit does not expose a public runtime service catalog. Normal handlers use explicit SDK helpers and app-owned services/resources:
+Datastar Kit is an SDK, not an application framework. Normal handlers use explicit SDK helpers and app-owned services/resources:
 
 ```ts
 const input = await read.signals(request, FormSchema)
@@ -8,17 +8,24 @@ await store.save(input)
 return reply.done()
 ```
 
-## App-owned services
+## What Datastar Kit owns
 
-Use your application framework or plain module code for domain capabilities:
+- Datastar attribute/action/signal helpers through `ds`.
+- Server HTML nodes, JSX runtime glue, escaping, and `renderToString(...)`.
+- Datastar signal decoding from native `Request` values.
+- Datastar-compatible `Response` helpers through `reply`.
+- SSE event chunk helpers through `event` and low-level `datastar-kit/sse` encoders.
 
-- databases;
-- stores;
-- sessions;
-- queues;
-- caches;
-- broker subscriptions;
-- request-local app context.
+## What your app owns
+
+Use your application framework or plain module code for domain/runtime capabilities:
+
+- routing and middleware;
+- authentication, sessions, CSRF, and rate limits;
+- databases, stores, queues, caches, and broker subscriptions;
+- request-local app context;
+- deployment adapters and process lifecycle;
+- logging, tracing, metrics, and OpenTelemetry setup.
 
 Datastar Kit should not wrap pure rendering, response construction, signal decoding, config, or live-query hubs in public runtime services.
 
@@ -38,10 +45,8 @@ return reply.patch(view)
 return reply.signals({ saved: true })
 return reply.stream([event.patch(view)])
 return reply.stream(events, { heartbeat: { intervalMs: 15_000 } })
-return reply.navigate("/dashboard")
+return reply.navigate('/dashboard')
 return reply.done()
 ```
 
-## Live resources
-
-Apps own invalidation resources directly. An in-memory set of subscribers, a database notification channel, Redis, NATS, or another broker can all adapt to an `AsyncIterable` of triggers and stream events with `reply.stream(...)`.
+Next: [HTML and JSX](../guides/html-and-jsx.md). Related: [Security](../guides/security.md), [Architecture](../reference/architecture.md).

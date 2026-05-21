@@ -1,8 +1,18 @@
-# Backend-state and CQRS programming model
+# Programming model
 
-Datastar Kit applications should be designed as backend-source-of-truth systems. Datastar gives the browser a small runtime for events, requests, and DOM/signal patches; it should not become the application state store.
+Datastar Kit is for server-driven UI where backend state is authoritative. Datastar gives the browser a small runtime for events, requests, signals, and DOM/signal patches; it should not become your application state store.
 
-The default mental model is CQRS:
+Keep the mental model simple:
+
+- backend state is authoritative;
+- browser signals are sparse request input and UI feedback state;
+- server-rendered HTML is the patch payload;
+- SSE is the primary streaming transport;
+- client-side complexity should stay minimal.
+
+## CQRS-shaped flow
+
+The default shape is close to CQRS:
 
 - **Pages / query views** render current backend state.
 - **Commands** receive user intent, validate input, mutate backend state, and return `204` or local feedback patches.
@@ -33,11 +43,13 @@ Guidelines:
 
 ## Action URLs and routing
 
-Examples export plain fetch-compatible handlers and generate action URLs with helpers such as `ds.post('/increment')` or `ds.get(ds.queryUrl('/search', { q }))`. Your framework owns route registration.
+Examples export framework or fetch-compatible handlers and generate action URLs with helpers such as `ds.post('/increment')` or `ds.get(ds.queryUrl('/search', { q }))`. Your framework owns route registration.
 
-Suggested names:
+Suggested route names:
 
-- `POST /todos/add` — command
-- `POST /todos/:id/toggle` — command
-- `GET /todos/list` — query patch
-- `GET /todos/live` — live stream recipe
+- `POST /todos/add` — command;
+- `POST /todos/:id/toggle` — command;
+- `GET /todos/list` — query patch;
+- `GET /todos/live` — live stream recipe.
+
+Next: [Runtime boundaries](runtime-boundaries.md). Related: [Actions and responses](../guides/actions-and-responses.md), [Realtime streams](../guides/realtime.md).

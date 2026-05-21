@@ -25,4 +25,4 @@ Run the example:
 pnpm run dev:hono-counter
 ```
 
-Package documentation starts at [`packages/datastar-kit/README.md`](packages/datastar-kit/README.md).
+Package documentation starts at [`packages/datastar-kit/README.md`](packages/datastar-kit/README.md), with longer-form docs at [`packages/datastar-kit/docs/README.md`](packages/datastar-kit/docs/README.md).

@@ -191,17 +191,21 @@ const html = renderToString(view)
 
 ## Examples
 
-Standalone examples live under `examples/*` in the repository workspace. The first example is:
+Standalone examples live under `examples/*` in the repository workspace:
 
-- [`examples/fetch-counter`](../../examples/fetch-counter) — a plain Fetch-style `Request -> Response` counter using TSX views and a tiny local Node adapter for development.
+- [`examples/hono-counter`](../../examples/hono-counter) — a minimal Hono counter using TSX views, Datastar action helpers, and `reply.*` responses.
 
 From the repository root:
 
 ```sh
-pnpm run dev:fetch-counter
+pnpm run dev:hono-counter
 ```
 
-The default address is `http://127.0.0.1:3000`. Override it with `PORT=4000` or `HOST=0.0.0.0`.
+Open <http://127.0.0.1:3000>.
+
+## Documentation
+
+Longer-form documentation starts at [`docs/README.md`](docs/README.md).
 
 ## Related Work
 

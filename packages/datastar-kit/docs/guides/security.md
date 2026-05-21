@@ -1,4 +1,4 @@
-# Security boundaries
+# Security
 
 Datastar Kit does not provide a public auth/session/CSRF subsystem. Those policies belong to the application router, middleware, or app-owned services.
 
@@ -12,4 +12,11 @@ A safe Datastar command should:
 
 Schema validation proves shape, not authority. Handlers must still check ownership and permissions on the backend.
 
-Use `reply.navigate(...)` for Datastar-driven navigation so untrusted URLs are normalized and origin checked.
+## Trust boundaries
+
+- Use `unsafeHtml(...)` only for trusted or sanitized HTML.
+- Use `reply.directScript(...)` only for trusted script text.
+- Prefer `reply.navigate(...)` for Datastar-driven navigation so untrusted URLs are normalized and origin checked.
+- Treat browser signals as user input, not as durable state or authority.
+
+Next: [Deployment](deployment.md). Related: [Validation and errors](validation-and-errors.md), [Actions and responses](actions-and-responses.md).

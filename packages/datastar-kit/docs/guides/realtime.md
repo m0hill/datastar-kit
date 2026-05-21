@@ -1,11 +1,11 @@
-# Realtime live query recipes
+# Realtime streams
 
 Realtime in Datastar Kit is current-state oriented. A live view should not be a stream of fragile UI deltas. It should reload current backend state on connect and after app-owned invalidation triggers.
 
 Core intentionally does not export a `live` namespace, PubSub, broker abstraction, or runtime service. Build the recipe locally and return it with `reply.stream(...)`.
 
 ```ts
-import { event, reply } from "datastar-kit"
+import { event, reply } from 'datastar-kit'
 
 async function* liveEvents() {
   yield event.patch(renderCurrentState())
@@ -15,7 +15,7 @@ async function* liveEvents() {
 }
 
 return reply.stream(liveEvents(), {
-  heartbeat: { intervalMs: 15_000, comment: "live" }
+  heartbeat: { intervalMs: 15_000, comment: 'live' }
 })
 ```
 
@@ -40,7 +40,7 @@ Heartbeat comments are transport-level response behavior, so they live on `reply
 
 ```ts
 reply.stream(events, {
-  heartbeat: { intervalMs: 15_000, comment: "live" }
+  heartbeat: { intervalMs: 15_000, comment: 'live' }
 })
 ```
 
@@ -48,4 +48,6 @@ Use `initialDelayMs` when finite tests or one-shot streams should not emit a lea
 
 ## Deployment and scaling notes
 
-A live view usually means one SSE connection per browser tab or view. Configure reverse proxies to disable buffering for `text/event-stream`, keep idle timeouts longer than the heartbeat interval, and preserve streaming flush behavior.
+A live view usually means one SSE connection per browser tab or active view. Configure reverse proxies to disable buffering for `text/event-stream`, keep idle timeouts longer than the heartbeat interval, and preserve streaming flush behavior.
+
+Next: [Security](security.md). Related: [Deployment](deployment.md), [Programming model](../concepts/programming-model.md).
