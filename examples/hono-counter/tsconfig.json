@@ -1,6 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "datastar-kit",
     "types": ["node"],
     "paths": {
       "datastar-kit": ["../../packages/datastar-kit/src/index.ts"],
