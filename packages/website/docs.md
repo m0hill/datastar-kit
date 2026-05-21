@@ -7,7 +7,7 @@ This is the longer-form documentation for Datastar Kit. Start with the package [
 ### 1. Concepts
 
 1. [Programming model](concepts/programming-model.md) — backend-owned state, commands, queries, and the Datastar mental model.
-2. [Runtime boundaries](concepts/runtime-boundaries.md) — what Datastar Kit owns and what your app/framework owns.
+2. [Runtime boundaries](concepts/runtime-boundaries.md) — how Datastar Kit fits into your app's handlers and services.
 
 ### 2. Core guides
 
@@ -27,7 +27,7 @@ This is the longer-form documentation for Datastar Kit. Start with the package [
 ### 4. Reference
 
 - [API reference](reference/api.md) — public modules, root exports, and explicit subpaths.
-- [Architecture](reference/architecture.md) — source layout and non-goals for contributors.
+- [Architecture](reference/architecture.md) — source layout and contributor-oriented design notes.
 
 ## Documentation style
 

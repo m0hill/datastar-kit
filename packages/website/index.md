@@ -1,6 +1,6 @@
 # datastar-kit
 
-Datastar Kit is an independent TypeScript companion SDK for building server-driven Datastar UI with Web Standard `Request` and `Response` primitives. It gives you typed helpers for Datastar attributes, actions, signals, SSE events, and server-rendered HTML while your application framework owns routing, middleware, auth, deployment, and lifecycle.
+Datastar Kit is an independent TypeScript companion SDK for building server-driven Datastar UI with Web Standard `Request` and `Response` primitives. It gives you typed helpers for Datastar attributes, actions, signals, SSE events, and server-rendered HTML in any fetch-compatible server or router.
 
 ## Features
 
@@ -9,7 +9,7 @@ Datastar Kit is an independent TypeScript companion SDK for building server-driv
 - **Native responses** — `reply` returns standard `Response` objects for pages, patches, signals, streams, direct responses, and command completion.
 - **SSE by default** — Normal Datastar updates use `text/event-stream`; direct responses stay available as explicit escape hatches.
 - **Optional schema validation** — Read parsed JSON object signal state directly, or validate it with any Standard Schema-compatible validator.
-- **Web standards only** — No router, middleware runtime, dependency injection container, client store, or framework adapter in core.
+- **Framework-friendly** — Compose the helpers inside Hono, Workers, Bun, Deno, Node, or any fetch-compatible HTTP layer.
 
 ## Installation
 
@@ -17,7 +17,7 @@ Datastar Kit is an independent TypeScript companion SDK for building server-driv
 npm i datastar-kit
 ```
 
-Datastar Kit does not bundle the Datastar browser runtime. Include Datastar in your page explicitly, either from a pinned CDN URL or by serving your own copy of `@starfederation/datastar`.
+Add the Datastar browser runtime to your page from a pinned CDN URL or by serving your own copy of `@starfederation/datastar`.
 
 ```tsx
 const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
