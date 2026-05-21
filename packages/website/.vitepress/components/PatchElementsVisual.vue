@@ -15,7 +15,15 @@ interface DomLine {
   readonly text: string
   readonly depth: number
   readonly tone?: "target" | "payload" | "muted" | "changed"
-  readonly badge?: string
+  readonly note?: string
+}
+
+type DiffKind = "context" | "remove" | "add"
+
+interface DomDiffLine extends DomLine {
+  readonly kind: DiffKind
+  readonly oldNumber?: number
+  readonly newNumber?: number
 }
 
 interface ModeInfo {
@@ -30,10 +38,75 @@ interface ModeInfo {
   readonly code: string
 }
 
+const isSameDomLine = (left: DomLine, right: DomLine): boolean =>
+  left.text === right.text && left.depth === right.depth
+
+const buildDomDiff = (before: readonly DomLine[], after: readonly DomLine[]): readonly DomDiffLine[] => {
+  const scores: number[][] = Array.from({ length: before.length + 1 }, () => Array(after.length + 1).fill(0))
+
+  for (let i = before.length - 1; i >= 0; i -= 1) {
+    for (let j = after.length - 1; j >= 0; j -= 1) {
+      scores[i][j] = isSameDomLine(before[i], after[j])
+        ? scores[i + 1][j + 1] + 1
+        : Math.max(scores[i + 1][j], scores[i][j + 1])
+    }
+  }
+
+  const diff: DomDiffLine[] = []
+  let oldIndex = 0
+  let newIndex = 0
+  let oldNumber = 1
+  let newNumber = 1
+
+  while (oldIndex < before.length || newIndex < after.length) {
+    if (
+      oldIndex < before.length &&
+      newIndex < after.length &&
+      isSameDomLine(before[oldIndex], after[newIndex])
+    ) {
+      diff.push({
+        ...before[oldIndex],
+        kind: "context",
+        oldNumber,
+        newNumber
+      })
+      oldIndex += 1
+      newIndex += 1
+      oldNumber += 1
+      newNumber += 1
+      continue
+    }
+
+    if (
+      oldIndex < before.length &&
+      (newIndex >= after.length || scores[oldIndex + 1][newIndex] >= scores[oldIndex][newIndex + 1])
+    ) {
+      diff.push({
+        ...before[oldIndex],
+        kind: "remove",
+        oldNumber
+      })
+      oldIndex += 1
+      oldNumber += 1
+      continue
+    }
+
+    diff.push({
+      ...after[newIndex],
+      kind: "add",
+      newNumber
+    })
+    newIndex += 1
+    newNumber += 1
+  }
+
+  return diff
+}
+
 const beforeLines: readonly DomLine[] = [
   { depth: 0, text: '<main id="app">', tone: "muted" },
   { depth: 1, text: '<nav id="filters">...</nav>', tone: "muted" },
-  { depth: 1, text: '<section id="target" class="panel">', tone: "target", badge: "matched target" },
+  { depth: 1, text: '<section id="target" class="panel">', tone: "target", note: "matched target" },
   { depth: 2, text: "<h2>Current view</h2>" },
   { depth: 2, text: "<p>Rendered on page load.</p>" },
   { depth: 1, text: "</section>", tone: "target" },
@@ -76,7 +149,7 @@ const modes: Record<PatchMode, ModeInfo> = {
     resultLines: [
       { depth: 0, text: '<main id="app">', tone: "muted" },
       { depth: 1, text: '<nav id="filters">...</nav>', tone: "muted" },
-      { depth: 1, text: '<section id="target" class="panel is-live">', tone: "changed", badge: "morphed target" },
+      { depth: 1, text: '<section id="target" class="panel is-live">', tone: "changed", note: "morphed target" },
       { depth: 2, text: "<h2>Server view</h2>", tone: "payload" },
       { depth: 2, text: "<p>Fresh HTML from the handler.</p>", tone: "payload" },
       { depth: 1, text: "</section>", tone: "changed" },
@@ -96,7 +169,7 @@ const modes: Record<PatchMode, ModeInfo> = {
     resultLines: [
       { depth: 0, text: '<main id="app">', tone: "muted" },
       { depth: 1, text: '<nav id="filters">...</nav>', tone: "muted" },
-      { depth: 1, text: '<section id="target" class="panel">', tone: "target", badge: "outer shell kept" },
+      { depth: 1, text: '<section id="target" class="panel">', tone: "target", note: "outer shell kept" },
       { depth: 2, text: "<h2>Server view</h2>", tone: "payload" },
       { depth: 2, text: "<p>Only the children are patched.</p>", tone: "payload" },
       { depth: 1, text: "</section>", tone: "target" },
@@ -116,7 +189,7 @@ const modes: Record<PatchMode, ModeInfo> = {
     resultLines: [
       { depth: 0, text: '<main id="app">', tone: "muted" },
       { depth: 1, text: '<nav id="filters">...</nav>', tone: "muted" },
-      { depth: 1, text: '<article id="replacement" class="panel">', tone: "payload", badge: "new element" },
+      { depth: 1, text: '<article id="replacement" class="panel">', tone: "payload", note: "new element" },
       { depth: 2, text: "<h2>Replacement node</h2>", tone: "payload" },
       { depth: 2, text: "<p>The old target is discarded.</p>", tone: "payload" },
       { depth: 1, text: "</article>", tone: "payload" },
@@ -136,8 +209,8 @@ const modes: Record<PatchMode, ModeInfo> = {
     resultLines: [
       { depth: 0, text: '<main id="app">', tone: "muted" },
       { depth: 1, text: '<nav id="filters">...</nav>', tone: "muted" },
-      { depth: 1, text: '<section id="target" class="panel">', tone: "target", badge: "container kept" },
-      { depth: 2, text: '<aside id="notice" class="notice">', tone: "payload", badge: "first child" },
+      { depth: 1, text: '<section id="target" class="panel">', tone: "target", note: "container kept" },
+      { depth: 2, text: '<aside id="notice" class="notice">', tone: "payload", note: "first child" },
       { depth: 3, text: "<p>Saved by the server.</p>", tone: "payload" },
       { depth: 2, text: "</aside>", tone: "payload" },
       { depth: 2, text: "<h2>Current view</h2>" },
@@ -159,10 +232,10 @@ const modes: Record<PatchMode, ModeInfo> = {
     resultLines: [
       { depth: 0, text: '<main id="app">', tone: "muted" },
       { depth: 1, text: '<nav id="filters">...</nav>', tone: "muted" },
-      { depth: 1, text: '<section id="target" class="panel">', tone: "target", badge: "container kept" },
+      { depth: 1, text: '<section id="target" class="panel">', tone: "target", note: "container kept" },
       { depth: 2, text: "<h2>Current view</h2>" },
       { depth: 2, text: "<p>Rendered on page load.</p>" },
-      { depth: 2, text: '<aside id="notice" class="notice">', tone: "payload", badge: "last child" },
+      { depth: 2, text: '<aside id="notice" class="notice">', tone: "payload", note: "last child" },
       { depth: 3, text: "<p>Saved by the server.</p>", tone: "payload" },
       { depth: 2, text: "</aside>", tone: "payload" },
       { depth: 1, text: "</section>", tone: "target" },
@@ -171,7 +244,7 @@ const modes: Record<PatchMode, ModeInfo> = {
     ],
     useWhen: "Adding rows to a list, messages to a thread, or details to an existing region.",
     remember: "Target the parent container, not the item that should come before the new payload.",
-    code: 'reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })'
+    code: 'reply.patch(<Notice />, { selector: "#target", mode: "append" })'
   },
   before: {
     mode: "before",
@@ -182,7 +255,7 @@ const modes: Record<PatchMode, ModeInfo> = {
     resultLines: [
       { depth: 0, text: '<main id="app">', tone: "muted" },
       { depth: 1, text: '<nav id="filters">...</nav>', tone: "muted" },
-      { depth: 1, text: '<aside id="notice" class="notice">', tone: "payload", badge: "sibling before" },
+      { depth: 1, text: '<aside id="notice" class="notice">', tone: "payload", note: "sibling before" },
       { depth: 2, text: "<p>Saved by the server.</p>", tone: "payload" },
       { depth: 1, text: "</aside>", tone: "payload" },
       { depth: 1, text: '<section id="target" class="panel">', tone: "target" },
@@ -209,7 +282,7 @@ const modes: Record<PatchMode, ModeInfo> = {
       { depth: 2, text: "<h2>Current view</h2>" },
       { depth: 2, text: "<p>Rendered on page load.</p>" },
       { depth: 1, text: "</section>", tone: "target" },
-      { depth: 1, text: '<aside id="notice" class="notice">', tone: "payload", badge: "sibling after" },
+      { depth: 1, text: '<aside id="notice" class="notice">', tone: "payload", note: "sibling after" },
       { depth: 2, text: "<p>Saved by the server.</p>", tone: "payload" },
       { depth: 1, text: "</aside>", tone: "payload" },
       { depth: 1, text: '<footer id="status">Idle</footer>', tone: "muted" },
@@ -240,6 +313,7 @@ const modes: Record<PatchMode, ModeInfo> = {
 const modeOrder: readonly PatchMode[] = ["outer", "inner", "replace", "prepend", "append", "before", "after", "remove"]
 const activeModeName = ref<PatchMode>("outer")
 const activeMode = computed(() => modes[activeModeName.value])
+const domDiffLines = computed(() => buildDomDiff(beforeLines, activeMode.value.resultLines))
 
 const eventLines = computed(() => {
   const lines = ["event: datastar-patch-elements"]
@@ -303,8 +377,8 @@ const eventLines = computed(() => {
           <h2 id="mode-lab-title">Select a mode to see the exact target, payload, and result</h2>
         </div>
         <p>
-          The same starting DOM is used for every mode. The yellow line is the matched target. The green lines are
-          server-rendered payload inserted or morphed by Datastar.
+          The same starting DOM is used for every mode. Red rows leave the document, green rows enter it, and neutral
+          rows are unchanged context around the patch.
         </p>
       </div>
 
@@ -338,25 +412,6 @@ const eventLines = computed(() => {
       </div>
 
       <div class="patch-workbench">
-        <article class="visual-panel">
-          <div class="visual-panel__header">
-            <span>Before</span>
-            <strong>Browser DOM</strong>
-          </div>
-          <div class="dom-tree" aria-label="DOM before patch">
-            <div
-              v-for="(line, index) in beforeLines"
-              :key="`before-${index}`"
-              class="dom-line"
-              :class="line.tone ? `dom-line--${line.tone}` : undefined"
-              :style="{ paddingLeft: `${line.depth * 18 + 10}px` }"
-            >
-              <code>{{ line.text }}</code>
-              <span v-if="line.badge" class="dom-badge">{{ line.badge }}</span>
-            </div>
-          </div>
-        </article>
-
         <article class="visual-panel visual-panel--event">
           <div class="visual-panel__header">
             <span>Patch</span>
@@ -369,21 +424,23 @@ const eventLines = computed(() => {
           </div>
         </article>
 
-        <article class="visual-panel">
+        <article class="visual-panel visual-panel--diff">
           <div class="visual-panel__header">
-            <span>After</span>
-            <strong>Updated DOM</strong>
+            <span>DOM change</span>
+            <strong>mode: {{ activeMode.mode }}</strong>
           </div>
-          <div class="dom-tree" aria-label="DOM after patch">
+          <div class="diff-table" aria-label="DOM diff after patch">
             <div
-              v-for="(line, index) in activeMode.resultLines"
-              :key="`${activeMode.mode}-${index}`"
-              class="dom-line"
-              :class="line.tone ? `dom-line--${line.tone}` : undefined"
-              :style="{ paddingLeft: `${line.depth * 18 + 10}px` }"
+              v-for="(line, index) in domDiffLines"
+              :key="`${activeMode.mode}-diff-${index}`"
+              class="diff-row"
+              :class="`diff-row--${line.kind}`"
             >
-              <code>{{ line.text }}</code>
-              <span v-if="line.badge" class="dom-badge">{{ line.badge }}</span>
+              <span class="diff-line-number">{{ line.oldNumber ?? '' }}</span>
+              <span class="diff-line-number">{{ line.newNumber ?? '' }}</span>
+              <span class="diff-marker">{{ line.kind === 'add' ? '+' : line.kind === 'remove' ? '-' : ' ' }}</span>
+              <code class="diff-code" :style="{ paddingLeft: `${line.depth * 18}px` }">{{ line.text }}</code>
+              <span v-if="line.note" class="diff-note">{{ line.note }}</span>
             </div>
           </div>
         </article>
@@ -405,41 +462,42 @@ const eventLines = computed(() => {
 
 <style scoped>
 .patch-visual {
-  --patch-accent: #0f766e;
-  --patch-accent-strong: #115e59;
-  --patch-target: #c2410c;
-  --patch-payload: #15803d;
-  --patch-changed: #6d28d9;
+  --patch-accent: var(--vp-c-brand-1);
+  --patch-accent-strong: var(--vp-c-brand-2);
+  --patch-target: var(--vp-c-danger-1);
+  --patch-payload: var(--vp-c-green-1);
+  --patch-changed: var(--vp-c-purple-1);
   --patch-panel: var(--vp-c-bg-soft);
   --patch-line: var(--vp-c-divider);
   display: grid;
   gap: 24px;
   margin: 28px 0;
+  font-family: var(--vp-font-family-base);
 }
 
 .patch-flow,
 .mode-lab {
   border: 1px solid var(--patch-line);
-  border-radius: 8px;
+  border-radius: 12px;
   background: var(--vp-c-bg);
-  box-shadow: 0 16px 42px rgb(15 23 42 / 8%);
 }
 
 .patch-flow {
-  padding: 18px;
+  padding: 24px;
 }
 
 .patch-flow__heading,
 .mode-lab__intro {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .patch-flow h2,
 .mode-lab h2,
 .mode-summary h3 {
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.25;
+  font-weight: 600;
 }
 
 .patch-flow p,
@@ -448,43 +506,45 @@ const eventLines = computed(() => {
 }
 
 .patch-eyebrow {
-  color: var(--patch-accent-strong);
+  color: var(--patch-accent);
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .flow-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin-top: 16px;
+  gap: 12px;
+  margin-top: 20px;
 }
 
 .flow-step {
-  min-height: 148px;
   border: 1px solid var(--patch-line);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--patch-panel);
-  padding: 14px;
+  padding: 18px;
 }
 
 .flow-step__number {
-  display: inline-grid;
+  display: inline-flex;
   width: 28px;
   height: 28px;
-  margin-bottom: 16px;
-  place-items: center;
+  margin-bottom: 14px;
+  align-items: center;
+  justify-content: center;
   border-radius: 999px;
-  background: var(--patch-accent);
-  color: white;
+  background: var(--vp-c-brand-soft);
+  color: var(--patch-accent);
   font-size: 13px;
   font-weight: 700;
 }
 
 .flow-step h3 {
-  margin: 0 0 8px;
-  font-size: 16px;
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 600;
 }
 
 .flow-step p {
@@ -499,9 +559,9 @@ const eventLines = computed(() => {
 
 .mode-lab__intro {
   grid-template-columns: minmax(0, 1.2fr) minmax(240px, 0.8fr);
-  padding: 20px;
+  padding: 24px;
   border-bottom: 1px solid var(--patch-line);
-  background: color-mix(in srgb, var(--patch-accent) 5%, var(--vp-c-bg));
+  background: var(--vp-c-bg-soft);
 }
 
 .mode-lab__intro > p {
@@ -514,37 +574,43 @@ const eventLines = computed(() => {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  padding: 16px 20px 0;
+  padding: 20px 24px 0;
 }
 
 .mode-tab {
-  min-height: 36px;
+  min-height: 34px;
   border: 1px solid var(--patch-line);
   border-radius: 8px;
   background: var(--vp-c-bg);
   color: var(--vp-c-text-1);
   cursor: pointer;
-  font-family: var(--vp-font-family-mono);
+  font-family: inherit;
   font-size: 13px;
-  font-weight: 650;
-  padding: 7px 11px;
+  font-weight: 600;
+  padding: 6px 12px;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
 }
 
 .mode-tab:hover {
-  border-color: var(--patch-accent);
+  border-color: var(--vp-c-brand-1);
+  color: var(--vp-c-brand-1);
 }
 
 .mode-tab--active {
-  border-color: var(--patch-accent);
-  background: var(--patch-accent);
-  color: white;
+  border-color: var(--vp-c-brand-1);
+  background: var(--vp-c-brand-1);
+  color: #fff;
+}
+
+.mode-tab--active:hover {
+  color: #fff;
 }
 
 .mode-summary {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 0.52fr);
-  gap: 18px;
-  padding: 18px 20px;
+  gap: 20px;
+  padding: 20px 24px;
   align-items: start;
 }
 
@@ -555,14 +621,14 @@ const eventLines = computed(() => {
 
 .mode-contracts {
   display: grid;
-  gap: 8px;
+  gap: 10px;
 }
 
 .mode-contracts span,
 .payload-preview,
 .mode-notes div {
   border: 1px solid var(--patch-line);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--patch-panel);
 }
 
@@ -570,21 +636,21 @@ const eventLines = computed(() => {
   display: block;
   color: var(--vp-c-text-2);
   font-size: 13px;
-  line-height: 1.45;
-  padding: 10px 12px;
+  line-height: 1.5;
+  padding: 10px 14px;
 }
 
 .patch-workbench {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 12px;
-  padding: 0 20px 20px;
+  gap: 20px;
+  padding: 0 24px 24px;
 }
 
 .visual-panel {
   min-width: 0;
   border: 1px solid var(--patch-line);
-  border-radius: 8px;
+  border-radius: 10px;
   background: var(--patch-panel);
   overflow: hidden;
 }
@@ -592,91 +658,140 @@ const eventLines = computed(() => {
 .visual-panel__header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 10px;
   border-bottom: 1px solid var(--patch-line);
-  background: var(--vp-c-bg);
-  padding: 10px 12px;
+  background: var(--vp-c-bg-alt);
+  padding: 12px 16px;
 }
 
 .visual-panel__header span {
   color: var(--vp-c-text-2);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .visual-panel__header strong {
   font-size: 13px;
+  font-weight: 600;
 }
 
-.dom-tree {
+.diff-table {
   display: grid;
-  gap: 6px;
-  padding: 12px;
+  overflow-x: auto;
+  padding: 8px 0;
 }
 
-.dom-line {
-  display: flex;
-  min-height: 32px;
-  min-width: 0;
+.diff-row {
+  display: grid;
+  grid-template-columns: 42px 42px 24px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  border: 1px solid color-mix(in srgb, var(--patch-line) 70%, transparent);
-  border-left: 4px solid transparent;
-  border-radius: 6px;
-  background: var(--vp-c-bg);
+  min-height: 30px;
+  border-left: 3px solid transparent;
   color: var(--vp-c-text-1);
-  font-size: 12px;
+  font-family: var(--vp-font-family-mono);
+  font-size: 13px;
   line-height: 1.35;
 }
 
-.dom-line code {
-  overflow-x: auto;
+.diff-row--context {
+  color: var(--vp-c-text-2);
+}
+
+.diff-row--remove {
+  border-left-color: var(--vp-c-danger-1);
+  background: color-mix(in srgb, var(--vp-c-danger-1) 15%, var(--vp-c-bg));
+}
+
+.diff-row--add {
+  border-left-color: var(--vp-c-green-1);
+  background: color-mix(in srgb, var(--vp-c-green-1) 15%, var(--vp-c-bg));
+}
+
+.diff-line-number {
+  height: 100%;
+  border-right: 1px solid color-mix(in srgb, var(--patch-line) 72%, transparent);
+  background: color-mix(in srgb, var(--vp-c-bg-soft) 80%, transparent);
+  color: var(--vp-c-text-3);
+  font-size: 12px;
+  line-height: 30px;
+  text-align: right;
+  user-select: none;
+  padding: 0 8px;
+}
+
+.diff-row--remove .diff-line-number {
+  background: color-mix(in srgb, var(--vp-c-danger-1) 10%, var(--vp-c-bg));
+}
+
+.diff-row--add .diff-line-number {
+  background: color-mix(in srgb, var(--vp-c-green-1) 10%, var(--vp-c-bg));
+}
+
+.diff-marker {
+  color: var(--vp-c-text-3);
+  font-weight: 800;
+  text-align: center;
+  user-select: none;
+}
+
+.diff-row--remove .diff-marker {
+  color: var(--vp-c-danger-1);
+}
+
+.diff-row--add .diff-marker {
+  color: var(--vp-c-green-1);
+}
+
+.diff-code {
+  min-width: 0;
+  overflow: hidden;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: inherit;
+  text-overflow: ellipsis;
+  white-space: pre;
+}
+
+.diff-note {
+  justify-self: end;
+  margin-right: 14px;
+  color: var(--vp-c-text-2);
+  font-family: var(--vp-font-family-base);
+  font-size: 11px;
+  font-weight: 700;
   white-space: nowrap;
 }
 
-.dom-line--muted {
-  color: var(--vp-c-text-2);
+.diff-row--remove .diff-note {
+  color: var(--vp-c-danger-1);
 }
 
-.dom-line--target {
-  border-left-color: var(--patch-target);
-  background: color-mix(in srgb, var(--patch-target) 9%, var(--vp-c-bg));
-}
-
-.dom-line--payload {
-  border-left-color: var(--patch-payload);
-  background: color-mix(in srgb, var(--patch-payload) 9%, var(--vp-c-bg));
-}
-
-.dom-line--changed {
-  border-left-color: var(--patch-changed);
-  background: color-mix(in srgb, var(--patch-changed) 9%, var(--vp-c-bg));
-}
-
-.dom-badge {
-  flex: none;
-  border-radius: 999px;
-  background: var(--vp-c-bg);
-  color: var(--vp-c-text-2);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 2px 7px;
+.diff-row--add .diff-note {
+  color: var(--vp-c-green-1);
 }
 
 .event-preview {
-  min-height: 156px;
+  min-height: 120px;
   margin: 0;
   border-radius: 0;
-  background: #111827;
-  color: #f8fafc;
+  background: var(--vp-c-bg-alt);
+  color: var(--vp-c-text-1);
   overflow-x: auto;
-  padding: 14px;
+  padding: 16px;
   white-space: pre;
+  font-family: var(--vp-font-family-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  border-bottom: 1px solid var(--patch-line);
 }
 
 .event-preview code {
   color: inherit;
+  font-family: inherit;
 }
 
 .payload-preview {
@@ -689,25 +804,29 @@ const eventLines = computed(() => {
 .payload-preview span,
 .mode-notes span {
   color: var(--patch-accent-strong);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
 }
 
 .payload-preview code {
   overflow-wrap: anywhere;
   white-space: normal;
+  font-family: var(--vp-font-family-mono);
+  font-size: 12px;
+  color: var(--vp-c-text-1);
 }
 
 .mode-notes {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
-  padding: 0 20px 20px;
+  padding: 0 24px 24px;
 }
 
 .mode-notes div {
-  padding: 14px;
+  padding: 16px;
 }
 
 .mode-notes p {
@@ -718,7 +837,6 @@ const eventLines = computed(() => {
 
 @media (max-width: 960px) {
   .flow-grid,
-  .patch-workbench,
   .mode-lab__intro,
   .mode-summary,
   .mode-notes {
@@ -740,13 +858,13 @@ const eventLines = computed(() => {
   .mode-summary,
   .patch-workbench,
   .mode-notes {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
   .mode-tabs {
-    padding-left: 12px;
-    padding-right: 12px;
+    padding-left: 16px;
+    padding-right: 16px;
   }
 
   .mode-tab {
