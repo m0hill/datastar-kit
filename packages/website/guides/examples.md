@@ -26,6 +26,18 @@ pnpm run dev:hono-modal
 
 Open `http://localhost:3000`.
 
+## Hono form validation
+
+`examples/hono-form-validation` shows `data-bind` form inputs, `@post(...)` submission, `read.signals(request, schema)` with Zod/Standard Schema, and signal patches for validation errors.
+
+Run it from the repository root with:
+
+```sh
+pnpm run dev:hono-form-validation
+```
+
+Open `http://localhost:3000`.
+
 ## Elysia layout
 
 `examples/elysia-layout` is a Bun/Elysia app focused on normal application structure: a shared shell, named layout slots (`sidebar`, `toolbar`, `children`), route-level data loading, and a Datastar form action that patches only the `#project-list` region.

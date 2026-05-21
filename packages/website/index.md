@@ -188,6 +188,7 @@ Standalone examples live under `examples/*` in the repository workspace:
 
 - `examples/hono-counter` — a minimal Hono counter using TSX views, Datastar action helpers, and `reply.*` responses.
 - `examples/hono-modal` — a Hono + TSX app showing a server-rendered native dialog controlled by Datastar signals.
+- `examples/hono-form-validation` — a Hono + TSX app showing signal binding and server-side validation.
 - `examples/deno-search-list` — a Deno app using standard HTTP routing, Tailwind CSS, search patches, and append-based list updates.
 
 From the repository root:
@@ -195,6 +196,7 @@ From the repository root:
 ```sh
 pnpm run dev:hono-counter
 pnpm run dev:hono-modal
+pnpm run dev:hono-form-validation
 pnpm run dev:deno-search-list
 ```
 
