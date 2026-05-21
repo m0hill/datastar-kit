@@ -1,5 +1,5 @@
 {
-  "name": "@datastar-kit/example-fetch-counter",
+  "name": "@datastar-kit/example-hono-counter",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,7 +11,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "datastar-kit": "workspace:*"
+    "@hono/node-server": "^2.0.3",
+    "datastar-kit": "workspace:*",
+    "hono": "^4.12.19"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
