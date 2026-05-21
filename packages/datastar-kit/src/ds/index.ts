@@ -1,4 +1,4 @@
-export { del as delete, get, patch, peek, post, put, queryUrl, setAll, toggleAll } from "./actions.js"
+export { ActionNameError, action, del as delete, get, patch, peek, post, put, queryUrl, setAll, toggleAll } from "./actions.js"
 export type { FetchActionOptions, FetchActionResponseOverrides, SignalFilter } from "./actions.js"
 
 export {

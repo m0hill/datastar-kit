@@ -93,6 +93,15 @@ const count = ds.signal<number>("count")
 <button {...ds.dataAttr("disabled", ds.expr`${count} >= ${10}`)}>+</button>
 ```
 
+For app-specific browser behavior that gets awkward as an inline expression, you can register a Datastar action in a browser module and call it from TSX with `ds.action(...)`.
+
+```tsx
+const modalOpen = ds.signal<boolean>("modalOpen")
+
+<button {...ds.on("click", ds.action("setSignal", modalOpen.name, true))}>Open</button>
+<dialog {...ds.effect(ds.action("syncDialog", modalOpen))}>...</dialog>
+```
+
 ## Reading signals
 
 Without a schema, `read.signals(request)` parses Datastar's JSON transport and checks that the result is a JSON object signal tree.
@@ -195,6 +204,7 @@ Standalone examples live under `examples/*` in the repository workspace.
 - [`examples/hono-counter`](../../examples/hono-counter) — a minimal Hono counter using TSX views, Datastar action helpers, and `reply.*` responses.
 - [`examples/hono-modal`](../../examples/hono-modal) — a Hono + TSX app showing a server-rendered native dialog controlled by Datastar signals.
 - [`examples/hono-form-validation`](../../examples/hono-form-validation) — a Hono + TSX app showing signal binding and server-side validation.
+- [`examples/hono-custom-actions`](../../examples/hono-custom-actions) — a Hono + TSX app showing custom Datastar actions/plugins for client-side behavior.
 - [`examples/elysia-layout`](../../examples/elysia-layout) — a Bun/Elysia app showing layout composition, named JSX slots, and focused Datastar patches.
 - [`examples/deno-search-list`](../../examples/deno-search-list) — a Deno app using `@std/http`, Tailwind CSS, search patches, and append-based list updates.
 
@@ -204,6 +214,7 @@ From the repository root:
 pnpm run dev:hono-counter
 pnpm run dev:hono-modal
 pnpm run dev:hono-form-validation
+pnpm run dev:hono-custom-actions
 pnpm run dev:elysia-layout
 pnpm run dev:deno-search-list
 ```

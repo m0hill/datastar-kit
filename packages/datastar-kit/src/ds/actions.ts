@@ -119,8 +119,24 @@ const fetchAction = (method: "get" | "post" | "put" | "patch" | "delete", url: E
   return raw(`@${method}(${urlToJs(url)}, ${fetchOptionsToJs(options)})`)
 }
 
-const datastarAction = <T = unknown>(name: string, ...args: ReadonlyArray<ExprInput<unknown>>): Expr<T> =>
-  raw(`@${name}(${args.map((arg) => toJs(arg)).join(", ")})`)
+export class ActionNameError extends Error {
+  constructor(readonly actionName: string) {
+    super(`Invalid Datastar action name: ${JSON.stringify(actionName)}`)
+  }
+}
+
+const actionNamePattern = /^[A-Za-z_$][\w$]*$/
+
+const assertActionName = (name: string): void => {
+  if (!actionNamePattern.test(name)) {
+    throw new ActionNameError(name)
+  }
+}
+
+const datastarAction = <T = unknown>(name: string, ...args: ReadonlyArray<ExprInput<unknown>>): Expr<T> => {
+  assertActionName(name)
+  return raw(`@${name}(${args.map((arg) => toJs(arg)).join(", ")})`)
+}
 
 /**
  * Builds a Datastar expression for a URL with reactive query parameters.
@@ -156,6 +172,15 @@ export const patch = (url: ExprInput<string>, options?: FetchActionOptions): Exp
 
 /** Creates a Datastar `@delete()` action expression. @see https://data-star.dev/reference/actions#delete */
 export const del = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => fetchAction("delete", url, options)
+
+/**
+ * Creates an expression for an app-defined Datastar action such as `@myAction(...)`.
+ *
+ * Register the browser action with Datastar's `action(...)` plugin API, then call it from
+ * server-rendered attributes without writing the full inline expression string by hand.
+ */
+export const action = <T = unknown>(name: string, ...args: ReadonlyArray<ExprInput<unknown>>): Expr<T> =>
+  datastarAction<T>(name, ...args)
 
 /** Creates a Datastar `@peek()` action expression. @see https://data-star.dev/reference/actions#peek */
 export const peek = <T = unknown>(callback: Expr<DatastarFunction<T>>): Expr<T> => datastarAction<T>("peek", callback)

@@ -10,6 +10,17 @@ Actions are HTTP requests triggered by Datastar attributes. Some actions are com
 4. Mutate backend state through app-owned services/resources.
 5. Return `reply.done()` when there is nothing to update, or return a Datastar patch/stream through `reply.*`.
 
+## Custom browser actions
+
+Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, you can also register a Datastar action/plugin in a browser module and call it from TSX with `ds.action(name, ...args)`:
+
+```tsx
+<button {...ds.on('click', ds.action('setSignal', 'modalOpen', true))}>Open</button>
+<dialog {...ds.effect(ds.action('syncDialog', ds.signal<boolean>('modalOpen')))} />
+```
+
+See `examples/hono-custom-actions` for a complete Hono example with custom actions and a custom attribute plugin.
+
 ## Response helpers
 
 Use `reply` helpers when a handler should produce Datastar-aware native `Response` objects:

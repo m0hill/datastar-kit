@@ -23,6 +23,7 @@ describe("package root exports", () => {
     expect("contract" in Root).toBe(false)
     expect("live" in Root).toBe(false)
     expect(ds.signal).toBeDefined()
+    expect(ds.action).toBeDefined()
     expect(ds.delete).toBeDefined()
     expect(event.patch).toBeDefined()
     expect(event.signals).toBeDefined()

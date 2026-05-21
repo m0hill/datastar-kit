@@ -21,6 +21,17 @@ describe("expression escape hatches", () => {
     expect(ds.expr`${count} === ${"done"}`.toDatastarExpression()).toBe('$count === "done"')
   })
 
+  it("builds custom action expressions", () => {
+    const modalOpen = ds.signal<boolean>("modalOpen")
+
+    expect(ds.action("setSignal", "modalOpen", true).toDatastarExpression()).toBe('@setSignal("modalOpen", true)')
+    expect(ds.action("syncDialog", modalOpen).toDatastarExpression()).toBe("@syncDialog($modalOpen)")
+  })
+
+  it("rejects custom action names Datastar cannot call", () => {
+    expect(() => ds.action("bad-action")).toThrow(ds.ActionNameError)
+  })
+
   it("composes explicit expressions with Datastar attribute helpers", () => {
     expect(ds.dataClass("enabled", ds.expr("($enabled) && (!$saving)"))).toEqual({
       "data-class:enabled": "($enabled) && (!$saving)"

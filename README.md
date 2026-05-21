@@ -11,6 +11,7 @@ This repository is a pnpm workspace containing the publishable SDK package, docu
 - [`examples/hono-counter`](examples/hono-counter) — a standalone Hono counter example that consumes `datastar-kit` through a workspace dependency.
 - [`examples/hono-modal`](examples/hono-modal) — a Hono + TSX example showing a server-rendered native dialog controlled by Datastar signals.
 - [`examples/hono-form-validation`](examples/hono-form-validation) — a Hono + TSX example showing signal binding and server-side validation.
+- [`examples/hono-custom-actions`](examples/hono-custom-actions) — a Hono + TSX example moving imperative browser behavior into custom Datastar actions/plugins.
 - [`examples/elysia-layout`](examples/elysia-layout) — a Bun/Elysia layout example with named JSX slots and focused Datastar patches.
 
 ## SDK quick look
@@ -72,6 +73,7 @@ Run local development servers:
 pnpm run dev:hono-counter
 pnpm run dev:hono-modal
 pnpm run dev:hono-form-validation
+pnpm run dev:hono-custom-actions
 pnpm run dev:elysia-layout
 pnpm run dev:website
 ```
@@ -86,6 +88,7 @@ examples/
   hono-counter/   # Hono counter example consuming the workspace package
   hono-modal/     # Hono native dialog/modal recipe
   hono-form-validation/ # Hono server-side validation recipe
+  hono-custom-actions/ # Hono custom Datastar actions/plugins recipe
   elysia-layout/  # Bun/Elysia layout and named-slot example
 ```
 
