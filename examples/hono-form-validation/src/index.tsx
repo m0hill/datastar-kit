@@ -5,7 +5,16 @@ import { ds, event, read, reply } from "datastar-kit"
 
 const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
-const signup = ds.state({ name: "", email: "", errors: { name: "", email: "" } })
+const signup = ds.state(
+  {
+    name: "",
+    email: "",
+    errors:
+    {
+      name: "",
+      email: ""
+    }
+  })
 
 const SignupSignals = z.object({
   name: z.string().trim().min(2, "Enter your name"),
