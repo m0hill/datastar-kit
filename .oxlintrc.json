@@ -26,6 +26,34 @@
     "typescript/no-explicit-any": "off",
     "vitest/no-standalone-expect": "off"
   },
+  "overrides": [
+    {
+      "files": ["packages/datastar-kit/src/reply.ts"],
+      "rules": {
+        "no-await-in-loop": "off"
+      }
+    },
+    {
+      "files": ["packages/datastar-kit/src/html.ts"],
+      "rules": {
+        "no-underscore-dangle": "off",
+        "typescript/no-base-to-string": "off"
+      }
+    },
+    {
+      "files": ["packages/datastar-kit/src/ds/signals.ts", "packages/datastar-kit/src/ds/state.ts"],
+      "rules": {
+        "typescript/no-unsafe-type-assertion": "off"
+      }
+    },
+    {
+      "files": ["packages/datastar-kit/test/**/*.ts", "packages/datastar-kit/test/**/*.tsx"],
+      "rules": {
+        "typescript/no-unsafe-type-assertion": "off",
+        "unicorn/consistent-function-scoping": "off"
+      }
+    }
+  ],
   "env": {
     "builtin": true,
     "browser": true,
