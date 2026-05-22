@@ -1,7 +1,6 @@
+import { patch as eventPatch, signals as eventSignals } from "./event.js"
 import { h, renderToString, type HtmlChild } from "./html.js"
 import {
-  patchElements,
-  patchSignals,
   type PatchElementsNamespace,
   type PatchElementsMode,
   type PatchElementsOptions,
@@ -352,7 +351,7 @@ export const patch = (
   options: PatchOptions = {},
   init: StreamResponseInit = {}
 ): Response =>
-  response(patchElements(renderToString(elements), options), init, 200, sseHeaders)
+  response(eventPatch(elements, options), init, 200, sseHeaders)
 
 /**
  * Creates a Datastar SSE signal patch response.
@@ -367,7 +366,7 @@ export const signals = (
   options: SignalsOptions = {},
   init: StreamResponseInit = {}
 ): Response =>
-  response(patchSignals(value, options), init, 200, sseHeaders)
+  response(eventSignals(value, options), init, 200, sseHeaders)
 
 /**
  * Creates a Datastar SSE stream response from event chunks.
