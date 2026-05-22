@@ -84,8 +84,10 @@ const fetchResponseOverridesToJs = (overrides: FetchActionResponseOverrides): st
   if (overrides.selector !== undefined) entries.push(`selector: ${toJs(overrides.selector)}`)
   if (overrides.mode !== undefined) entries.push(`mode: ${toJs(overrides.mode)}`)
   if (overrides.namespace !== undefined) entries.push(`namespace: ${toJs(overrides.namespace)}`)
-  if (overrides.useViewTransition !== undefined) entries.push(`useViewTransition: ${toJs(overrides.useViewTransition)}`)
-  if (overrides.onlyIfMissing !== undefined) entries.push(`onlyIfMissing: ${toJs(overrides.onlyIfMissing)}`)
+  if (overrides.useViewTransition !== undefined)
+    entries.push(`useViewTransition: ${toJs(overrides.useViewTransition)}`)
+  if (overrides.onlyIfMissing !== undefined)
+    entries.push(`onlyIfMissing: ${toJs(overrides.onlyIfMissing)}`)
 
   return `{${entries.join(", ")}}`
 }
@@ -107,11 +109,17 @@ const fetchOptionsToJs = (options: FetchActionOptions): string => {
   return `{${entries.join(", ")}}`
 }
 
-const escapeTemplateText = (value: string): string => value.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("${", "\\${")
+const escapeTemplateText = (value: string): string =>
+  value.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("${", "\\${")
 
-const urlToJs = (url: ExprInput<string>): string => typeof url === "string" ? JSON.stringify(url) : url.toDatastarExpression()
+const urlToJs = (url: ExprInput<string>): string =>
+  typeof url === "string" ? JSON.stringify(url) : url.toDatastarExpression()
 
-const fetchAction = (method: "get" | "post" | "put" | "patch" | "delete", url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => {
+const fetchAction = (
+  method: "get" | "post" | "put" | "patch" | "delete",
+  url: ExprInput<string>,
+  options?: FetchActionOptions
+): Expr<void> => {
   if (options === undefined || Object.keys(options).length === 0) {
     return raw(`@${method}(${urlToJs(url)})`)
   }
@@ -133,7 +141,10 @@ const assertActionName = (name: string): void => {
   }
 }
 
-const datastarAction = <T = unknown>(name: string, ...args: ReadonlyArray<ExprInput<unknown>>): Expr<T> => {
+const datastarAction = <T = unknown>(
+  name: string,
+  ...args: ReadonlyArray<ExprInput<unknown>>
+): Expr<T> => {
   assertActionName(name)
   return raw(`@${name}(${args.map((arg) => toJs(arg)).join(", ")})`)
 }
@@ -145,7 +156,10 @@ const datastarAction = <T = unknown>(name: string, ...args: ReadonlyArray<ExprIn
  * @param params Query parameter expressions or literal values.
  * @returns A Datastar expression that evaluates to a URL string.
  */
-export const queryUrl = (path: string, params: Readonly<Record<string, ExprInput<string | number | boolean>>>): Expr<string> => {
+export const queryUrl = (
+  path: string,
+  params: Readonly<Record<string, ExprInput<string | number | boolean>>>
+): Expr<string> => {
   const entries = Object.entries(params)
   if (entries.length === 0) {
     return raw(JSON.stringify(path))
@@ -153,25 +167,32 @@ export const queryUrl = (path: string, params: Readonly<Record<string, ExprInput
 
   const separator = path.includes("?") ? "&" : "?"
   const query = entries
-    .map(([key, value]) => `${encodeURIComponent(key)}=${"${encodeURIComponent("}${toJs(value)}${")}"}`)
+    .map(
+      ([key, value]) => `${encodeURIComponent(key)}=${"${encodeURIComponent("}${toJs(value)}${")}"}`
+    )
     .join("&")
   return raw(`\`${escapeTemplateText(path)}${separator}${query}\``)
 }
 
 /** Creates a Datastar `@get()` action expression. @see https://data-star.dev/reference/actions#get */
-export const get = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => fetchAction("get", url, options)
+export const get = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> =>
+  fetchAction("get", url, options)
 
 /** Creates a Datastar `@post()` action expression. @see https://data-star.dev/reference/actions#post */
-export const post = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => fetchAction("post", url, options)
+export const post = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> =>
+  fetchAction("post", url, options)
 
 /** Creates a Datastar `@put()` action expression. @see https://data-star.dev/reference/actions#put */
-export const put = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => fetchAction("put", url, options)
+export const put = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> =>
+  fetchAction("put", url, options)
 
 /** Creates a Datastar `@patch()` action expression. @see https://data-star.dev/reference/actions#patch */
-export const patch = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => fetchAction("patch", url, options)
+export const patch = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> =>
+  fetchAction("patch", url, options)
 
 /** Creates a Datastar `@delete()` action expression. @see https://data-star.dev/reference/actions#delete */
-export const del = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> => fetchAction("delete", url, options)
+export const del = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> =>
+  fetchAction("delete", url, options)
 
 /**
  * Creates an expression for an app-defined Datastar action such as `@myAction(...)`.
@@ -179,16 +200,23 @@ export const del = (url: ExprInput<string>, options?: FetchActionOptions): Expr<
  * Register the browser action with Datastar's `action(...)` plugin API, then call it from
  * server-rendered attributes without writing the full inline expression string by hand.
  */
-export const action = <T = unknown>(name: string, ...args: ReadonlyArray<ExprInput<unknown>>): Expr<T> =>
-  datastarAction<T>(name, ...args)
+export const action = <T = unknown>(
+  name: string,
+  ...args: ReadonlyArray<ExprInput<unknown>>
+): Expr<T> => datastarAction<T>(name, ...args)
 
 /** Creates a Datastar `@peek()` action expression. @see https://data-star.dev/reference/actions#peek */
-export const peek = <T = unknown>(callback: Expr<DatastarFunction<T>>): Expr<T> => datastarAction<T>("peek", callback)
+export const peek = <T = unknown>(callback: Expr<DatastarFunction<T>>): Expr<T> =>
+  datastarAction<T>("peek", callback)
 
 /** Creates a Datastar `@setAll()` action expression. @see https://data-star.dev/reference/actions#setall */
 export const setAll = (value: ExprInput<unknown>, filter?: SignalFilter): Expr<void> =>
-  filter === undefined ? datastarAction<void>("setAll", value) : datastarAction<void>("setAll", value, filter)
+  filter === undefined
+    ? datastarAction<void>("setAll", value)
+    : datastarAction<void>("setAll", value, filter)
 
 /** Creates a Datastar `@toggleAll()` action expression. @see https://data-star.dev/reference/actions#toggleall */
 export const toggleAll = (filter?: SignalFilter): Expr<void> =>
-  filter === undefined ? datastarAction<void>("toggleAll") : datastarAction<void>("toggleAll", filter)
+  filter === undefined
+    ? datastarAction<void>("toggleAll")
+    : datastarAction<void>("toggleAll", filter)

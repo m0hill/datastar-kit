@@ -84,7 +84,11 @@ const splitLines = (value: string): ReadonlyArray<string> => value.split("\n")
 const dataLines = (key: string, value: string): ReadonlyArray<EventLine> =>
   splitLines(value).map((line) => ({ key, value: line }))
 
-const serializeEvent = (event: string, options: SseEventOptions, lines: ReadonlyArray<EventLine>): string => {
+const serializeEvent = (
+  event: string,
+  options: SseEventOptions,
+  lines: ReadonlyArray<EventLine>
+): string => {
   const out = [`event: ${event}`]
 
   if (options.id !== undefined) {
@@ -161,7 +165,10 @@ export const patchElements = (elements: string, options: PatchElementsOptions = 
  * @returns A complete SSE event string.
  * @see https://data-star.dev/reference/sse_events#datastar-patch-signals
  */
-export const patchSignals = (signals: SignalState | string, options: PatchSignalsOptions = {}): string => {
+export const patchSignals = (
+  signals: SignalState | string,
+  options: PatchSignalsOptions = {}
+): string => {
   const lines: Array<EventLine> = []
 
   if (options.onlyIfMissing === true) {

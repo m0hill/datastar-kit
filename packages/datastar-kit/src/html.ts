@@ -16,7 +16,15 @@ interface RawHtml {
 /**
  * A value that can be rendered by Datastar Kit's server-side HTML renderer.
  */
-export type HtmlChild = HtmlNode | RawHtml | string | number | boolean | null | undefined | readonly HtmlChild[]
+export type HtmlChild =
+  | HtmlNode
+  | RawHtml
+  | string
+  | number
+  | boolean
+  | null
+  | undefined
+  | readonly HtmlChild[]
 
 /**
  * A lightweight HTML element node used by the JSX runtime and `h()` factory.
@@ -58,15 +66,10 @@ const isHtmlNode = (value: unknown): value is HtmlNode =>
   "children" in value
 
 const escapeHtmlText = (value: string): string =>
-  value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
+  value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
 
 export const escapeHtmlAttribute = (value: string): string =>
-  escapeHtmlText(value)
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;")
+  escapeHtmlText(value).replaceAll('"', "&quot;").replaceAll("'", "&#39;")
 
 const renderProps = (props: HtmlProps): string => {
   const rendered: Array<string> = []
@@ -95,7 +98,11 @@ const renderProps = (props: HtmlProps): string => {
  * @param children Child nodes rendered inside the element.
  * @returns An HTML node that can be passed to `renderToString()` or response helpers.
  */
-export const h = (tag: string, props: HtmlProps = {}, ...children: readonly HtmlChild[]): HtmlNode => ({
+export const h = (
+  tag: string,
+  props: HtmlProps = {},
+  ...children: readonly HtmlChild[]
+): HtmlNode => ({
   tag,
   props,
   children
@@ -122,7 +129,8 @@ export const unsafeHtml = (html: string): HtmlChild => ({
  * @param groups Prop objects to merge.
  * @returns A new prop object containing all supplied properties.
  */
-export const mergeProps = (...groups: readonly HtmlProps[]): HtmlProps => Object.assign({}, ...groups)
+export const mergeProps = (...groups: readonly HtmlProps[]): HtmlProps =>
+  Object.assign({}, ...groups)
 
 /**
  * Renders an HTML child tree to a string.

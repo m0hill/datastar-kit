@@ -4,14 +4,14 @@ Examples are standalone workspace packages under `examples/*`. Each one should b
 
 Run commands from the repository root. Each dev script serves its app at `http://localhost:3000` or `http://127.0.0.1:3000`.
 
-| Example | Shows | Run |
-| --- | --- | --- |
-| `examples/hono-counter` | Minimal Hono routes, TSX views, backend-owned count state, and a focused `reply.patch(...)`. | `pnpm run dev:hono-counter` |
-| `examples/hono-modal` | A server-rendered native `<dialog>` controlled by Datastar signals and a small `data-effect` bridge. | `pnpm run dev:hono-modal` |
-| `examples/hono-form-validation` | `data-bind` inputs, `@post(...)`, `read.signals(request)` with direct Zod validation, and validation signal patches. | `pnpm run dev:hono-form-validation` |
-| `examples/hono-custom-actions` | Custom Datastar actions/plugins as an alternative to long inline expressions. | `pnpm run dev:hono-custom-actions` |
-| `examples/elysia-layout` | Bun/Elysia structure with a shared shell, named layout slots, route-level data loading, and a targeted `#project-list` patch. | `pnpm run dev:elysia-layout` |
-| `examples/deno-search-list` | `Deno.serve(...)`, `@std/http` routing, Tailwind CSS, search patches, and `mode: 'append'` list additions. | `pnpm run dev:deno-search-list` |
+| Example                         | Shows                                                                                                                         | Run                                 |
+| ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `examples/hono-counter`         | Minimal Hono routes, TSX views, backend-owned count state, and a focused `reply.patch(...)`.                                  | `pnpm run dev:hono-counter`         |
+| `examples/hono-modal`           | A server-rendered native `<dialog>` controlled by Datastar signals and a small `data-effect` bridge.                          | `pnpm run dev:hono-modal`           |
+| `examples/hono-form-validation` | `data-bind` inputs, `@post(...)`, `read.signals(request)` with direct Zod validation, and validation signal patches.          | `pnpm run dev:hono-form-validation` |
+| `examples/hono-custom-actions`  | Custom Datastar actions/plugins as an alternative to long inline expressions.                                                 | `pnpm run dev:hono-custom-actions`  |
+| `examples/elysia-layout`        | Bun/Elysia structure with a shared shell, named layout slots, route-level data loading, and a targeted `#project-list` patch. | `pnpm run dev:elysia-layout`        |
+| `examples/deno-search-list`     | `Deno.serve(...)`, `@std/http` routing, Tailwind CSS, search patches, and `mode: 'append'` list additions.                    | `pnpm run dev:deno-search-list`     |
 
 ## Adding examples
 

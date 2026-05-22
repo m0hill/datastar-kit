@@ -14,31 +14,46 @@ app.get("/", () =>
     <main id="app" {...ds.dataSignals({ modalOpen: false }, { ifMissing: true })}>
       <h1>Custom Datastar actions</h1>
       <p>
-        This example shows custom browser actions from <code>static/datastar-actions.js</code>.
-        The server-rendered TSX can call those actions with <code>ds.action(...)</code>.
+        This example shows custom browser actions from <code>static/datastar-actions.js</code>. The
+        server-rendered TSX can call those actions with <code>ds.action(...)</code>.
       </p>
 
       <section class="card">
         <h2>Server-rendered controls</h2>
         <p>
           The button below opens a native dialog through a custom action, which is useful when
-          <code>showModal()</code>, backdrop checks, or focus code would make an inline expression noisy.
+          <code>showModal()</code>, backdrop checks, or focus code would make an inline expression
+          noisy.
         </p>
         <div class="row">
-          <button type="button" class="primary" {...ds.on("click", ds.action("setSignal", modalOpen.name, true))}>
+          <button
+            type="button"
+            class="primary"
+            {...ds.on("click", ds.action("setSignal", modalOpen.name, true))}
+          >
             Open custom-action dialog
           </button>
         </div>
-        <output id="result" class="result">No server confirmation yet.</output>
+        <output id="result" class="result">
+          No server confirmation yet.
+        </output>
       </section>
 
       <section class="card">
         <h2>Registered browser plugins</h2>
         <ul class="plugin-list">
-          <li><code>@setSignal(path, value)</code> patches a Datastar signal from client code.</li>
-          <li><code>@syncDialog(open)</code> calls <code>showModal()</code> / <code>close()</code>.</li>
-          <li><code>@closeDialogOnBackdrop(path)</code> handles backdrop clicks with the event object.</li>
-          <li><code>data-focus-when</code> focuses an element when a reactive expression becomes true.</li>
+          <li>
+            <code>@setSignal(path, value)</code> patches a Datastar signal from client code.
+          </li>
+          <li>
+            <code>@syncDialog(open)</code> calls <code>showModal()</code> / <code>close()</code>.
+          </li>
+          <li>
+            <code>@closeDialogOnBackdrop(path)</code> handles backdrop clicks with the event object.
+          </li>
+          <li>
+            <code>data-focus-when</code> focuses an element when a reactive expression becomes true.
+          </li>
         </ul>
       </section>
 
@@ -84,7 +99,11 @@ app.get("/", () =>
 app.post("/confirm", () =>
   reply.stream([
     event.signals({ modalOpen: false }),
-    event.patch(<output id="result" class="result">Confirmed at {new Date().toLocaleTimeString()}.</output>)
+    event.patch(
+      <output id="result" class="result">
+        Confirmed at {new Date().toLocaleTimeString()}.
+      </output>
+    )
   ])
 )
 

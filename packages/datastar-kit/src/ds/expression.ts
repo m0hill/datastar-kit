@@ -61,7 +61,9 @@ export const toJs = (value: ExprInput<unknown>): string => {
   }
 
   if (typeof value === "object") {
-    return `{${Object.entries(value).map(([key, item]) => `${JSON.stringify(key)}: ${toJs(item)}`).join(", ")}}`
+    return `{${Object.entries(value)
+      .map(([key, item]) => `${JSON.stringify(key)}: ${toJs(item)}`)
+      .join(", ")}}`
   }
 
   return JSON.stringify(String(value))
@@ -84,7 +86,10 @@ export function expr<T = unknown>(code: string): Expr<T>
  * @param values Values interpolated as Datastar expression source or JavaScript literals.
  * @returns A typed Datastar expression.
  */
-export function expr<T = unknown>(parts: TemplateStringsArray, ...values: ReadonlyArray<ExprInput<unknown>>): Expr<T>
+export function expr<T = unknown>(
+  parts: TemplateStringsArray,
+  ...values: ReadonlyArray<ExprInput<unknown>>
+): Expr<T>
 
 export function expr<T = unknown>(
   codeOrParts: string | TemplateStringsArray,

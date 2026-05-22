@@ -6,7 +6,11 @@ import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("automatic JSX runtime", () => {
   it("renders JSX through the same HTML renderer", () => {
-    const node = <button type="button" disabled>Save</button>
+    const node = (
+      <button type="button" disabled>
+        Save
+      </button>
+    )
 
     expect(renderToString(node)).toBe('<button type="button" disabled>Save</button>')
   })
@@ -33,13 +37,15 @@ describe("automatic JSX runtime", () => {
       </form>
     )
 
-    expect(renderToString(node)).toBe('<form><button data-on:click="@post(&quot;/increment&quot;)">+</button><input data-bind:count></form>')
+    expect(renderToString(node)).toBe(
+      '<form><button data-on:click="@post(&quot;/increment&quot;)">+</button><input data-bind:count></form>'
+    )
   })
 
   it("rejects expression objects as JSX prop values", () => {
-    expect(() => runtimeJsx("output", { "data-text": signal<number>("count") } as unknown as JsxProps)).toThrow(
-      'Unsupported JSX prop value for "data-text"'
-    )
+    expect(() =>
+      runtimeJsx("output", { "data-text": signal<number>("count") } as unknown as JsxProps)
+    ).toThrow('Unsupported JSX prop value for "data-text"')
   })
 
   it("normalizes TSX className to HTML class", () => {

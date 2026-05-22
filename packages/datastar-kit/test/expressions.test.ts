@@ -11,7 +11,9 @@ describe("expression escape hatches", () => {
   it("uses explicit Datastar expressions instead of a framework expression DSL", () => {
     expect(ds.expr("!($saving)").toDatastarExpression()).toBe("!($saving)")
     expect(ds.expr("($ready) && ($dirty)").toDatastarExpression()).toBe("($ready) && ($dirty)")
-    expect(ds.expr("($enabled ? \"Enabled\" : \"Disabled\")").toDatastarExpression()).toBe('($enabled ? "Enabled" : "Disabled")')
+    expect(ds.expr('($enabled ? "Enabled" : "Disabled")').toDatastarExpression()).toBe(
+      '($enabled ? "Enabled" : "Disabled")'
+    )
   })
 
   it("interpolates Datastar expressions with signals and JS literals", () => {
@@ -24,8 +26,12 @@ describe("expression escape hatches", () => {
   it("builds custom action expressions", () => {
     const modalOpen = ds.signal<boolean>("modalOpen")
 
-    expect(ds.action("setSignal", "modalOpen", true).toDatastarExpression()).toBe('@setSignal("modalOpen", true)')
-    expect(ds.action("syncDialog", modalOpen).toDatastarExpression()).toBe("@syncDialog($modalOpen)")
+    expect(ds.action("setSignal", "modalOpen", true).toDatastarExpression()).toBe(
+      '@setSignal("modalOpen", true)'
+    )
+    expect(ds.action("syncDialog", modalOpen).toDatastarExpression()).toBe(
+      "@syncDialog($modalOpen)"
+    )
   })
 
   it("rejects custom action names Datastar cannot call", () => {

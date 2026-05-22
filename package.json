@@ -21,10 +21,16 @@
     "website:preview:cloudflare": "pnpm --filter @datastar-kit/website preview:cloudflare",
     "examples:check": "pnpm --filter @datastar-kit/example-hono-counter check && pnpm --filter @datastar-kit/example-hono-modal check && pnpm --filter @datastar-kit/example-hono-form-validation check && pnpm --filter @datastar-kit/example-hono-custom-actions check && pnpm --filter @datastar-kit/example-elysia-layout check && pnpm run check:deno-search-list",
     "test": "pnpm --filter datastar-kit test",
-    "typecheck": "pnpm --filter datastar-kit typecheck && pnpm --filter @datastar-kit/example-hono-counter typecheck && pnpm --filter @datastar-kit/example-hono-modal typecheck && pnpm --filter @datastar-kit/example-hono-form-validation typecheck && pnpm --filter @datastar-kit/example-hono-custom-actions typecheck && pnpm --filter @datastar-kit/example-elysia-layout typecheck && pnpm run check:deno-search-list && pnpm --filter @datastar-kit/website typecheck"
+    "typecheck": "pnpm --filter datastar-kit typecheck && pnpm --filter @datastar-kit/example-hono-counter typecheck && pnpm --filter @datastar-kit/example-hono-modal typecheck && pnpm --filter @datastar-kit/example-hono-form-validation typecheck && pnpm --filter @datastar-kit/example-hono-custom-actions typecheck && pnpm --filter @datastar-kit/example-elysia-layout typecheck && pnpm run check:deno-search-list && pnpm --filter @datastar-kit/website typecheck",
+    "lint": "oxlint --type-aware",
+    "lint:fix": "oxlint --fix",
+    "format": "oxfmt"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "oxfmt": "^0.51.0",
+    "oxlint": "^1.66.0",
+    "oxlint-tsgolint": "^0.23.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14"
   }

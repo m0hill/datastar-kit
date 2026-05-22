@@ -19,7 +19,11 @@ if (false) {
 
 describe("reply direct Datastar responses", () => {
   it("serves full Datastar pages with normal page status options", async () => {
-    const response = reply.page(h("main", {}, "Ada & Grace"), {}, { status: 201, headers: { "x-html": "yes" } })
+    const response = reply.page(
+      h("main", {}, "Ada & Grace"),
+      {},
+      { status: 201, headers: { "x-html": "yes" } }
+    )
     const html = await response.text()
 
     expect(response.status).toBe(201)
@@ -54,11 +58,15 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("serves direct script responses as explicit escape hatches", async () => {
-    const response = reply.directScript("console.log('hello')", { attributes: { type: "module", async: true } })
+    const response = reply.directScript("console.log('hello')", {
+      attributes: { type: "module", async: true }
+    })
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
-    expect(response.headers.get("datastar-script-attributes")).toBe('{"type":"module","async":true}')
+    expect(response.headers.get("datastar-script-attributes")).toBe(
+      '{"type":"module","async":true}'
+    )
     expect(await response.text()).toBe("console.log('hello')")
   })
 
@@ -67,7 +75,9 @@ describe("reply direct Datastar responses", () => {
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
-    expect(await response.text()).toBe('setTimeout(() => { window.location.href = "/dashboard?from=login#top" })')
+    expect(await response.text()).toBe(
+      'setTimeout(() => { window.location.href = "/dashboard?from=login#top" })'
+    )
   })
 
   it("allows navigation to explicit origin allowlists only", async () => {
@@ -76,10 +86,18 @@ describe("reply direct Datastar responses", () => {
       allowedOrigins: ["https://docs.example"]
     })
 
-    expect(await response.text()).toBe('setTimeout(() => { window.location.href = "https://docs.example/start" })')
-    expect(() => reply.navigate("https://evil.example/phish", { baseUrl: "https://app.example" })).toThrow(reply.NavigationUrlError)
-    expect(() => reply.navigate("javascript:alert(1)", { baseUrl: "https://app.example" })).toThrow(reply.NavigationUrlError)
-    expect(() => reply.navigate("/safe\nSet-Cookie: bad", { baseUrl: "https://app.example" })).toThrow(reply.NavigationUrlError)
+    expect(await response.text()).toBe(
+      'setTimeout(() => { window.location.href = "https://docs.example/start" })'
+    )
+    expect(() =>
+      reply.navigate("https://evil.example/phish", { baseUrl: "https://app.example" })
+    ).toThrow(reply.NavigationUrlError)
+    expect(() => reply.navigate("javascript:alert(1)", { baseUrl: "https://app.example" })).toThrow(
+      reply.NavigationUrlError
+    )
+    expect(() =>
+      reply.navigate("/safe\nSet-Cookie: bad", { baseUrl: "https://app.example" })
+    ).toThrow(reply.NavigationUrlError)
   })
 
   it("keeps Datastar action replies on 200-with-body or 204-without-body status semantics", async () => {

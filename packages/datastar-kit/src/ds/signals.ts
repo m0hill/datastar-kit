@@ -59,7 +59,9 @@ export class Signal<T, Name extends string = string> implements Expr<T> {
   }
 
   /** Creates a typed child signal reference below this signal path. */
-  path<Key extends keyof NonNullable<T> & string>(key: Key): Signal<NonNullable<T>[Key], `${Name}.${Key}`> {
+  path<Key extends keyof NonNullable<T> & string>(
+    key: Key
+  ): Signal<NonNullable<T>[Key], `${Name}.${Key}`> {
     return new Signal(`${this.name}.${key}` as `${Name}.${Key}`)
   }
 }
@@ -69,7 +71,8 @@ export class Signal<T, Name extends string = string> implements Expr<T> {
  *
  * @throws {@link SignalNameError} When the signal name is invalid.
  */
-export const signal = <T = unknown, Name extends string = string>(name: Name): Signal<T, Name> => new Signal(name)
+export const signal = <T = unknown, Name extends string = string>(name: Name): Signal<T, Name> =>
+  new Signal(name)
 
 /**
  * Creates an underscore-prefixed Datastar signal reference.
@@ -84,4 +87,6 @@ export const signal = <T = unknown, Name extends string = string>(name: Name): S
 export const local = <T = unknown, Name extends string = string>(
   name: Name
 ): Signal<T, Name extends `_${string}` ? Name : `_${Name}`> =>
-  signal<T, Name extends `_${string}` ? Name : `_${Name}`>((name.startsWith("_") ? name : `_${name}`) as Name extends `_${string}` ? Name : `_${Name}`)
+  signal<T, Name extends `_${string}` ? Name : `_${Name}`>(
+    (name.startsWith("_") ? name : `_${name}`) as Name extends `_${string}` ? Name : `_${Name}`
+  )

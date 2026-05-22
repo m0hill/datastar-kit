@@ -3,7 +3,7 @@
 Realtime in Datastar Kit is current-state oriented. A live view renders the latest backend state when it connects, then renders again after app-owned invalidation triggers.
 
 ```ts
-import { event, reply } from 'datastar-kit'
+import { event, reply } from "datastar-kit"
 
 async function* liveEvents() {
   yield event.patch(renderCurrentState())
@@ -13,7 +13,7 @@ async function* liveEvents() {
 }
 
 return reply.stream(liveEvents(), {
-  heartbeat: { intervalMs: 15_000, comment: 'live' }
+  heartbeat: { intervalMs: 15_000, comment: "live" }
 })
 ```
 

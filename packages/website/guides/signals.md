@@ -24,7 +24,7 @@ const signup = ds.state({
 `state.attrs()` renders `data-signals` with `ifMissing: true` by default. Use `state.patch(...)` for type-checked signal patches and `state.reset()` when returning the defaults:
 
 ```ts
-return reply.signals(signup.patch({ errors: { email: 'Enter a valid email' } }))
+return reply.signals(signup.patch({ errors: { email: "Enter a valid email" } }))
 return reply.signals(signup.reset())
 ```
 

@@ -1,12 +1,20 @@
 import type { HtmlChild } from "./html.js"
-import { createJsxElement, Fragment as FragmentComponent, type JsxElement, type JsxProps, type JsxTag } from "./jsx.js"
+import {
+  createJsxElement,
+  Fragment as FragmentComponent,
+  type JsxElement,
+  type JsxProps,
+  type JsxTag
+} from "./jsx.js"
 
 const toChildren = (value: HtmlChild | readonly HtmlChild[] | undefined): readonly HtmlChild[] => {
   if (value === undefined) return []
   return Array.isArray(value) ? value : [value]
 }
 
-const withoutRuntimeProps = (input: Readonly<Record<string, unknown>> | null): Readonly<Record<string, unknown>> | null => {
+const withoutRuntimeProps = (
+  input: Readonly<Record<string, unknown>> | null
+): Readonly<Record<string, unknown>> | null => {
   if (input === null || input === undefined) return null
 
   const cleaned: Record<string, unknown> = {}
@@ -35,7 +43,9 @@ export { FragmentComponent as Fragment }
  */
 export const jsx = (
   tag: JsxTag,
-  input: (Readonly<Record<string, unknown>> & { readonly children?: HtmlChild | readonly HtmlChild[] }) | null,
+  input:
+    | (Readonly<Record<string, unknown>> & { readonly children?: HtmlChild | readonly HtmlChild[] })
+    | null,
   _key?: string | number
 ): JsxElement => createJsxElement(tag, withoutRuntimeProps(input), toChildren(input?.children))
 

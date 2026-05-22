@@ -18,9 +18,13 @@ Use TypeScript's automatic JSX runtime:
 Then write server-side view functions:
 
 ```tsx
-import { ds, renderToString } from 'datastar-kit'
+import { ds, renderToString } from "datastar-kit"
 
-const view = <button type="button" {...ds.on('click', ds.post('/save'))}>Save</button>
+const view = (
+  <button type="button" {...ds.on("click", ds.post("/save"))}>
+    Save
+  </button>
+)
 const html = renderToString(view)
 ```
 
@@ -31,9 +35,10 @@ JSX here is a server rendering convenience, not a browser component lifecycle or
 Layouts are ordinary JSX functions. Put shared shell markup, navigation, scripts, and stable patch targets in a layout, then pass the page body through `children`.
 
 ```tsx
-import { reply, type HtmlChild } from 'datastar-kit'
+import { reply, type HtmlChild } from "datastar-kit"
 
-const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+const DATASTAR_RUNTIME =
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
 interface AppLayoutProps {
   title: string
@@ -64,7 +69,7 @@ const ProjectsPage = (props: { projects: Project[] }) => (
 )
 
 return reply.page(<ProjectsPage projects={projects} />, {
-  title: 'Projects',
+  title: "Projects",
   head: <script type="module" src={DATASTAR_RUNTIME} />
 })
 ```
@@ -76,7 +81,7 @@ Datastar Kit does not need a framework-owned layout system for this. Your router
 Use normal props when a layout needs named regions such as a sidebar, toolbar, breadcrumbs, or actions. Slot props should use `HtmlChild` because they receive already-built server-rendered nodes.
 
 ```tsx
-import type { HtmlChild } from 'datastar-kit'
+import type { HtmlChild } from "datastar-kit"
 
 interface DashboardLayoutProps {
   title: string
@@ -114,10 +119,10 @@ const DashboardPage = (props: DashboardData) => (
 The `id` attributes in the layout are useful patch boundaries. A Datastar action can update just the current content region without re-rendering the full page shell:
 
 ```tsx
-return reply.patch(
-  <ProjectList projects={projects} />,
-  { selector: '#dashboard-content', mode: 'inner' }
-)
+return reply.patch(<ProjectList projects={projects} />, {
+  selector: "#dashboard-content",
+  mode: "inner"
+})
 ```
 
 For ordinary component replacement, prefer returning an element with a stable top-level `id` and omit `selector`. Use explicit selectors for container operations such as `inner`, `append`, `prepend`, or `remove`. See [Patch elements](patch-elements.md) for a guide to each mode.
@@ -145,7 +150,7 @@ export async function dashboardRoute(request: Request): Promise<Response> {
       <ProjectList projects={data.projects} />
       <Notifications items={data.notifications} />
     </DashboardLayout>,
-    { title: 'Dashboard' }
+    { title: "Dashboard" }
   )
 }
 ```
@@ -162,7 +167,7 @@ If one region is slow or live, render a shell first and patch that region throug
 ```tsx
 const DashboardShell = () => (
   <DashboardLayout title="Dashboard">
-    <section id="stats" {...ds.init(ds.get('/dashboard/stats'))}>
+    <section id="stats" {...ds.init(ds.get("/dashboard/stats"))}>
       Loading stats...
     </section>
   </DashboardLayout>
@@ -183,9 +188,9 @@ For a complete small app using these patterns with Bun and Elysia, see `examples
 Text and attribute values are escaped by default. Use `unsafeHtml(renderedHtml)` only for HTML that has already crossed your app's trust boundary, such as sanitized output or trusted renderer output.
 
 ```tsx
-import { unsafeHtml } from 'datastar-kit'
+import { unsafeHtml } from "datastar-kit"
 
-const trusted = unsafeHtml('<strong>Already sanitized</strong>')
+const trusted = unsafeHtml("<strong>Already sanitized</strong>")
 ```
 
 ## Low-level HTML helpers
@@ -193,13 +198,9 @@ const trusted = unsafeHtml('<strong>Already sanitized</strong>')
 JSX is the primary authoring path. Low-level helpers are useful for tests, code generation, and non-JSX environments:
 
 ```ts
-import { ds, h, mergeProps, renderToString } from 'datastar-kit'
+import { ds, h, mergeProps, renderToString } from "datastar-kit"
 
-const view = h(
-  'button',
-  mergeProps({ type: 'button' }, ds.on('click', ds.post('/save'))),
-  'Save'
-)
+const view = h("button", mergeProps({ type: "button" }, ds.on("click", ds.post("/save"))), "Save")
 
 const html = renderToString(view)
 ```

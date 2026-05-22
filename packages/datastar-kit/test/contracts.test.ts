@@ -14,7 +14,7 @@ describe("Datastar signal boundary", () => {
 
     expect(count.toDatastarExpression()).toBe("$count")
     expect(dataSignals({ count: 0 }, { ifMissing: true })).toEqual({
-      "data-signals__ifmissing": "{\"count\": 0}"
+      "data-signals__ifmissing": '{"count": 0}'
     })
   })
 

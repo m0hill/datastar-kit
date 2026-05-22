@@ -15,7 +15,8 @@ Use your application framework or host adapter to connect handlers to the platfo
 Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; include a pinned CDN URL or serve your own compatible copy.
 
 ```ts
-const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+const DATASTAR_RUNTIME =
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
 reply.page(appShell, {
   head: h("script", { type: "module", src: DATASTAR_RUNTIME })

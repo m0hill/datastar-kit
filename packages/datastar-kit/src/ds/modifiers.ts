@@ -110,7 +110,8 @@ export interface DataSignalModifiers extends CaseModifiers {
   readonly ifMissing?: boolean
 }
 
-export const durationModifier = (duration: Duration): string => typeof duration === "number" ? `${duration}ms` : duration
+export const durationModifier = (duration: Duration): string =>
+  typeof duration === "number" ? `${duration}ms` : duration
 
 export const appendTimingModifiers = (parts: Array<string>, modifiers: TimingModifiers): void => {
   if (modifiers.delay !== undefined) parts.push(`delay.${durationModifier(modifiers.delay)}`)
@@ -140,7 +141,8 @@ export const appendTimingModifiers = (parts: Array<string>, modifiers: TimingMod
   if (modifiers.viewTransition === true) parts.push("viewtransition")
 }
 
-export const modifierSuffix = (parts: ReadonlyArray<string>): string => parts.length === 0 ? "" : `__${parts.join("__")}`
+export const modifierSuffix = (parts: ReadonlyArray<string>): string =>
+  parts.length === 0 ? "" : `__${parts.join("__")}`
 
 export const caseModifierSuffix = (modifiers: CaseModifiers = {}): string =>
   modifiers.case === undefined ? "" : `__case.${modifiers.case}`

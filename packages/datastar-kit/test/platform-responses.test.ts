@@ -20,11 +20,17 @@ describe("reply SSE responses", () => {
     const response = reply.signals({ count: 1 }, {}, { headers: { "x-signals": "yes" } })
 
     expect(response.headers.get("x-signals")).toBe("yes")
-    expect(await response.text()).toBe('event: datastar-patch-signals\ndata: signals {"count":1}\n\n')
+    expect(await response.text()).toBe(
+      'event: datastar-patch-signals\ndata: signals {"count":1}\n\n'
+    )
   })
 
   it("renders HTML nodes in element patches", async () => {
-    const response = reply.patch(h("span", {}, "Ada & Grace"), { selector: "#name" }, { headers: { "x-patch": "yes" } })
+    const response = reply.patch(
+      h("span", {}, "Ada & Grace"),
+      { selector: "#name" },
+      { headers: { "x-patch": "yes" } }
+    )
 
     expect(response.headers.get("x-patch")).toBe("yes")
     expect(await response.text()).toBe(
@@ -57,7 +63,11 @@ describe("reply SSE responses", () => {
   })
 
   it("normalizes mixed stream chunks", async () => {
-    const response = reply.stream(["event: first\n\n", { content: "event: second\n\n" }, new TextEncoder().encode("event: third\n\n")])
+    const response = reply.stream([
+      "event: first\n\n",
+      { content: "event: second\n\n" },
+      new TextEncoder().encode("event: third\n\n")
+    ])
 
     expect(await response.text()).toBe("event: first\n\nevent: second\n\nevent: third\n\n")
   })
@@ -84,9 +94,11 @@ describe("reply SSE responses", () => {
       await new Promise<never>(() => {})
     }
 
-    const reader = reply.stream(events(), {
-      heartbeat: { initialDelayMs: 10, intervalMs: 20, comment: "tick" }
-    }).body!.getReader()
+    const reader = reply
+      .stream(events(), {
+        heartbeat: { initialDelayMs: 10, intervalMs: 20, comment: "tick" }
+      })
+      .body!.getReader()
 
     expect(vi.getTimerCount()).toBe(0)
     const first = await reader.read()
@@ -105,9 +117,11 @@ describe("reply SSE responses", () => {
 
   it("clears heartbeat timers when the event source closes", async () => {
     vi.useFakeTimers()
-    const reader = reply.stream(["event: ready\n\n"], {
-      heartbeat: { intervalMs: 100 }
-    }).body!.getReader()
+    const reader = reply
+      .stream(["event: ready\n\n"], {
+        heartbeat: { intervalMs: 100 }
+      })
+      .body!.getReader()
 
     expect(await reader.read()).toMatchObject({ done: false })
     expect(vi.getTimerCount()).toBe(1)

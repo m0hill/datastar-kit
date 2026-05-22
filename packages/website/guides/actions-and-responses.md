@@ -36,8 +36,8 @@ Use `reply` helpers when a handler should produce Datastar-aware native `Respons
 Datastar action helpers own their protocol status codes. Keep Datastar protocol options separate from native response options:
 
 ```tsx
-reply.patch(<Count />, {}, { headers: { 'x-action': 'increment' } })
-reply.signals({ saving: false }, { onlyIfMissing: true }, { headers: { 'x-action': 'save' } })
+reply.patch(<Count />, {}, { headers: { "x-action": "increment" } })
+reply.signals({ saving: false }, { onlyIfMissing: true }, { headers: { "x-action": "save" } })
 ```
 
 Pass signal patches as objects at the `reply.*` and `event.*` layers. Raw serialized signal patch source belongs to the low-level `datastar-kit/sse` encoder.
@@ -68,16 +68,14 @@ event.patch(<CountView />)
 Pass `selector` when the target is a container, sibling position, removable element, or CSS match:
 
 ```tsx
-reply.patch(<TodoItem todo={todo} />, { selector: '#todo-list', mode: 'append' })
-event.patch('', { selector: '.toast', mode: 'remove' })
+reply.patch(<TodoItem todo={todo} />, { selector: "#todo-list", mode: "append" })
+event.patch("", { selector: ".toast", mode: "remove" })
 ```
 
 For repeated items, use stable item IDs when those items may be patched individually:
 
 ```tsx
-const TodoItem = (props: { todo: Todo }) => (
-  <li id={`todo-${props.todo.id}`}>{props.todo.title}</li>
-)
+const TodoItem = (props: { todo: Todo }) => <li id={`todo-${props.todo.id}`}>{props.todo.title}</li>
 ```
 
 The full selector/mode guide lives in [Patch elements](patch-elements.md).

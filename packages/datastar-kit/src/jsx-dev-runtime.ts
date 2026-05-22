@@ -23,7 +23,9 @@ export { Fragment }
  */
 export const jsxDEV = (
   tag: JsxTag,
-  input: (Readonly<Record<string, unknown>> & { readonly children?: HtmlChild | readonly HtmlChild[] }) | null,
+  input:
+    | (Readonly<Record<string, unknown>> & { readonly children?: HtmlChild | readonly HtmlChild[] })
+    | null,
   key?: string | number,
   _isStaticChildren?: boolean,
   _source?: unknown,

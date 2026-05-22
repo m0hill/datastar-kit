@@ -2,7 +2,8 @@ import { route, type Route } from "@std/http/unstable-route"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
 
-const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+const DATASTAR_RUNTIME =
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
 interface Item {
   id: number
@@ -32,7 +33,10 @@ const ItemSignals = z.object({
 })
 
 const ItemRow = (props: { item: Item }) => (
-  <li id={`item-${props.item.id}`} class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm">
+  <li
+    id={`item-${props.item.id}`}
+    class="rounded-lg border border-slate-200 bg-white px-4 py-3 text-slate-900 shadow-sm"
+  >
     {props.item.name}
   </li>
 )
@@ -40,7 +44,10 @@ const ItemRow = (props: { item: Item }) => (
 const ItemList = (props: { items: Item[] }) => (
   <ul id="item-list" class="mt-4 grid gap-2">
     {props.items.length === 0 ? (
-      <li id="empty-state" class="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-slate-500">
+      <li
+        id="empty-state"
+        class="rounded-lg border border-dashed border-slate-300 px-4 py-8 text-center text-slate-500"
+      >
         No matching items.
       </li>
     ) : (
@@ -55,15 +62,16 @@ const routes: Route[] = [
     pattern: new URLPattern({ pathname: "/" }),
     handler: () =>
       reply.page(
-        <main
-          class="min-h-screen bg-slate-100 px-6 py-12"
-          {...listState.attrs()}
-        >
+        <main class="min-h-screen bg-slate-100 px-6 py-12" {...listState.attrs()}>
           <section class="mx-auto max-w-2xl">
             <div>
-              <p class="text-sm font-medium uppercase tracking-wide text-blue-700">Deno + Datastar Kit</p>
+              <p class="text-sm font-medium uppercase tracking-wide text-blue-700">
+                Deno + Datastar Kit
+              </p>
               <h1 class="mt-2 text-3xl font-semibold text-slate-950">Searchable list</h1>
-              <p class="mt-2 text-slate-600">Search the current list, then add a new item with an append patch.</p>
+              <p class="mt-2 text-slate-600">
+                Search the current list, then add a new item with an append patch.
+              </p>
             </div>
 
             <div class="mt-8 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -74,7 +82,10 @@ const routes: Route[] = [
                 {...ds.on("input", ds.get("/items/search"), { debounce: "200ms" })}
               />
 
-              <form class="mt-3 flex gap-2" {...ds.on("submit", ds.post("/items"), { prevent: true })}>
+              <form
+                class="mt-3 flex gap-2"
+                {...ds.on("submit", ds.post("/items"), { prevent: true })}
+              >
                 <input
                   class="min-w-0 flex-1 rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                   placeholder="New item"
@@ -104,7 +115,8 @@ const routes: Route[] = [
     handler: async (request) => {
       const signals = SearchSignals.parse(await read.signals(request))
       const query = signals.query.trim().toLowerCase()
-      const results = query.length === 0 ? items : items.filter((item) => item.name.toLowerCase().includes(query))
+      const results =
+        query.length === 0 ? items : items.filter((item) => item.name.toLowerCase().includes(query))
 
       return reply.patch(<ItemList items={results} />)
     }
@@ -137,4 +149,7 @@ const routes: Route[] = [
   }
 ]
 
-Deno.serve({ port: 3000 }, route(routes, () => new Response("Not Found", { status: 404 })))
+Deno.serve(
+  { port: 3000 },
+  route(routes, () => new Response("Not Found", { status: 404 }))
+)

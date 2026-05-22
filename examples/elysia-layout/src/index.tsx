@@ -3,7 +3,8 @@ import { Elysia } from "elysia"
 import { ds, event, read, reply, type HtmlChild } from "datastar-kit"
 import { z } from "zod"
 
-const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+const DATASTAR_RUNTIME =
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
 const projectForm = ds.state({ title: "" })
 
@@ -41,12 +42,7 @@ const projects: Project[] = [
   }
 ]
 
-const DashboardLayout = (props:
-  {
-    title: string;
-    toolbar?: HtmlChild;
-    children?: HtmlChild
-  }) => (
+const DashboardLayout = (props: { title: string; toolbar?: HtmlChild; children?: HtmlChild }) => (
   <div class="shell" {...projectForm.attrs()}>
     <aside class="sidebar">
       <strong>Datastar Kit</strong>
@@ -106,10 +102,7 @@ export const app = new Elysia()
         title="Projects"
         toolbar={
           <form class="toolbar" {...ds.on("submit", ds.post("/projects"), { prevent: true })}>
-            <input
-              placeholder="New project title"
-              {...ds.bind(projectForm.$.title)}
-            />
+            <input placeholder="New project title" {...ds.bind(projectForm.$.title)} />
             <button>Add project</button>
           </form>
         }

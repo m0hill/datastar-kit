@@ -7,7 +7,7 @@ Datastar Kit exposes a small public surface through the package root plus a few 
 Use contextual namespaces for larger concepts:
 
 ```tsx
-import { ds, event, read, reply } from 'datastar-kit'
+import { ds, event, read, reply } from "datastar-kit"
 ```
 
 Configure JSX consumers with `jsx: "react-jsx"` and `jsxImportSource: "datastar-kit"`.

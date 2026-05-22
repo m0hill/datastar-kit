@@ -13,7 +13,9 @@ describe("request read helpers", () => {
   })
 
   it("decodes GET Datastar signals from the datastar query parameter", async () => {
-    const request = new Request(`http://localhost/signals?datastar=${encodeURIComponent('{"count":7}')}`)
+    const request = new Request(
+      `http://localhost/signals?datastar=${encodeURIComponent('{"count":7}')}`
+    )
 
     await expect(read.signals(request)).resolves.toEqual({ count: 7 })
   })

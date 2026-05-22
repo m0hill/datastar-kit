@@ -8,7 +8,9 @@ describe("HTML rendering boundary", () => {
     expect(renderToString(h("p", {}, "<script>alert(1)</script>"))).toBe(
       "<p>&lt;script&gt;alert(1)&lt;/script&gt;</p>"
     )
-    expect(renderToString(h("p", {}, unsafeHtml("<strong>trusted</strong>")))).toBe("<p><strong>trusted</strong></p>")
+    expect(renderToString(h("p", {}, unsafeHtml("<strong>trusted</strong>")))).toBe(
+      "<p><strong>trusted</strong></p>"
+    )
   })
 
   it("composes props with later values overriding earlier values", () => {
@@ -23,11 +25,7 @@ describe("HTML rendering boundary", () => {
     const count = signal<number, "count">("count")
     const node = h(
       "main",
-      mergeProps(
-        { id: "counter" },
-        dataSignals({ count: 0 }, { ifMissing: true }),
-        text(count)
-      ),
+      mergeProps({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true }), text(count)),
       "0"
     )
 
@@ -37,7 +35,9 @@ describe("HTML rendering boundary", () => {
   })
 
   it("renders child arrays and full pages", async () => {
-    expect(renderToString([h("span", {}, "A"), h("span", {}, "B")])).toBe("<span>A</span><span>B</span>")
+    expect(renderToString([h("span", {}, "A"), h("span", {}, "B")])).toBe(
+      "<span>A</span><span>B</span>"
+    )
     await expect(page(h("main", {}, "Hello")).text()).resolves.toBe(
       '<!doctype html><html lang="en"><head></head><body><main>Hello</main></body></html>'
     )

@@ -20,7 +20,12 @@ import {
   type OnModifiers,
   type TimingModifiers
 } from "./modifiers.js"
-import { assertSignalName, type Signal, type SignalStateInput, type SignalValueInput } from "./signals.js"
+import {
+  assertSignalName,
+  type Signal,
+  type SignalStateInput,
+  type SignalValueInput
+} from "./signals.js"
 
 /** Options for `ds.jsonSignals()`. */
 export interface JsonSignalsOptions {
@@ -41,7 +46,9 @@ export interface DataSignalsOptions {
 }
 
 /** A nested object of computed signal functions. */
-export type DataComputedValue = Expr<DatastarFunction<unknown>> | { readonly [key: string]: DataComputedValue }
+export type DataComputedValue =
+  | Expr<DatastarFunction<unknown>>
+  | { readonly [key: string]: DataComputedValue }
 
 /** Object-valued `data-computed` input. */
 export type DataComputedObject = Readonly<Record<string, DataComputedValue>>
@@ -76,22 +83,35 @@ const assertSignalObjectKeys = (values: SignalStateInput): void => {
 }
 
 /** Creates a Datastar `data-on:*` attribute. @see https://data-star.dev/reference/attributes#data-on */
-export const on = (event: string, expression: ExprInput<unknown>, modifiers?: OnModifiers): HtmlProps => ({
+export const on = (
+  event: string,
+  expression: ExprInput<unknown>,
+  modifiers?: OnModifiers
+): HtmlProps => ({
   [`data-on:${event}${onModifiers(modifiers)}`]: toJs(expression)
 })
 
 /** Creates a Datastar `data-on-intersect` attribute. @see https://data-star.dev/reference/attributes#data-on-intersect */
-export const onIntersect = (expression: ExprInput<unknown>, modifiers?: IntersectModifiers): HtmlProps => ({
+export const onIntersect = (
+  expression: ExprInput<unknown>,
+  modifiers?: IntersectModifiers
+): HtmlProps => ({
   [`data-on-intersect${intersectModifiers(modifiers)}`]: toJs(expression)
 })
 
 /** Creates a Datastar `data-on-interval` attribute. @see https://data-star.dev/reference/attributes#data-on-interval */
-export const onInterval = (expression: ExprInput<unknown>, modifiers?: IntervalModifiers): HtmlProps => ({
+export const onInterval = (
+  expression: ExprInput<unknown>,
+  modifiers?: IntervalModifiers
+): HtmlProps => ({
   [`data-on-interval${intervalModifiers(modifiers)}`]: toJs(expression)
 })
 
 /** Creates a Datastar `data-on-signal-patch` attribute. @see https://data-star.dev/reference/attributes#data-on-signal-patch */
-export const onSignalPatch = (expression: ExprInput<unknown>, modifiers?: TimingModifiers): HtmlProps => {
+export const onSignalPatch = (
+  expression: ExprInput<unknown>,
+  modifiers?: TimingModifiers
+): HtmlProps => {
   const parts: Array<string> = []
   appendTimingModifiers(parts, modifiers ?? {})
   return { [`data-on-signal-patch${modifierSuffix(parts)}`]: toJs(expression) }
@@ -103,8 +123,12 @@ export const onSignalPatchFilter = (filter: SignalFilter): HtmlProps => ({
 })
 
 /** Creates a Datastar `data-json-signals` attribute. @see https://data-star.dev/reference/attributes#data-json-signals */
-export const jsonSignals = (filter?: SignalFilter, options: JsonSignalsOptions = {}): HtmlProps => ({
-  [options.terse === true ? "data-json-signals__terse" : "data-json-signals"]: filter === undefined ? true : toJs(filter)
+export const jsonSignals = (
+  filter?: SignalFilter,
+  options: JsonSignalsOptions = {}
+): HtmlProps => ({
+  [options.terse === true ? "data-json-signals__terse" : "data-json-signals"]:
+    filter === undefined ? true : toJs(filter)
 })
 
 /** Creates a Datastar `data-preserve-attr` attribute. @see https://data-star.dev/reference/attributes#data-preserve-attr */
@@ -143,21 +167,30 @@ export const show = (expression: ExprInput<unknown>): HtmlProps => ({
 })
 
 /** Creates a Datastar `data-bind:*` attribute. @see https://data-star.dev/reference/attributes#data-bind */
-export const bind = <T, Name extends string>(name: Name | Signal<T, Name>, modifiers: BindModifiers = {}): HtmlProps => {
+export const bind = <T, Name extends string>(
+  name: Name | Signal<T, Name>,
+  modifiers: BindModifiers = {}
+): HtmlProps => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
   return { [`data-bind:${signalName}${bindModifiers(modifiers)}`]: true }
 }
 
 /** Creates a Datastar `data-ref:*` attribute. @see https://data-star.dev/reference/attributes#data-ref */
-export const ref = <Name extends string>(name: Name | Signal<unknown, Name>, modifiers: CaseModifiers = {}): HtmlProps => {
+export const ref = <Name extends string>(
+  name: Name | Signal<unknown, Name>,
+  modifiers: CaseModifiers = {}
+): HtmlProps => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
   return { [`data-ref:${signalName}${caseModifierSuffix(modifiers)}`]: true }
 }
 
 /** Creates a Datastar `data-indicator:*` attribute. @see https://data-star.dev/reference/attributes#data-indicator */
-export const indicator = <Name extends string>(name: Name | Signal<boolean, Name>, modifiers: CaseModifiers = {}): HtmlProps => {
+export const indicator = <Name extends string>(
+  name: Name | Signal<boolean, Name>,
+  modifiers: CaseModifiers = {}
+): HtmlProps => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
   return { [`data-indicator:${signalName}${caseModifierSuffix(modifiers)}`]: true }
@@ -174,7 +207,11 @@ export const dataAttrs = (mapping: Readonly<Record<string, ExprInput<unknown>>>)
 })
 
 /** Creates a keyed Datastar `data-class:*` attribute. @see https://data-star.dev/reference/attributes#data-class */
-export const dataClass = (name: string, expression: ExprInput<unknown>, modifiers?: CaseModifiers): HtmlProps => ({
+export const dataClass = (
+  name: string,
+  expression: ExprInput<unknown>,
+  modifiers?: CaseModifiers
+): HtmlProps => ({
   [`data-class:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression)
 })
 
@@ -184,7 +221,11 @@ export const dataClasses = (mapping: Readonly<Record<string, ExprInput<unknown>>
 })
 
 /** Creates a keyed Datastar `data-computed:*` attribute. @see https://data-star.dev/reference/attributes#data-computed */
-export const dataComputed = <T>(name: string, expression: ExprInput<T>, modifiers: CaseModifiers = {}): HtmlProps => {
+export const dataComputed = <T>(
+  name: string,
+  expression: ExprInput<T>,
+  modifiers: CaseModifiers = {}
+): HtmlProps => {
   assertUnmodifiedSignalName(name, modifiers)
   return { [`data-computed:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression) }
 }
@@ -206,13 +247,20 @@ export const dataStyles = (mapping: Readonly<Record<string, ExprInput<unknown>>>
 })
 
 /** Creates a keyed Datastar `data-signals:*` attribute. @see https://data-star.dev/reference/attributes#data-signals */
-export const dataSignal = (name: string, value: SignalValueInput, modifiers: DataSignalModifiers = {}): HtmlProps => {
+export const dataSignal = (
+  name: string,
+  value: SignalValueInput,
+  modifiers: DataSignalModifiers = {}
+): HtmlProps => {
   assertUnmodifiedSignalName(name, modifiers)
   return { [`data-signals:${name}${dataSignalModifiers(modifiers)}`]: toJs(value) }
 }
 
 /** Creates an object-valued Datastar `data-signals` attribute. @see https://data-star.dev/reference/attributes#data-signals */
-export const dataSignals = (values: SignalStateInput, options: DataSignalsOptions = {}): HtmlProps => {
+export const dataSignals = (
+  values: SignalStateInput,
+  options: DataSignalsOptions = {}
+): HtmlProps => {
   assertSignalObjectKeys(values)
   return {
     [options.ifMissing === true ? "data-signals__ifmissing" : "data-signals"]: toJs(values)

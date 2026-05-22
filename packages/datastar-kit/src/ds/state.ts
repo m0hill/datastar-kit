@@ -5,32 +5,44 @@ import { assertSignalName, Signal, SignalNameError } from "./signals.js"
 
 type SignalObject = Readonly<Record<string, SignalValue>>
 
-type WidenSignalValue<Value extends SignalValue> =
-  Value extends string ? string :
-    Value extends number ? number :
-      Value extends boolean ? boolean :
-        Value extends null ? null :
-          Value extends readonly (infer Item extends SignalValue)[] ? readonly WidenSignalValue<Item>[] :
-            Value extends SignalObject ? WidenSignalObject<Value> :
-              Value
+type WidenSignalValue<Value extends SignalValue> = Value extends string
+  ? string
+  : Value extends number
+    ? number
+    : Value extends boolean
+      ? boolean
+      : Value extends null
+        ? null
+        : Value extends readonly (infer Item extends SignalValue)[]
+          ? readonly WidenSignalValue<Item>[]
+          : Value extends SignalObject
+            ? WidenSignalObject<Value>
+            : Value
 
 type WidenSignalObject<T extends SignalObject> = {
   readonly [Key in keyof T & string]: WidenSignalValue<T[Key]>
 }
 
-type SignalRefFor<Value extends SignalValue, Name extends string> =
-  [Value] extends [readonly SignalValue[]] ? Signal<Value, Name> :
-    [Value] extends [SignalObject] ? StateSignalRefs<Value, Name> :
-      Signal<Value, Name>
+type SignalRefFor<Value extends SignalValue, Name extends string> = [Value] extends [
+  readonly SignalValue[]
+]
+  ? Signal<Value, Name>
+  : [Value] extends [SignalObject]
+    ? StateSignalRefs<Value, Name>
+    : Signal<Value, Name>
 
-type StatePatchValue<Value extends SignalValue> =
-  [Value] extends [readonly SignalValue[]] ? Value :
-    [Value] extends [SignalObject] ? StatePatch<Value> :
-      Value
+type StatePatchValue<Value extends SignalValue> = [Value] extends [readonly SignalValue[]]
+  ? Value
+  : [Value] extends [SignalObject]
+    ? StatePatch<Value>
+    : Value
 
 /** Nested typed Datastar signal references for a `ds.state(...)` object. */
 export type StateSignalRefs<T extends SignalObject, Prefix extends string = ""> = {
-  readonly [Key in keyof T & string]: SignalRefFor<T[Key], Prefix extends "" ? Key : `${Prefix}.${Key}`>
+  readonly [Key in keyof T & string]: SignalRefFor<
+    T[Key],
+    Prefix extends "" ? Key : `${Prefix}.${Key}`
+  >
 }
 
 /** Type-checked partial signal patch accepted by a `ds.state(...)` helper. */
@@ -139,7 +151,9 @@ export const state = <T extends SignalObject>(defaults: T): State<WidenSignalObj
       return cloneSignalState(values as SignalObject)
     },
     reset(overrides) {
-      return overrides === undefined ? cloneSignalState(clonedDefaults) : mergeSignalState(clonedDefaults, overrides as SignalObject)
+      return overrides === undefined
+        ? cloneSignalState(clonedDefaults)
+        : mergeSignalState(clonedDefaults, overrides as SignalObject)
     }
   }
 }

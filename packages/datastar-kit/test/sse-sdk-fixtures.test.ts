@@ -3,19 +3,28 @@ import { describe, expect, it } from "vitest"
 import { executeScript, patchElements, patchSignals } from "../src/sse.js"
 
 const fixture = (name: string): string =>
-  readFileSync(new URL(`../../../../datastar/sdk/test/get-cases/${name}/output.txt`, import.meta.url), "utf8")
+  readFileSync(
+    new URL(`../../../../datastar/sdk/test/get-cases/${name}/output.txt`, import.meta.url),
+    "utf8"
+  )
 
 describe("additional Datastar SDK fixtures", () => {
   it("matches the multiline patch-elements fixture", () => {
-    expect(patchElements("<div>\n  <span>Merge</span>\n</div>")).toBe(fixture("patchElementsWithMultilineElements"))
+    expect(patchElements("<div>\n  <span>Merge</span>\n</div>")).toBe(
+      fixture("patchElementsWithMultilineElements")
+    )
   })
 
   it("matches the multiline patch-signals fixture", () => {
-    expect(patchSignals({ one: "first\n signal", two: "second signal" })).toBe(fixture("patchSignalsWithMultilineSignals"))
+    expect(patchSignals({ one: "first\n signal", two: "second signal" })).toBe(
+      fixture("patchSignalsWithMultilineSignals")
+    )
   })
 
   it("matches the raw multiline patch-signals fixture", () => {
-    expect(patchSignals('{\n"one": "first signal",\n"two":  \n"second signal"}')).toBe(fixture("patchSignalsWithMultilineJson"))
+    expect(patchSignals('{\n"one": "first signal",\n"two":  \n"second signal"}')).toBe(
+      fixture("patchSignalsWithMultilineJson")
+    )
   })
 
   it("matches remove-elements fixtures through remove mode", () => {

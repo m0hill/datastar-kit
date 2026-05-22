@@ -3,18 +3,17 @@ import { Hono } from "hono"
 import { z } from "zod"
 import { ds, event, read, reply } from "datastar-kit"
 
-const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+const DATASTAR_RUNTIME =
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
-const signup = ds.state(
-  {
+const signup = ds.state({
+  name: "",
+  email: "",
+  errors: {
     name: "",
-    email: "",
-    errors:
-    {
-      name: "",
-      email: ""
-    }
-  })
+    email: ""
+  }
+})
 
 const SignupSignals = z.object({
   name: z.string().trim().min(2, "Enter your name"),
@@ -34,7 +33,11 @@ app.get("/", () =>
             <input name="name" {...ds.bind(signup.$.name)} />
           </label>
           <br />
-          <small style="display: none; color: crimson" {...ds.show(signup.$.errors.name)} {...ds.text(signup.$.errors.name)}></small>
+          <small
+            style="display: none; color: crimson"
+            {...ds.show(signup.$.errors.name)}
+            {...ds.text(signup.$.errors.name)}
+          ></small>
         </p>
 
         <p>
@@ -44,7 +47,11 @@ app.get("/", () =>
             <input name="email" {...ds.bind(signup.$.email)} />
           </label>
           <br />
-          <small style="display: none; color: crimson" {...ds.show(signup.$.errors.email)} {...ds.text(signup.$.errors.email)}></small>
+          <small
+            style="display: none; color: crimson"
+            {...ds.show(signup.$.errors.email)}
+            {...ds.text(signup.$.errors.email)}
+          ></small>
         </p>
 
         <button type="submit">Create account</button>
@@ -77,7 +84,11 @@ app.post("/signup", async (c) => {
   const input = result.data
   return reply.stream([
     event.signals(signup.reset()),
-    event.patch(<p id="result">Thanks {input.name}, check {input.email}.</p>)
+    event.patch(
+      <p id="result">
+        Thanks {input.name}, check {input.email}.
+      </p>
+    )
   ])
 })
 

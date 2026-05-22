@@ -158,7 +158,9 @@ const sseHeaders = {
   "content-type": "text/event-stream"
 } as const
 
-const childrenArray = (child: HtmlChild | readonly HtmlChild[] | undefined): readonly HtmlChild[] => {
+const childrenArray = (
+  child: HtmlChild | readonly HtmlChild[] | undefined
+): readonly HtmlChild[] => {
   if (child === undefined) {
     return []
   }
@@ -170,7 +172,12 @@ const htmlDocument = (body: HtmlChild | readonly HtmlChild[], options: PageOptio
     h(
       "html",
       { lang: options.lang ?? "en" },
-      h("head", {}, options.title === undefined ? null : h("title", {}, options.title), ...childrenArray(options.head)),
+      h(
+        "head",
+        {},
+        options.title === undefined ? null : h("title", {}, options.title),
+        ...childrenArray(options.head)
+      ),
       h("body", {}, ...childrenArray(body))
     )
   )}`
@@ -309,7 +316,10 @@ const safeNavigationUrl = (
   for (const origin of options.allowedOrigins ?? []) {
     try {
       const allowed = new URL(origin.toString())
-      if ((allowed.protocol === "http:" || allowed.protocol === "https:") && allowed.origin === url.origin) {
+      if (
+        (allowed.protocol === "http:" || allowed.protocol === "https:") &&
+        allowed.origin === url.origin
+      ) {
         return url.toString()
       }
     } catch {
@@ -350,8 +360,7 @@ export const patch = (
   elements: HtmlChild,
   options: PatchOptions = {},
   init: StreamResponseInit = {}
-): Response =>
-  response(eventPatch(elements, options), init, 200, sseHeaders)
+): Response => response(eventPatch(elements, options), init, 200, sseHeaders)
 
 /**
  * Creates a Datastar SSE signal patch response.
@@ -365,8 +374,7 @@ export const signals = (
   value: SignalState,
   options: SignalsOptions = {},
   init: StreamResponseInit = {}
-): Response =>
-  response(eventSignals(value, options), init, 200, sseHeaders)
+): Response => response(eventSignals(value, options), init, 200, sseHeaders)
 
 /**
  * Creates a Datastar SSE stream response from event chunks.
@@ -391,8 +399,7 @@ export const stream = (
  * @param init Native response options excluding status fields.
  * @returns A `204` no-content `Response`.
  */
-export const done = (init: StreamResponseInit = {}): Response =>
-  response(null, init, 204)
+export const done = (init: StreamResponseInit = {}): Response => response(null, init, 204)
 
 /**
  * Creates a Datastar direct HTML response.
@@ -417,7 +424,9 @@ export const directHtml = (
     ...(selector === undefined ? {} : { "datastar-selector": selector }),
     ...(mode === undefined ? {} : { "datastar-mode": mode }),
     ...(namespace === undefined ? {} : { "datastar-namespace": namespace }),
-    ...(useViewTransition === undefined ? {} : { "datastar-use-view-transition": String(useViewTransition) })
+    ...(useViewTransition === undefined
+      ? {}
+      : { "datastar-use-view-transition": String(useViewTransition) })
   })
 }
 
@@ -465,7 +474,9 @@ export const directScript = (
   const { attributes } = options
   return response(script, init, 200, {
     "content-type": "text/javascript; charset=utf-8",
-    ...(attributes === undefined ? {} : { "datastar-script-attributes": JSON.stringify(attributes) })
+    ...(attributes === undefined
+      ? {}
+      : { "datastar-script-attributes": JSON.stringify(attributes) })
   })
 }
 
@@ -485,5 +496,9 @@ export const navigate = (
 ): Response => {
   const { baseUrl, allowedOrigins, ...scriptOptions } = options
   const safeUrl = safeNavigationUrl(url, { baseUrl, allowedOrigins })
-  return directScript(`setTimeout(() => { window.location.href = ${JSON.stringify(safeUrl)} })`, scriptOptions, init)
+  return directScript(
+    `setTimeout(() => { window.location.href = ${JSON.stringify(safeUrl)} })`,
+    scriptOptions,
+    init
+  )
 }

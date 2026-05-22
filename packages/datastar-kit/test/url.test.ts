@@ -5,7 +5,9 @@ describe("dynamic URL helpers", () => {
   it("builds encoded query URL expressions from signals", () => {
     const q = signal<string, "q">("q")
 
-    expect(queryUrl("/search", { q }).toDatastarExpression()).toBe("`/search?q=${encodeURIComponent($q)}`")
+    expect(queryUrl("/search", { q }).toDatastarExpression()).toBe(
+      "`/search?q=${encodeURIComponent($q)}`"
+    )
   })
 
   it("uses ampersands when the path already has a query string", () => {

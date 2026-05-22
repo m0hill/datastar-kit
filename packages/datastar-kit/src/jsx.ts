@@ -31,7 +31,9 @@ export type JsxComponentProps = Readonly<Record<string, unknown>> & {
  */
 export type JsxComponent = (props: JsxComponentProps) => JsxElement
 
-const childrenProp = (children: readonly HtmlChild[]): HtmlChild | readonly HtmlChild[] | undefined => {
+const childrenProp = (
+  children: readonly HtmlChild[]
+): HtmlChild | readonly HtmlChild[] | undefined => {
   if (children.length === 0) {
     return undefined
   }
@@ -48,7 +50,11 @@ const normalizePropName = (key: string): string => {
 }
 
 const isPropValue = (value: unknown): value is HtmlPropValue =>
-  value === null || value === undefined || typeof value === "string" || typeof value === "number" || typeof value === "boolean"
+  value === null ||
+  value === undefined ||
+  typeof value === "string" ||
+  typeof value === "number" ||
+  typeof value === "boolean"
 
 const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): HtmlProps => {
   const cleaned: Record<string, HtmlPropValue> = {}
@@ -73,7 +79,10 @@ const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): Htm
   return cleaned
 }
 
-const cleanComponentProps = (input: Readonly<Record<string, unknown>> | null, children: readonly HtmlChild[]): JsxComponentProps => {
+const cleanComponentProps = (
+  input: Readonly<Record<string, unknown>> | null,
+  children: readonly HtmlChild[]
+): JsxComponentProps => {
   const cleaned: Record<string, unknown> & { children?: HtmlChild | readonly HtmlChild[] } = {}
 
   for (const [key, value] of Object.entries(input ?? {})) {
@@ -98,7 +107,9 @@ const cleanComponentProps = (input: Readonly<Record<string, unknown>> | null, ch
  * @param props Fragment children supplied by the JSX transform.
  * @returns The children as a renderable array.
  */
-export const Fragment = (props: { readonly children?: HtmlChild | readonly HtmlChild[] }): readonly HtmlChild[] => {
+export const Fragment = (props: {
+  readonly children?: HtmlChild | readonly HtmlChild[]
+}): readonly HtmlChild[] => {
   const children = props.children
   if (children === undefined) {
     return []

@@ -2,7 +2,8 @@ import { defineConfig } from "vitepress"
 
 export default defineConfig({
   title: "Datastar Kit",
-  description: "Documentation for server-driven TypeScript UI with Web Standard Request and Response primitives.",
+  description:
+    "Documentation for server-driven TypeScript UI with Web Standard Request and Response primitives.",
   cleanUrls: true,
   themeConfig: {
     siteTitle: "Datastar Kit",
@@ -50,9 +51,7 @@ export default defineConfig({
         ]
       }
     ],
-    socialLinks: [
-      { icon: "github", link: "https://github.com/m0hill/datastar-kit" }
-    ],
+    socialLinks: [{ icon: "github", link: "https://github.com/m0hill/datastar-kit" }],
     search: {
       provider: "local"
     }

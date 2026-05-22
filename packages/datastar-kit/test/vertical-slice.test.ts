@@ -40,6 +40,8 @@ describe("minimal Web Standards vertical slice", () => {
     })
     const response = await increment(request)
 
-    expect(await response.text()).toBe('event: datastar-patch-signals\ndata: signals {"count":8}\n\n')
+    expect(await response.text()).toBe(
+      'event: datastar-patch-signals\ndata: signals {"count":8}\n\n'
+    )
   })
 })

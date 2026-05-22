@@ -15,7 +15,10 @@ npm i datastar-kit
 Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; use a pinned runtime URL or a self-hosted copy compatible with that version.
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"></script>
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+></script>
 ```
 
 For JSX, configure TypeScript once:

@@ -67,21 +67,21 @@ return reply.patch(<Count />)
 Use `selector` when the patch target is not the returned element itself:
 
 ```tsx
-reply.patch(<ModalBody />, { selector: '#modal-slot', mode: 'inner' })
-reply.patch(<Toast id="saved" />, { selector: '#notifications', mode: 'prepend' })
-reply.patch('', { selector: '#empty-state', mode: 'remove' })
+reply.patch(<ModalBody />, { selector: "#modal-slot", mode: "inner" })
+reply.patch(<Toast id="saved" />, { selector: "#notifications", mode: "prepend" })
+reply.patch("", { selector: "#empty-state", mode: "remove" })
 ```
 
-| Mode | Target | Payload effect |
-| --- | --- | --- |
-| `outer` | Payload top-level `id`, or explicit `selector` | Morphs the target element itself. This is the default. |
-| `inner` | `selector` | Morphs only the target's children. The target tag and attributes remain. |
-| `replace` | Payload top-level `id`, or explicit `selector` | Replaces the selected element without morphing. |
-| `prepend` | `selector` | Inserts payload as the first child of the target. |
-| `append` | `selector` | Inserts payload as the last child of the target. |
-| `before` | `selector` | Inserts payload immediately before the target. |
-| `after` | `selector` | Inserts payload immediately after the target. |
-| `remove` | `selector` | Removes the target. Datastar Kit does not send an `elements` payload for this mode. |
+| Mode      | Target                                         | Payload effect                                                                      |
+| --------- | ---------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `outer`   | Payload top-level `id`, or explicit `selector` | Morphs the target element itself. This is the default.                              |
+| `inner`   | `selector`                                     | Morphs only the target's children. The target tag and attributes remain.            |
+| `replace` | Payload top-level `id`, or explicit `selector` | Replaces the selected element without morphing.                                     |
+| `prepend` | `selector`                                     | Inserts payload as the first child of the target.                                   |
+| `append`  | `selector`                                     | Inserts payload as the last child of the target.                                    |
+| `before`  | `selector`                                     | Inserts payload immediately before the target.                                      |
+| `after`   | `selector`                                     | Inserts payload immediately after the target.                                       |
+| `remove`  | `selector`                                     | Removes the target. Datastar Kit does not send an `elements` payload for this mode. |
 
 ## View transitions
 
@@ -90,8 +90,8 @@ Pass `useViewTransition: true` when a patch should opt into Datastar's native br
 ```tsx
 reply.patch(<Card id="featured-card" />, { useViewTransition: true })
 reply.patch(<Toast id="saved" />, {
-  selector: '#notifications',
-  mode: 'prepend',
+  selector: "#notifications",
+  mode: "prepend",
   useViewTransition: true
 })
 ```
@@ -105,7 +105,7 @@ The option is available on `reply.patch(...)`, `event.patch(...)`, `reply.direct
 Use `inner` when a stable shell should keep its outer element:
 
 ```tsx
-reply.patch(<PanelBody />, { selector: '#target', mode: 'inner' })
+reply.patch(<PanelBody />, { selector: "#target", mode: "inner" })
 ```
 
 ```diff
@@ -120,7 +120,7 @@ reply.patch(<PanelBody />, { selector: '#target', mode: 'inner' })
 Use `append` or `prepend` when the payload belongs inside a container:
 
 ```tsx
-reply.patch(<TodoItem todo={todo} />, { selector: '#todos', mode: 'append' })
+reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
 ```
 
 ```diff
@@ -134,8 +134,10 @@ Use `before` or `after` when the payload belongs next to a known element:
 
 ```tsx
 reply.patch(
-  <p id="email-error" class="error">Enter a valid email.</p>,
-  { selector: '#email', mode: 'after' }
+  <p id="email-error" class="error">
+    Enter a valid email.
+  </p>,
+  { selector: "#email", mode: "after" }
 )
 ```
 
@@ -148,7 +150,7 @@ reply.patch(
 Use `remove` when the selected element should leave the document:
 
 ```tsx
-reply.patch('', { selector: '#toast-saved', mode: 'remove' })
+reply.patch("", { selector: "#toast-saved", mode: "remove" })
 ```
 
 ```text
@@ -179,8 +181,8 @@ Do not generate a fresh id on every render. A changing id turns a predictable pa
 
 ```tsx
 reply.directHtml(<TodoItem todo={todo} />, {
-  selector: '#todos',
-  mode: 'append'
+  selector: "#todos",
+  mode: "append"
 })
 ```
 

@@ -3,7 +3,9 @@ import { patchElements, patchSignals } from "../src/sse.js"
 
 describe("Datastar SSE encoding", () => {
   it("encodes default element patches like the SDK fixture", () => {
-    expect(patchElements("<div>Merge</div>")).toBe("event: datastar-patch-elements\ndata: elements <div>Merge</div>\n\n")
+    expect(patchElements("<div>Merge</div>")).toBe(
+      "event: datastar-patch-elements\ndata: elements <div>Merge</div>\n\n"
+    )
   })
 
   it("encodes element patch options in Datastar SDK order", () => {
@@ -40,11 +42,14 @@ describe("Datastar SSE encoding", () => {
 
   it("encodes signal patch options like the SDK fixture", () => {
     expect(
-      patchSignals({ one: 1, two: 2 }, {
-        id: "event1",
-        retry: 2000,
-        onlyIfMissing: true
-      })
+      patchSignals(
+        { one: 1, two: 2 },
+        {
+          id: "event1",
+          retry: 2000,
+          onlyIfMissing: true
+        }
+      )
     ).toBe(
       'event: datastar-patch-signals\nid: event1\nretry: 2000\ndata: onlyIfMissing true\ndata: signals {"one":1,"two":2}\n\n'
     )

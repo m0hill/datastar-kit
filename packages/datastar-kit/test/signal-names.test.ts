@@ -31,5 +31,4 @@ describe("Datastar signal name validation", () => {
     })
     expect(() => dataSignals({ "bad-key": true })).toThrow(SignalNameError)
   })
-
 })

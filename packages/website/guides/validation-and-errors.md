@@ -7,8 +7,8 @@ Schema validation is app-owned. Datastar Kit does not generate signal contracts 
 Use `read.signals(request)` for Datastar transport decoding, then call Zod, Valibot, ArkType, Effect Schema, or any other validator directly:
 
 ```tsx
-import { z } from 'zod'
-import { ds, read, reply } from 'datastar-kit'
+import { z } from "zod"
+import { ds, read, reply } from "datastar-kit"
 
 const ContactSchema = z.object({
   name: z.string(),
@@ -16,9 +16,9 @@ const ContactSchema = z.object({
 })
 
 const contact = ds.state({
-  name: '',
-  email: '',
-  _validation: { email: '' }
+  name: "",
+  email: "",
+  _validation: { email: "" }
 })
 
 const form = (
@@ -31,7 +31,7 @@ const form = (
 
 async function submit(request: Request): Promise<Response> {
   const input = ContactSchema.parse(await read.signals(request))
-  return reply.signals(contact.patch({ email: input.email.trim(), _validation: { email: '' } }))
+  return reply.signals(contact.patch({ email: input.email.trim(), _validation: { email: "" } }))
 }
 ```
 
@@ -44,7 +44,7 @@ const result = ContactSchema.safeParse(await read.signals(request))
 
 if (!result.success) {
   const { fieldErrors } = z.flattenError(result.error)
-  return reply.signals(contact.patch({ _validation: { email: fieldErrors.email?.[0] ?? '' } }))
+  return reply.signals(contact.patch({ _validation: { email: fieldErrors.email?.[0] ?? "" } }))
 }
 
 const input = result.data
