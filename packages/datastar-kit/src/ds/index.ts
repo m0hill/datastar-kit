@@ -37,6 +37,9 @@ export type { DatastarFunction, Expr, ExprInput } from "./expression.js"
 export { local, Signal, SignalNameError, signal } from "./signals.js"
 export type { SignalState, SignalStateInput, SignalValue, SignalValueInput } from "./signals.js"
 
+export { state } from "./state.js"
+export type { State, StateAttrsOptions, StatePatch, StateSignalRefs } from "./state.js"
+
 export type {
   BindModifiers,
   CaseModifier,

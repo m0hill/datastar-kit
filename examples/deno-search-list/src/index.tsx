@@ -20,8 +20,7 @@ const items: Item[] = [
   { id: 6, name: "Release checklist" }
 ]
 
-const query = ds.signal<string>("query")
-const name = ds.signal<string>("name")
+const listState = ds.state({ query: "", name: "" })
 
 const SearchSignals = z.object({
   query: z.string().optional().default("")
@@ -58,7 +57,7 @@ const routes: Route[] = [
       reply.page(
         <main
           class="min-h-screen bg-slate-100 px-6 py-12"
-          {...ds.dataSignals({ query: "", name: "" }, { ifMissing: true })}
+          {...listState.attrs()}
         >
           <section class="mx-auto max-w-2xl">
             <div>
@@ -71,7 +70,7 @@ const routes: Route[] = [
               <input
                 class="w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                 placeholder="Search items"
-                {...ds.bind(query)}
+                {...ds.bind(listState.$.query)}
                 {...ds.on("input", ds.get("/items/search"), { debounce: "200ms" })}
               />
 
@@ -79,7 +78,7 @@ const routes: Route[] = [
                 <input
                   class="min-w-0 flex-1 rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                   placeholder="New item"
-                  {...ds.bind(name)}
+                  {...ds.bind(listState.$.name)}
                 />
                 <button class="rounded-lg bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700">
                   Add
@@ -118,7 +117,7 @@ const routes: Route[] = [
       const itemName = signals.name.trim()
 
       if (itemName.length === 0) {
-        return reply.signals({ name: "" })
+        return reply.signals(listState.patch({ name: "" }))
       }
 
       const item = { id: nextItemId, name: itemName }
@@ -126,13 +125,13 @@ const routes: Route[] = [
       items.push(item)
 
       if (!item.name.toLowerCase().includes(signals.query.trim().toLowerCase())) {
-        return reply.signals({ name: "" })
+        return reply.signals(listState.patch({ name: "" }))
       }
 
       return reply.stream([
         event.patch("", { selector: "#empty-state", mode: "remove" }),
         event.patch(<ItemRow item={item} />, { selector: "#item-list", mode: "append" }),
-        event.signals({ name: "" })
+        event.signals(listState.patch({ name: "" }))
       ])
     }
   }

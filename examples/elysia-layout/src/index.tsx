@@ -5,6 +5,8 @@ import { z } from "zod"
 
 const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
+const projectForm = ds.state({ title: "" })
+
 interface Project {
   id: number
   title: string
@@ -45,7 +47,7 @@ const DashboardLayout = (props:
     toolbar?: HtmlChild;
     children?: HtmlChild
   }) => (
-  <div class="shell" {...ds.dataSignals({ title: "" }, { ifMissing: true })}>
+  <div class="shell" {...projectForm.attrs()}>
     <aside class="sidebar">
       <strong>Datastar Kit</strong>
       <nav>
@@ -106,7 +108,7 @@ export const app = new Elysia()
           <form class="toolbar" {...ds.on("submit", ds.post("/projects"), { prevent: true })}>
             <input
               placeholder="New project title"
-              {...ds.bind(ds.signal<string>("title"))}
+              {...ds.bind(projectForm.$.title)}
             />
             <button>Add project</button>
           </form>
@@ -168,7 +170,7 @@ export const app = new Elysia()
 
     return reply.stream([
       event.patch(<ProjectList projects={projects} />),
-      event.signals({ title: "" })
+      event.signals(projectForm.patch({ title: "" }))
     ])
   })
 

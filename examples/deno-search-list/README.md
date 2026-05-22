@@ -6,6 +6,7 @@ The example demonstrates:
 
 - `Deno.serve(...)` with `@std/http/unstable-route`;
 - server-rendered JSX through Datastar Kit's JSX runtime;
+- `ds.state(...)` for shared search/add-item signal defaults, refs, and reset patches;
 - Datastar signals validated with Zod;
 - search input that patches the stable `#item-list` region;
 - adding a new item with `mode: "append"`.

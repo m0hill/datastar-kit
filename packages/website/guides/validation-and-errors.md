@@ -1,6 +1,6 @@
 # Validation and errors
 
-Schema validation is app-owned. Datastar Kit does not generate signal contracts from schemas; author signals directly with `ds.signal(...)` and `ds.dataSignals(...)`, decode Datastar's signal transport with `read.signals(request)`, then validate the decoded state with the schema library your app already uses.
+Schema validation is app-owned. Datastar Kit does not generate signal contracts from schemas; author browser signal state with `ds.state(...)` or the lower-level signal helpers, decode Datastar's signal transport with `read.signals(request)`, then validate the decoded state with the schema library your app already uses.
 
 ## Decode, then validate
 
@@ -15,19 +15,23 @@ const ContactSchema = z.object({
   email: z.string().email()
 })
 
-const name = ds.signal<string>('name')
-const email = ds.signal<string>('email')
+const contact = ds.state({
+  name: '',
+  email: '',
+  _validation: { email: '' }
+})
 
 const form = (
-  <form {...ds.dataSignals({ name: '', email: '' }, { ifMissing: true })}>
-    <input name="name" {...ds.bind(name)} />
-    <input name="email" {...ds.bind(email)} />
+  <form {...contact.attrs()}>
+    <input name="name" {...ds.bind(contact.$.name)} />
+    <input name="email" {...ds.bind(contact.$.email)} />
+    <small {...ds.text(contact.$._validation.email)} />
   </form>
 )
 
 async function submit(request: Request): Promise<Response> {
   const input = ContactSchema.parse(await read.signals(request))
-  return reply.signals({ email: input.email.trim() })
+  return reply.signals(contact.patch({ email: input.email.trim(), _validation: { email: '' } }))
 }
 ```
 
@@ -40,11 +44,7 @@ const result = ContactSchema.safeParse(await read.signals(request))
 
 if (!result.success) {
   const { fieldErrors } = z.flattenError(result.error)
-  return reply.signals({
-    _validation: {
-      email: fieldErrors.email?.[0] ?? ''
-    }
-  })
+  return reply.signals(contact.patch({ _validation: { email: fieldErrors.email?.[0] ?? '' } }))
 }
 
 const input = result.data

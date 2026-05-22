@@ -2,6 +2,7 @@
 
 Minimal Hono + TSX example showing Datastar signal binding with server-side validation.
 
+- `ds.state(...)` keeps form defaults, typed refs, reset payloads, and validation patches in one place.
 - `data-bind` keeps form fields in `name` and `email` signals.
 - `@post('/signup')` sends the signals to the backend.
 - `read.signals(request)` decodes the Datastar payload, then Zod validates it directly.

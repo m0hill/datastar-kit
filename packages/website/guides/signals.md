@@ -4,17 +4,31 @@ Datastar signals are browser-side values used as sparse request input or local U
 
 ## Authoring signals
 
-Use `ds.signal(...)` for typed signal references and `ds.dataSignals(...)` / `ds.dataSignal(...)` for initial values:
+For a group of related browser signals, use `ds.state(...)` so defaults, typed refs, reset payloads, and partial patches come from one object:
 
 ```tsx
 import { ds } from 'datastar-kit'
 
-const q = ds.signal<string>('q')
+const signup = ds.state({
+  name: '',
+  email: '',
+  errors: { name: '', email: '' }
+})
 
-<main {...ds.dataSignals({ q: '' }, { ifMissing: true })}>
-  <input {...ds.bind(q)} />
+<main {...signup.attrs()}>
+  <input {...ds.bind(signup.$.name)} />
+  <small {...ds.text(signup.$.errors.email)} />
 </main>
 ```
+
+`state.attrs()` renders `data-signals` with `ifMissing: true` by default. Use `state.patch(...)` for type-checked signal patches and `state.reset()` when returning the defaults:
+
+```ts
+return reply.signals(signup.patch({ errors: { email: 'Enter a valid email' } }))
+return reply.signals(signup.reset())
+```
+
+Use `ds.signal(...)` with `ds.dataSignals(...)` / `ds.dataSignal(...)` directly when you only need one or two standalone signal refs.
 
 For client-side Datastar expressions that need more than a bare signal, prefer the `ds.expr` tagged template so signal refs and JavaScript literals are quoted consistently:
 
