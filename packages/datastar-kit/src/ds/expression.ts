@@ -4,6 +4,8 @@
  * @typeParam T The JavaScript value produced when Datastar evaluates the expression.
  */
 export interface Expr<T = unknown> {
+  /** Phantom type marker for the JavaScript value produced by this expression. */
+  readonly valueType?: T
   /** Serializes this value into Datastar expression source. */
   toDatastarExpression(): string
 }
@@ -66,7 +68,11 @@ export const toJs = (value: ExprInput<unknown>): string => {
       .join(", ")}}`
   }
 
-  return JSON.stringify(String(value))
+  if (typeof value === "bigint" || typeof value === "function" || typeof value === "symbol") {
+    return JSON.stringify(String(value))
+  }
+
+  return JSON.stringify("")
 }
 
 /**

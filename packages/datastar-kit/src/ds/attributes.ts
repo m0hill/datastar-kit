@@ -72,12 +72,15 @@ const assertDataComputedObjectKeys = (values: DataComputedObject): void => {
   }
 }
 
+const isSignalStateInput = (value: SignalValueInput): value is SignalStateInput =>
+  typeof value === "object" && value !== null && !Array.isArray(value) && !isExpr(value)
+
 const assertSignalObjectKeys = (values: SignalStateInput): void => {
   for (const [key, value] of Object.entries(values)) {
     assertSignalName(key)
 
-    if (typeof value === "object" && value !== null && !Array.isArray(value) && !isExpr(value)) {
-      assertSignalObjectKeys(value as SignalStateInput)
+    if (isSignalStateInput(value)) {
+      assertSignalObjectKeys(value)
     }
   }
 }
