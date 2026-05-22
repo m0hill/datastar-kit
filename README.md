@@ -4,7 +4,7 @@ Datastar Kit is a small TypeScript companion SDK for [Datastar](https://data-sta
 
 It provides typed APIs for the Datastar parts of a server-driven app: authoring attributes/actions/signals in TSX, reading signal payloads from `Request`, rendering server HTML, and returning native `Response` objects that Datastar can patch into the page.
 
-It is not a framework. Bring your own router, auth, database, validation, and runtime.
+It is not a framework. Bring your own router, auth, database, validation, and runtime. Use it with Hono, Elysia, Bun, Deno, Workers, or any app layer that can handle a `Request` and return a `Response`.
 
 [Documentation](https://datastar-kit.mohil.dev) · [Examples](examples) · [Datastar](https://data-star.dev/)
 
