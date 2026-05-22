@@ -36,7 +36,7 @@ class RawExpr<T = unknown> implements Expr<T> {
 
 export const raw = <T = unknown>(code: string): Expr<T> => new RawExpr<T>(code)
 
-export const isExpr = (value: unknown): value is Expr<unknown> =>
+export const isExpr = (value: unknown): value is Expr =>
   typeof value === "object" && value !== null && "toDatastarExpression" in value
 
 export const toJs = (value: ExprInput<unknown>): string => {

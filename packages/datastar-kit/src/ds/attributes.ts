@@ -47,7 +47,7 @@ export interface DataSignalsOptions {
 
 /** A nested object of computed signal functions. */
 export type DataComputedValue =
-  | Expr<DatastarFunction<unknown>>
+  | Expr<DatastarFunction>
   | { readonly [key: string]: DataComputedValue }
 
 /** Object-valued `data-computed` input. */

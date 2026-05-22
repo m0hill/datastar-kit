@@ -13,7 +13,7 @@ export type { SignalState, SignalValue } from "../types.js"
 export type SignalValueInput =
   | SignalValue
   | undefined
-  | Expr<unknown>
+  | Expr
   | readonly SignalValueInput[]
   | { readonly [key: string]: SignalValueInput }
 
@@ -62,7 +62,7 @@ export class Signal<T, Name extends string = string> implements Expr<T> {
   path<Key extends keyof NonNullable<T> & string>(
     key: Key
   ): Signal<NonNullable<T>[Key], `${Name}.${Key}`> {
-    return new Signal(`${this.name}.${key}` as `${Name}.${Key}`)
+    return new Signal(`${this.name}.${key}`)
   }
 }
 
