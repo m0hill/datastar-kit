@@ -24,6 +24,7 @@ This page is the map. Start with [Getting Started](index.md) for install and a q
 10. [Deployment](guides/deployment.md) — runtime adapters, Datastar assets, SSE proxy settings, and smoke tests.
 11. [Testing](guides/testing.md) — request/response tests, protocol tests, and browser-runtime tests.
 12. [Examples](guides/examples.md) — workspace examples and what they demonstrate.
+13. [Agents](guides/agent.md) — how to vendor Datastar Kit source as read-only reference material for coding agents.
 
 ### 4. Reference
 

@@ -40,7 +40,8 @@ export default defineConfig({
           { text: "Security", link: "/guides/security" },
           { text: "Deployment", link: "/guides/deployment" },
           { text: "Testing", link: "/guides/testing" },
-          { text: "Examples", link: "/guides/examples" }
+          { text: "Examples", link: "/guides/examples" },
+          { text: "Agents", link: "/guides/agent" }
         ]
       },
       {

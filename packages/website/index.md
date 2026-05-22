@@ -99,6 +99,7 @@ Start with the [documentation index](docs.md), or jump straight to the page that
 - [Actions and responses](guides/actions-and-responses.md) for command flow, status semantics, and response helpers.
 - [Patch elements](guides/patch-elements.md) for every DOM patch mode.
 - [Examples](guides/examples.md) for runnable workspace apps.
+- [Agents](guides/agent.md) for setting up agent-readable source reference material.
 
 ## Links
 
