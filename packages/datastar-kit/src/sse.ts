@@ -1,4 +1,5 @@
 import type { SignalState } from "./types.js"
+import { escapeHtmlAttribute } from "./html.js"
 
 export type { SignalState, SignalValue } from "./types.js"
 
@@ -104,14 +105,6 @@ const serializeEvent = (event: string, options: SseEventOptions, lines: Readonly
 const encodeSignals = (value: SignalState | string): string =>
   typeof value === "string" ? value : JSON.stringify(value)
 
-const escapeAttribute = (value: string): string =>
-  value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;")
-
 const scriptAttributes = (options: ExecuteScriptOptions): string => {
   const attrs: Array<string> = []
 
@@ -120,7 +113,7 @@ const scriptAttributes = (options: ExecuteScriptOptions): string => {
   }
 
   for (const [key, value] of Object.entries(options.attributes ?? {})) {
-    attrs.push(`${key}="${escapeAttribute(String(value))}"`)
+    attrs.push(`${key}="${escapeHtmlAttribute(String(value))}"`)
   }
 
   return attrs.length === 0 ? "" : ` ${attrs.join(" ")}`

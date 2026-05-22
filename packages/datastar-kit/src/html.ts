@@ -57,14 +57,14 @@ const isHtmlNode = (value: unknown): value is HtmlNode =>
   "props" in value &&
   "children" in value
 
-const escapeText = (value: string): string =>
+const escapeHtmlText = (value: string): string =>
   value
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
 
-const escapeProp = (value: string): string =>
-  escapeText(value)
+export const escapeHtmlAttribute = (value: string): string =>
+  escapeHtmlText(value)
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;")
 
@@ -81,7 +81,7 @@ const renderProps = (props: HtmlProps): string => {
       continue
     }
 
-    rendered.push(`${key}="${escapeProp(String(value))}"`)
+    rendered.push(`${key}="${escapeHtmlAttribute(String(value))}"`)
   }
 
   return rendered.length === 0 ? "" : ` ${rendered.join(" ")}`
@@ -152,7 +152,7 @@ export const renderToString = (child: HtmlChild): string => {
   }
 
   if (!isHtmlNode(child)) {
-    return escapeText(String(child))
+    return escapeHtmlText(String(child))
   }
 
   const renderedProps = renderProps(child.props)
