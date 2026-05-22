@@ -14,6 +14,10 @@ describe("additional Datastar SDK fixtures", () => {
     expect(patchSignals({ one: "first\n signal", two: "second signal" })).toBe(fixture("patchSignalsWithMultilineSignals"))
   })
 
+  it("matches the raw multiline patch-signals fixture", () => {
+    expect(patchSignals('{\n"one": "first signal",\n"two":  \n"second signal"}')).toBe(fixture("patchSignalsWithMultilineJson"))
+  })
+
   it("matches remove-elements fixtures through remove mode", () => {
     expect(
       patchElements("", {

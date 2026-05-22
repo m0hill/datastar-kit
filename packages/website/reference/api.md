@@ -15,7 +15,7 @@ Configure JSX consumers with `jsx: "react-jsx"` and `jsxImportSource: "datastar-
 ## Root namespaces
 
 - `ds` — Datastar attributes, actions, signal refs, expression helpers, and modifiers.
-- `event` — rendered Datastar SSE event chunks (`patch`, `signals`, `script`) for `reply.stream(...)`.
+- `event` — rendered Datastar SSE event chunks (`patch`, `signals`, `script`) for `reply.stream(...)`; signal chunks take signal-state objects.
 - `read` — Datastar JSON object signal decoding from native `Request` values.
 - `reply` — native `Response` helpers for pages, SSE patches, direct responses, navigation, streams, and no-content command completion.
 
@@ -28,7 +28,7 @@ Configure JSX consumers with `jsx: "react-jsx"` and `jsxImportSource: "datastar-
 
 ## Explicit subpaths
 
-- `datastar-kit/sse` — low-level event encoding (`patchElements`, `patchSignals`, `executeScript`) for protocol tests and custom encoders.
+- `datastar-kit/sse` — low-level event encoding (`patchElements`, `patchSignals`, `executeScript`) for protocol tests and custom encoders, including raw serialized signal patch source when needed.
 - `datastar-kit/jsx-runtime` / `datastar-kit/jsx-dev-runtime` — TypeScript automatic JSX runtime entrypoints.
 
 Related guides: [Actions and responses](../guides/actions-and-responses.md), [Signals](../guides/signals.md), [HTML and JSX](../guides/html-and-jsx.md).

@@ -356,13 +356,13 @@ export const patch = (
 /**
  * Creates a Datastar SSE signal patch response.
  *
- * @param value Signal state or a pre-encoded signal patch string.
+ * @param value Signal state to patch.
  * @param options Datastar signal patch options.
  * @param init Native response options excluding status fields.
  * @returns A `200` SSE `Response` containing one patch-signals event.
  */
 export const signals = (
-  value: SignalState | string,
+  value: SignalState,
   options: SignalsOptions = {},
   init: StreamResponseInit = {}
 ): Response =>
@@ -428,18 +428,18 @@ export const directHtml = (
  * Prefer `reply.signals()` for normal Datastar signal patches. Direct signal responses are public
  * escape hatches for integrations that specifically need Datastar's direct-response handling.
  *
- * @param value Signal state or a pre-encoded signal patch string.
+ * @param value Signal state to patch.
  * @param options Direct signal response options.
  * @param init Native response options excluding status fields.
  * @returns A `200` direct JSON `Response`.
  */
 export const directSignals = (
-  value: SignalState | string,
+  value: SignalState,
   options: DirectSignalsOptions = {},
   init: StreamResponseInit = {}
 ): Response => {
   const { onlyIfMissing } = options
-  return response(typeof value === "string" ? value : JSON.stringify(value), init, 200, {
+  return response(JSON.stringify(value), init, 200, {
     "content-type": "application/json; charset=utf-8",
     ...(onlyIfMissing === undefined ? {} : { "datastar-only-if-missing": String(onlyIfMissing) })
   })

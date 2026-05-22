@@ -41,11 +41,13 @@ For user input, validate the decoded state with the schema library your app alre
 
 ## Patching signals
 
-Use `reply.signals(...)` for SSE signal patches or `reply.directSignals(...)` as an explicit direct-response escape hatch:
+Use `reply.signals(...)` for SSE signal patches or `reply.directSignals(...)` as an explicit direct-response escape hatch. Both helpers accept signal-state objects:
 
 ```ts
 return reply.signals({ saved: true })
 ```
+
+Datastar's wire protocol carries serialized patch source, but Datastar Kit keeps that raw string form in `datastar-kit/sse`. Use `event.signals(...)` and `reply.signals(...)` with objects such as `{ message: 'Saved' }`, not pre-serialized JSON strings.
 
 Signal patches are best for UI flags, validation messages, and small browser-side state changes. If the visible HTML depends on backend state, render that HTML on the server and patch elements instead.
 

@@ -27,11 +27,11 @@ Use `reply` helpers when a handler should produce Datastar-aware native `Respons
 
 - `reply.page(...)` — full HTML page/document response with ordinary HTTP status semantics.
 - `reply.patch(...)` — default SSE element patch response.
-- `reply.signals(...)` — default SSE signal patch response.
+- `reply.signals(...)` — default SSE signal patch response from a signal-state object.
 - `reply.stream(...)` — multiple events or long-lived SSE streams, usually from `event.patch(...)` / `event.signals(...)` chunks.
 - `reply.done(...)` — successful command with no body (`204`).
 - `reply.navigate(...)` — safe Datastar-driven navigation.
-- `reply.directHtml(...)`, `reply.directSignals(...)`, and `reply.directScript(...)` — explicit Datastar direct-response escape hatches.
+- `reply.directHtml(...)`, `reply.directSignals(...)`, and `reply.directScript(...)` — explicit Datastar direct-response escape hatches; direct signal responses also take signal-state objects.
 
 Datastar action helpers own their protocol status codes. Keep Datastar protocol options separate from native response options:
 
@@ -39,6 +39,8 @@ Datastar action helpers own their protocol status codes. Keep Datastar protocol 
 reply.patch(<Count />, {}, { headers: { 'x-action': 'increment' } })
 reply.signals({ saving: false }, { onlyIfMissing: true }, { headers: { 'x-action': 'save' } })
 ```
+
+Pass signal patches as objects at the `reply.*` and `event.*` layers. Raw serialized signal patch source belongs to the low-level `datastar-kit/sse` encoder.
 
 ## Status semantics
 

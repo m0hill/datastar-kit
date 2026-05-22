@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest"
 import * as event from "../src/event.js"
 import { h, unsafeHtml } from "../src/html.js"
 
+if (false) {
+  // @ts-expect-error Blessed event helpers require a signal-state object.
+  event.signals('{"title":""}')
+}
+
 describe("Datastar SSE event helpers", () => {
   it("renders HTML nodes into patch events", () => {
     expect(event.patch(h("output", { id: "count" }, 2), { selector: "#count" })).toBe(

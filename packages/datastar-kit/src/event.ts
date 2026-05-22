@@ -15,7 +15,7 @@ export const patch = (elements: HtmlChild, options?: PatchElementsOptions): stri
 
 /** Encodes signal state as one Datastar patch-signals SSE event chunk. */
 export const signals = (
-  value: SignalState | string,
+  value: SignalState,
   options?: PatchSignalsOptions
 ): string => encodePatchSignals(value, options)
 

@@ -163,7 +163,7 @@ export const patchElements = (elements: string, options: PatchElementsOptions = 
 /**
  * Encodes a Datastar `datastar-patch-signals` SSE event.
  *
- * @param signals Signal state or a pre-encoded signal patch string.
+ * @param signals Signal state or raw serialized signal patch source.
  * @param options Datastar patch-signals event options.
  * @returns A complete SSE event string.
  * @see https://data-star.dev/reference/sse_events#datastar-patch-signals

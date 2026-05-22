@@ -11,6 +11,10 @@ if (false) {
   reply.signals({ count: 1 }, {}, { status: 200 })
   // @ts-expect-error Datastar no-content replies own their protocol status.
   reply.done({ status: 204 })
+  // @ts-expect-error High-level signal replies require a signal-state object.
+  reply.signals('{"count":1}')
+  // @ts-expect-error Direct JSON signal replies require a signal-state object.
+  reply.directSignals('{"count":1}')
 }
 
 describe("reply direct Datastar responses", () => {
