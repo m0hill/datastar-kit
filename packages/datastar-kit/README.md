@@ -155,6 +155,15 @@ reply.patch(<Count />)
 reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
 ```
 
+Datastar patch options can be passed through alongside `selector` and `mode`. For example, `useViewTransition: true` asks Datastar to wrap the DOM update in the browser View Transition API when supported:
+
+```tsx
+reply.patch(<Count />, { useViewTransition: true })
+reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append", useViewTransition: true })
+```
+
+This is Datastar protocol behavior surfaced through Datastar Kit. The same option is accepted by `event.patch(...)`, `reply.directHtml(...)`, and fetch action `responseOverrides`.
+
 The initial page and later patches should render the same stable IDs for the same UI regions. Live streams use the same rule. The website docs include a visual guide to every patch mode in [`../website/guides/patch-elements.md`](../website/guides/patch-elements.md).
 
 ## Streaming events

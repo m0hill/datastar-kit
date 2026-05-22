@@ -83,6 +83,23 @@ reply.patch('', { selector: '#empty-state', mode: 'remove' })
 | `after` | `selector` | Inserts payload immediately after the target. |
 | `remove` | `selector` | Removes the target. Datastar Kit does not send an `elements` payload for this mode. |
 
+## View transitions
+
+Pass `useViewTransition: true` when a patch should opt into Datastar's native browser View Transition handling:
+
+```tsx
+reply.patch(<Card id="featured-card" />, { useViewTransition: true })
+reply.patch(<Toast id="saved" />, {
+  selector: '#notifications',
+  mode: 'prepend',
+  useViewTransition: true
+})
+```
+
+Datastar Kit forwards this as Datastar protocol data (`useViewTransition true` for SSE patches, or the `datastar-use-view-transition` header for direct HTML responses). It only affects browsers where Datastar can use the View Transition API, so patches should still work without it.
+
+The option is available on `reply.patch(...)`, `event.patch(...)`, `reply.directHtml(...)`, and fetch action `responseOverrides`.
+
 ## Mode examples
 
 Use `inner` when a stable shell should keep its outer element:
