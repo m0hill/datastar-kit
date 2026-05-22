@@ -12,7 +12,11 @@ Datastar Kit does **not** try to be your router, auth layer, database adapter, s
 npm i datastar-kit
 ```
 
-Add the Datastar browser runtime to your HTML from a pinned CDN URL or from your own served copy.
+Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; use a pinned runtime URL or a self-hosted copy compatible with that version.
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"></script>
+```
 
 For JSX, configure TypeScript once:
 

@@ -3,6 +3,8 @@ import { Elysia } from "elysia"
 import { ds, event, read, reply, type HtmlChild } from "datastar-kit"
 import { z } from "zod"
 
+const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 interface Project {
   id: number
   title: string
@@ -70,7 +72,7 @@ const DashboardLayout = (props:
 const pageOptions = (title: string) => ({
   title,
   head: [
-    <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js" />,
+    <script type="module" src={DATASTAR_RUNTIME} />,
     <link rel="stylesheet" href="/public/styles.css" />
   ]
 })

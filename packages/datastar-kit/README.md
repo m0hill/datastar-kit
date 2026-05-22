@@ -12,6 +12,12 @@ It provides typed helpers for Datastar attributes/actions/signals, server-render
 npm i datastar-kit
 ```
 
+`datastar-kit` does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; use a pinned runtime URL or a self-hosted copy compatible with that version.
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"></script>
+```
+
 For TSX views, set `jsxImportSource`:
 
 ```json
@@ -28,6 +34,8 @@ For TSX views, set `jsxImportSource`:
 ```tsx
 import { ds, reply } from "datastar-kit"
 
+const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 let count = 0
 
 const Counter = () => (
@@ -43,7 +51,9 @@ export function handle(request: Request): Response {
   const url = new URL(request.url)
 
   if (request.method === "GET" && url.pathname === "/") {
-    return reply.page(<Counter />)
+    return reply.page(<Counter />, {
+      head: <script type="module" src={DATASTAR_RUNTIME} />
+    })
   }
 
   if (request.method === "POST" && url.pathname === "/increment") {

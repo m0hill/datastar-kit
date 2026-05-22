@@ -2,6 +2,8 @@ import { route, type Route } from "@std/http/unstable-route"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
 
+const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 interface Item {
   id: number
   name: string
@@ -91,7 +93,7 @@ const routes: Route[] = [
         {
           title: "Deno searchable list",
           head: [
-            <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js" />,
+            <script type="module" src={DATASTAR_RUNTIME} />,
             <script src="https://cdn.tailwindcss.com" />
           ]
         }

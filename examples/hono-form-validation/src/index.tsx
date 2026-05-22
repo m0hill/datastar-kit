@@ -3,6 +3,8 @@ import { Hono } from "hono"
 import { z } from "zod"
 import { ds, event, read, reply } from "datastar-kit"
 
+const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 const nameError = ds.signal<string, "errors.name">("errors.name")
 const emailError = ds.signal<string, "errors.email">("errors.email")
 const SignupSignals = z.object({
@@ -43,7 +45,7 @@ app.get("/", () =>
     </main>,
     {
       title: "Datastar form validation",
-      head: <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js" />
+      head: <script type="module" src={DATASTAR_RUNTIME} />
     }
   )
 )

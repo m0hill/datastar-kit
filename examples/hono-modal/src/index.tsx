@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url"
 import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
 
+const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 const openModal = ds.signal<boolean, "modalOpen">("modalOpen")
 const app = new Hono()
 
@@ -31,7 +33,7 @@ app.get("/", () =>
       title: "Datastar Hono modal",
       head: [
         <link rel="stylesheet" href="/static/styles.css" />,
-        <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js" />
+        <script type="module" src={DATASTAR_RUNTIME} />
       ]
     }
   )

@@ -2,6 +2,8 @@ import { serve } from "@hono/node-server"
 import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
 
+const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 let count = 0
 
 const app = new Hono()
@@ -16,9 +18,10 @@ app.get("/", () =>
       <Count />
     </main>,
     {
-    title: "Hono counter",
-    head: [<script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js" />]
-  })
+      title: "Hono counter",
+      head: [<script type="module" src={DATASTAR_RUNTIME} />]
+    }
+  )
 )
 
 app.post("/increment", () => {

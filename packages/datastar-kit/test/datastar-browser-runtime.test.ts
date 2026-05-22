@@ -9,7 +9,7 @@ import { h, mergeProps, renderToString } from "../src/html.js"
 const execFile = promisify(execFileCallback)
 const agentBrowserAvailable = spawnSync("agent-browser", ["--version"], { stdio: "ignore" }).status === 0
 const browserIt = agentBrowserAvailable ? it : it.skip
-const DATASTAR_CDN = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
 const runtimePage = (): string => {
   const count = signal<number, "count">("count")
@@ -18,7 +18,7 @@ const runtimePage = (): string => {
     h(
       "html",
       { lang: "en" },
-      h("head", {}, h("script", { type: "module", src: DATASTAR_CDN })),
+      h("head", {}, h("script", { type: "module", src: DATASTAR_RUNTIME })),
       h(
         "body",
         {},

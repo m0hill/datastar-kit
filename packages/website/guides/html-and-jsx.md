@@ -33,6 +33,8 @@ Layouts are ordinary JSX functions. Put shared shell markup, navigation, scripts
 ```tsx
 import { reply, type HtmlChild } from 'datastar-kit'
 
+const DATASTAR_RUNTIME = "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 interface AppLayoutProps {
   title: string
   children?: HtmlChild
@@ -63,7 +65,7 @@ const ProjectsPage = (props: { projects: Project[] }) => (
 
 return reply.page(<ProjectsPage projects={projects} />, {
   title: 'Projects',
-  head: <script type="module" src={DATASTAR_CDN} />
+  head: <script type="module" src={DATASTAR_RUNTIME} />
 })
 ```
 
