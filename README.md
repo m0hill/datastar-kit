@@ -1,37 +1,34 @@
 # Datastar Kit
 
-Datastar Kit is an independent TypeScript companion SDK for building server-driven Datastar UI with Web Standard `Request` and `Response` primitives.
+Datastar Kit is a small TypeScript companion SDK for [Datastar](https://data-star.dev/).
 
-This repository is a pnpm workspace containing the publishable SDK package, documentation site, and examples.
+It provides typed APIs for the Datastar parts of a server-driven app: authoring attributes/actions/signals in TSX, reading signal payloads from `Request`, rendering server HTML, and returning native `Response` objects that Datastar can patch into the page.
 
-## Workspace packages
+It is not a framework. Bring your own router, auth, database, validation, and runtime.
 
-- [`packages/datastar-kit`](packages/datastar-kit) — the publishable SDK package, including source, tests, and package README.
-- [`packages/website`](packages/website) — the VitePress documentation site.
-- [`examples/hono-counter`](examples/hono-counter) — a standalone Hono counter example that consumes `datastar-kit` through a workspace dependency.
-- [`examples/hono-modal`](examples/hono-modal) — a Hono + TSX example showing a server-rendered native dialog controlled by Datastar signals.
-- [`examples/hono-form-validation`](examples/hono-form-validation) — a Hono + TSX example showing signal binding and server-side validation.
-- [`examples/hono-custom-actions`](examples/hono-custom-actions) — a Hono + TSX example moving imperative browser behavior into custom Datastar actions/plugins.
-- [`examples/elysia-layout`](examples/elysia-layout) — a Bun/Elysia layout example with named JSX slots and focused Datastar patches.
+[Documentation](https://datastar-kit.mohil.dev) · [Examples](examples) · [Datastar](https://data-star.dev/)
 
-## SDK quick look
+## Example
 
 ```tsx
 import { ds, reply } from "datastar-kit"
 
 let count = 0
 
+const Counter = () => (
+  <main>
+    <button type="button" {...ds.on("click", ds.post("/increment"))}>
+      Increment
+    </button>
+    <output id="count">{count}</output>
+  </main>
+)
+
 export function handle(request: Request): Response {
   const url = new URL(request.url)
 
   if (request.method === "GET" && url.pathname === "/") {
-    return reply.page(
-      <main id="counter">
-        <h1>Fetch counter</h1>
-        <button type="button" {...ds.on("click", ds.post("/increment"))}>Increment</button>{" "}
-        <output id="count">{count}</output>
-      </main>
-    )
+    return reply.page(<Counter />)
   }
 
   if (request.method === "POST" && url.pathname === "/increment") {
@@ -43,56 +40,37 @@ export function handle(request: Request): Response {
 }
 ```
 
-Read the package documentation at [`packages/datastar-kit/README.md`](packages/datastar-kit/README.md).
+The stable `id` is the patch contract. The server returns new HTML for `#count`; Datastar applies it in the browser.
 
-## Common commands
+## Install
 
-Install dependencies:
+```sh
+npm i datastar-kit
+```
+
+For TSX views, set `jsxImportSource`:
+
+```json
+{
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "datastar-kit"
+  }
+}
+```
+
+See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for setup, guides, API notes, and examples.
+
+## Repository
 
 ```sh
 pnpm install
-```
-
-Run all checks:
-
-```sh
 pnpm run check
 ```
 
-Run individual tasks:
-
-```sh
-pnpm run build
-pnpm run typecheck
-pnpm test
-```
-
-Run local development servers:
-
-```sh
-pnpm run dev:hono-counter
-pnpm run dev:hono-modal
-pnpm run dev:hono-form-validation
-pnpm run dev:hono-custom-actions
-pnpm run dev:elysia-layout
-pnpm run dev:website
-```
-
-## Repository layout
-
-```text
-packages/
-  datastar-kit/   # SDK source and package README
-  website/        # VitePress docs
-examples/
-  hono-counter/   # Hono counter example consuming the workspace package
-  hono-modal/     # Hono native dialog/modal recipe
-  hono-form-validation/ # Hono server-side validation recipe
-  hono-custom-actions/ # Hono custom Datastar actions/plugins recipe
-  elysia-layout/  # Bun/Elysia layout and named-slot example
-```
-
-Additional standalone examples can be added as new packages under `examples/*`.
+- SDK package: [`packages/datastar-kit`](packages/datastar-kit)
+- Documentation site: [`packages/website`](packages/website)
+- Runnable examples: [`examples`](examples)
 
 ## License
 
