@@ -1,7 +1,17 @@
 {
   "name": "datastar-kit",
   "version": "0.1.0",
-  "description": "Independent Datastar companion SDK for server-driven TypeScript applications",
+  "description": "Datastar companion SDK for server-driven TypeScript applications",
+  "homepage": "https://datastar-kit.mohil.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m0hill/datastar-kit.git",
+    "directory": "packages/datastar-kit"
+  },
+  "bugs": {
+    "url": "https://github.com/m0hill/datastar-kit/issues"
+  },
+  "author": "Mohil",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,16 +31,26 @@
     "./sse": {
       "types": "./dist/sse.d.ts",
       "default": "./dist/sse.js"
-    }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "sideEffects": false,
   "scripts": {
     "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "check": "pnpm run typecheck && pnpm run test && pnpm run build",
+    "pack:dry-run": "pnpm pack --dry-run",
+    "prepack": "pnpm run build",
+    "prepublishOnly": "pnpm run check",
+    "release:dry-run": "pnpm run check && pnpm pack --dry-run",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
