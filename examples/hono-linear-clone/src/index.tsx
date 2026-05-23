@@ -35,7 +35,7 @@ import {
   updateIssueSchema
 } from "./features/validation.js"
 import { invalidations } from "./realtime/hub.js"
-import { AppShell, Board, IssueComposer, IssuePanel, Sidebar } from "./ui/app.js"
+import { AppShell, Board, IssueComposer, IssuePanel, IssuePanelContent, Sidebar } from "./ui/app.js"
 import { LoginPage, SignupPage } from "./ui/auth.js"
 import { pageHead } from "./ui/layout.js"
 import { appState, authState } from "./ui/state.js"
@@ -230,6 +230,24 @@ app.get("/issues/:id", async (c) => {
   return reply.patch(<IssuePanel detail={detail} />)
 })
 
+app.get("/issues/:id/live", async (c) => {
+  const issueId = issueIdParam.parse(c.req.param("id"))
+
+  async function* stream() {
+    for await (const _ of invalidations.subscribe()) {
+      if (c.req.raw.signal.aborted) {
+        return
+      }
+
+      yield event.patch(<IssuePanelContent detail={await loadIssue(issueId)} />)
+    }
+  }
+
+  return reply.stream(stream(), {
+    heartbeat: { intervalMs: 15_000, comment: "issue-detail" }
+  })
+})
+
 app.patch("/issues/:id", async (c) => {
   const issueId = issueIdParam.parse(c.req.param("id"))
   const form = await c.req.parseBody()
@@ -243,7 +261,7 @@ app.patch("/issues/:id", async (c) => {
   const [workspace, detail] = await Promise.all([loadWorkspace(), loadIssue(issueId)])
   return reply.stream([
     event.patch(<Board workspace={workspace} />),
-    event.patch(<IssuePanel detail={detail} />)
+    event.patch(<IssuePanelContent detail={detail} />)
   ])
 })
 
@@ -259,7 +277,7 @@ app.post("/issues/:id/comments", async (c) => {
   invalidations.publish()
   return reply.stream([
     event.signals(appState.patch({ commentBody: "", errors: appSignals.errors })),
-    event.patch(<IssuePanel detail={await loadIssue(issueId)} />)
+    event.patch(<IssuePanelContent detail={await loadIssue(issueId)} />)
   ])
 })
 

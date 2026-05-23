@@ -177,6 +177,18 @@ const Column = (props: { title: string; status: IssueStatus; children: HtmlChild
 
 export const IssuePanel = (props: { detail: IssueDetail | null }) => (
   <aside id="issue-panel" class="panel">
+    {props.detail === null ? null : (
+      <div
+        {...ds.onIntersect(ds.get(`/issues/${props.detail.issue.id}/live`), { once: true })}
+        style="position:absolute;width:1px;height:1px;overflow:hidden"
+      ></div>
+    )}
+    <IssuePanelContent detail={props.detail} />
+  </aside>
+)
+
+export const IssuePanelContent = (props: { detail: IssueDetail | null }) => (
+  <div id="issue-panel-content">
     {props.detail === null ? (
       <>
         <h2>No issue selected</h2>
@@ -185,7 +197,7 @@ export const IssuePanel = (props: { detail: IssueDetail | null }) => (
     ) : (
       <IssueDetailView detail={props.detail} />
     )}
-  </aside>
+  </div>
 )
 
 const IssueDetailView = (props: { detail: IssueDetail }) => {
