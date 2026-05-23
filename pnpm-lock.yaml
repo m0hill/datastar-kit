@@ -133,6 +133,9 @@ importers:
       drizzle-kit:
         specifier: 1.0.0-rc.4-5d5b77c
         version: 1.0.0-rc.4-5d5b77c
+      tsx:
+        specifier: ^4.22.3
+        version: 4.22.3
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -4084,7 +4087,6 @@ snapshots:
       '@esbuild/win32-arm64': 0.28.0
       '@esbuild/win32-ia32': 0.28.0
       '@esbuild/win32-x64': 0.28.0
-    optional: true
 
   estree-walker@2.0.2: {}
 
@@ -4518,7 +4520,6 @@ snapshots:
       esbuild: 0.28.0
     optionalDependencies:
       fsevents: 2.3.3
-    optional: true
 
   typescript@5.9.3: {}
 

@@ -10,7 +10,13 @@ The example intentionally starts with no data. Create an account in the UI, then
 pnpm --filter @datastar-kit/example-hono-linear-clone dev
 ```
 
-The `dev` script runs `drizzle-kit push` before building and starting the server. Set `DB_FILE_NAME` to choose a different SQLite file:
+The `dev` script runs the TSX source directly. Run migrations separately when the schema changes:
+
+```sh
+pnpm --filter @datastar-kit/example-hono-linear-clone db:migrate
+```
+
+Set `DB_FILE_NAME` to choose a different SQLite file:
 
 ```sh
 DB_FILE_NAME=./linear-clone.sqlite pnpm --filter @datastar-kit/example-hono-linear-clone dev

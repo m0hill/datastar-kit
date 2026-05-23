@@ -9,7 +9,7 @@
     "check": "pnpm run typecheck && pnpm run build",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "dev": "pnpm run build && node dist/index.js",
+    "dev": "tsx src/index.tsx",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
@@ -22,6 +22,7 @@
   "devDependencies": {
     "@types/node": "^24.10.1",
     "drizzle-kit": "1.0.0-rc.4-5d5b77c",
+    "tsx": "^4.22.3",
     "typescript": "^5.9.3"
   }
 }

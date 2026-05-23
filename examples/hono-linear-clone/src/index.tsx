@@ -5,12 +5,12 @@ import { HTTPException } from "hono/http-exception"
 import { z } from "zod"
 import { event, read, reply } from "datastar-kit"
 import {
-  clearSessionCookie,
   createSession,
   currentUser,
   deleteSession,
+  expiredSessionCookie,
   requireUser,
-  setSessionCookie,
+  sessionCookie,
   type AppVariables
 } from "./auth/session.js"
 import {
@@ -83,8 +83,11 @@ app.post("/login", async (c) => {
     return authErrorPatch({ form: "Username or password is incorrect" })
   }
 
-  setSessionCookie(c, await createSession(user.id))
-  return reply.navigate("/app")
+  return reply.navigate(
+    "/app",
+    {},
+    { headers: { "set-cookie": sessionCookie(await createSession(user.id)) } }
+  )
 })
 
 app.get("/signup", async (c) => {
@@ -108,8 +111,11 @@ app.post("/signup", async (c) => {
 
   try {
     const user = await createUser(result.data)
-    setSessionCookie(c, await createSession(user.id))
-    return reply.navigate("/app")
+    return reply.navigate(
+      "/app",
+      {},
+      { headers: { "set-cookie": sessionCookie(await createSession(user.id)) } }
+    )
   } catch {
     return authErrorPatch({ username: "That username is already taken" })
   }
@@ -117,8 +123,9 @@ app.post("/signup", async (c) => {
 
 app.post("/logout", async (c) => {
   await deleteSession(getCookie(c, "linear_session"))
-  clearSessionCookie(c)
-  return c.redirect("/login")
+  const response = c.redirect("/login")
+  response.headers.append("set-cookie", expiredSessionCookie())
+  return response
 })
 
 app.use("/app/*", requireUser)

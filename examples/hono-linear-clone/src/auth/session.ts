@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto"
 import { and, eq, gt } from "drizzle-orm"
 import type { Context, MiddlewareHandler } from "hono"
-import { getCookie, setCookie } from "hono/cookie"
+import { generateCookie, getCookie } from "hono/cookie"
 import { db } from "../db/index.js"
 import { sessions, users, type User } from "../db/schema.js"
 
@@ -22,23 +22,21 @@ export const createSession = async (userId: number) => {
   return id
 }
 
-export const setSessionCookie = (c: Context, sessionId: string) => {
-  setCookie(c, cookieName, sessionId, {
+export const sessionCookie = (sessionId: string) =>
+  generateCookie(cookieName, sessionId, {
     httpOnly: true,
     sameSite: "Lax",
     path: "/",
     maxAge: Math.floor(sessionMs / 1000)
   })
-}
 
-export const clearSessionCookie = (c: Context) => {
-  setCookie(c, cookieName, "", {
+export const expiredSessionCookie = () =>
+  generateCookie(cookieName, "", {
     httpOnly: true,
     sameSite: "Lax",
     path: "/",
     maxAge: 0
   })
-}
 
 export const deleteSession = async (sessionId: string | undefined) => {
   if (sessionId !== undefined) {
