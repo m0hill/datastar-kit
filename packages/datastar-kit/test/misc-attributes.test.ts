@@ -3,8 +3,8 @@ import { jsonSignals, preserveAttr, ref, regex, signal, SignalNameError } from "
 
 describe("misc Datastar attribute helpers", () => {
   it("builds data-ref attributes from names and signals", () => {
-    expect(ref("panel")).toEqual({ "data-ref:panel": true })
-    expect(ref(signal<HTMLElement, "dialog">("dialog"))).toEqual({ "data-ref:dialog": true })
+    expect(ref("panel")).toEqual({ "data-ref": "panel" })
+    expect(ref(signal<HTMLElement, "dialog">("dialog"))).toEqual({ "data-ref": "dialog" })
   })
 
   it("validates data-ref signal names", () => {

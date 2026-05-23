@@ -38,7 +38,7 @@ describe("automatic JSX runtime", () => {
     )
 
     expect(renderToString(node)).toBe(
-      '<form><button data-on:click="@post(&quot;/increment&quot;)">+</button><input data-bind:count></form>'
+      '<form><button data-on:click="@post(&quot;/increment&quot;)">+</button><input data-bind="count"></form>'
     )
   })
 

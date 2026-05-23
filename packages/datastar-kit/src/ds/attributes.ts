@@ -1,6 +1,13 @@
 import type { HtmlProps } from "../html.js"
 import type { SignalFilter } from "./actions.js"
-import { isExpr, toJs, type DatastarFunction, type Expr, type ExprInput } from "./expression.js"
+import {
+  isExpr,
+  raw,
+  toJs,
+  type DatastarFunction,
+  type Expr,
+  type ExprInput
+} from "./expression.js"
 import {
   appendTimingModifiers,
   bindModifiers,
@@ -61,6 +68,49 @@ const assertUnmodifiedSignalName = (name: string, modifiers: CaseModifiers): voi
 
 const signalKeyName = <Name extends string>(name: Name | { readonly name: Name }): Name =>
   typeof name === "string" ? name : name.name
+
+const signalPathObject = (
+  parts: ReadonlyArray<string>,
+  value: SignalValueInput
+): SignalStateInput => {
+  const [head, ...tail] = parts
+  if (head === undefined) return {}
+  return { [head]: tail.length === 0 ? value : signalPathObject(tail, value) }
+}
+
+const signalValueObject = (name: string, value: SignalValueInput): SignalStateInput =>
+  signalPathObject(name.split("."), value)
+
+const computedPathObject = (
+  parts: ReadonlyArray<string>,
+  value: DataComputedValue
+): DataComputedObject => {
+  const [head, ...tail] = parts
+  if (head === undefined) return {}
+  return { [head]: tail.length === 0 ? value : computedPathObject(tail, value) }
+}
+
+const computedValueObject = (name: string, expression: ExprInput<unknown>): DataComputedObject =>
+  computedPathObject(name.split("."), raw<DatastarFunction>(`() => ${toJs(expression)}`))
+
+const camelFromKeyedAttribute = (name: string): string =>
+  name.replace(/-[a-z]/g, (match) => match.slice(1).toUpperCase())
+
+const toCamelKeyedAttributeName = (name: string): string | undefined => {
+  const keyed = name
+    .split(".")
+    .map((part) => {
+      const localPrefix = part.startsWith("_") ? "_" : ""
+      const body = localPrefix.length === 0 ? part : part.slice(1)
+      if (body[0] === undefined || body[0] !== body[0].toLowerCase()) {
+        return undefined
+      }
+      return `${localPrefix}${body.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`
+    })
+    .join(".")
+
+  return camelFromKeyedAttribute(keyed) === name ? keyed : undefined
+}
 
 const assertDataComputedObjectKeys = (values: DataComputedObject): void => {
   for (const [key, value] of Object.entries(values)) {
@@ -169,33 +219,42 @@ export const show = (expression: ExprInput<unknown>): HtmlProps => ({
   "data-show": toJs(expression)
 })
 
-/** Creates a Datastar `data-bind:*` attribute. @see https://data-star.dev/reference/attributes#data-bind */
+/** Creates a Datastar `data-bind` attribute. @see https://data-star.dev/reference/attributes#data-bind */
 export const bind = <T, Name extends string>(
   name: Name | Signal<T, Name>,
   modifiers: BindModifiers = {}
 ): HtmlProps => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
+  if (modifiers.case === undefined) {
+    return { [`data-bind${bindModifiers(modifiers)}`]: signalName }
+  }
   return { [`data-bind:${signalName}${bindModifiers(modifiers)}`]: true }
 }
 
-/** Creates a Datastar `data-ref:*` attribute. @see https://data-star.dev/reference/attributes#data-ref */
+/** Creates a Datastar `data-ref` attribute. @see https://data-star.dev/reference/attributes#data-ref */
 export const ref = <Name extends string>(
   name: Name | Signal<unknown, Name>,
   modifiers: CaseModifiers = {}
 ): HtmlProps => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
+  if (modifiers.case === undefined) {
+    return { "data-ref": signalName }
+  }
   return { [`data-ref:${signalName}${caseModifierSuffix(modifiers)}`]: true }
 }
 
-/** Creates a Datastar `data-indicator:*` attribute. @see https://data-star.dev/reference/attributes#data-indicator */
+/** Creates a Datastar `data-indicator` attribute. @see https://data-star.dev/reference/attributes#data-indicator */
 export const indicator = <Name extends string>(
   name: Name | Signal<boolean, Name>,
   modifiers: CaseModifiers = {}
 ): HtmlProps => {
   const signalName = signalKeyName(name)
   assertUnmodifiedSignalName(signalName, modifiers)
+  if (modifiers.case === undefined) {
+    return { "data-indicator": signalName }
+  }
   return { [`data-indicator:${signalName}${caseModifierSuffix(modifiers)}`]: true }
 }
 
@@ -223,13 +282,20 @@ export const dataClasses = (mapping: Readonly<Record<string, ExprInput<unknown>>
   "data-class": toJs(mapping)
 })
 
-/** Creates a keyed Datastar `data-computed:*` attribute. @see https://data-star.dev/reference/attributes#data-computed */
+/** Creates a Datastar `data-computed` attribute. @see https://data-star.dev/reference/attributes#data-computed */
 export const dataComputed = <T>(
   name: string,
   expression: ExprInput<T>,
   modifiers: CaseModifiers = {}
 ): HtmlProps => {
   assertUnmodifiedSignalName(name, modifiers)
+  if (modifiers.case === undefined) {
+    const keyedName = toCamelKeyedAttributeName(name)
+    if (keyedName !== undefined) {
+      return { [`data-computed:${keyedName}`]: toJs(expression) }
+    }
+    return { "data-computed": toJs(computedValueObject(name, expression)) }
+  }
   return { [`data-computed:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression) }
 }
 
@@ -249,13 +315,24 @@ export const dataStyles = (mapping: Readonly<Record<string, ExprInput<unknown>>>
   "data-style": toJs(mapping)
 })
 
-/** Creates a keyed Datastar `data-signals:*` attribute. @see https://data-star.dev/reference/attributes#data-signals */
+/** Creates a Datastar `data-signals` attribute. @see https://data-star.dev/reference/attributes#data-signals */
 export const dataSignal = (
   name: string,
   value: SignalValueInput,
   modifiers: DataSignalModifiers = {}
 ): HtmlProps => {
   assertUnmodifiedSignalName(name, modifiers)
+  if (modifiers.case === undefined) {
+    const keyedName = toCamelKeyedAttributeName(name)
+    if (keyedName !== undefined) {
+      return { [`data-signals:${keyedName}${dataSignalModifiers(modifiers)}`]: toJs(value) }
+    }
+    return {
+      [modifiers.ifMissing === true ? "data-signals__ifmissing" : "data-signals"]: toJs(
+        signalValueObject(name, value)
+      )
+    }
+  }
   return { [`data-signals:${name}${dataSignalModifiers(modifiers)}`]: toJs(value) }
 }
 

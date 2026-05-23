@@ -30,6 +30,40 @@ return reply.signals(signup.reset())
 
 Use `ds.signal(...)` with `ds.dataSignals(...)` / `ds.dataSignal(...)` directly when you only need one or two standalone signal refs.
 
+### Signal name casing
+
+Datastar Kit signal helper arguments are Datastar signal names, not raw HTML attribute suffixes. CamelCase names such as `projectName` stay camelCase in state, patches, and request payloads:
+
+```tsx
+<input {...ds.bind("projectName")} />
+```
+
+Datastar Kit renders case-preserving Datastar forms for signal helpers because HTML attribute names are case-insensitive. For `data-bind`, the helper uses Datastar's value form:
+
+```html
+<input data-bind="projectName">
+```
+
+For singular signal-definition helpers such as `ds.dataSignal("projectName", "")`, Datastar Kit uses DOM-safe keyed attributes when the signal name can round-trip through Datastar's default camel casing:
+
+```html
+<div data-signals:project-name='""'>
+```
+
+Those singular helpers stay composable on one element. For grouped initialization, prefer the plural helpers:
+
+```tsx
+<div {...ds.dataSignals({ projectName: "", projectKey: "" })} />
+```
+
+If you write raw keyed Datastar attributes by hand, use Datastar's DOM-safe keyed spelling:
+
+```html
+<input data-bind:project-name>
+```
+
+Both forms bind the Datastar signal `$projectName`. Use Datastar's `__case` modifier only when you intentionally need keyed attribute casing behavior.
+
 For client-side Datastar expressions that need more than a bare signal, prefer the `ds.expr` tagged template so signal refs and JavaScript literals are quoted consistently:
 
 ```tsx
