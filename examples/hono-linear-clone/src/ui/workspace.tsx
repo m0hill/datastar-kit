@@ -1,11 +1,11 @@
 import { ds } from "datastar-kit"
 import type { HtmlChild } from "datastar-kit"
 import type { IssuePriority, IssueStatus, User } from "../db/schema.js"
-import type { IssueDetail, Workspace } from "../features/linear-service.js"
-import { appState } from "./state.js"
+import type { Workspace } from "../features/linear-service.js"
 import { Empty } from "./layout.js"
+import { appState } from "./state.js"
 
-const statuses: Array<{ value: IssueStatus; label: string }> = [
+export const statuses: Array<{ value: IssueStatus; label: string }> = [
   { value: "backlog", label: "Backlog" },
   { value: "todo", label: "Todo" },
   { value: "in_progress", label: "In progress" },
@@ -13,7 +13,7 @@ const statuses: Array<{ value: IssueStatus; label: string }> = [
   { value: "canceled", label: "Canceled" }
 ]
 
-const priorities: Array<{ value: IssuePriority; label: string }> = [
+export const priorities: Array<{ value: IssuePriority; label: string }> = [
   { value: "none", label: "No priority" },
   { value: "low", label: "Low" },
   { value: "medium", label: "Medium" },
@@ -21,23 +21,8 @@ const priorities: Array<{ value: IssuePriority; label: string }> = [
   { value: "urgent", label: "Urgent" }
 ]
 
-const FieldError = (props: { path: Parameters<typeof ds.text>[0] }) => (
+export const FieldError = (props: { path: Parameters<typeof ds.text>[0] }) => (
   <small class="error" {...ds.text(props.path)}></small>
-)
-
-export const AppShell = (props: { user: User; workspace: Workspace }) => (
-  <main class="shell" {...appState.attrs()}>
-    <Sidebar user={props.user} workspace={props.workspace} />
-    <section class="main">
-      <div
-        {...ds.onIntersect(ds.get("/app/live"), { once: true })}
-        style="position:absolute;width:1px;height:1px;overflow:hidden"
-      ></div>
-      <IssueComposer workspace={props.workspace} />
-      <Board workspace={props.workspace} />
-    </section>
-    <IssuePanel detail={null} />
-  </main>
 )
 
 export const Sidebar = (props: { user: User; workspace: Workspace }) => (
@@ -174,92 +159,3 @@ const Column = (props: { title: string; status: IssueStatus; children: HtmlChild
     {props.children}
   </div>
 )
-
-export const IssuePanel = (props: { detail: IssueDetail | null }) => (
-  <aside id="issue-panel" class="panel">
-    {props.detail === null ? null : (
-      <div
-        {...ds.onIntersect(ds.get(`/issues/${props.detail.issue.id}/live`), { once: true })}
-        style="position:absolute;width:1px;height:1px;overflow:hidden"
-      ></div>
-    )}
-    <IssuePanelContent detail={props.detail} />
-  </aside>
-)
-
-export const IssuePanelContent = (props: { detail: IssueDetail | null }) => (
-  <div id="issue-panel-content">
-    {props.detail === null ? (
-      <>
-        <h2>No issue selected</h2>
-        <Empty>Select an issue to view details, change status, or add comments.</Empty>
-      </>
-    ) : (
-      <IssueDetailView detail={props.detail} />
-    )}
-  </div>
-)
-
-const IssueDetailView = (props: { detail: IssueDetail }) => {
-  const { issue, comments } = props.detail
-  return (
-    <div class="stack">
-      <div>
-        <p class="meta">
-          {issue.projectKey}-{issue.number}
-        </p>
-        <h2>{issue.title}</h2>
-        <p>{issue.description || "No description."}</p>
-      </div>
-      <form
-        class="stack"
-        {...ds.on("change", ds.patch(`/issues/${issue.id}`, { contentType: "form" }))}
-      >
-        <label>
-          Status
-          <select name="status">
-            {statuses.map((status) => (
-              <option value={status.value} selected={issue.status === status.value}>
-                {status.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label>
-          Priority
-          <select name="priority">
-            {priorities.map((priority) => (
-              <option value={priority.value} selected={issue.priority === priority.value}>
-                {priority.label}
-              </option>
-            ))}
-          </select>
-        </label>
-      </form>
-      <section>
-        <h3>Comments</h3>
-        {comments.length === 0 ? (
-          <Empty>No comments yet.</Empty>
-        ) : (
-          comments.map((comment) => (
-            <article class="comment">
-              <strong>{comment.authorName}</strong>
-              <p>{comment.body}</p>
-            </article>
-          ))
-        )}
-      </section>
-      <form
-        class="stack"
-        {...ds.on("submit", ds.post(`/issues/${issue.id}/comments`), { prevent: true })}
-      >
-        <label>
-          Add comment
-          <textarea {...ds.bind(appState.$.commentBody)}></textarea>
-          <FieldError path={appState.$.errors.commentBody} />
-        </label>
-        <button type="submit">Comment</button>
-      </form>
-    </div>
-  )
-}

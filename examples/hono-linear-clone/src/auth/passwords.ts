@@ -5,7 +5,7 @@ const scryptAsync = promisify(scrypt)
 
 export const hashPassword = async (password: string) => {
   const salt = randomBytes(16).toString("base64url")
-  const key = (await scryptAsync(password, salt, 64)) as Buffer
+  const key = await scryptAsync(password, salt, 64)
   return `scrypt:${salt}:${key.toString("base64url")}`
 }
 
@@ -16,6 +16,6 @@ export const verifyPassword = async (password: string, stored: string) => {
   }
 
   const expected = Buffer.from(encoded, "base64url")
-  const actual = (await scryptAsync(password, salt, expected.length)) as Buffer
+  const actual = await scryptAsync(password, salt, expected.length)
   return expected.length === actual.length && timingSafeEqual(expected, actual)
 }
