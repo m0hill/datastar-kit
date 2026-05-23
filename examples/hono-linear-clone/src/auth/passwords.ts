@@ -1,0 +1,21 @@
+import { randomBytes, scrypt, timingSafeEqual } from "node:crypto"
+import { promisify } from "node:util"
+
+const scryptAsync = promisify(scrypt)
+
+export const hashPassword = async (password: string) => {
+  const salt = randomBytes(16).toString("base64url")
+  const key = (await scryptAsync(password, salt, 64)) as Buffer
+  return `scrypt:${salt}:${key.toString("base64url")}`
+}
+
+export const verifyPassword = async (password: string, stored: string) => {
+  const [scheme, salt, encoded] = stored.split(":")
+  if (scheme !== "scrypt" || salt === undefined || encoded === undefined) {
+    return false
+  }
+
+  const expected = Buffer.from(encoded, "base64url")
+  const actual = (await scryptAsync(password, salt, expected.length)) as Buffer
+  return expected.length === actual.length && timingSafeEqual(expected, actual)
+}

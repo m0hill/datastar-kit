@@ -1,0 +1,27 @@
+{
+  "name": "@datastar-kit/example-hono-linear-clone",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm run build:workspace-sdk && pnpm run build:only",
+    "build:only": "rm -rf dist && tsc -p tsconfig.build.json",
+    "build:workspace-sdk": "if [ -f ../../packages/datastar-kit/package.json ]; then pnpm --filter datastar-kit build; fi",
+    "check": "pnpm run typecheck && pnpm run build",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "dev": "pnpm run build && node dist/index.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.0.3",
+    "datastar-kit": "workspace:*",
+    "drizzle-orm": "1.0.0-rc.4-5d5b77c",
+    "hono": "^4.12.19",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "drizzle-kit": "1.0.0-rc.4-5d5b77c",
+    "typescript": "^5.9.3"
+  }
+}
