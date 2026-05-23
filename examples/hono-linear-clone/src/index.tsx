@@ -144,15 +144,24 @@ app.get("/app", async (c) => {
 app.get("/app/live", async (c) => {
   const user = c.get("user")
 
+  const render = async () => {
+    const workspace = await loadWorkspace()
+    return [
+      event.patch(<Sidebar user={user} workspace={workspace} />),
+      event.patch(<IssueComposer workspace={workspace} />),
+      event.patch(<Board workspace={workspace} />)
+    ]
+  }
+
   async function* stream() {
+    yield* await render()
+
     for await (const _ of invalidations.subscribe()) {
       if (c.req.raw.signal.aborted) {
         return
       }
-      const workspace = await loadWorkspace()
-      yield event.patch(<Sidebar user={user} workspace={workspace} />)
-      yield event.patch(<IssueComposer workspace={workspace} />)
-      yield event.patch(<Board workspace={workspace} />)
+
+      yield* await render()
     }
   }
 
@@ -233,13 +242,17 @@ app.get("/issues/:id", async (c) => {
 app.get("/issues/:id/live", async (c) => {
   const issueId = issueIdParam.parse(c.req.param("id"))
 
+  const render = async () => event.patch(<IssuePanelContent detail={await loadIssue(issueId)} />)
+
   async function* stream() {
+    yield await render()
+
     for await (const _ of invalidations.subscribe()) {
       if (c.req.raw.signal.aborted) {
         return
       }
 
-      yield event.patch(<IssuePanelContent detail={await loadIssue(issueId)} />)
+      yield await render()
     }
   }
 
