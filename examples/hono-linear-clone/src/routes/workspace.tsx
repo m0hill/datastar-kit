@@ -5,9 +5,10 @@ import { createProject, loadWorkspace } from "../features/linear-service.js"
 import { appSignals, errorsFrom, projectSchema } from "../features/validation.js"
 import { invalidations } from "../realtime/hub.js"
 import { pageHead } from "../ui/layout.js"
+import { IssueProjectSelect } from "../ui/modal.js"
 import { appState } from "../ui/state.js"
 import { AppShell } from "../ui/shell.js"
-import { Board, IssueComposer, Sidebar } from "../ui/workspace.js"
+import { Board, Sidebar } from "../ui/workspace.js"
 import { appErrorPatch, firstErrors, isUniqueConstraintError } from "./helpers.js"
 
 type App = Hono<{ Variables: AppVariables }>
@@ -28,8 +29,8 @@ export const registerWorkspaceRoutes = (app: App) => {
       const workspace = await loadWorkspace()
       return [
         event.patch(<Sidebar user={user} workspace={workspace} />),
-        event.patch(<IssueComposer workspace={workspace} />),
-        event.patch(<Board workspace={workspace} />)
+        event.patch(<Board workspace={workspace} />),
+        event.patch(<IssueProjectSelect workspace={workspace} />)
       ]
     }
 
@@ -45,6 +46,14 @@ export const registerWorkspaceRoutes = (app: App) => {
     return reply.stream(stream(), {
       heartbeat: { intervalMs: 15_000, comment: "linear-clone" }
     })
+  })
+
+  app.get("/modal/issue", async (c) => {
+    const workspace = await loadWorkspace()
+    return reply.stream([
+      event.patch(<IssueProjectSelect workspace={workspace} />),
+      event.signals({ modalOpen: true })
+    ])
   })
 
   app.post("/projects", async (c) => {
@@ -76,7 +85,8 @@ export const registerWorkspaceRoutes = (app: App) => {
         })
       ),
       event.patch(<Sidebar user={c.get("user")} workspace={workspace} />),
-      event.patch(<IssueComposer workspace={workspace} />)
+      event.patch(<Board workspace={workspace} />),
+      event.patch(<IssueProjectSelect workspace={workspace} />)
     ])
   })
 }

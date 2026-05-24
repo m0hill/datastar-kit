@@ -39,6 +39,7 @@ export const appSignals = {
   issueStatus: "todo",
   issuePriority: "medium",
   commentBody: "",
+  modalOpen: false,
   errors: {
     form: "",
     projectName: "",

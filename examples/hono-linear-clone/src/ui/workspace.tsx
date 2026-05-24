@@ -102,59 +102,6 @@ const ProjectList = (props: { workspace: Workspace }) => (
   </div>
 )
 
-export const IssueComposer = (props: { workspace: Workspace }) => (
-  <form
-    id="issue-composer"
-    class="bg-surface-card border border-border p-5 mb-6 flex flex-col gap-4"
-    {...ds.on("submit", ds.post("/issues"), { prevent: true })}
-  >
-    <div class="flex justify-between items-center">
-      <h3 class="text-[13px] font-semibold text-fg">Create issue</h3>
-      <button type="submit" class="primary">Create</button>
-    </div>
-    <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-      Title
-      <input
-        placeholder="Fix keyboard focus after creating an issue"
-        {...ds.bind(appState.$.issueTitle)}
-      />
-      <FieldError path={appState.$.errors.issueTitle} />
-    </label>
-    <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-      Description
-      <textarea rows={3} placeholder="Add a description..." {...ds.bind(appState.$.issueDescription)}></textarea>
-    </label>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-        Project
-        <select {...ds.bind(appState.$.projectId)}>
-          <option value="">Select project</option>
-          {props.workspace.projects.map((project) => (
-            <option value={project.id}>{project.key} · {project.name}</option>
-          ))}
-        </select>
-        <FieldError path={appState.$.errors.form} />
-      </label>
-      <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-        Status
-        <select {...ds.bind(appState.$.issueStatus)}>
-          {statuses.map((status) => (
-            <option value={status.value}>{status.label}</option>
-          ))}
-        </select>
-      </label>
-      <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-        Priority
-        <select {...ds.bind(appState.$.issuePriority)}>
-          {priorities.map((priority) => (
-            <option value={priority.value}>{priority.label}</option>
-          ))}
-        </select>
-      </label>
-    </div>
-  </form>
-)
-
 const StatusLabel = ({ status }: { status: IssueStatus }) => {
   const s = statuses.find((x) => x.value === status)
   if (!s) return <span class="text-fg-muted">{status}</span>

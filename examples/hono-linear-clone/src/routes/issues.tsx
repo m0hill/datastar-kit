@@ -47,6 +47,7 @@ export const registerIssueRoutes = (app: App) => {
           issueTitle: "",
           issueDescription: "",
           commentBody: "",
+          modalOpen: false,
           errors: appSignals.errors
         })
       ),
