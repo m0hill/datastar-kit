@@ -1,13 +1,14 @@
 import { serve } from "@hono/node-server"
 import { serveStatic } from "@hono/node-server/serve-static"
 import { Hono } from "hono"
-import { requireUser, type AppVariables } from "./auth/session.js"
+import type { AppBindings } from "./app-types.js"
+import { requireUser } from "./auth/session.js"
 import { registerIssuePage } from "./pages/issue.js"
 import { registerLoginPage } from "./pages/login.js"
 import { registerSignupPage } from "./pages/signup.js"
 import { registerWorkspacePage } from "./pages/workspace.js"
 
-const app = new Hono<{ Variables: AppVariables }>()
+const app = new Hono<AppBindings>()
 
 app.use("/public/*", serveStatic({ root: "./" }))
 

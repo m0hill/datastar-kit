@@ -1,16 +1,13 @@
-import type { Hono } from "hono"
 import { ds, read, reply } from "datastar-kit"
 import { z } from "zod"
+import type { App } from "../app-types.js"
 import {
   createSession,
-  currentUser,
-  sessionCookie,
-  type AppVariables
+  getCurrentUser,
+  sessionCookie
 } from "../auth/session.js"
 import { authenticate } from "../auth/users.js"
 import { FieldError, firstErrors, pageHead } from "../shared/ui.js"
-
-type App = Hono<{ Variables: AppVariables }>
 
 const loginSignals = {
   username: "",
@@ -80,11 +77,11 @@ const LoginPage = () => (
 
 export const registerLoginPage = (app: App) => {
   app.get("/", async (c) =>
-    (await currentUser(c)) === null ? c.redirect("/login") : c.redirect("/app")
+    (await getCurrentUser(c)) === null ? c.redirect("/login") : c.redirect("/app")
   )
 
   app.get("/login", async (c) => {
-    if ((await currentUser(c)) !== null) {
+    if ((await getCurrentUser(c)) !== null) {
       return c.redirect("/app")
     }
 

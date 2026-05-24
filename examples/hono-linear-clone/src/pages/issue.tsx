@@ -1,9 +1,8 @@
-import type { Hono } from "hono"
 import { HTTPException } from "hono/http-exception"
 import { asc, eq, max } from "drizzle-orm"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
-import type { AppVariables } from "../auth/session.js"
+import type { App } from "../app-types.js"
 import { db } from "../db/index.js"
 import {
   comments,
@@ -23,8 +22,6 @@ import {
   workspaceSignals,
   workspaceState
 } from "./workspace.js"
-
-type App = Hono<{ Variables: AppVariables }>
 
 const issueIdParam = z.coerce.number().int().positive()
 

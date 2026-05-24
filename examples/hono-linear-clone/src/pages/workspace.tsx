@@ -1,20 +1,17 @@
-import type { Hono } from "hono"
 import { getCookie } from "hono/cookie"
 import { and, asc, count, desc, eq, sql } from "drizzle-orm"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
+import type { App } from "../app-types.js"
 import {
-  deleteSession,
-  expiredSessionCookie,
-  type AppVariables
+  deleteSessionCookie,
+  deleteSession
 } from "../auth/session.js"
 import { db } from "../db/index.js"
 import { issues, projects, users, type User } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
 import { FieldError, Empty, firstErrors, isUniqueConstraintError, pageHead } from "../shared/ui.js"
 import { issuePriorities, issueStatuses, StatusDot } from "../shared/issue-options.js"
-
-type App = Hono<{ Variables: AppVariables }>
 
 export const workspaceSignals = {
   projectId: "",
@@ -451,8 +448,7 @@ export const registerWorkspacePage = (app: App) => {
 
   app.post("/logout", async (c) => {
     await deleteSession(getCookie(c, "linear_session"))
-    const response = c.redirect("/login")
-    response.headers.append("set-cookie", expiredSessionCookie())
-    return response
+    deleteSessionCookie(c)
+    return c.redirect("/login")
   })
 }
