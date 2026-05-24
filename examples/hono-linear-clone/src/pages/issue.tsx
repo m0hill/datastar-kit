@@ -1,18 +1,14 @@
 import { HTTPException } from "hono/http-exception"
-import { asc, eq, max } from "drizzle-orm"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
 import type { App } from "../app-types.js"
-import { db } from "../db/index.js"
 import {
-  comments,
-  issues,
-  projects,
-  users,
-  type IssuePriority,
-  type IssueStatus,
-  type User
-} from "../db/schema.js"
+  createComment,
+  createIssue,
+  loadIssue,
+  type IssueDetail,
+  updateIssue
+} from "../db/issue.js"
 import { invalidations } from "../realtime/hub.js"
 import {
   issuePriorities,
@@ -60,105 +56,6 @@ const workspaceValidationPatch = (errors: Partial<typeof workspaceSignals._valid
 
 const issueValidationPatch = (errors: Partial<typeof issueState.defaults._validation>) =>
   reply.signals(issueState.patch({ _validation: { ...issueState.defaults._validation, ...errors } }))
-
-export const loadIssue = async (issueId: number) => {
-  const [issue] = await db
-    .select({
-      id: issues.id,
-      number: issues.number,
-      title: issues.title,
-      description: issues.description,
-      status: issues.status,
-      priority: issues.priority,
-      createdAt: issues.createdAt,
-      updatedAt: issues.updatedAt,
-      projectKey: projects.key,
-      projectName: projects.name,
-      creatorName: users.name
-    })
-    .from(issues)
-    .innerJoin(projects, eq(projects.id, issues.projectId))
-    .innerJoin(users, eq(users.id, issues.createdById))
-    .where(eq(issues.id, issueId))
-    .limit(1)
-
-  if (issue === undefined) {
-    return null
-  }
-
-  const issueComments = await db
-    .select({
-      id: comments.id,
-      body: comments.body,
-      createdAt: comments.createdAt,
-      authorName: users.name
-    })
-    .from(comments)
-    .innerJoin(users, eq(users.id, comments.authorId))
-    .where(eq(comments.issueId, issueId))
-    .orderBy(asc(comments.createdAt))
-
-  return { issue, comments: issueComments }
-}
-
-export type IssueDetail = NonNullable<Awaited<ReturnType<typeof loadIssue>>>
-
-const createIssue = async (
-  user: User,
-  input: {
-    projectId: number
-    issueTitle: string
-    issueDescription?: string | undefined
-    issueStatus: IssueStatus
-    issuePriority: IssuePriority
-  }
-) => {
-  const [last] = await db
-    .select({ number: max(issues.number) })
-    .from(issues)
-    .where(eq(issues.projectId, input.projectId))
-  const nextNumber = (last?.number ?? 0) + 1
-
-  const [issue] = await db
-    .insert(issues)
-    .values({
-      projectId: input.projectId,
-      number: nextNumber,
-      title: input.issueTitle,
-      description: input.issueDescription ?? "",
-      status: input.issueStatus,
-      priority: input.issuePriority,
-      createdById: user.id,
-      assigneeId: user.id,
-      updatedAt: new Date()
-    })
-    .returning()
-
-  if (issue === undefined) {
-    throw new Error("Failed to create issue")
-  }
-
-  return issue
-}
-
-const updateIssue = async (
-  issueId: number,
-  input: { status?: IssueStatus | undefined; priority?: IssuePriority | undefined }
-) => {
-  await db
-    .update(issues)
-    .set({ ...input, updatedAt: new Date() })
-    .where(eq(issues.id, issueId))
-}
-
-const createComment = async (user: User, issueId: number, body: string) => {
-  await db.insert(comments).values({
-    issueId,
-    authorId: user.id,
-    body
-  })
-  await db.update(issues).set({ updatedAt: new Date() }).where(eq(issues.id, issueId))
-}
 
 const IssuePage = (props: { detail: IssueDetail }) => (
   <main class="min-h-screen bg-bg text-fg" {...issueState.attrs()}>
