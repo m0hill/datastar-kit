@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.0.3",
+    "better-sqlite3": "^12.10.0",
     "datastar-kit": "workspace:*",
     "drizzle-orm": "1.0.0-rc.4-5d5b77c",
     "hono": "^4.12.19",
@@ -23,6 +24,7 @@
   },
   "devDependencies": {
     "@tailwindcss/cli": "^4.0.0",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.10.1",
     "drizzle-kit": "1.0.0-rc.4-5d5b77c",
     "tailwindcss": "^4.0.0",

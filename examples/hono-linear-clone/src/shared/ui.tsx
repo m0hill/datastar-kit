@@ -22,7 +22,7 @@ export const Empty = (props: { children: HtmlChild }) => (
 )
 
 export const FieldError = (props: { path: Parameters<typeof ds.text>[0] }) => (
-  <small class="text-danger text-[13px] font-medium min-h-[1rem]" {...ds.text(props.path)}></small>
+  <small class="text-danger text-[13px] font-medium min-h-4" {...ds.text(props.path)}></small>
 )
 
 export const firstErrors = (error: z.ZodError) => {

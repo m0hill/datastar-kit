@@ -3,7 +3,7 @@ import { z } from "zod"
 import type { App } from "../app-types.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
 import { createUser } from "../auth/users.js"
-import { FieldError, isUniqueConstraintError, pageHead } from "../shared/ui.js"
+import { FieldError, pageHead } from "../shared/ui.js"
 
 const signupSchema = z.object({
   name: z.string().trim().min(2, "Enter your name"),
@@ -107,15 +107,8 @@ export const registerSignupPage = (app: App) => {
       )
     }
 
-    try {
-      const user = await createUser(result.data)
-      return reply.navigate(
-        "/app",
-        {},
-        { headers: { "set-cookie": sessionCookie(await createSession(user.id)) } }
-      )
-    } catch (error) {
-      if (!isUniqueConstraintError(error)) throw error
+    const user = await createUser(result.data)
+    if (user === null) {
       return reply.signals(
         signupState.patch({
           _validation: {
@@ -125,5 +118,11 @@ export const registerSignupPage = (app: App) => {
         })
       )
     }
+
+    return reply.navigate(
+      "/app",
+      {},
+      { headers: { "set-cookie": sessionCookie(await createSession(user.id)) } }
+    )
   })
 }

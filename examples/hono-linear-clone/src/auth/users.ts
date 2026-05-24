@@ -11,10 +11,11 @@ export const createUser = async (input: { name: string; username: string; passwo
       username: input.username.toLowerCase(),
       passwordHash: await hashPassword(input.password)
     })
+    .onConflictDoNothing({ target: users.username })
     .returning()
 
   if (user === undefined) {
-    throw new Error("Failed to create user")
+    return null
   }
 
   return user

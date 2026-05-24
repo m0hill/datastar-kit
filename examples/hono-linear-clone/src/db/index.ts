@@ -1,6 +1,6 @@
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
-import { drizzle } from "drizzle-orm/node-sqlite"
+import { drizzle } from "drizzle-orm/better-sqlite3"
 import * as schema from "./schema.js"
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), "../..")

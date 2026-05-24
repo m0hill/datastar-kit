@@ -279,8 +279,8 @@
   .w-px {
     width: 1px;
   }
-  .max-w-\[360px\] {
-    max-width: 360px;
+  .max-w-90 {
+    max-width: calc(var(--spacing) * 90);
   }
   .max-w-\[520px\] {
     max-width: 520px;
