@@ -173,7 +173,7 @@ const ProjectList = (props: { workspace: Workspace }) => (
     ) : (
       props.workspace.projects.map((project) => (
         <div class="flex items-center gap-2 px-2 py-1.5 text-[13px] text-fg-secondary hover:bg-surface-hover hover:text-fg transition-colors cursor-default">
-          <span class="font-mono font-semibold text-fg text-[12px] min-w-[2rem]">
+          <span class="font-mono font-semibold text-fg text-[12px] min-w-8">
             {project.key}
           </span>
           <span class="truncate">{project.name}</span>
@@ -279,7 +279,7 @@ export const IssueProjectSelect = (props: { workspace: Workspace }) => (
 
 const IssueModalForm = (props: { workspace: Workspace }) => (
   <form
-    class="bg-surface-card border border-border w-full max-w-[520px] flex flex-col gap-4 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
+    class="bg-surface-card border border-border w-full max-w-130 flex flex-col gap-4 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
     {...ds.on("submit", ds.post("/issues"), { prevent: true })}
     {...ds.on("click", ds.expr`evt.stopPropagation()`)}
   >
@@ -378,7 +378,7 @@ const EmptyIssuePanel = () => (
     class="bg-surface border-t lg:border-t-0 lg:border-l border-border p-4 lg:p-5 overflow-auto min-w-0"
   >
     <div id="issue-panel-content">
-      <div class="grid place-items-center h-full text-center gap-3 min-h-[200px]">
+      <div class="grid place-items-center h-full text-center gap-3 min-h-50">
         <div>
           <h2 class="text-[15px] font-semibold text-fg-muted mb-1">No issue selected</h2>
           <p class="text-[13px] text-fg-muted">
