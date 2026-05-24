@@ -3,10 +3,7 @@ import { and, asc, count, desc, eq, sql } from "drizzle-orm"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
 import type { App } from "../app-types.js"
-import {
-  deleteSessionCookie,
-  deleteSession
-} from "../auth/session.js"
+import { deleteSessionCookie, deleteSession } from "../auth/session.js"
 import { db } from "../db/index.js"
 import { issues, projects, users, type User } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
@@ -112,7 +109,10 @@ const createProject = async (
 }
 
 const Sidebar = (props: { user: User; workspace: Workspace }) => (
-  <aside id="sidebar" class="bg-surface border-r border-border text-fg-muted p-4 flex flex-col gap-5 overflow-y-auto min-w-0 w-full">
+  <aside
+    id="sidebar"
+    class="bg-surface border-r border-border text-fg-muted p-4 flex flex-col gap-5 overflow-y-auto min-w-0 w-full"
+  >
     <div class="flex items-center gap-2 text-fg font-mono text-[13px] font-semibold tracking-wide">
       <span class="text-fg-muted text-lg leading-none">›</span>
       <span>Linear Clone</span>
@@ -131,8 +131,13 @@ const Sidebar = (props: { user: User; workspace: Workspace }) => (
     </div>
 
     <div class="flex flex-col gap-1">
-      <h2 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted px-2">New Project</h2>
-      <form class="flex flex-col gap-3 px-2" {...ds.on("submit", ds.post("/projects"), { prevent: true })}>
+      <h2 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted px-2">
+        New Project
+      </h2>
+      <form
+        class="flex flex-col gap-3 px-2"
+        {...ds.on("submit", ds.post("/projects"), { prevent: true })}
+      >
         <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
           Name
           <input placeholder="Engineering" {...ds.bind(workspaceState.$.projectName)} />
@@ -147,12 +152,16 @@ const Sidebar = (props: { user: User; workspace: Workspace }) => (
           Description
           <textarea rows={2} {...ds.bind(workspaceState.$.projectDescription)}></textarea>
         </label>
-        <button type="submit" class="primary">Create project</button>
+        <button type="submit" class="primary">
+          Create project
+        </button>
       </form>
     </div>
 
     <form method="post" action="/logout" class="mt-auto px-2">
-      <button type="submit" class="w-full">Sign out</button>
+      <button type="submit" class="w-full">
+        Sign out
+      </button>
     </form>
   </aside>
 )
@@ -164,7 +173,9 @@ const ProjectList = (props: { workspace: Workspace }) => (
     ) : (
       props.workspace.projects.map((project) => (
         <div class="flex items-center gap-2 px-2 py-1.5 text-[13px] text-fg-secondary hover:bg-surface-hover hover:text-fg transition-colors cursor-default">
-          <span class="font-mono font-semibold text-fg text-[12px] min-w-[2rem]">{project.key}</span>
+          <span class="font-mono font-semibold text-fg text-[12px] min-w-[2rem]">
+            {project.key}
+          </span>
           <span class="truncate">{project.name}</span>
           <span class="ml-auto font-mono text-[11px] text-fg-muted">{project.openIssues}</span>
         </div>
@@ -188,12 +199,20 @@ const PriorityBadge = ({ priority }: { priority: Workspace["issues"][number]["pr
   const currentPriority = issuePriorities.find((x) => x.value === priority)
   if (!currentPriority) return null
   const color =
-    priority === "urgent" ? "text-danger" :
-    priority === "high" ? "text-warning" :
-    priority === "medium" ? "text-fg-secondary" :
-    priority === "low" ? "text-fg-muted" :
-    "text-fg-muted/40"
-  return <span class={`text-[11px] font-mono font-semibold ${color}`}>{currentPriority.label.charAt(0).toUpperCase()}</span>
+    priority === "urgent"
+      ? "text-danger"
+      : priority === "high"
+        ? "text-warning"
+        : priority === "medium"
+          ? "text-fg-secondary"
+          : priority === "low"
+            ? "text-fg-muted"
+            : "text-fg-muted/40"
+  return (
+    <span class={`text-[11px] font-mono font-semibold ${color}`}>
+      {currentPriority.label.charAt(0).toUpperCase()}
+    </span>
+  )
 }
 
 const AssigneeCell = ({ name }: { name: string | null }) => {
@@ -229,8 +248,14 @@ export const Board = (props: { workspace: Workspace }) => (
           id={`issue-${issue.id}`}
           {...ds.on("click", ds.get(`/issues/${issue.id}`))}
         >
-          <StatusDot class={issueStatuses.find((status) => status.value === issue.status)?.dotClass ?? "bg-border"} />
-          <span class="font-mono text-[11px] text-fg-muted tabular-nums">{issue.projectKey}-{issue.number}</span>
+          <StatusDot
+            class={
+              issueStatuses.find((status) => status.value === issue.status)?.dotClass ?? "bg-border"
+            }
+          />
+          <span class="font-mono text-[11px] text-fg-muted tabular-nums">
+            {issue.projectKey}-{issue.number}
+          </span>
           <span class="text-[13px] text-fg truncate">{issue.title}</span>
           <StatusLabel status={issue.status} />
           <PriorityBadge priority={issue.priority} />
@@ -245,7 +270,9 @@ export const IssueProjectSelect = (props: { workspace: Workspace }) => (
   <select id="issue-project-select" {...ds.bind(workspaceState.$.projectId)}>
     <option value="">Select project</option>
     {props.workspace.projects.map((project) => (
-      <option value={project.id}>{project.key} · {project.name}</option>
+      <option value={project.id}>
+        {project.key} · {project.name}
+      </option>
     ))}
   </select>
 )
@@ -263,8 +290,17 @@ const IssueModalForm = (props: { workspace: Workspace }) => (
         class="text-fg-muted hover:text-fg"
         {...ds.on("click", ds.expr`${workspaceState.$.modalOpen} = false`)}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M18 6L6 18M6 6l12 12"/>
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <path d="M18 6L6 18M6 6l12 12" />
         </svg>
       </button>
     </div>
@@ -278,7 +314,11 @@ const IssueModalForm = (props: { workspace: Workspace }) => (
     </label>
     <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
       Description
-      <textarea rows={3} placeholder="Add a description..." {...ds.bind(workspaceState.$.issueDescription)}></textarea>
+      <textarea
+        rows={3}
+        placeholder="Add a description..."
+        {...ds.bind(workspaceState.$.issueDescription)}
+      ></textarea>
     </label>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
       <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
@@ -304,13 +344,12 @@ const IssueModalForm = (props: { workspace: Workspace }) => (
       </label>
     </div>
     <div class="flex justify-end gap-2 pt-1">
-      <button
-        type="button"
-        {...ds.on("click", ds.expr`${workspaceState.$.modalOpen} = false`)}
-      >
+      <button type="button" {...ds.on("click", ds.expr`${workspaceState.$.modalOpen} = false`)}>
         Cancel
       </button>
-      <button type="submit" class="primary">Create</button>
+      <button type="submit" class="primary">
+        Create
+      </button>
     </div>
   </form>
 )
@@ -334,12 +373,17 @@ const IssueModal = (props: { workspace: Workspace }) => (
 )
 
 const EmptyIssuePanel = () => (
-  <aside id="issue-panel" class="bg-surface border-t lg:border-t-0 lg:border-l border-border p-4 lg:p-5 overflow-auto min-w-0">
+  <aside
+    id="issue-panel"
+    class="bg-surface border-t lg:border-t-0 lg:border-l border-border p-4 lg:p-5 overflow-auto min-w-0"
+  >
     <div id="issue-panel-content">
       <div class="grid place-items-center h-full text-center gap-3 min-h-[200px]">
         <div>
           <h2 class="text-[15px] font-semibold text-fg-muted mb-1">No issue selected</h2>
-          <p class="text-[13px] text-fg-muted">Select an issue to view details, change status, or add comments.</p>
+          <p class="text-[13px] text-fg-muted">
+            Select an issue to view details, change status, or add comments.
+          </p>
         </div>
       </div>
     </div>
@@ -347,7 +391,10 @@ const EmptyIssuePanel = () => (
 )
 
 const WorkspacePage = (props: { user: User; workspace: Workspace }) => (
-  <main class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr_340px] bg-bg" {...workspaceState.attrs()}>
+  <main
+    class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr_340px] bg-bg"
+    {...workspaceState.attrs()}
+  >
     <div class="hidden lg:flex">
       <Sidebar user={props.user} workspace={props.workspace} />
     </div>

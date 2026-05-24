@@ -41,13 +41,13 @@ Datastar Kit signal helper arguments are Datastar signal names, not raw HTML att
 Datastar Kit renders case-preserving Datastar forms for signal helpers because HTML attribute names are case-insensitive. For `data-bind`, the helper uses Datastar's value form:
 
 ```html
-<input data-bind="projectName">
+<input data-bind="projectName" />
 ```
 
 For singular signal-definition helpers such as `ds.dataSignal("projectName", "")`, Datastar Kit uses DOM-safe keyed attributes when the signal name can round-trip through Datastar's default camel casing:
 
 ```html
-<div data-signals:project-name='""'>
+<div data-signals:project-name='""'></div>
 ```
 
 Those singular helpers stay composable on one element. For grouped initialization, prefer the plural helpers:
@@ -59,7 +59,7 @@ Those singular helpers stay composable on one element. For grouped initializatio
 If you write raw keyed Datastar attributes by hand, use Datastar's DOM-safe keyed spelling:
 
 ```html
-<input data-bind:project-name>
+<input data-bind:project-name />
 ```
 
 Both forms bind the Datastar signal `$projectName`. Use Datastar's `__case` modifier only when you intentionally need keyed attribute casing behavior.

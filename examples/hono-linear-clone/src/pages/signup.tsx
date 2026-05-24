@@ -1,11 +1,7 @@
 import { ds, read, reply } from "datastar-kit"
 import { z } from "zod"
 import type { App } from "../app-types.js"
-import {
-  createSession,
-  getCurrentUser,
-  sessionCookie
-} from "../auth/session.js"
+import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
 import { createUser } from "../auth/users.js"
 import { FieldError, firstErrors, isUniqueConstraintError, pageHead } from "../shared/ui.js"
 
@@ -86,9 +82,14 @@ const SignupPage = () => (
           <FieldError path={signupState.$._validation.password} />
         </label>
         <FieldError path={signupState.$._validation.form} />
-        <button type="submit" class="primary mt-1">Create account</button>
+        <button type="submit" class="primary mt-1">
+          Create account
+        </button>
       </form>
-      <a href="/login" class="text-fg-secondary text-[13px] font-medium hover:text-fg hover:underline transition-colors">
+      <a
+        href="/login"
+        class="text-fg-secondary text-[13px] font-medium hover:text-fg hover:underline transition-colors"
+      >
         Sign in instead
       </a>
     </section>

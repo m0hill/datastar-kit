@@ -1,10 +1,6 @@
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto"
 
-const scryptAsync = (
-  password: string | Buffer,
-  salt: string | Buffer,
-  keylen: number
-) =>
+const scryptAsync = (password: string | Buffer, salt: string | Buffer, keylen: number) =>
   new Promise<Buffer>((resolve, reject) => {
     scrypt(password, salt, keylen, (error, derivedKey) => {
       if (error !== null) {

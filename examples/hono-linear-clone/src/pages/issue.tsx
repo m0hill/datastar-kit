@@ -14,14 +14,14 @@ import {
   type User
 } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
-import { issuePriorities, issuePriorityValues, issueStatuses, issueStatusValues } from "../shared/issue-options.js"
-import { Empty, FieldError, firstErrors } from "../shared/ui.js"
 import {
-  Board,
-  loadWorkspace,
-  workspaceSignals,
-  workspaceState
-} from "./workspace.js"
+  issuePriorities,
+  issuePriorityValues,
+  issueStatuses,
+  issueStatusValues
+} from "../shared/issue-options.js"
+import { Empty, FieldError, firstErrors } from "../shared/ui.js"
+import { Board, loadWorkspace, workspaceSignals, workspaceState } from "./workspace.js"
 
 const issueIdParam = z.coerce.number().int().positive()
 
@@ -151,7 +151,10 @@ const createComment = async (user: User, issueId: number, body: string) => {
 }
 
 export const IssuePanel = (props: { detail: IssueDetail | null }) => (
-  <aside id="issue-panel" class="bg-surface border-t lg:border-t-0 lg:border-l border-border p-4 lg:p-5 overflow-auto min-w-0">
+  <aside
+    id="issue-panel"
+    class="bg-surface border-t lg:border-t-0 lg:border-l border-border p-4 lg:p-5 overflow-auto min-w-0"
+  >
     {props.detail === null ? null : (
       <div
         {...ds.onIntersect(ds.get(`/issues/${props.detail.issue.id}/live`), { once: true })}
@@ -168,7 +171,9 @@ export const IssuePanelContent = (props: { detail: IssueDetail | null }) => (
       <div class="grid place-items-center h-full text-center gap-3 min-h-[200px]">
         <div>
           <h2 class="text-[15px] font-semibold text-fg-muted mb-1">No issue selected</h2>
-          <p class="text-[13px] text-fg-muted">Select an issue to view details, change status, or add comments.</p>
+          <p class="text-[13px] text-fg-muted">
+            Select an issue to view details, change status, or add comments.
+          </p>
         </div>
       </div>
     ) : (
@@ -186,19 +191,25 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
           {issue.projectKey}-{issue.number}
         </div>
         <h2 class="text-[15px] font-semibold text-fg leading-snug tracking-tight">{issue.title}</h2>
-        <p class={`mt-2 text-[13px] leading-relaxed ${issue.description ? "text-fg-secondary" : "text-fg-muted italic"}`}>
+        <p
+          class={`mt-2 text-[13px] leading-relaxed ${issue.description ? "text-fg-secondary" : "text-fg-muted italic"}`}
+        >
           {issue.description || "No description provided."}
         </p>
       </div>
 
       <div>
-        <h3 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted mb-3">Properties</h3>
+        <h3 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted mb-3">
+          Properties
+        </h3>
         <form
           class="flex flex-col"
           {...ds.on("change", ds.patch(`/issues/${issue.id}`, { contentType: "form" }))}
         >
           <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2 border-b border-border-subtle">
-            <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">Status</label>
+            <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+              Status
+            </label>
             <select
               name="status"
               class="w-full border border-transparent hover:border-border hover:bg-surface-hover px-2 py-1.5 bg-transparent text-fg text-sm cursor-pointer transition-colors appearance-none"
@@ -211,7 +222,9 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
             </select>
           </div>
           <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2 border-b border-border-subtle">
-            <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">Priority</label>
+            <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+              Priority
+            </label>
             <select
               name="priority"
               class="w-full border border-transparent hover:border-border hover:bg-surface-hover px-2 py-1.5 bg-transparent text-fg text-sm cursor-pointer transition-colors appearance-none"
@@ -227,14 +240,18 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
       </div>
 
       <div>
-        <h3 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted mb-3">Comments ({issueComments.length})</h3>
+        <h3 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted mb-3">
+          Comments ({issueComments.length})
+        </h3>
         {issueComments.length === 0 ? (
           <Empty>No comments yet.</Empty>
         ) : (
           <div class="flex flex-col gap-3">
             {issueComments.map((comment) => (
               <article class="flex flex-col gap-1 bg-surface-card border border-border p-3">
-                <span class="text-[13px] font-semibold text-fg-secondary">{comment.authorName}</span>
+                <span class="text-[13px] font-semibold text-fg-secondary">
+                  {comment.authorName}
+                </span>
                 <p class="text-[13px] text-fg-secondary leading-relaxed">{comment.body}</p>
               </article>
             ))}
@@ -248,10 +265,16 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
       >
         <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
           Add a comment
-          <textarea rows={3} placeholder="Write a comment..." {...ds.bind(workspaceState.$.commentBody)}></textarea>
+          <textarea
+            rows={3}
+            placeholder="Write a comment..."
+            {...ds.bind(workspaceState.$.commentBody)}
+          ></textarea>
           <FieldError path={workspaceState.$._validation.commentBody} />
         </label>
-        <button type="submit" class="primary self-start">Post comment</button>
+        <button type="submit" class="primary self-start">
+          Post comment
+        </button>
       </form>
     </div>
   )

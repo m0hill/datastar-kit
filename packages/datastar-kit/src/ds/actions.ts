@@ -167,9 +167,7 @@ export const queryUrl = (
 
   const separator = path.includes("?") ? "&" : "?"
   const query = entries
-    .map(
-      ([key, value]) => `${encodeURIComponent(key)}=\${encodeURIComponent(${toJs(value)})}`
-    )
+    .map(([key, value]) => `${encodeURIComponent(key)}=\${encodeURIComponent(${toJs(value)})}`)
     .join("&")
   return raw(`\`${escapeTemplateText(path)}${separator}${query}\``)
 }
