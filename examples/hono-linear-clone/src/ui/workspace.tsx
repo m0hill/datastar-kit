@@ -1,16 +1,15 @@
 import { ds } from "datastar-kit"
-import type { HtmlChild } from "datastar-kit"
 import type { IssuePriority, IssueStatus, User } from "../db/schema.js"
 import type { Workspace } from "../features/linear-service.js"
 import { Empty } from "./layout.js"
 import { appState } from "./state.js"
 
-export const statuses: Array<{ value: IssueStatus; label: string }> = [
-  { value: "backlog", label: "Backlog" },
-  { value: "todo", label: "Todo" },
-  { value: "in_progress", label: "In progress" },
-  { value: "done", label: "Done" },
-  { value: "canceled", label: "Canceled" }
+export const statuses: Array<{ value: IssueStatus; label: string; dotClass: string }> = [
+  { value: "backlog", label: "Backlog", dotClass: "bg-border-strong" },
+  { value: "todo", label: "Todo", dotClass: "bg-fg-secondary" },
+  { value: "in_progress", label: "In Progress", dotClass: "bg-warning" },
+  { value: "done", label: "Done", dotClass: "bg-success" },
+  { value: "canceled", label: "Canceled", dotClass: "bg-danger" }
 ]
 
 export const priorities: Array<{ value: IssuePriority; label: string }> = [
@@ -21,52 +20,82 @@ export const priorities: Array<{ value: IssuePriority; label: string }> = [
   { value: "urgent", label: "Urgent" }
 ]
 
+export const StatusDot = ({ class: cls }: { class: string }) => (
+  <span class={`w-[7px] h-[7px] ${cls}`}></span>
+)
+
+const PriorityBadge = ({ priority }: { priority: IssuePriority }) => {
+  const p = priorities.find((x) => x.value === priority)
+  if (!p) return null
+  const color =
+    priority === "urgent" ? "text-danger" :
+    priority === "high" ? "text-warning" :
+    priority === "medium" ? "text-fg-secondary" :
+    priority === "low" ? "text-fg-muted" :
+    "text-fg-muted/40"
+  return <span class={`text-[11px] font-mono font-semibold ${color}`}>{p.label.charAt(0).toUpperCase()}</span>
+}
+
 export const FieldError = (props: { path: Parameters<typeof ds.text>[0] }) => (
-  <small class="error" {...ds.text(props.path)}></small>
+  <small class="text-danger text-[13px] font-medium min-h-[1rem]" {...ds.text(props.path)}></small>
 )
 
 export const Sidebar = (props: { user: User; workspace: Workspace }) => (
-  <aside id="sidebar" class="sidebar">
-    <div>
-      <h1>Linear clone</h1>
-      <p class="meta">Signed in as {props.user.name}</p>
+  <aside id="sidebar" class="bg-surface border-r border-border text-fg-muted p-4 flex flex-col gap-5 overflow-y-auto min-w-0 w-full">
+    <div class="flex items-center gap-2 text-fg font-mono text-[13px] font-semibold tracking-wide">
+      <span class="text-fg-muted text-lg leading-none">›</span>
+      <span>Linear Clone</span>
     </div>
-    <form {...ds.on("submit", ds.post("/projects"), { prevent: true })}>
-      <label>
-        Project
-        <input placeholder="Engineering" {...ds.bind(appState.$.projectName)} />
-        <FieldError path={appState.$.errors.projectName} />
-      </label>
-      <label>
-        Key
-        <input placeholder="ENG" maxlength="8" {...ds.bind(appState.$.projectKey)} />
-        <FieldError path={appState.$.errors.projectKey} />
-      </label>
-      <label>
-        Description
-        <textarea {...ds.bind(appState.$.projectDescription)}></textarea>
-      </label>
-      <button type="submit">Create project</button>
-    </form>
-    <ProjectList workspace={props.workspace} />
-    <form method="post" action="/logout">
-      <button class="secondary" type="submit">
-        Sign out
-      </button>
+
+    <div class="flex items-center gap-2 text-[13px] text-fg-secondary px-2 py-1.5 bg-surface-inset border border-border-subtle">
+      <span class="w-5 h-5 bg-border flex items-center justify-center text-[10px] font-bold text-fg-secondary font-mono">
+        {props.user.name.charAt(0).toUpperCase()}
+      </span>
+      <span class="truncate">{props.user.name}</span>
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <h2 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted px-2">Projects</h2>
+      <ProjectList workspace={props.workspace} />
+    </div>
+
+    <div class="flex flex-col gap-1">
+      <h2 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted px-2">New Project</h2>
+      <form class="flex flex-col gap-3 px-2" {...ds.on("submit", ds.post("/projects"), { prevent: true })}>
+        <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+          Name
+          <input placeholder="Engineering" {...ds.bind(appState.$.projectName)} />
+          <FieldError path={appState.$.errors.projectName} />
+        </label>
+        <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+          Key
+          <input placeholder="ENG" maxlength={8} {...ds.bind(appState.$.projectKey)} />
+          <FieldError path={appState.$.errors.projectKey} />
+        </label>
+        <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+          Description
+          <textarea rows={2} {...ds.bind(appState.$.projectDescription)}></textarea>
+        </label>
+        <button type="submit" class="primary">Create project</button>
+      </form>
+    </div>
+
+    <form method="post" action="/logout" class="mt-auto px-2">
+      <button type="submit" class="w-full">Sign out</button>
     </form>
   </aside>
 )
 
 const ProjectList = (props: { workspace: Workspace }) => (
-  <div class="stack">
+  <div class="flex flex-col">
     {props.workspace.projects.length === 0 ? (
       <Empty>Create a project to start tracking work.</Empty>
     ) : (
       props.workspace.projects.map((project) => (
-        <div class="meta">
-          <span class="pill">{project.key}</span>
-          <span>{project.name}</span>
-          <span>{project.openIssues} open</span>
+        <div class="flex items-center gap-2 px-2 py-1.5 text-[13px] text-fg-secondary hover:bg-surface-hover hover:text-fg transition-colors cursor-default">
+          <span class="font-mono font-semibold text-fg text-[12px] min-w-[2rem]">{project.key}</span>
+          <span class="truncate">{project.name}</span>
+          <span class="ml-auto font-mono text-[11px] text-fg-muted">{project.openIssues}</span>
         </div>
       ))
     )}
@@ -76,25 +105,14 @@ const ProjectList = (props: { workspace: Workspace }) => (
 export const IssueComposer = (props: { workspace: Workspace }) => (
   <form
     id="issue-composer"
-    class="issue-form stack"
+    class="bg-surface-card border border-border p-5 mb-6 flex flex-col gap-4"
     {...ds.on("submit", ds.post("/issues"), { prevent: true })}
   >
-    <div class="toolbar">
-      <h2>Workspace</h2>
-      <button type="submit">Create issue</button>
+    <div class="flex justify-between items-center">
+      <h3 class="text-[13px] font-semibold text-fg">Create issue</h3>
+      <button type="submit" class="primary">Create</button>
     </div>
-    <label>
-      Project
-      <select {...ds.bind(appState.$.projectId)}>
-        <option value="">Select project</option>
-        {props.workspace.projects.map((project) => (
-          <option value={project.id}>
-            {project.key} · {project.name}
-          </option>
-        ))}
-      </select>
-    </label>
-    <label>
+    <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
       Title
       <input
         placeholder="Fix keyboard focus after creating an issue"
@@ -102,12 +120,22 @@ export const IssueComposer = (props: { workspace: Workspace }) => (
       />
       <FieldError path={appState.$.errors.issueTitle} />
     </label>
-    <label>
+    <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
       Description
-      <textarea {...ds.bind(appState.$.issueDescription)}></textarea>
+      <textarea rows={3} placeholder="Add a description..." {...ds.bind(appState.$.issueDescription)}></textarea>
     </label>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
-      <label>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+        Project
+        <select {...ds.bind(appState.$.projectId)}>
+          <option value="">Select project</option>
+          {props.workspace.projects.map((project) => (
+            <option value={project.id}>{project.key} · {project.name}</option>
+          ))}
+        </select>
+        <FieldError path={appState.$.errors.form} />
+      </label>
+      <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
         Status
         <select {...ds.bind(appState.$.issueStatus)}>
           {statuses.map((status) => (
@@ -115,7 +143,7 @@ export const IssueComposer = (props: { workspace: Workspace }) => (
           ))}
         </select>
       </label>
-      <label>
+      <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
         Priority
         <select {...ds.bind(appState.$.issuePriority)}>
           {priorities.map((priority) => (
@@ -124,38 +152,61 @@ export const IssueComposer = (props: { workspace: Workspace }) => (
         </select>
       </label>
     </div>
-    <FieldError path={appState.$.errors.form} />
   </form>
 )
 
-export const Board = (props: { workspace: Workspace }) => (
-  <section id="board" class="board">
-    {statuses.map((status) => (
-      <Column status={status.value} title={status.label}>
-        {props.workspace.issues
-          .filter((issue) => issue.status === status.value)
-          .map((issue) => (
-            <article class="issue-card" id={`issue-${issue.id}`}>
-              <button type="button" {...ds.on("click", ds.get(`/issues/${issue.id}`))}>
-                <strong>{issue.title}</strong>
-              </button>
-              <div class="meta">
-                <span>
-                  {issue.projectKey}-{issue.number}
-                </span>
-                <span class="pill">{issue.priority}</span>
-                <span>{issue.assigneeName ?? "Unassigned"}</span>
-              </div>
-            </article>
-          ))}
-      </Column>
-    ))}
-  </section>
-)
+const StatusLabel = ({ status }: { status: IssueStatus }) => {
+  const s = statuses.find((x) => x.value === status)
+  if (!s) return <span class="text-fg-muted">{status}</span>
+  return (
+    <span class="flex items-center gap-1.5 text-[11px] font-mono text-fg-secondary">
+      <StatusDot class={s.dotClass} />
+      {s.label}
+    </span>
+  )
+}
 
-const Column = (props: { title: string; status: IssueStatus; children: HtmlChild }) => (
-  <div class="column">
-    <h3>{props.title}</h3>
-    {props.children}
-  </div>
+const AssigneeCell = ({ name }: { name: string | null }) => {
+  if (!name) return <span class="text-fg-muted/40">—</span>
+  return (
+    <span class="flex items-center gap-1.5 text-[11px] text-fg-secondary">
+      <span class="w-4 h-4 bg-border flex items-center justify-center text-[9px] font-bold text-fg-secondary font-mono">
+        {name.charAt(0).toUpperCase()}
+      </span>
+      {name}
+    </span>
+  )
+}
+
+export const Board = (props: { workspace: Workspace }) => (
+  <section id="board" class="border border-border">
+    <div class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2 bg-surface border-b border-border text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+      <span></span>
+      <span>ID</span>
+      <span>Title</span>
+      <span>Status</span>
+      <span>Prio</span>
+      <span>Assignee</span>
+    </div>
+    {props.workspace.issues.length === 0 ? (
+      <div class="px-4 py-8">
+        <Empty>No issues yet. Create one above.</Empty>
+      </div>
+    ) : (
+      props.workspace.issues.map((issue) => (
+        <article
+          class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2.5 border-b border-border-subtle items-center cursor-pointer transition-colors hover:bg-surface-hover"
+          id={`issue-${issue.id}`}
+          {...ds.on("click", ds.get(`/issues/${issue.id}`))}
+        >
+          <StatusDot class={statuses.find((s) => s.value === issue.status)?.dotClass ?? "bg-border"} />
+          <span class="font-mono text-[11px] text-fg-muted tabular-nums">{issue.projectKey}-{issue.number}</span>
+          <span class="text-[13px] text-fg truncate">{issue.title}</span>
+          <StatusLabel status={issue.status} />
+          <PriorityBadge priority={issue.priority} />
+          <AssigneeCell name={issue.assigneeName} />
+        </article>
+      ))
+    )}
+  </section>
 )

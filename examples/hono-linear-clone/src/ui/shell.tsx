@@ -6,12 +6,14 @@ import { Board, IssueComposer, Sidebar } from "./workspace.js"
 import { IssuePanel } from "./issue.js"
 
 export const AppShell = (props: { user: User; workspace: Workspace }) => (
-  <main class="shell" {...appState.attrs()}>
-    <Sidebar user={props.user} workspace={props.workspace} />
-    <section class="main">
+  <main class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr_340px] bg-bg" {...appState.attrs()}>
+    <div class="hidden lg:flex">
+      <Sidebar user={props.user} workspace={props.workspace} />
+    </div>
+    <section class="p-5 lg:px-7 overflow-auto min-w-0">
       <div
         {...ds.onIntersect(ds.get("/app/live"), { once: true })}
-        style="position:absolute;width:1px;height:1px;overflow:hidden"
+        class="absolute w-px h-px overflow-hidden"
       ></div>
       <IssueComposer workspace={props.workspace} />
       <Board workspace={props.workspace} />

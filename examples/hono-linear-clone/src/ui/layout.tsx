@@ -5,44 +5,124 @@ export const DATASTAR_RUNTIME =
 
 export const pageHead = [
   <meta name="viewport" content="width=device-width, initial-scale=1" />,
-  <script type="module" src={DATASTAR_RUNTIME} />,
-  <style>{`
-    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #f6f7f9; color: #1f2328; }
+  <link rel="preconnect" href="https://fonts.googleapis.com" />,
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />,
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />,
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>,
+  <style type="text/tailwindcss">{`
+    @theme {
+      --color-bg: #0a0a0a;
+      --color-surface: #111111;
+      --color-surface-hover: #1a1a1a;
+      --color-surface-inset: #0d0d0d;
+      --color-surface-card: #151515;
+      --color-surface-card-hover: #181818;
+      --color-border-subtle: #1f1f1f;
+      --color-border: #262626;
+      --color-border-strong: #404040;
+      --color-fg: #f6fff5;
+      --color-fg-secondary: #a3a3a3;
+      --color-fg-muted: #737373;
+      --color-accent: #e5e5e5;
+      --color-accent-fg: #0a0a0a;
+      --color-danger: #ef4444;
+      --color-success: #22c55e;
+      --color-warning: #facc15;
+      --color-link: #60a5fa;
+      --font-ui: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    body {
+      font-family: var(--font-ui);
+      font-size: 14px;
+      line-height: 1.5;
+      background: var(--color-bg);
+      color: var(--color-fg);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
     * { box-sizing: border-box; }
-    body { margin: 0; }
-    button, input, textarea, select { font: inherit; }
-    button { border: 0; border-radius: 6px; background: #24292f; color: white; padding: 0.55rem 0.8rem; cursor: pointer; }
-    button.secondary { background: #eef1f4; color: #24292f; }
-    input, textarea, select { width: 100%; border: 1px solid #d7dce1; border-radius: 6px; padding: 0.55rem 0.65rem; background: white; }
-    textarea { min-height: 5rem; resize: vertical; }
-    label { display: grid; gap: 0.35rem; color: #57606a; font-size: 0.85rem; font-weight: 600; }
-    small.error { color: #c93c37; min-height: 1rem; }
-    a { color: inherit; }
-    .auth { min-height: 100vh; display: grid; place-items: center; padding: 2rem; }
-    .auth-panel { width: min(420px, 100%); background: white; border: 1px solid #d7dce1; border-radius: 8px; padding: 1.25rem; display: grid; gap: 1rem; box-shadow: 0 10px 24px rgb(31 35 40 / 8%); }
-    .auth-panel h1 { margin: 0; font-size: 1.4rem; }
-    .auth-panel form, .stack { display: grid; gap: 0.85rem; }
-    .shell { min-height: 100vh; display: grid; grid-template-columns: 250px 1fr 360px; }
-    .sidebar { background: #20242a; color: white; padding: 1rem; display: grid; align-content: start; gap: 1rem; }
-    .sidebar h1 { margin: 0; font-size: 1.1rem; }
-    .sidebar form { display: grid; gap: 0.6rem; }
-    .sidebar input, .sidebar textarea { background: #2b3038; border-color: #424a55; color: white; }
-    .main { padding: 1rem; overflow: auto; }
-    .toolbar { display: flex; justify-content: space-between; gap: 1rem; align-items: center; margin-bottom: 1rem; }
-    .toolbar h2 { margin: 0; font-size: 1.35rem; }
-    .board { display: grid; grid-template-columns: repeat(5, minmax(190px, 1fr)); gap: 0.75rem; align-items: start; }
-    .column { display: grid; gap: 0.5rem; }
-    .column h3 { margin: 0; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0; color: #57606a; }
-    .issue-card { display: grid; gap: 0.45rem; background: white; border: 1px solid #d7dce1; border-radius: 8px; padding: 0.75rem; text-align: left; color: #24292f; box-shadow: 0 1px 2px rgb(31 35 40 / 5%); }
-    .issue-card button { text-align: left; padding: 0; color: inherit; background: transparent; }
-    .meta { display: flex; flex-wrap: wrap; gap: 0.35rem; color: #57606a; font-size: 0.78rem; }
-    .pill { border: 1px solid #d7dce1; border-radius: 999px; padding: 0.1rem 0.45rem; background: #f6f7f9; }
-    .panel { border-left: 1px solid #d7dce1; background: white; padding: 1rem; overflow: auto; }
-    .panel h2, .panel h3 { margin-top: 0; }
-    .issue-form { background: white; border: 1px solid #d7dce1; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; }
-    .comment { border-top: 1px solid #eef1f4; padding: 0.75rem 0; }
-    @media (max-width: 980px) { .shell { grid-template-columns: 1fr; } .sidebar, .panel { border: 0; } .board { grid-template-columns: 1fr; } }
-  `}</style>
+    *::-webkit-scrollbar { width: 5px; height: 5px; }
+    *::-webkit-scrollbar-track { background: transparent; }
+    *::-webkit-scrollbar-thumb { background: #262626; border-radius: 0; }
+    *::-webkit-scrollbar-thumb:hover { background: #404040; }
+    * { scrollbar-width: thin; scrollbar-color: #262626 transparent; }
+
+    button {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+      border: 1px solid #262626;
+      background: #111111;
+      color: #a3a3a3;
+      padding: 8px 14px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, color 0.15s ease, transform 0.15s ease;
+      white-space: nowrap;
+      line-height: 1;
+    }
+    button:hover {
+      background: #1a1a1a;
+      color: #f6fff5;
+      border-color: #404040;
+      transform: translateY(-0.5px);
+      box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    }
+    button.primary {
+      background: #e5e5e5;
+      border-color: #e5e5e5;
+      color: #0a0a0a;
+      font-weight: 600;
+    }
+    button.primary:hover {
+      opacity: 0.92;
+      transform: translateY(-0.5px);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+    }
+    button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      background: #111111;
+      color: #f6fff5;
+      border: 1px solid #262626;
+      padding: 10px 12px;
+      font-family: var(--font-ui);
+      font-size: 14px;
+      line-height: 1.5;
+      outline: none;
+      border-radius: 0;
+      transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    input::placeholder, textarea::placeholder { color: #4a4f5b; }
+    textarea { resize: vertical; }
+    input:focus, textarea:focus, select:focus {
+      border-color: #404040;
+      box-shadow: 0 0 0 3px color-mix(in srgb, #60a5fa 15%, transparent);
+    }
+    select {
+      appearance: none;
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23737373' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    a { color: inherit; text-decoration: none; }
+  `}</style>,
+  <script type="module" src={DATASTAR_RUNTIME} />,
 ]
 
-export const Empty = (props: { children: HtmlChild }) => <p class="meta">{props.children}</p>
+export const Empty = (props: { children: HtmlChild }) => (
+  <p class="text-fg-muted text-[13px]">{props.children}</p>
+)

@@ -1,4 +1,5 @@
 import { serve } from "@hono/node-server"
+import { serveStatic } from "@hono/node-server/serve-static"
 import { Hono } from "hono"
 import { requireUser, type AppVariables } from "./auth/session.js"
 import { registerAuthRoutes } from "./routes/auth.js"
@@ -6,6 +7,8 @@ import { registerIssueRoutes } from "./routes/issues.js"
 import { registerWorkspaceRoutes } from "./routes/workspace.js"
 
 const app = new Hono<{ Variables: AppVariables }>()
+
+app.use("/public/*", serveStatic({ root: "./" }))
 
 registerAuthRoutes(app)
 
