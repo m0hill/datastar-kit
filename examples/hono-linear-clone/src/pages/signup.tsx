@@ -3,16 +3,19 @@ import { z } from "zod"
 import type { App } from "../app-types.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
 import { createUser } from "../auth/users.js"
-import { FieldError, firstErrors, isUniqueConstraintError, pageHead } from "../shared/ui.js"
+import { FieldError, isUniqueConstraintError, pageHead } from "../shared/ui.js"
 
-const usernameSchema = z
-  .string()
-  .trim()
-  .min(3, "Use at least 3 characters")
-  .max(24, "Keep it under 24 characters")
-  .regex(/^[a-z0-9_-]+$/i, "Use letters, numbers, underscores, or dashes")
+const signupSchema = z.object({
+  name: z.string().trim().min(2, "Enter your name"),
+  username: z.string()
+    .trim()
+    .min(3, "Use at least 3 characters")
+    .max(24, "Keep it under 24 characters")
+    .regex(/^[a-z0-9_-]+$/i, "Use letters, numbers, underscores, or dashes"),
+  password: z.string().min(8, "Use at least 8 characters")
+})
 
-const signupSignals = {
+const signupState = ds.state({
   name: "",
   username: "",
   password: "",
@@ -22,29 +25,11 @@ const signupSignals = {
     username: "",
     password: ""
   }
-}
-
-const signupState = ds.state(signupSignals)
-
-const signupSchema = z.object({
-  name: z.string().trim().min(2, "Enter your name"),
-  username: usernameSchema,
-  password: z.string().min(8, "Use at least 8 characters")
 })
-
-const signupValidationPatch = (errors: Partial<typeof signupSignals._validation>) =>
-  reply.signals(signupState.patch({ _validation: { ...signupSignals._validation, ...errors } }))
-
-const navigateToAppWithSession = async (userId: number) =>
-  reply.navigate(
-    "/app",
-    {},
-    { headers: { "set-cookie": sessionCookie(await createSession(userId)) } }
-  )
 
 const SignupPage = () => (
   <main class="min-h-screen grid place-items-center p-6 bg-bg" {...signupState.attrs()}>
-    <section class="w-full max-w-[360px] bg-surface border border-border p-8 flex flex-col gap-5">
+    <section class="w-full max-w-90 bg-surface border border-border p-8 flex flex-col gap-5">
       <div>
         <h1 class="text-xl font-bold text-fg tracking-tight">Create account</h1>
         <p class="text-fg-muted text-[13px] mt-1">Get started with your new workspace</p>
@@ -106,22 +91,39 @@ export const registerSignupPage = (app: App) => {
   })
 
   app.post("/signup", async (c) => {
-    const parsedSignup = signupSchema.safeParse(await read.signals(c.req.raw))
-    if (!parsedSignup.success) {
-      const errors = firstErrors(parsedSignup.error)
-      return signupValidationPatch({
-        name: errors.field("name"),
-        username: errors.field("username"),
-        password: errors.field("password")
-      })
+    const result = signupSchema.safeParse(await read.signals(c.req.raw))
+    if (!result.success) {
+      const { fieldErrors } = z.flattenError(result.error)
+
+      return reply.signals(
+        signupState.patch({
+          _validation: {
+            ...signupState.defaults._validation,
+            name: fieldErrors.name?.[0] ?? "",
+            username: fieldErrors.username?.[0] ?? "",
+            password: fieldErrors.password?.[0] ?? ""
+          }
+        })
+      )
     }
 
     try {
-      const user = await createUser(parsedSignup.data)
-      return navigateToAppWithSession(user.id)
+      const user = await createUser(result.data)
+      return reply.navigate(
+        "/app",
+        {},
+        { headers: { "set-cookie": sessionCookie(await createSession(user.id)) } }
+      )
     } catch (error) {
       if (!isUniqueConstraintError(error)) throw error
-      return signupValidationPatch({ username: "That username is already taken" })
+      return reply.signals(
+        signupState.patch({
+          _validation: {
+            ...signupState.defaults._validation,
+            username: "That username is already taken"
+          }
+        })
+      )
     }
   })
 }
