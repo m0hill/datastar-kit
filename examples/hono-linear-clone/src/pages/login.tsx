@@ -3,9 +3,14 @@ import { z } from "zod"
 import type { App } from "../app-types.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
 import { authenticate } from "../auth/users.js"
-import { FieldError, firstErrors, pageHead } from "../shared/ui.js"
+import { FieldError, pageHead } from "../shared/ui.js"
 
-const loginSignals = {
+const loginSchema = z.object({
+  username: z.string().trim().min(3, "Use at least 3 characters"),
+  password: z.string().min(1, "Enter your password")
+})
+
+const loginState = ds.state({
   username: "",
   password: "",
   _validation: {
@@ -13,28 +18,11 @@ const loginSignals = {
     username: "",
     password: ""
   }
-}
-
-const loginState = ds.state(loginSignals)
-
-const loginSchema = z.object({
-  username: z.string().trim().min(3, "Use at least 3 characters"),
-  password: z.string().min(1, "Enter your password")
 })
-
-const loginValidationPatch = (errors: Partial<typeof loginSignals._validation>) =>
-  reply.signals(loginState.patch({ _validation: { ...loginSignals._validation, ...errors } }))
-
-const navigateToAppWithSession = async (userId: number) =>
-  reply.navigate(
-    "/app",
-    {},
-    { headers: { "set-cookie": sessionCookie(await createSession(userId)) } }
-  )
 
 const LoginPage = () => (
   <main class="min-h-screen grid place-items-center p-6 bg-bg" {...loginState.attrs()}>
-    <section class="w-full max-w-[360px] bg-surface border border-border p-8 flex flex-col gap-5">
+    <section class="w-full max-w-90 bg-surface border border-border p-8 flex flex-col gap-5">
       <div>
         <h1 class="text-xl font-bold text-fg tracking-tight">Sign in</h1>
         <p class="text-fg-muted text-[13px] mt-1">Welcome back to your workspace</p>
@@ -90,20 +78,37 @@ export const registerLoginPage = (app: App) => {
   })
 
   app.post("/login", async (c) => {
-    const parsedLogin = loginSchema.safeParse(await read.signals(c.req.raw))
-    if (!parsedLogin.success) {
-      const errors = firstErrors(parsedLogin.error)
-      return loginValidationPatch({
-        username: errors.field("username"),
-        password: errors.field("password")
-      })
+    const result = loginSchema.safeParse(await read.signals(c.req.raw))
+    if (!result.success) {
+      const { fieldErrors } = z.flattenError(result.error)
+
+      return reply.signals(
+        loginState.patch({
+          _validation: {
+            ...loginState.defaults._validation,
+            username: fieldErrors.username?.[0] ?? "",
+            password: fieldErrors.password?.[0] ?? ""
+          }
+        })
+      )
     }
 
-    const user = await authenticate(parsedLogin.data)
+    const user = await authenticate(result.data)
     if (user === null) {
-      return loginValidationPatch({ form: "Username or password is incorrect" })
+      return reply.signals(
+        loginState.patch({
+          _validation: {
+            ...loginState.defaults._validation,
+            form: "Username or password is incorrect"
+          }
+        })
+      )
     }
 
-    return navigateToAppWithSession(user.id)
+    return reply.navigate(
+      "/app",
+      {},
+      { headers: { "set-cookie": sessionCookie(await createSession(user.id)) } }
+    )
   })
 }
