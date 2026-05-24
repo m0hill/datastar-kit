@@ -13,7 +13,6 @@ import {
   type IssueStatus,
   type User
 } from "../db/schema.js"
-import { readWorkspaceIssues } from "../db/workspace.js"
 import { invalidations } from "../realtime/hub.js"
 import {
   issuePriorities,
@@ -21,8 +20,8 @@ import {
   issueStatuses,
   issueStatusValues
 } from "../shared/issue-options.js"
-import { Empty, FieldError, firstErrors } from "../shared/ui.js"
-import { Board, workspaceSignals, workspaceState } from "./workspace.js"
+import { Empty, FieldError, firstErrors, pageHead } from "../shared/ui.js"
+import { workspaceSignals, workspaceState } from "./workspace.js"
 
 const issueIdParam = z.coerce.number().int().positive()
 
@@ -47,10 +46,20 @@ const commentSchema = z.object({
     .max(1200, "Keep it under 1200 characters")
 })
 
+const issueState = ds.state({
+  commentBody: "",
+  _validation: {
+    commentBody: ""
+  }
+})
+
 const workspaceValidationPatch = (errors: Partial<typeof workspaceSignals._validation>) =>
   reply.signals(
     workspaceState.patch({ _validation: { ...workspaceSignals._validation, ...errors } })
   )
+
+const issueValidationPatch = (errors: Partial<typeof issueState.defaults._validation>) =>
+  reply.signals(issueState.patch({ _validation: { ...issueState.defaults._validation, ...errors } }))
 
 export const loadIssue = async (issueId: number) => {
   const [issue] = await db
@@ -151,35 +160,27 @@ const createComment = async (user: User, issueId: number, body: string) => {
   await db.update(issues).set({ updatedAt: new Date() }).where(eq(issues.id, issueId))
 }
 
-export const IssuePanel = (props: { detail: IssueDetail | null }) => (
-  <aside
-    id="issue-panel"
-    class="bg-surface border-t lg:border-t-0 lg:border-l border-border p-4 lg:p-5 overflow-auto min-w-0"
-  >
-    {props.detail === null ? null : (
-      <div
-        {...ds.onIntersect(ds.get(`/issues/${props.detail.issue.id}/live`), { once: true })}
-        class="absolute w-px h-px overflow-hidden"
-      ></div>
-    )}
-    <IssuePanelContent detail={props.detail} />
-  </aside>
+const IssuePage = (props: { detail: IssueDetail }) => (
+  <main class="min-h-screen bg-bg text-fg" {...issueState.attrs()}>
+    <div
+      {...ds.onIntersect(ds.get(`/issues/${props.detail.issue.id}/live`), { once: true })}
+      class="absolute w-px h-px overflow-hidden"
+    ></div>
+    <section class="mx-auto flex w-full max-w-3xl flex-col gap-5 p-5 lg:p-8">
+      <a
+        href="/app"
+        class="text-[13px] font-medium text-fg-secondary hover:text-fg hover:underline"
+      >
+        Back to workspace
+      </a>
+      <IssuePageContent detail={props.detail} />
+    </section>
+  </main>
 )
 
-export const IssuePanelContent = (props: { detail: IssueDetail | null }) => (
-  <div id="issue-panel-content">
-    {props.detail === null ? (
-      <div class="grid place-items-center h-full text-center gap-3 min-h-50">
-        <div>
-          <h2 class="text-[15px] font-semibold text-fg-muted mb-1">No issue selected</h2>
-          <p class="text-[13px] text-fg-muted">
-            Select an issue to view details, change status, or add comments.
-          </p>
-        </div>
-      </div>
-    ) : (
-      <IssueDetailView detail={props.detail} />
-    )}
+export const IssuePageContent = (props: { detail: IssueDetail | null }) => (
+  <div id="issue-page-content">
+    {props.detail === null ? null : <IssueDetailView detail={props.detail} />}
   </div>
 )
 
@@ -269,9 +270,9 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
           <textarea
             rows={3}
             placeholder="Write a comment..."
-            {...ds.bind(workspaceState.$.commentBody)}
+            {...ds.bind(issueState.$.commentBody)}
           ></textarea>
-          <FieldError path={workspaceState.$._validation.commentBody} />
+          <FieldError path={issueState.$._validation.commentBody} />
         </label>
         <button type="submit" class="primary self-start">
           Post comment
@@ -294,20 +295,7 @@ export const registerIssuePage = (app: App) => {
 
     const issue = await createIssue(c.get("user"), parsedIssue.data)
     invalidations.publish()
-    const issues = await readWorkspaceIssues()
-    return reply.stream([
-      event.signals(
-        workspaceState.patch({
-          issueTitle: "",
-          issueDescription: "",
-          commentBody: "",
-          modalOpen: false,
-          _validation: workspaceSignals._validation
-        })
-      ),
-      event.patch(<Board issues={issues} />),
-      event.patch(<IssuePanel detail={await loadIssue(issue.id)} />)
-    ])
+    return reply.navigate(`/issues/${issue.id}`)
   })
 
   app.get("/issues/:id", async (c) => {
@@ -317,12 +305,15 @@ export const registerIssuePage = (app: App) => {
       throw new HTTPException(404)
     }
 
-    return reply.patch(<IssuePanel detail={detail} />)
+    return reply.page(<IssuePage detail={detail} />, {
+      title: `${detail.issue.projectKey}-${detail.issue.number} · Linear clone`,
+      head: pageHead
+    })
   })
 
   app.get("/issues/:id/live", async (c) => {
     const issueId = issueIdParam.parse(c.req.param("id"))
-    const render = async () => event.patch(<IssuePanelContent detail={await loadIssue(issueId)} />)
+    const render = async () => event.patch(<IssuePageContent detail={await loadIssue(issueId)} />)
 
     async function* stream() {
       yield await render()
@@ -347,11 +338,7 @@ export const registerIssuePage = (app: App) => {
 
     await updateIssue(issueId, parsedIssueUpdate.data)
     invalidations.publish()
-    const [issues, detail] = await Promise.all([readWorkspaceIssues(), loadIssue(issueId)])
-    return reply.stream([
-      event.patch(<Board issues={issues} />),
-      event.patch(<IssuePanelContent detail={detail} />)
-    ])
+    return reply.patch(<IssuePageContent detail={await loadIssue(issueId)} />)
   })
 
   app.post("/issues/:id/comments", async (c) => {
@@ -359,16 +346,14 @@ export const registerIssuePage = (app: App) => {
     const parsedComment = commentSchema.safeParse(await read.signals(c.req.raw))
     if (!parsedComment.success) {
       const errors = firstErrors(parsedComment.error)
-      return workspaceValidationPatch({ commentBody: errors.field("commentBody") })
+      return issueValidationPatch({ commentBody: errors.field("commentBody") })
     }
 
     await createComment(c.get("user"), issueId, parsedComment.data.commentBody)
     invalidations.publish()
     return reply.stream([
-      event.signals(
-        workspaceState.patch({ commentBody: "", _validation: workspaceSignals._validation })
-      ),
-      event.patch(<IssuePanelContent detail={await loadIssue(issueId)} />)
+      event.signals(issueState.patch({ commentBody: "", _validation: issueState.defaults._validation })),
+      event.patch(<IssuePageContent detail={await loadIssue(issueId)} />)
     ])
   })
 }

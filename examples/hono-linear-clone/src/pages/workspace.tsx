@@ -18,14 +18,12 @@ export const workspaceSignals = {
   issueDescription: "",
   issueStatus: "todo",
   issuePriority: "medium",
-  commentBody: "",
   modalOpen: false,
   _validation: {
     form: "",
     projectName: "",
     projectKey: "",
-    issueTitle: "",
-    commentBody: ""
+    issueTitle: ""
   }
 }
 
@@ -185,10 +183,10 @@ export const Board = (props: { issues: WorkspaceIssue[] }) => (
       </div>
     ) : (
       props.issues.map((issue) => (
-        <article
+        <a
+          href={`/issues/${issue.id}`}
           class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2.5 border-b border-border-subtle items-center cursor-pointer transition-colors hover:bg-surface-hover"
           id={`issue-${issue.id}`}
-          {...ds.on("click", ds.get(`/issues/${issue.id}`))}
         >
           <StatusDot
             class={
@@ -202,7 +200,7 @@ export const Board = (props: { issues: WorkspaceIssue[] }) => (
           <StatusLabel status={issue.status} />
           <PriorityBadge priority={issue.priority} />
           <AssigneeCell name={issue.assigneeName} />
-        </article>
+        </a>
       ))
     )}
   </section>
@@ -314,31 +312,13 @@ const IssueModal = (props: { projects: WorkspaceProject[] }) => (
   </dialog>
 )
 
-const EmptyIssuePanel = () => (
-  <aside
-    id="issue-panel"
-    class="bg-surface border-t lg:border-t-0 lg:border-l border-border p-4 lg:p-5 overflow-auto min-w-0"
-  >
-    <div id="issue-panel-content">
-      <div class="grid place-items-center h-full text-center gap-3 min-h-50">
-        <div>
-          <h2 class="text-[15px] font-semibold text-fg-muted mb-1">No issue selected</h2>
-          <p class="text-[13px] text-fg-muted">
-            Select an issue to view details, change status, or add comments.
-          </p>
-        </div>
-      </div>
-    </div>
-  </aside>
-)
-
 const WorkspacePage = (props: {
   user: User
   projects: WorkspaceProject[]
   issues: WorkspaceIssue[]
 }) => (
   <main
-    class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr_340px] bg-bg"
+    class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg"
     {...workspaceState.attrs()}
   >
     <div class="hidden lg:flex">
@@ -358,7 +338,6 @@ const WorkspacePage = (props: {
       <Board issues={props.issues} />
       <IssueModal projects={props.projects} />
     </section>
-    <EmptyIssuePanel />
   </main>
 )
 
