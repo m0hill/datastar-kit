@@ -2,7 +2,7 @@ import { ds, read, reply } from "datastar-kit"
 import { z } from "zod"
 import type { App } from "../app-types.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
-import { authenticate } from "../auth/users.js"
+import { authenticate } from "../db/users.js"
 import { FieldError, pageHead } from "../shared/ui.js"
 
 const loginSchema = z.object({

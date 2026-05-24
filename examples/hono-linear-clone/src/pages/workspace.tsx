@@ -1,11 +1,10 @@
 import { getCookie } from "hono/cookie"
-import { and, asc, count, desc, eq, sql } from "drizzle-orm"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
 import type { App } from "../app-types.js"
 import { deleteSessionCookie, deleteSession } from "../auth/session.js"
-import { db } from "../db/index.js"
-import { issues, projects, users, type User } from "../db/schema.js"
+import { createProject, readWorkspaceIssues, readWorkspaceProjects } from "../db/workspace.js"
+import { type User } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
 import { FieldError, Empty, firstErrors, isUniqueConstraintError, pageHead } from "../shared/ui.js"
 import { issuePriorities, issueStatuses, StatusDot } from "../shared/issue-options.js"
@@ -48,67 +47,10 @@ const workspaceValidationPatch = (errors: Partial<typeof workspaceSignals._valid
     workspaceState.patch({ _validation: { ...workspaceSignals._validation, ...errors } })
   )
 
-export const loadWorkspace = async () => {
-  const projectRows = await db
-    .select({
-      id: projects.id,
-      name: projects.name,
-      key: projects.key,
-      description: projects.description,
-      openIssues: count(issues.id)
-    })
-    .from(projects)
-    .leftJoin(issues, and(eq(issues.projectId, projects.id), sql`${issues.status} != 'done'`))
-    .groupBy(projects.id)
-    .orderBy(asc(projects.name))
+type WorkspaceProject = Awaited<ReturnType<typeof readWorkspaceProjects>>[number]
+type WorkspaceIssue = Awaited<ReturnType<typeof readWorkspaceIssues>>[number]
 
-  const issueRows = await db
-    .select({
-      id: issues.id,
-      number: issues.number,
-      title: issues.title,
-      description: issues.description,
-      status: issues.status,
-      priority: issues.priority,
-      updatedAt: issues.updatedAt,
-      projectId: projects.id,
-      projectKey: projects.key,
-      projectName: projects.name,
-      assigneeName: users.name
-    })
-    .from(issues)
-    .innerJoin(projects, eq(projects.id, issues.projectId))
-    .leftJoin(users, eq(users.id, issues.assigneeId))
-    .orderBy(desc(issues.updatedAt), desc(issues.id))
-
-  const userRows = await db.select().from(users).orderBy(asc(users.name))
-  return { projects: projectRows, issues: issueRows, users: userRows }
-}
-
-export type Workspace = Awaited<ReturnType<typeof loadWorkspace>>
-
-const createProject = async (
-  user: User,
-  input: { projectName: string; projectKey: string; projectDescription?: string | undefined }
-) => {
-  const [project] = await db
-    .insert(projects)
-    .values({
-      name: input.projectName,
-      key: input.projectKey.toUpperCase(),
-      description: input.projectDescription ?? "",
-      createdById: user.id
-    })
-    .returning()
-
-  if (project === undefined) {
-    throw new Error("Failed to create project")
-  }
-
-  return project
-}
-
-const Sidebar = (props: { user: User; workspace: Workspace }) => (
+const Sidebar = (props: { user: User; projects: WorkspaceProject[] }) => (
   <aside
     id="sidebar"
     class="bg-surface border-r border-border text-fg-muted p-4 flex flex-col gap-5 overflow-y-auto min-w-0 w-full"
@@ -127,7 +69,7 @@ const Sidebar = (props: { user: User; workspace: Workspace }) => (
 
     <div class="flex flex-col gap-1">
       <h2 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted px-2">Projects</h2>
-      <ProjectList workspace={props.workspace} />
+      <ProjectList projects={props.projects} />
     </div>
 
     <div class="flex flex-col gap-1">
@@ -166,12 +108,12 @@ const Sidebar = (props: { user: User; workspace: Workspace }) => (
   </aside>
 )
 
-const ProjectList = (props: { workspace: Workspace }) => (
+const ProjectList = (props: { projects: WorkspaceProject[] }) => (
   <div class="flex flex-col">
-    {props.workspace.projects.length === 0 ? (
+    {props.projects.length === 0 ? (
       <Empty>Create a project to start tracking work.</Empty>
     ) : (
-      props.workspace.projects.map((project) => (
+      props.projects.map((project) => (
         <div class="flex items-center gap-2 px-2 py-1.5 text-[13px] text-fg-secondary hover:bg-surface-hover hover:text-fg transition-colors cursor-default">
           <span class="font-mono font-semibold text-fg text-[12px] min-w-8">
             {project.key}
@@ -184,7 +126,7 @@ const ProjectList = (props: { workspace: Workspace }) => (
   </div>
 )
 
-const StatusLabel = ({ status }: { status: Workspace["issues"][number]["status"] }) => {
+const StatusLabel = ({ status }: { status: WorkspaceIssue["status"] }) => {
   const currentStatus = issueStatuses.find((x) => x.value === status)
   if (!currentStatus) return <span class="text-fg-muted">{status}</span>
   return (
@@ -195,7 +137,7 @@ const StatusLabel = ({ status }: { status: Workspace["issues"][number]["status"]
   )
 }
 
-const PriorityBadge = ({ priority }: { priority: Workspace["issues"][number]["priority"] }) => {
+const PriorityBadge = ({ priority }: { priority: WorkspaceIssue["priority"] }) => {
   const currentPriority = issuePriorities.find((x) => x.value === priority)
   if (!currentPriority) return null
   const color =
@@ -227,7 +169,7 @@ const AssigneeCell = ({ name }: { name: string | null }) => {
   )
 }
 
-export const Board = (props: { workspace: Workspace }) => (
+export const Board = (props: { issues: WorkspaceIssue[] }) => (
   <section id="board" class="border border-border">
     <div class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2 bg-surface border-b border-border text-[11px] font-bold tracking-widest uppercase text-fg-muted">
       <span></span>
@@ -237,12 +179,12 @@ export const Board = (props: { workspace: Workspace }) => (
       <span>Prio</span>
       <span>Assignee</span>
     </div>
-    {props.workspace.issues.length === 0 ? (
+    {props.issues.length === 0 ? (
       <div class="px-4 py-8">
         <Empty>No issues yet. Create one above.</Empty>
       </div>
     ) : (
-      props.workspace.issues.map((issue) => (
+      props.issues.map((issue) => (
         <article
           class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2.5 border-b border-border-subtle items-center cursor-pointer transition-colors hover:bg-surface-hover"
           id={`issue-${issue.id}`}
@@ -266,10 +208,10 @@ export const Board = (props: { workspace: Workspace }) => (
   </section>
 )
 
-export const IssueProjectSelect = (props: { workspace: Workspace }) => (
+export const IssueProjectSelect = (props: { projects: WorkspaceProject[] }) => (
   <select id="issue-project-select" {...ds.bind(workspaceState.$.projectId)}>
     <option value="">Select project</option>
-    {props.workspace.projects.map((project) => (
+    {props.projects.map((project) => (
       <option value={project.id}>
         {project.key} · {project.name}
       </option>
@@ -277,7 +219,7 @@ export const IssueProjectSelect = (props: { workspace: Workspace }) => (
   </select>
 )
 
-const IssueModalForm = (props: { workspace: Workspace }) => (
+const IssueModalForm = (props: { projects: WorkspaceProject[] }) => (
   <form
     class="bg-surface-card border border-border w-full max-w-130 flex flex-col gap-4 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
     {...ds.on("submit", ds.post("/issues"), { prevent: true })}
@@ -323,7 +265,7 @@ const IssueModalForm = (props: { workspace: Workspace }) => (
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
       <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
         Project
-        <IssueProjectSelect workspace={props.workspace} />
+        <IssueProjectSelect projects={props.projects} />
         <FieldError path={workspaceState.$._validation.form} />
       </label>
       <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
@@ -354,7 +296,7 @@ const IssueModalForm = (props: { workspace: Workspace }) => (
   </form>
 )
 
-const IssueModal = (props: { workspace: Workspace }) => (
+const IssueModal = (props: { projects: WorkspaceProject[] }) => (
   <dialog
     id="issue-modal"
     class="bg-transparent p-0 m-0 max-w-none max-h-none w-full h-full border-0"
@@ -366,7 +308,7 @@ const IssueModal = (props: { workspace: Workspace }) => (
   >
     <div class="fixed inset-0 bg-black/60 flex items-start justify-center pt-[10vh] px-4">
       <div id="modal-content">
-        <IssueModalForm workspace={props.workspace} />
+        <IssueModalForm projects={props.projects} />
       </div>
     </div>
   </dialog>
@@ -390,13 +332,17 @@ const EmptyIssuePanel = () => (
   </aside>
 )
 
-const WorkspacePage = (props: { user: User; workspace: Workspace }) => (
+const WorkspacePage = (props: {
+  user: User
+  projects: WorkspaceProject[]
+  issues: WorkspaceIssue[]
+}) => (
   <main
     class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr_340px] bg-bg"
     {...workspaceState.attrs()}
   >
     <div class="hidden lg:flex">
-      <Sidebar user={props.user} workspace={props.workspace} />
+      <Sidebar user={props.user} projects={props.projects} />
     </div>
     <section class="p-5 lg:px-7 overflow-auto min-w-0">
       <div
@@ -409,8 +355,8 @@ const WorkspacePage = (props: { user: User; workspace: Workspace }) => (
           Create issue
         </button>
       </div>
-      <Board workspace={props.workspace} />
-      <IssueModal workspace={props.workspace} />
+      <Board issues={props.issues} />
+      <IssueModal projects={props.projects} />
     </section>
     <EmptyIssuePanel />
   </main>
@@ -418,8 +364,8 @@ const WorkspacePage = (props: { user: User; workspace: Workspace }) => (
 
 export const registerWorkspacePage = (app: App) => {
   app.get("/app", async (c) => {
-    const workspace = await loadWorkspace()
-    return reply.page(<WorkspacePage user={c.get("user")} workspace={workspace} />, {
+    const [projects, issues] = await Promise.all([readWorkspaceProjects(), readWorkspaceIssues()])
+    return reply.page(<WorkspacePage user={c.get("user")} projects={projects} issues={issues} />, {
       title: "Linear clone",
       head: pageHead
     })
@@ -429,11 +375,11 @@ export const registerWorkspacePage = (app: App) => {
     const user = c.get("user")
 
     const render = async () => {
-      const workspace = await loadWorkspace()
+      const [projects, issues] = await Promise.all([readWorkspaceProjects(), readWorkspaceIssues()])
       return [
-        event.patch(<Sidebar user={user} workspace={workspace} />),
-        event.patch(<Board workspace={workspace} />),
-        event.patch(<IssueProjectSelect workspace={workspace} />)
+        event.patch(<Sidebar user={user} projects={projects} />),
+        event.patch(<Board issues={issues} />),
+        event.patch(<IssueProjectSelect projects={projects} />)
       ]
     }
 
@@ -452,9 +398,9 @@ export const registerWorkspacePage = (app: App) => {
   })
 
   app.get("/modal/issue", async () => {
-    const workspace = await loadWorkspace()
+    const projects = await readWorkspaceProjects()
     return reply.stream([
-      event.patch(<IssueProjectSelect workspace={workspace} />),
+      event.patch(<IssueProjectSelect projects={projects} />),
       event.signals(workspaceState.patch({ modalOpen: true }))
     ])
   })
@@ -477,7 +423,7 @@ export const registerWorkspacePage = (app: App) => {
     }
 
     invalidations.publish()
-    const workspace = await loadWorkspace()
+    const projects = await readWorkspaceProjects()
     return reply.stream([
       event.signals(
         workspaceState.patch({
@@ -487,9 +433,8 @@ export const registerWorkspacePage = (app: App) => {
           _validation: workspaceSignals._validation
         })
       ),
-      event.patch(<Sidebar user={c.get("user")} workspace={workspace} />),
-      event.patch(<Board workspace={workspace} />),
-      event.patch(<IssueProjectSelect workspace={workspace} />)
+      event.patch(<Sidebar user={c.get("user")} projects={projects} />),
+      event.patch(<IssueProjectSelect projects={projects} />)
     ])
   })
 

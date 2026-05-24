@@ -13,6 +13,7 @@ import {
   type IssueStatus,
   type User
 } from "../db/schema.js"
+import { readWorkspaceIssues } from "../db/workspace.js"
 import { invalidations } from "../realtime/hub.js"
 import {
   issuePriorities,
@@ -21,7 +22,7 @@ import {
   issueStatusValues
 } from "../shared/issue-options.js"
 import { Empty, FieldError, firstErrors } from "../shared/ui.js"
-import { Board, loadWorkspace, workspaceSignals, workspaceState } from "./workspace.js"
+import { Board, workspaceSignals, workspaceState } from "./workspace.js"
 
 const issueIdParam = z.coerce.number().int().positive()
 
@@ -168,7 +169,7 @@ export const IssuePanel = (props: { detail: IssueDetail | null }) => (
 export const IssuePanelContent = (props: { detail: IssueDetail | null }) => (
   <div id="issue-panel-content">
     {props.detail === null ? (
-      <div class="grid place-items-center h-full text-center gap-3 min-h-[200px]">
+      <div class="grid place-items-center h-full text-center gap-3 min-h-50">
         <div>
           <h2 class="text-[15px] font-semibold text-fg-muted mb-1">No issue selected</h2>
           <p class="text-[13px] text-fg-muted">
@@ -293,7 +294,7 @@ export const registerIssuePage = (app: App) => {
 
     const issue = await createIssue(c.get("user"), parsedIssue.data)
     invalidations.publish()
-    const workspace = await loadWorkspace()
+    const issues = await readWorkspaceIssues()
     return reply.stream([
       event.signals(
         workspaceState.patch({
@@ -304,7 +305,7 @@ export const registerIssuePage = (app: App) => {
           _validation: workspaceSignals._validation
         })
       ),
-      event.patch(<Board workspace={workspace} />),
+      event.patch(<Board issues={issues} />),
       event.patch(<IssuePanel detail={await loadIssue(issue.id)} />)
     ])
   })
@@ -346,9 +347,9 @@ export const registerIssuePage = (app: App) => {
 
     await updateIssue(issueId, parsedIssueUpdate.data)
     invalidations.publish()
-    const [workspace, detail] = await Promise.all([loadWorkspace(), loadIssue(issueId)])
+    const [issues, detail] = await Promise.all([readWorkspaceIssues(), loadIssue(issueId)])
     return reply.stream([
-      event.patch(<Board workspace={workspace} />),
+      event.patch(<Board issues={issues} />),
       event.patch(<IssuePanelContent detail={detail} />)
     ])
   })
