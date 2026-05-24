@@ -2,23 +2,25 @@ import { serve } from "@hono/node-server"
 import { serveStatic } from "@hono/node-server/serve-static"
 import { Hono } from "hono"
 import { requireUser, type AppVariables } from "./auth/session.js"
-import { registerAuthRoutes } from "./routes/auth.js"
-import { registerIssueRoutes } from "./routes/issues.js"
-import { registerWorkspaceRoutes } from "./routes/workspace.js"
+import { registerIssuePage } from "./pages/issue.js"
+import { registerLoginPage } from "./pages/login.js"
+import { registerSignupPage } from "./pages/signup.js"
+import { registerWorkspacePage } from "./pages/workspace.js"
 
 const app = new Hono<{ Variables: AppVariables }>()
 
 app.use("/public/*", serveStatic({ root: "./" }))
 
-registerAuthRoutes(app)
+registerLoginPage(app)
+registerSignupPage(app)
 
 app.use("/app/*", requireUser)
 app.use("/app", requireUser)
 app.use("/projects", requireUser)
 app.use("/issues/*", requireUser)
 
-registerWorkspaceRoutes(app)
-registerIssueRoutes(app)
+registerWorkspacePage(app)
+registerIssuePage(app)
 
 app.notFound((c) => c.text("Not Found", 404))
 

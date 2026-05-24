@@ -1,4 +1,6 @@
 import type { HtmlChild } from "datastar-kit"
+import { ds } from "datastar-kit"
+import { z } from "zod"
 
 export const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
@@ -15,3 +17,21 @@ export const pageHead = [
 export const Empty = (props: { children: HtmlChild }) => (
   <p class="text-fg-muted text-[13px]">{props.children}</p>
 )
+
+export const FieldError = (props: { path: Parameters<typeof ds.text>[0] }) => (
+  <small class="text-danger text-[13px] font-medium min-h-[1rem]" {...ds.text(props.path)}></small>
+)
+
+export const firstErrors = (error: z.ZodError) => {
+  const fieldErrors = z.flattenError(error).fieldErrors as Record<string, string[] | undefined>
+  return {
+    field: (name: string) => fieldErrors[name]?.[0] ?? ""
+  }
+}
+
+export const isUniqueConstraintError = (error: unknown) =>
+  typeof error === "object" &&
+  error !== null &&
+  "code" in error &&
+  typeof error.code === "string" &&
+  error.code.includes("CONSTRAINT")
