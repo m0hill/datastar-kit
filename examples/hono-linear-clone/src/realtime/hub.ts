@@ -63,6 +63,7 @@ export class InvalidationBus {
               continue
             }
 
+            // oxlint-disable-next-line no-await-in-loop
             await new Promise<void>((resolve) => {
               subscriber.resolve = resolve
             })
