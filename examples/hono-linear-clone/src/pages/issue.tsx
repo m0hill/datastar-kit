@@ -14,7 +14,7 @@ import {
 } from "../db/issue.js"
 import { issuePriorityValues, issueStatusValues } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
-import { issuePriorities, issueStatuses } from "../shared/issue-options.js"
+import { issuePriorities, issueStatuses } from "./workspace.js"
 import { pageHead } from "../shared/ui.js"
 
 const issueIdParam = z.coerce.number().int().positive()

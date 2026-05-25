@@ -5,10 +5,15 @@ import type { App } from "../app-types.js"
 import { deleteSessionCookie, deleteSession } from "../auth/session.js"
 import { createIssue, readIssues, type Issue } from "../db/issue.js"
 import { createProject, readProjects, type Project } from "../db/workspace.js"
-import { issuePriorityValues, issueStatusValues, type User } from "../db/schema.js"
+import {
+  issuePriorityValues,
+  issueStatusValues,
+  type IssuePriority,
+  type IssueStatus,
+  type User
+} from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
 import { pageHead } from "../shared/ui.js"
-import { issuePriorities, issueStatuses } from "../shared/issue-options.js"
 
 const projectSchema = z.object({
   projectName: z.string().trim().min(2, "Name the project"),
@@ -46,6 +51,22 @@ const state = ds.state({
     issueTitle: ""
   }
 })
+
+export const issueStatuses: Array<{ value: IssueStatus; label: string; dotClass: string }> = [
+  { value: "backlog", label: "Backlog", dotClass: "bg-border-strong" },
+  { value: "todo", label: "Todo", dotClass: "bg-fg-secondary" },
+  { value: "in_progress", label: "In Progress", dotClass: "bg-warning" },
+  { value: "done", label: "Done", dotClass: "bg-success" },
+  { value: "canceled", label: "Canceled", dotClass: "bg-danger" }
+]
+
+export const issuePriorities: Array<{ value: IssuePriority; label: string }> = [
+  { value: "none", label: "No priority" },
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+  { value: "urgent", label: "Urgent" }
+]
 
 const Sidebar = (props: { user: User; projects: Project[] }) => (
   <aside
