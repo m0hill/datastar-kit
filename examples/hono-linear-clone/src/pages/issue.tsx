@@ -2,7 +2,16 @@ import { HTTPException } from "hono/http-exception"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
 import type { App } from "../app-types.js"
-import { createComment, loadIssue, type IssueDetail, updateIssue } from "../db/issue.js"
+import {
+  createComment,
+  loadIssue,
+  loadIssueComments,
+  loadIssueRecord,
+  type IssueComments,
+  type IssueDetail,
+  type IssueRecord,
+  updateIssue
+} from "../db/issue.js"
 import { issuePriorityValues, issueStatusValues } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
 import { issuePriorities, issueStatuses } from "../shared/issue-options.js"
@@ -58,81 +67,11 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
   const { issue, comments: issueComments } = props.detail
   return (
     <div class="flex flex-col gap-5">
-      <div>
-        <div class="font-mono text-[12px] text-fg-muted mb-1 tracking-tight">
-          {issue.projectKey}-{issue.number}
-        </div>
-        <h2 class="text-[15px] font-semibold text-fg leading-snug tracking-tight">{issue.title}</h2>
-        <p
-          class={`mt-2 text-[13px] leading-relaxed ${issue.description ? "text-fg-secondary" : "text-fg-muted italic"}`}
-        >
-          {issue.description || "No description provided."}
-        </p>
-      </div>
+      <IssueOverview issue={issue} />
 
-      <div>
-        <h3 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted mb-3">
-          Properties
-        </h3>
-        <form
-          class="flex flex-col"
-          {...ds.on(
-            "change",
-            ds.patch(`/issues/${issue.id}`, { selector: null, contentType: "form" })
-          )}
-        >
-          <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2 border-b border-border-subtle">
-            <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-              Status
-            </label>
-            <select
-              name="status"
-              class="w-full border border-transparent hover:border-border hover:bg-surface-hover px-2 py-1.5 bg-transparent text-fg text-sm cursor-pointer transition-colors appearance-none"
-            >
-              {issueStatuses.map((status) => (
-                <option value={status.value} selected={issue.status === status.value}>
-                  {status.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2 border-b border-border-subtle">
-            <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-              Priority
-            </label>
-            <select
-              name="priority"
-              class="w-full border border-transparent hover:border-border hover:bg-surface-hover px-2 py-1.5 bg-transparent text-fg text-sm cursor-pointer transition-colors appearance-none"
-            >
-              {issuePriorities.map((priority) => (
-                <option value={priority.value} selected={issue.priority === priority.value}>
-                  {priority.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </form>
-      </div>
+      <IssueProperties issue={issue} />
 
-      <div>
-        <h3 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted mb-3">
-          Comments ({issueComments.length})
-        </h3>
-        {issueComments.length === 0 ? (
-          <p class="text-fg-muted text-[13px]">No comments yet.</p>
-        ) : (
-          <div class="flex flex-col gap-3">
-            {issueComments.map((comment) => (
-              <article class="flex flex-col gap-1 bg-surface-card border border-border p-3">
-                <span class="text-[13px] font-semibold text-fg-secondary">
-                  {comment.authorName}
-                </span>
-                <p class="text-[13px] text-fg-secondary leading-relaxed">{comment.body}</p>
-              </article>
-            ))}
-          </div>
-        )}
-      </div>
+      <IssueCommentsList comments={issueComments} />
 
       <form
         class="flex flex-col gap-3"
@@ -157,6 +96,84 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
     </div>
   )
 }
+
+const IssueOverview = (props: { issue: NonNullable<IssueRecord> }) => (
+  <div id="issue-overview">
+    <div class="font-mono text-[12px] text-fg-muted mb-1 tracking-tight">
+      {props.issue.projectKey}-{props.issue.number}
+    </div>
+    <h2 class="text-[15px] font-semibold text-fg leading-snug tracking-tight">
+      {props.issue.title}
+    </h2>
+    <p
+      class={`mt-2 text-[13px] leading-relaxed ${props.issue.description ? "text-fg-secondary" : "text-fg-muted italic"}`}
+    >
+      {props.issue.description || "No description provided."}
+    </p>
+  </div>
+)
+
+const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
+  <div id="issue-properties">
+    <h3 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted mb-3">Properties</h3>
+    <form
+      class="flex flex-col"
+      {...ds.on(
+        "change",
+        ds.patch(`/issues/${props.issue.id}`, { selector: null, contentType: "form" })
+      )}
+    >
+      <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2 border-b border-border-subtle">
+        <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">Status</label>
+        <select
+          name="status"
+          class="w-full border border-transparent hover:border-border hover:bg-surface-hover px-2 py-1.5 bg-transparent text-fg text-sm cursor-pointer transition-colors appearance-none"
+        >
+          {issueStatuses.map((status) => (
+            <option value={status.value} selected={props.issue.status === status.value}>
+              {status.label}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2 border-b border-border-subtle">
+        <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+          Priority
+        </label>
+        <select
+          name="priority"
+          class="w-full border border-transparent hover:border-border hover:bg-surface-hover px-2 py-1.5 bg-transparent text-fg text-sm cursor-pointer transition-colors appearance-none"
+        >
+          {issuePriorities.map((priority) => (
+            <option value={priority.value} selected={props.issue.priority === priority.value}>
+              {priority.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    </form>
+  </div>
+)
+
+const IssueCommentsList = (props: { comments: IssueComments }) => (
+  <div id="issue-comments">
+    <h3 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted mb-3">
+      Comments ({props.comments.length})
+    </h3>
+    {props.comments.length === 0 ? (
+      <p class="text-fg-muted text-[13px]">No comments yet.</p>
+    ) : (
+      <div class="flex flex-col gap-3">
+        {props.comments.map((comment) => (
+          <article class="flex flex-col gap-1 bg-surface-card border border-border p-3">
+            <span class="text-[13px] font-semibold text-fg-secondary">{comment.authorName}</span>
+            <p class="text-[13px] text-fg-secondary leading-relaxed">{comment.body}</p>
+          </article>
+        ))}
+      </div>
+    )}
+  </div>
+)
 
 export const registerIssuePage = (app: App) => {
   app.get("/issues/:id", async (c) => {
@@ -198,7 +215,11 @@ export const registerIssuePage = (app: App) => {
 
     await updateIssue(issueId, parsedIssueUpdate.data)
     invalidations.publish()
-    return reply.patch(<IssuePageContent detail={await loadIssue(issueId)} />)
+    const issue = await loadIssueRecord(issueId)
+    if (issue === null) {
+      return reply.patch(<IssuePageContent detail={null} />)
+    }
+    return reply.patch(<IssueProperties issue={issue} />)
   })
 
   app.post("/issues/:id/comments", async (c) => {
@@ -221,7 +242,7 @@ export const registerIssuePage = (app: App) => {
     invalidations.publish()
     return reply.stream([
       event.signals(issueState.reset()),
-      event.patch(<IssuePageContent detail={await loadIssue(issueId)} />)
+      event.patch(<IssueCommentsList comments={await loadIssueComments(issueId)} />)
     ])
   })
 }

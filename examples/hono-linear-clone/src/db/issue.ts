@@ -32,7 +32,7 @@ export const readIssues = async () =>
 
 export type Issue = Awaited<ReturnType<typeof readIssues>>[number]
 
-export const loadIssue = async (issueId: number) => {
+export const loadIssueRecord = async (issueId: number) => {
   const [issue] = await db
     .select({
       id: issues.id,
@@ -53,11 +53,11 @@ export const loadIssue = async (issueId: number) => {
     .where(eq(issues.id, issueId))
     .limit(1)
 
-  if (issue === undefined) {
-    return null
-  }
+  return issue ?? null
+}
 
-  const issueComments = await db
+export const loadIssueComments = async (issueId: number) =>
+  db
     .select({
       id: comments.id,
       body: comments.body,
@@ -69,10 +69,20 @@ export const loadIssue = async (issueId: number) => {
     .where(eq(comments.issueId, issueId))
     .orderBy(asc(comments.createdAt))
 
+export const loadIssue = async (issueId: number) => {
+  const issue = await loadIssueRecord(issueId)
+  if (issue === null) {
+    return null
+  }
+
+  const issueComments = await loadIssueComments(issueId)
+
   return { issue, comments: issueComments }
 }
 
 export type IssueDetail = NonNullable<Awaited<ReturnType<typeof loadIssue>>>
+export type IssueRecord = Awaited<ReturnType<typeof loadIssueRecord>>
+export type IssueComments = Awaited<ReturnType<typeof loadIssueComments>>
 
 export const createIssue = async (
   user: User,
