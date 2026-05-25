@@ -1,9 +1,8 @@
 import { ds, read, reply } from "datastar-kit"
 import { z } from "zod"
-import type { App } from "../app-types.js"
+import { pageHead, type App } from "../app.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
 import { createUser } from "../db/users.js"
-import { pageHead } from "../shared/ui.js"
 
 const signupSchema = z.object({
   name: z.string().trim().min(2, "Enter your name"),

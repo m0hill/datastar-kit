@@ -1,7 +1,7 @@
 import { getCookie } from "hono/cookie"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
-import type { App } from "../app-types.js"
+import { pageHead, type App } from "../app.js"
 import { deleteSessionCookie, deleteSession } from "../auth/session.js"
 import { createIssue, readIssues, type Issue } from "../db/issue.js"
 import { createProject, readProjects, type Project } from "../db/workspace.js"
@@ -13,7 +13,6 @@ import {
   type User
 } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
-import { pageHead } from "../shared/ui.js"
 
 const projectSchema = z.object({
   projectName: z.string().trim().min(2, "Name the project"),

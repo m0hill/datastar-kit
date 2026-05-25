@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto"
 import { and, eq, gt } from "drizzle-orm"
 import type { Context, MiddlewareHandler } from "hono"
 import { deleteCookie, generateCookie, getCookie } from "hono/cookie"
-import type { AppBindings } from "../app-types.js"
+import type { AppBindings } from "../app.js"
 import { db } from "../db/index.js"
 import { sessions, users, type User } from "../db/schema.js"
 

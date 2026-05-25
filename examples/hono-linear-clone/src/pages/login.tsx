@@ -1,9 +1,8 @@
 import { ds, read, reply } from "datastar-kit"
 import { z } from "zod"
-import type { App } from "../app-types.js"
+import { pageHead, type App } from "../app.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
 import { authenticate } from "../db/users.js"
-import { pageHead } from "../shared/ui.js"
 
 const loginSchema = z.object({
   username: z.string().trim().min(3, "Use at least 3 characters"),

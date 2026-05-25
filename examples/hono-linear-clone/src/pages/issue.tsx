@@ -1,7 +1,7 @@
 import { HTTPException } from "hono/http-exception"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
-import type { App } from "../app-types.js"
+import { pageHead, type App } from "../app.js"
 import {
   createComment,
   loadIssue,
@@ -15,7 +15,6 @@ import {
 import { issuePriorityValues, issueStatusValues } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
 import { issuePriorities, issueStatuses } from "./workspace.js"
-import { pageHead } from "../shared/ui.js"
 
 const issueIdParam = z.coerce.number().int().positive()
 

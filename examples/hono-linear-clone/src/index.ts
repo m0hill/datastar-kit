@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server"
 import { serveStatic } from "@hono/node-server/serve-static"
 import { Hono } from "hono"
-import type { AppBindings } from "./app-types.js"
+import type { AppBindings } from "./app.js"
 import { requireUser } from "./auth/session.js"
 import { registerIssuePage } from "./pages/issue.js"
 import { registerLoginPage } from "./pages/login.js"
