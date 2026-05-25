@@ -70,60 +70,65 @@ export const issuePriorities: Array<{ value: IssuePriority; label: string }> = [
 const Sidebar = (props: { user: User; projects: Project[] }) => (
   <aside
     id="sidebar"
-    class="bg-surface border-r border-border text-fg-muted p-4 flex flex-col gap-5 overflow-y-auto min-w-0 w-full"
+    class="bg-surface border-r border-border text-fg-muted flex flex-col overflow-y-auto min-w-0 w-full"
   >
-    <div class="flex items-center gap-2 text-fg font-mono text-[13px] font-semibold tracking-wide">
-      <span class="text-fg-muted text-lg leading-none">›</span>
-      <span>Linear Clone</span>
+    <div class="h-12 px-4 border-b border-border flex items-center justify-between">
+      <div class="flex items-center gap-2 overflow-hidden">
+        <span class="text-xs font-semibold text-fg-muted select-none">π</span>
+        <span class="text-xs font-bold tracking-wider text-fg truncate">Linear Clone</span>
+      </div>
+      <span class="w-2 h-2 rounded-full bg-success" title="System operational"></span>
     </div>
 
-    <div class="flex items-center gap-2 text-[13px] text-fg-secondary px-2 py-1.5 bg-surface-inset border border-border-subtle">
-      <span class="w-5 h-5 bg-border flex items-center justify-center text-[10px] font-bold text-fg-secondary font-mono">
-        {props.user.name.charAt(0).toUpperCase()}
-      </span>
-      <span class="truncate">{props.user.name}</span>
+    <div class="p-3 border-b border-border-subtle">
+      <div class="flex items-center gap-2 text-[13px] text-fg-secondary px-2.5 py-2 bg-surface-inset border border-border rounded-lg">
+        <span class="w-6 h-6 rounded-md bg-border flex items-center justify-center text-[10px] font-bold text-fg-secondary font-mono">
+          {props.user.name.charAt(0).toUpperCase()}
+        </span>
+        <span class="truncate">{props.user.name}</span>
+      </div>
     </div>
 
-    <div class="flex flex-col gap-1">
-      <h2 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted px-2">Projects</h2>
-      <ProjectList projects={props.projects} />
+    <div class="flex-1 p-3 flex flex-col gap-6">
+      <div class="flex flex-col gap-1">
+        <h2 class="section-label px-2">Projects</h2>
+        <ProjectList projects={props.projects} />
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <h2 class="section-label px-2">New Project</h2>
+        <form
+          class="flex flex-col gap-3 px-2"
+          {...ds.on("submit", ds.post("/projects"), { prevent: true })}
+        >
+          <label class="flex flex-col gap-1.5 section-label">
+            Name
+            <input placeholder="Engineering" {...ds.bind(state.$.projectName)} />
+            <small
+              class="text-danger text-[13px] font-medium min-h-4"
+              {...ds.text(state.$._validation.projectName)}
+            ></small>
+          </label>
+          <label class="flex flex-col gap-1.5 section-label">
+            Key
+            <input placeholder="ENG" maxlength={8} {...ds.bind(state.$.projectKey)} />
+            <small
+              class="text-danger text-[13px] font-medium min-h-4"
+              {...ds.text(state.$._validation.projectKey)}
+            ></small>
+          </label>
+          <label class="flex flex-col gap-1.5 section-label">
+            Description
+            <textarea rows={2} {...ds.bind(state.$.projectDescription)}></textarea>
+          </label>
+          <button type="submit" class="primary">
+            Create project
+          </button>
+        </form>
+      </div>
     </div>
 
-    <div class="flex flex-col gap-1">
-      <h2 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted px-2">
-        New Project
-      </h2>
-      <form
-        class="flex flex-col gap-3 px-2"
-        {...ds.on("submit", ds.post("/projects"), { prevent: true })}
-      >
-        <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-          Name
-          <input placeholder="Engineering" {...ds.bind(state.$.projectName)} />
-          <small
-            class="text-danger text-[13px] font-medium min-h-4"
-            {...ds.text(state.$._validation.projectName)}
-          ></small>
-        </label>
-        <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-          Key
-          <input placeholder="ENG" maxlength={8} {...ds.bind(state.$.projectKey)} />
-          <small
-            class="text-danger text-[13px] font-medium min-h-4"
-            {...ds.text(state.$._validation.projectKey)}
-          ></small>
-        </label>
-        <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-          Description
-          <textarea rows={2} {...ds.bind(state.$.projectDescription)}></textarea>
-        </label>
-        <button type="submit" class="primary">
-          Create project
-        </button>
-      </form>
-    </div>
-
-    <form method="post" action="/logout" class="mt-auto px-2">
+    <form method="post" action="/logout" class="p-3 border-t border-border bg-surface">
       <button type="submit" class="w-full">
         Sign out
       </button>
@@ -132,15 +137,19 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
 )
 
 const ProjectList = (props: { projects: Project[] }) => (
-  <div class="flex flex-col">
+  <div class="flex flex-col gap-1">
     {props.projects.length === 0 ? (
-      <p class="text-fg-muted text-[13px]">Create a project to start tracking work.</p>
+      <p class="text-fg-muted text-[13px] px-2 py-2">Create a project to start tracking work.</p>
     ) : (
       props.projects.map((project) => (
-        <div class="flex items-center gap-2 px-2 py-1.5 text-[13px] text-fg-secondary hover:bg-surface-hover hover:text-fg transition-colors cursor-default">
-          <span class="font-mono font-semibold text-fg text-[12px] min-w-8">{project.key}</span>
+        <div class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-[13px] text-fg-secondary hover:bg-surface-hover hover:text-fg transition-colors cursor-default">
+          <span class="font-mono font-semibold text-fg text-[11px] min-w-8 bg-surface-inset border border-border px-1.5 py-0.5 rounded-md">
+            {project.key}
+          </span>
           <span class="truncate">{project.name}</span>
-          <span class="ml-auto font-mono text-[11px] text-fg-muted">{project.openIssues}</span>
+          <span class="ml-auto font-mono text-[11px] text-fg-muted bg-surface-inset border border-border px-1.5 py-0.5 rounded-md">
+            {project.openIssues}
+          </span>
         </div>
       ))
     )}
@@ -152,7 +161,7 @@ const StatusLabel = ({ status }: { status: Issue["status"] }) => {
   if (!currentStatus) return <span class="text-fg-muted">{status}</span>
   return (
     <span class="flex items-center gap-1.5 text-[11px] font-mono text-fg-secondary">
-      <span class={`w-1.75 h-1.75 ${currentStatus.dotClass}`}></span>
+      <span class={`w-1.75 h-1.75 rounded-full ${currentStatus.dotClass}`}></span>
       {currentStatus.label}
     </span>
   )
@@ -182,16 +191,16 @@ const AssigneeCell = ({ name }: { name: string | null }) => {
   if (!name) return <span class="text-fg-muted/40">-</span>
   return (
     <span class="flex items-center gap-1.5 text-[11px] text-fg-secondary">
-      <span class="w-4 h-4 bg-border flex items-center justify-center text-[9px] font-bold text-fg-secondary font-mono">
+      <span class="w-5 h-5 rounded-full bg-border flex items-center justify-center text-[9px] font-bold text-fg-secondary font-mono">
         {name.charAt(0).toUpperCase()}
       </span>
-      {name}
+      <span class="truncate">{name}</span>
     </span>
   )
 }
 
 export const Board = (props: { issues: Issue[] }) => (
-  <section id="board" class="border border-border">
+  <section id="board" class="border border-border bg-surface-card">
     <div class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2 bg-surface border-b border-border text-[11px] font-bold tracking-widest uppercase text-fg-muted">
       <span></span>
       <span>ID</span>
@@ -208,18 +217,18 @@ export const Board = (props: { issues: Issue[] }) => (
       props.issues.map((issue) => (
         <a
           href={`/issues/${issue.id}`}
-          class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2.5 border-b border-border-subtle items-center cursor-pointer transition-colors hover:bg-surface-hover"
+          class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2.5 border-b border-border-subtle items-center cursor-pointer transition-colors hover:bg-surface-card-hover"
           id={`issue-${issue.id}`}
         >
           <span
-            class={`w-1.75 h-1.75 ${
+            class={`w-1.75 h-1.75 rounded-full ${
               issueStatuses.find((status) => status.value === issue.status)?.dotClass ?? "bg-border"
             }`}
           ></span>
-          <span class="font-mono text-[11px] text-fg-muted tabular-nums">
+          <span class="font-mono text-[11px] text-fg-muted tabular-nums bg-surface-inset border border-border px-1.5 py-0.5 rounded-md w-fit">
             {issue.projectKey}-{issue.number}
           </span>
-          <span class="text-[13px] text-fg truncate">{issue.title}</span>
+          <span class="text-[13px] text-fg-secondary truncate hover:text-fg">{issue.title}</span>
           <StatusLabel status={issue.status} />
           <PriorityBadge priority={issue.priority} />
           <AssigneeCell name={issue.assigneeName} />
@@ -242,12 +251,15 @@ export const IssueProjectSelect = (props: { projects: Project[] }) => (
 
 const IssueModalForm = (props: { projects: Project[] }) => (
   <form
-    class="bg-surface-card border border-border w-full max-w-130 flex flex-col gap-4 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
+    class="bg-surface border border-border w-full max-w-130 flex flex-col gap-4 p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
     {...ds.on("submit", ds.post("/issues"), { prevent: true })}
     {...ds.on("click", ds.expr`evt.stopPropagation()`)}
   >
-    <div class="flex items-center justify-between">
-      <h3 class="text-[13px] font-semibold text-fg">Create issue</h3>
+    <div class="flex items-center justify-between border-b border-border pb-3 -mx-5 px-5 -mt-1">
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-fg-muted select-none">›</span>
+        <h3 class="text-xs font-bold tracking-wider uppercase text-fg">Create Workspace Issue</h3>
+      </div>
       <button
         type="button"
         class="text-fg-muted hover:text-fg"
@@ -267,7 +279,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         </svg>
       </button>
     </div>
-    <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+    <label class="flex flex-col gap-1.5 section-label">
       Title
       <input
         placeholder="Fix keyboard focus after creating an issue"
@@ -278,7 +290,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         {...ds.text(state.$._validation.issueTitle)}
       ></small>
     </label>
-    <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+    <label class="flex flex-col gap-1.5 section-label">
       Description
       <textarea
         rows={3}
@@ -287,7 +299,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       ></textarea>
     </label>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-      <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+      <label class="flex flex-col gap-1.5 section-label">
         Project
         <IssueProjectSelect projects={props.projects} />
         <small
@@ -295,7 +307,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
           {...ds.text(state.$._validation.form)}
         ></small>
       </label>
-      <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+      <label class="flex flex-col gap-1.5 section-label">
         Status
         <select {...ds.bind(state.$.issueStatus)}>
           {issueStatuses.map((status) => (
@@ -303,7 +315,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
           ))}
         </select>
       </label>
-      <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+      <label class="flex flex-col gap-1.5 section-label">
         Priority
         <select {...ds.bind(state.$.issuePriority)}>
           {issuePriorities.map((priority) => (
@@ -312,7 +324,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         </select>
       </label>
     </div>
-    <div class="flex justify-end gap-2 pt-1">
+    <div class="flex justify-end gap-2 pt-4 border-t border-border">
       <button type="button" {...ds.on("click", ds.expr`${state.$.modalOpen} = false`)}>
         Cancel
       </button>
@@ -333,7 +345,7 @@ const IssueModal = (props: { projects: Project[] }) => (
     {...ds.on("click", ds.expr`evt.target === el && (${state.$.modalOpen} = false)`)}
     {...ds.on("close", ds.expr`${state.$.modalOpen} = false`)}
   >
-    <div class="fixed inset-0 bg-black/60 flex items-start justify-center pt-[10vh] px-4">
+    <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4">
       <div id="modal-content">
         <IssueModalForm projects={props.projects} />
       </div>
@@ -343,22 +355,27 @@ const IssueModal = (props: { projects: Project[] }) => (
 
 const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
   <main
-    class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg"
+    class="h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg overflow-hidden"
     {...state.attrs()}
     {...ds.init(ds.get("/workspace/live"))}
   >
     <div class="hidden lg:flex">
       <Sidebar user={props.user} projects={props.projects} />
     </div>
-    <section class="p-5 lg:px-7 overflow-auto min-w-0">
-      <div class="flex items-center justify-between mb-5">
-        <h2 class="text-[13px] font-semibold text-fg">Issues</h2>
+    <section class="overflow-auto min-w-0 flex flex-col">
+      <header class="h-15 border-b border-border flex items-center justify-between px-6 bg-surface/40 backdrop-blur-md shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-fg-muted select-none">›</span>
+          <h2 class="text-[13px] font-semibold uppercase tracking-wide text-fg">Issues</h2>
+        </div>
         <button type="button" class="primary" {...ds.on("click", ds.get("/workspace/modal/issue"))}>
-          Create issue
+          + Create Issue
         </button>
+      </header>
+      <div class="p-5 lg:p-7">
+        <Board issues={props.issues} />
+        <IssueModal projects={props.projects} />
       </div>
-      <Board issues={props.issues} />
-      <IssueModal projects={props.projects} />
     </section>
   </main>
 )

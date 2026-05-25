@@ -2,7 +2,8 @@ import { EventEmitter, on } from "node:events"
 import { createClient } from "redis"
 
 const redisUrl = process.env.REDIS_URL ?? "redis://127.0.0.1:6379"
-const channel = process.env.REDIS_INVALIDATION_CHANNEL ?? "datastar-kit:hono-live-counter:invalidations"
+const channel =
+  process.env.REDIS_INVALIDATION_CHANNEL ?? "datastar-kit:hono-live-counter:invalidations"
 
 const events = new EventEmitter()
 events.setMaxListeners(0)

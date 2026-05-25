@@ -28,14 +28,16 @@ const signupState = ds.state({
 })
 
 const SignupPage = () => (
-  <main class="min-h-screen grid place-items-center p-6 bg-bg" {...signupState.attrs()}>
-    <section class="w-full max-w-90 bg-surface border border-border p-8 flex flex-col gap-5">
-      <div>
-        <h1 class="text-xl font-bold text-fg tracking-tight">Create account</h1>
-        <p class="text-fg-muted text-[13px] mt-1">Get started with your new workspace</p>
+  <main class="min-h-screen grid place-items-center p-4 bg-bg" {...signupState.attrs()}>
+    <section class="w-full max-w-96 bg-surface border border-border p-6 flex flex-col gap-5 shadow-[0_4px_20px_rgba(0,0,0,0.35)]">
+      <div class="flex items-center gap-2 border-b border-border pb-4">
+        <span class="text-xs text-fg-muted select-none">›</span>
+        <h1 class="text-xs font-semibold tracking-wider uppercase text-fg">
+          Linear System / Register
+        </h1>
       </div>
       <form class="flex flex-col gap-4" {...ds.on("submit", ds.post("/signup"), { prevent: true })}>
-        <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+        <label class="flex flex-col gap-1.5 section-label">
           Name
           <input
             class="w-full text-sm placeholder:text-fg-muted/50"
@@ -48,7 +50,7 @@ const SignupPage = () => (
             {...ds.text(signupState.$._validation.name)}
           ></small>
         </label>
-        <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+        <label class="flex flex-col gap-1.5 section-label">
           Username
           <input
             class="w-full text-sm placeholder:text-fg-muted/50"
@@ -61,7 +63,7 @@ const SignupPage = () => (
             {...ds.text(signupState.$._validation.username)}
           ></small>
         </label>
-        <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+        <label class="flex flex-col gap-1.5 section-label">
           Password
           <input
             class="w-full text-sm placeholder:text-fg-muted/50"
@@ -79,16 +81,18 @@ const SignupPage = () => (
           class="text-danger text-[13px] font-medium min-h-4"
           {...ds.text(signupState.$._validation.form)}
         ></small>
-        <button type="submit" class="primary mt-1">
-          Create account
+        <button type="submit" class="primary mt-1 py-2.5">
+          Initialize Instance
         </button>
       </form>
-      <a
-        href="/login"
-        class="text-fg-secondary text-[13px] font-medium hover:text-fg hover:underline transition-colors"
-      >
-        Sign in instead
-      </a>
+      <div class="pt-4 border-t border-border-subtle text-center">
+        <a
+          href="/login"
+          class="text-fg-secondary text-[13px] font-medium hover:text-link hover:underline transition-colors"
+        >
+          Login Session
+        </a>
+      </div>
     </section>
   </main>
 )

@@ -11,7 +11,7 @@
     "css:watch": "tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "dev": "pnpm run css:watch & trap 'kill 0' EXIT; tsx src/index.tsx",
+    "dev": "pnpm run css:watch & trap 'kill 0' EXIT; tsx src/index.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

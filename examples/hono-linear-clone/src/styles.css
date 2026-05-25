@@ -27,8 +27,8 @@
 
 body {
   font-family: var(--font-ui);
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 15px;
+  line-height: 1.6;
   background: var(--color-bg);
   color: var(--color-fg);
   -webkit-font-smoothing: antialiased;
@@ -47,7 +47,7 @@ body {
 }
 *::-webkit-scrollbar-thumb {
   background: #262626;
-  border-radius: 0;
+  border-radius: 999px;
 }
 *::-webkit-scrollbar-thumb:hover {
   background: #404040;
@@ -67,13 +67,13 @@ button {
   color: #a3a3a3;
   padding: 8px 14px;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 10px;
   transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease,
-    color 0.15s ease,
-    transform 0.15s ease;
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease,
+    color 0.12s ease,
+    transform 0.12s ease;
   white-space: nowrap;
   line-height: 1;
 }
@@ -112,24 +112,24 @@ input,
 textarea,
 select {
   width: 100%;
-  background: #111111;
+  background: #0d0d0d;
   color: #f6fff5;
   border: 1px solid #262626;
-  padding: 10px 12px;
+  padding: 8px 12px;
   font-family: var(--font-ui);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.5;
   outline: none;
-  border-radius: 0;
+  border-radius: 10px;
   transition:
-    background-color 0.15s ease,
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+    background-color 0.12s ease,
+    border-color 0.12s ease,
+    box-shadow 0.12s ease;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #4a4f5b;
+  color: #737373;
 }
 textarea {
   resize: vertical;
@@ -139,7 +139,7 @@ input:focus,
 textarea:focus,
 select:focus {
   border-color: #404040;
-  box-shadow: 0 0 0 3px color-mix(in srgb, #60a5fa 15%, transparent);
+  box-shadow: none;
 }
 
 select {
@@ -163,4 +163,26 @@ dialog {
 }
 dialog::backdrop {
   background: transparent;
+}
+
+.section-label {
+  color: #737373;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.interactive-card {
+  background: #151515;
+  border: 1px solid #262626;
+  border-radius: 10px;
+  transition:
+    background-color 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.interactive-card:hover {
+  background: #181818;
+  border-color: #404040;
 }

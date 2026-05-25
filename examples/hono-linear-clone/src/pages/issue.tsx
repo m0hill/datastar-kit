@@ -44,13 +44,16 @@ const IssuePage = (props: { detail: IssueDetail }) => (
     {...issueState.attrs()}
     {...ds.init(ds.get(`/issues/${props.detail.issue.id}/live`))}
   >
-    <section class="mx-auto flex w-full max-w-3xl flex-col gap-5 p-5 lg:p-8">
+    <header class="h-15 border-b border-border flex items-center justify-between px-5 lg:px-8 bg-surface/40 backdrop-blur-md">
       <a
         href="/workspace"
-        class="text-[13px] font-medium text-fg-secondary hover:text-fg hover:underline"
+        class="text-[13px] font-medium text-fg-secondary hover:text-fg hover:underline flex items-center gap-2"
       >
-        Back to workspace
+        <span class="text-fg-muted">‹</span> Workspace
       </a>
+      <span class="section-label">Issue Detail</span>
+    </header>
+    <section class="mx-auto flex w-full max-w-3xl flex-col gap-5 p-5 lg:p-8">
       <IssuePageContent detail={props.detail} />
     </section>
   </main>
@@ -73,10 +76,10 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
       <IssueCommentsList comments={issueComments} />
 
       <form
-        class="flex flex-col gap-3"
+        class="flex flex-col gap-3 bg-surface border border-border p-4"
         {...ds.on("submit", ds.post(`/issues/${issue.id}/comments`), { prevent: true })}
       >
-        <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+        <label class="flex flex-col gap-1.5 section-label">
           Add a comment
           <textarea
             rows={3}
@@ -97,11 +100,14 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
 }
 
 const IssueOverview = (props: { issue: NonNullable<IssueRecord> }) => (
-  <div id="issue-overview">
-    <div class="font-mono text-[12px] text-fg-muted mb-1 tracking-tight">
-      {props.issue.projectKey}-{props.issue.number}
+  <div id="issue-overview" class="bg-surface border border-border p-5">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="text-xs text-fg-muted select-none">›</span>
+      <span class="font-mono text-[12px] text-fg-muted tracking-tight bg-surface-inset border border-border px-2 py-0.5 rounded-md">
+        {props.issue.projectKey}-{props.issue.number}
+      </span>
     </div>
-    <h2 class="text-[15px] font-semibold text-fg leading-snug tracking-tight">
+    <h2 class="text-[18px] font-semibold text-fg leading-snug tracking-tight">
       {props.issue.title}
     </h2>
     <p
@@ -113,20 +119,20 @@ const IssueOverview = (props: { issue: NonNullable<IssueRecord> }) => (
 )
 
 const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
-  <div id="issue-properties">
-    <h3 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted mb-3">Properties</h3>
+  <div id="issue-properties" class="bg-surface border border-border p-4">
+    <h3 class="section-label mb-3">Properties</h3>
     <form
-      class="flex flex-col"
+      class="flex flex-col bg-surface-inset border border-border rounded-xl px-3"
       {...ds.on(
         "change",
         ds.patch(`/issues/${props.issue.id}`, { selector: null, contentType: "form" })
       )}
     >
-      <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2 border-b border-border-subtle">
-        <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">Status</label>
+      <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2.5 border-b border-border-subtle">
+        <label class="section-label">Status</label>
         <select
           name="status"
-          class="w-full border border-transparent hover:border-border hover:bg-surface-hover px-2 py-1.5 bg-transparent text-fg text-sm cursor-pointer transition-colors appearance-none"
+          class="w-full border border-border hover:border-border-strong hover:bg-surface-hover px-2 py-1.5 bg-surface text-fg text-sm cursor-pointer transition-colors appearance-none"
         >
           {issueStatuses.map((status) => (
             <option value={status.value} selected={props.issue.status === status.value}>
@@ -135,13 +141,11 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
           ))}
         </select>
       </div>
-      <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2 border-b border-border-subtle">
-        <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">
-          Priority
-        </label>
+      <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2.5">
+        <label class="section-label">Priority</label>
         <select
           name="priority"
-          class="w-full border border-transparent hover:border-border hover:bg-surface-hover px-2 py-1.5 bg-transparent text-fg text-sm cursor-pointer transition-colors appearance-none"
+          class="w-full border border-border hover:border-border-strong hover:bg-surface-hover px-2 py-1.5 bg-surface text-fg text-sm cursor-pointer transition-colors appearance-none"
         >
           {issuePriorities.map((priority) => (
             <option value={priority.value} selected={props.issue.priority === priority.value}>
@@ -155,16 +159,14 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
 )
 
 const IssueCommentsList = (props: { comments: IssueComments }) => (
-  <div id="issue-comments">
-    <h3 class="text-[11px] font-bold tracking-widest uppercase text-fg-muted mb-3">
-      Comments ({props.comments.length})
-    </h3>
+  <div id="issue-comments" class="bg-surface border border-border p-4">
+    <h3 class="section-label mb-3">Comments ({props.comments.length})</h3>
     {props.comments.length === 0 ? (
       <p class="text-fg-muted text-[13px]">No comments yet.</p>
     ) : (
       <div class="flex flex-col gap-3">
         {props.comments.map((comment) => (
-          <article class="flex flex-col gap-1 bg-surface-card border border-border p-3">
+          <article class="flex flex-col gap-1 bg-surface-inset border border-border border-l-border-strong border-l-4 p-3 rounded-lg">
             <span class="text-[13px] font-semibold text-fg-secondary">{comment.authorName}</span>
             <p class="text-[13px] text-fg-secondary leading-relaxed">{comment.body}</p>
           </article>
