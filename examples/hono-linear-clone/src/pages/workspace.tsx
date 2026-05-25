@@ -3,14 +3,39 @@ import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
 import type { App } from "../app-types.js"
 import { deleteSessionCookie, deleteSession } from "../auth/session.js"
-import { readWorkspaceIssues } from "../db/issue.js"
-import { createProject, readWorkspaceProjects } from "../db/workspace.js"
+import { createIssue, readIssues, type Issue } from "../db/issue.js"
+import { createProject, readProjects, type Project } from "../db/workspace.js"
 import { type User } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
-import { FieldError, Empty, firstErrors, isUniqueConstraintError, pageHead } from "../shared/ui.js"
-import { issuePriorities, issueStatuses, StatusDot } from "../shared/issue-options.js"
+import { pageHead } from "../shared/ui.js"
+import {
+  issuePriorities,
+  issuePriorityValues,
+  issueStatuses,
+  issueStatusValues,
+  StatusDot
+} from "../shared/issue-options.js"
 
-export const workspaceSignals = {
+const projectSchema = z.object({
+  projectName: z.string().trim().min(2, "Name the project"),
+  projectKey: z
+    .string()
+    .trim()
+    .min(2, "Use at least 2 characters")
+    .max(8, "Keep keys short")
+    .regex(/^[A-Z0-9]+$/i, "Use letters and numbers"),
+  projectDescription: z.string().trim().max(240, "Keep it under 240 characters").optional()
+})
+
+const createIssueSchema = z.object({
+  projectId: z.coerce.number().int().positive("Create a project first"),
+  issueTitle: z.string().trim().min(3, "Write a clear title"),
+  issueDescription: z.string().trim().max(2000, "Keep it under 2000 characters").optional(),
+  issueStatus: z.enum(issueStatusValues),
+  issuePriority: z.enum(issuePriorityValues)
+})
+
+const state = ds.state({
   projectId: "",
   projectName: "",
   projectKey: "",
@@ -26,30 +51,9 @@ export const workspaceSignals = {
     projectKey: "",
     issueTitle: ""
   }
-}
-
-export const workspaceState = ds.state(workspaceSignals)
-
-const projectSchema = z.object({
-  projectName: z.string().trim().min(2, "Name the project"),
-  projectKey: z
-    .string()
-    .trim()
-    .min(2, "Use at least 2 characters")
-    .max(8, "Keep keys short")
-    .regex(/^[A-Z0-9]+$/i, "Use letters and numbers"),
-  projectDescription: z.string().trim().max(240, "Keep it under 240 characters").optional()
 })
 
-const workspaceValidationPatch = (errors: Partial<typeof workspaceSignals._validation>) =>
-  reply.signals(
-    workspaceState.patch({ _validation: { ...workspaceSignals._validation, ...errors } })
-  )
-
-type WorkspaceProject = Awaited<ReturnType<typeof readWorkspaceProjects>>[number]
-type WorkspaceIssue = Awaited<ReturnType<typeof readWorkspaceIssues>>[number]
-
-const Sidebar = (props: { user: User; projects: WorkspaceProject[] }) => (
+const Sidebar = (props: { user: User; projects: Project[] }) => (
   <aside
     id="sidebar"
     class="bg-surface border-r border-border text-fg-muted p-4 flex flex-col gap-5 overflow-y-auto min-w-0 w-full"
@@ -81,17 +85,23 @@ const Sidebar = (props: { user: User; projects: WorkspaceProject[] }) => (
       >
         <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
           Name
-          <input placeholder="Engineering" {...ds.bind(workspaceState.$.projectName)} />
-          <FieldError path={workspaceState.$._validation.projectName} />
+          <input placeholder="Engineering" {...ds.bind(state.$.projectName)} />
+          <small
+            class="text-danger text-[13px] font-medium min-h-4"
+            {...ds.text(state.$._validation.projectName)}
+          ></small>
         </label>
         <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
           Key
-          <input placeholder="ENG" maxlength={8} {...ds.bind(workspaceState.$.projectKey)} />
-          <FieldError path={workspaceState.$._validation.projectKey} />
+          <input placeholder="ENG" maxlength={8} {...ds.bind(state.$.projectKey)} />
+          <small
+            class="text-danger text-[13px] font-medium min-h-4"
+            {...ds.text(state.$._validation.projectKey)}
+          ></small>
         </label>
         <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
           Description
-          <textarea rows={2} {...ds.bind(workspaceState.$.projectDescription)}></textarea>
+          <textarea rows={2} {...ds.bind(state.$.projectDescription)}></textarea>
         </label>
         <button type="submit" class="primary">
           Create project
@@ -107,16 +117,14 @@ const Sidebar = (props: { user: User; projects: WorkspaceProject[] }) => (
   </aside>
 )
 
-const ProjectList = (props: { projects: WorkspaceProject[] }) => (
+const ProjectList = (props: { projects: Project[] }) => (
   <div class="flex flex-col">
     {props.projects.length === 0 ? (
-      <Empty>Create a project to start tracking work.</Empty>
+      <p class="text-fg-muted text-[13px]">Create a project to start tracking work.</p>
     ) : (
       props.projects.map((project) => (
         <div class="flex items-center gap-2 px-2 py-1.5 text-[13px] text-fg-secondary hover:bg-surface-hover hover:text-fg transition-colors cursor-default">
-          <span class="font-mono font-semibold text-fg text-[12px] min-w-8">
-            {project.key}
-          </span>
+          <span class="font-mono font-semibold text-fg text-[12px] min-w-8">{project.key}</span>
           <span class="truncate">{project.name}</span>
           <span class="ml-auto font-mono text-[11px] text-fg-muted">{project.openIssues}</span>
         </div>
@@ -125,7 +133,7 @@ const ProjectList = (props: { projects: WorkspaceProject[] }) => (
   </div>
 )
 
-const StatusLabel = ({ status }: { status: WorkspaceIssue["status"] }) => {
+const StatusLabel = ({ status }: { status: Issue["status"] }) => {
   const currentStatus = issueStatuses.find((x) => x.value === status)
   if (!currentStatus) return <span class="text-fg-muted">{status}</span>
   return (
@@ -136,7 +144,7 @@ const StatusLabel = ({ status }: { status: WorkspaceIssue["status"] }) => {
   )
 }
 
-const PriorityBadge = ({ priority }: { priority: WorkspaceIssue["priority"] }) => {
+const PriorityBadge = ({ priority }: { priority: Issue["priority"] }) => {
   const currentPriority = issuePriorities.find((x) => x.value === priority)
   if (!currentPriority) return null
   const color =
@@ -168,7 +176,7 @@ const AssigneeCell = ({ name }: { name: string | null }) => {
   )
 }
 
-export const Board = (props: { issues: WorkspaceIssue[] }) => (
+export const Board = (props: { issues: Issue[] }) => (
   <section id="board" class="border border-border">
     <div class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2 bg-surface border-b border-border text-[11px] font-bold tracking-widest uppercase text-fg-muted">
       <span></span>
@@ -180,7 +188,7 @@ export const Board = (props: { issues: WorkspaceIssue[] }) => (
     </div>
     {props.issues.length === 0 ? (
       <div class="px-4 py-8">
-        <Empty>No issues yet. Create one above.</Empty>
+        <p class="text-fg-muted text-[13px]">No issues yet. Create one above.</p>
       </div>
     ) : (
       props.issues.map((issue) => (
@@ -207,8 +215,8 @@ export const Board = (props: { issues: WorkspaceIssue[] }) => (
   </section>
 )
 
-export const IssueProjectSelect = (props: { projects: WorkspaceProject[] }) => (
-  <select id="issue-project-select" {...ds.bind(workspaceState.$.projectId)}>
+export const IssueProjectSelect = (props: { projects: Project[] }) => (
+  <select id="issue-project-select" {...ds.bind(state.$.projectId)}>
     <option value="">Select project</option>
     {props.projects.map((project) => (
       <option value={project.id}>
@@ -218,7 +226,7 @@ export const IssueProjectSelect = (props: { projects: WorkspaceProject[] }) => (
   </select>
 )
 
-const IssueModalForm = (props: { projects: WorkspaceProject[] }) => (
+const IssueModalForm = (props: { projects: Project[] }) => (
   <form
     class="bg-surface-card border border-border w-full max-w-130 flex flex-col gap-4 p-6 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
     {...ds.on("submit", ds.post("/issues"), { prevent: true })}
@@ -229,7 +237,7 @@ const IssueModalForm = (props: { projects: WorkspaceProject[] }) => (
       <button
         type="button"
         class="text-fg-muted hover:text-fg"
-        {...ds.on("click", ds.expr`${workspaceState.$.modalOpen} = false`)}
+        {...ds.on("click", ds.expr`${state.$.modalOpen} = false`)}
       >
         <svg
           width="14"
@@ -249,27 +257,33 @@ const IssueModalForm = (props: { projects: WorkspaceProject[] }) => (
       Title
       <input
         placeholder="Fix keyboard focus after creating an issue"
-        {...ds.bind(workspaceState.$.issueTitle)}
+        {...ds.bind(state.$.issueTitle)}
       />
-      <FieldError path={workspaceState.$._validation.issueTitle} />
+      <small
+        class="text-danger text-[13px] font-medium min-h-4"
+        {...ds.text(state.$._validation.issueTitle)}
+      ></small>
     </label>
     <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
       Description
       <textarea
         rows={3}
         placeholder="Add a description..."
-        {...ds.bind(workspaceState.$.issueDescription)}
+        {...ds.bind(state.$.issueDescription)}
       ></textarea>
     </label>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
       <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
         Project
         <IssueProjectSelect projects={props.projects} />
-        <FieldError path={workspaceState.$._validation.form} />
+        <small
+          class="text-danger text-[13px] font-medium min-h-4"
+          {...ds.text(state.$._validation.form)}
+        ></small>
       </label>
       <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
         Status
-        <select {...ds.bind(workspaceState.$.issueStatus)}>
+        <select {...ds.bind(state.$.issueStatus)}>
           {issueStatuses.map((status) => (
             <option value={status.value}>{status.label}</option>
           ))}
@@ -277,7 +291,7 @@ const IssueModalForm = (props: { projects: WorkspaceProject[] }) => (
       </label>
       <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
         Priority
-        <select {...ds.bind(workspaceState.$.issuePriority)}>
+        <select {...ds.bind(state.$.issuePriority)}>
           {issuePriorities.map((priority) => (
             <option value={priority.value}>{priority.label}</option>
           ))}
@@ -285,7 +299,7 @@ const IssueModalForm = (props: { projects: WorkspaceProject[] }) => (
       </label>
     </div>
     <div class="flex justify-end gap-2 pt-1">
-      <button type="button" {...ds.on("click", ds.expr`${workspaceState.$.modalOpen} = false`)}>
+      <button type="button" {...ds.on("click", ds.expr`${state.$.modalOpen} = false`)}>
         Cancel
       </button>
       <button type="submit" class="primary">
@@ -295,15 +309,15 @@ const IssueModalForm = (props: { projects: WorkspaceProject[] }) => (
   </form>
 )
 
-const IssueModal = (props: { projects: WorkspaceProject[] }) => (
+const IssueModal = (props: { projects: Project[] }) => (
   <dialog
     id="issue-modal"
     class="bg-transparent p-0 m-0 max-w-none max-h-none w-full h-full border-0"
     {...ds.effect(
-      ds.expr`${workspaceState.$.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`
+      ds.expr`${state.$.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`
     )}
-    {...ds.on("click", ds.expr`evt.target === el && (${workspaceState.$.modalOpen} = false)`)}
-    {...ds.on("close", ds.expr`${workspaceState.$.modalOpen} = false`)}
+    {...ds.on("click", ds.expr`evt.target === el && (${state.$.modalOpen} = false)`)}
+    {...ds.on("close", ds.expr`${state.$.modalOpen} = false`)}
   >
     <div class="fixed inset-0 bg-black/60 flex items-start justify-center pt-[10vh] px-4">
       <div id="modal-content">
@@ -313,21 +327,14 @@ const IssueModal = (props: { projects: WorkspaceProject[] }) => (
   </dialog>
 )
 
-const WorkspacePage = (props: {
-  user: User
-  projects: WorkspaceProject[]
-  issues: WorkspaceIssue[]
-}) => (
-  <main
-    class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg"
-    {...workspaceState.attrs()}
-  >
+const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
+  <main class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg" {...state.attrs()}>
     <div class="hidden lg:flex">
       <Sidebar user={props.user} projects={props.projects} />
     </div>
     <section class="p-5 lg:px-7 overflow-auto min-w-0">
       <div
-        {...ds.onIntersect(ds.get("/app/live"), { once: true })}
+        {...ds.onIntersect(ds.get("/workspace/live"), { once: true })}
         class="absolute w-px h-px overflow-hidden"
       ></div>
       <div class="flex items-center justify-between mb-5">
@@ -343,19 +350,19 @@ const WorkspacePage = (props: {
 )
 
 export const registerWorkspacePage = (app: App) => {
-  app.get("/app", async (c) => {
-    const [projects, issues] = await Promise.all([readWorkspaceProjects(), readWorkspaceIssues()])
-    return reply.page(<WorkspacePage user={c.get("user")} projects={projects} issues={issues} />, {
+  app.get("/workspace", async (c) => {
+    const [projects, issues] = await Promise.all([readProjects(), readIssues()])
+    return reply.page(<Page user={c.get("user")} projects={projects} issues={issues} />, {
       title: "Linear clone",
       head: pageHead
     })
   })
 
-  app.get("/app/live", async (c) => {
+  app.get("/workspace/live", async (c) => {
     const user = c.get("user")
 
     const render = async () => {
-      const [projects, issues] = await Promise.all([readWorkspaceProjects(), readWorkspaceIssues()])
+      const [projects, issues] = await Promise.all([readProjects(), readIssues()])
       return [
         event.patch(<Sidebar user={user} projects={projects} />),
         event.patch(<Board issues={issues} />),
@@ -378,44 +385,72 @@ export const registerWorkspacePage = (app: App) => {
   })
 
   app.get("/modal/issue", async () => {
-    const projects = await readWorkspaceProjects()
+    const projects = await readProjects()
     return reply.stream([
       event.patch(<IssueProjectSelect projects={projects} />),
-      event.signals(workspaceState.patch({ modalOpen: true }))
+      event.signals(state.patch({ modalOpen: true }))
     ])
   })
 
   app.post("/projects", async (c) => {
     const parsedProject = projectSchema.safeParse(await read.signals(c.req.raw))
     if (!parsedProject.success) {
-      const errors = firstErrors(parsedProject.error)
-      return workspaceValidationPatch({
-        projectName: errors.field("projectName"),
-        projectKey: errors.field("projectKey")
-      })
+      const { fieldErrors } = z.flattenError(parsedProject.error)
+      return reply.signals(
+        state.patch({
+          _validation: {
+            ...state.defaults._validation,
+            projectName: fieldErrors.projectName?.[0] ?? "",
+            projectKey: fieldErrors.projectKey?.[0] ?? ""
+          }
+        })
+      )
     }
 
-    try {
-      await createProject(c.get("user"), parsedProject.data)
-    } catch (error) {
-      if (!isUniqueConstraintError(error)) throw error
-      return workspaceValidationPatch({ projectKey: "Project keys must be unique" })
+    const project = await createProject(c.get("user"), parsedProject.data)
+    if (project === null) {
+      return reply.signals(
+        state.patch({
+          _validation: {
+            ...state.defaults._validation,
+            projectKey: "Project keys must be unique"
+          }
+        })
+      )
     }
 
     invalidations.publish()
-    const projects = await readWorkspaceProjects()
+    const projects = await readProjects()
     return reply.stream([
       event.signals(
-        workspaceState.patch({
-          projectName: "",
-          projectKey: "",
-          projectDescription: "",
-          _validation: workspaceSignals._validation
+        state.patch({
+          ...state.defaults,
+          _validation: { ...state.defaults._validation }
         })
       ),
       event.patch(<Sidebar user={c.get("user")} projects={projects} />),
       event.patch(<IssueProjectSelect projects={projects} />)
     ])
+  })
+
+  app.post("/issues", async (c) => {
+    const parsedIssue = createIssueSchema.safeParse(await read.signals(c.req.raw))
+    if (!parsedIssue.success) {
+      const { fieldErrors } = z.flattenError(parsedIssue.error)
+      return reply.signals(
+        state.patch({
+          _validation: {
+            ...state.defaults._validation,
+            form: fieldErrors.projectId?.[0] ?? "",
+            issueTitle: fieldErrors.issueTitle?.[0] ?? ""
+          }
+        })
+      )
+    }
+
+    const issue = await createIssue(c.get("user"), parsedIssue.data)
+    invalidations.publish()
+    return reply.navigate(`/issues/${issue.id}`)
   })
 
   app.post("/logout", async (c) => {

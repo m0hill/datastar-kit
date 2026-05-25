@@ -10,7 +10,7 @@ import {
   type User
 } from "./schema.js"
 
-export const readWorkspaceIssues = async () =>
+export const readIssues = async () =>
   db
     .select({
       id: issues.id,
@@ -29,6 +29,8 @@ export const readWorkspaceIssues = async () =>
     .innerJoin(projects, eq(projects.id, issues.projectId))
     .leftJoin(users, eq(users.id, issues.assigneeId))
     .orderBy(desc(issues.updatedAt), desc(issues.id))
+
+export type Issue = Awaited<ReturnType<typeof readIssues>>[number]
 
 export const loadIssue = async (issueId: number) => {
   const [issue] = await db

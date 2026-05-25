@@ -25,7 +25,7 @@
     "typescript/no-base-to-string": "warn",
     "typescript/no-explicit-any": "off",
     "vitest/no-standalone-expect": "off",
-    "no-underscore-dangle": "off",
+    "no-underscore-dangle": "off"
   },
   "overrides": [
     {

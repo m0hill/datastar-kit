@@ -2,13 +2,7 @@ import { HTTPException } from "hono/http-exception"
 import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
 import type { App } from "../app-types.js"
-import {
-  createComment,
-  createIssue,
-  loadIssue,
-  type IssueDetail,
-  updateIssue
-} from "../db/issue.js"
+import { createComment, loadIssue, type IssueDetail, updateIssue } from "../db/issue.js"
 import { invalidations } from "../realtime/hub.js"
 import {
   issuePriorities,
@@ -16,18 +10,9 @@ import {
   issueStatuses,
   issueStatusValues
 } from "../shared/issue-options.js"
-import { Empty, FieldError, firstErrors, pageHead } from "../shared/ui.js"
-import { workspaceSignals, workspaceState } from "./workspace.js"
+import { pageHead } from "../shared/ui.js"
 
 const issueIdParam = z.coerce.number().int().positive()
-
-const createIssueSchema = z.object({
-  projectId: z.coerce.number().int().positive("Create a project first"),
-  issueTitle: z.string().trim().min(3, "Write a clear title"),
-  issueDescription: z.string().trim().max(2000, "Keep it under 2000 characters").optional(),
-  issueStatus: z.enum(issueStatusValues),
-  issuePriority: z.enum(issuePriorityValues)
-})
 
 const updateIssueSchema = z.object({
   status: z.enum(issueStatusValues).optional(),
@@ -49,14 +34,6 @@ const issueState = ds.state({
   }
 })
 
-const workspaceValidationPatch = (errors: Partial<typeof workspaceSignals._validation>) =>
-  reply.signals(
-    workspaceState.patch({ _validation: { ...workspaceSignals._validation, ...errors } })
-  )
-
-const issueValidationPatch = (errors: Partial<typeof issueState.defaults._validation>) =>
-  reply.signals(issueState.patch({ _validation: { ...issueState.defaults._validation, ...errors } }))
-
 const IssuePage = (props: { detail: IssueDetail }) => (
   <main class="min-h-screen bg-bg text-fg" {...issueState.attrs()}>
     <div
@@ -65,7 +42,7 @@ const IssuePage = (props: { detail: IssueDetail }) => (
     ></div>
     <section class="mx-auto flex w-full max-w-3xl flex-col gap-5 p-5 lg:p-8">
       <a
-        href="/app"
+        href="/workspace"
         class="text-[13px] font-medium text-fg-secondary hover:text-fg hover:underline"
       >
         Back to workspace
@@ -143,7 +120,7 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
           Comments ({issueComments.length})
         </h3>
         {issueComments.length === 0 ? (
-          <Empty>No comments yet.</Empty>
+          <p class="text-fg-muted text-[13px]">No comments yet.</p>
         ) : (
           <div class="flex flex-col gap-3">
             {issueComments.map((comment) => (
@@ -169,7 +146,10 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
             placeholder="Write a comment..."
             {...ds.bind(issueState.$.commentBody)}
           ></textarea>
-          <FieldError path={issueState.$._validation.commentBody} />
+          <small
+            class="text-danger text-[13px] font-medium min-h-4"
+            {...ds.text(issueState.$._validation.commentBody)}
+          ></small>
         </label>
         <button type="submit" class="primary self-start">
           Post comment
@@ -180,21 +160,6 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
 }
 
 export const registerIssuePage = (app: App) => {
-  app.post("/issues", async (c) => {
-    const parsedIssue = createIssueSchema.safeParse(await read.signals(c.req.raw))
-    if (!parsedIssue.success) {
-      const errors = firstErrors(parsedIssue.error)
-      return workspaceValidationPatch({
-        form: errors.field("projectId"),
-        issueTitle: errors.field("issueTitle")
-      })
-    }
-
-    const issue = await createIssue(c.get("user"), parsedIssue.data)
-    invalidations.publish()
-    return reply.navigate(`/issues/${issue.id}`)
-  })
-
   app.get("/issues/:id", async (c) => {
     const issueId = issueIdParam.parse(c.req.param("id"))
     const detail = await loadIssue(issueId)
@@ -242,14 +207,26 @@ export const registerIssuePage = (app: App) => {
     const issueId = issueIdParam.parse(c.req.param("id"))
     const parsedComment = commentSchema.safeParse(await read.signals(c.req.raw))
     if (!parsedComment.success) {
-      const errors = firstErrors(parsedComment.error)
-      return issueValidationPatch({ commentBody: errors.field("commentBody") })
+      const { fieldErrors } = z.flattenError(parsedComment.error)
+      return reply.signals(
+        issueState.patch({
+          _validation: {
+            ...issueState.defaults._validation,
+            commentBody: fieldErrors.commentBody?.[0] ?? ""
+          }
+        })
+      )
     }
 
     await createComment(c.get("user"), issueId, parsedComment.data.commentBody)
     invalidations.publish()
     return reply.stream([
-      event.signals(issueState.patch({ commentBody: "", _validation: issueState.defaults._validation })),
+      event.signals(
+        issueState.patch({
+          ...issueState.defaults,
+          _validation: { ...issueState.defaults._validation }
+        })
+      ),
       event.patch(<IssuePageContent detail={await loadIssue(issueId)} />)
     ])
   })

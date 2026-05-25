@@ -2,7 +2,7 @@ import { and, asc, count, eq, sql } from "drizzle-orm"
 import { db } from "./index.js"
 import { issues, projects, type User } from "./schema.js"
 
-export const readWorkspaceProjects = async () =>
+export const readProjects = async () =>
   db
     .select({
       id: projects.id,
@@ -16,6 +16,8 @@ export const readWorkspaceProjects = async () =>
     .groupBy(projects.id)
     .orderBy(asc(projects.name))
 
+export type Project = Awaited<ReturnType<typeof readProjects>>[number]
+
 export const createProject = async (
   user: User,
   input: { projectName: string; projectKey: string; projectDescription?: string | undefined }
@@ -28,10 +30,11 @@ export const createProject = async (
       description: input.projectDescription ?? "",
       createdById: user.id
     })
+    .onConflictDoNothing({ target: projects.key })
     .returning()
 
   if (project === undefined) {
-    throw new Error("Failed to create project")
+    return null
   }
 
   return project

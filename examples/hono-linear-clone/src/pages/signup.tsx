@@ -3,11 +3,12 @@ import { z } from "zod"
 import type { App } from "../app-types.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
 import { createUser } from "../db/users.js"
-import { FieldError, pageHead } from "../shared/ui.js"
+import { pageHead } from "../shared/ui.js"
 
 const signupSchema = z.object({
   name: z.string().trim().min(2, "Enter your name"),
-  username: z.string()
+  username: z
+    .string()
     .trim()
     .min(3, "Use at least 3 characters")
     .max(24, "Keep it under 24 characters")
@@ -43,7 +44,10 @@ const SignupPage = () => (
             placeholder="Your name"
             {...ds.bind(signupState.$.name)}
           />
-          <FieldError path={signupState.$._validation.name} />
+          <small
+            class="text-danger text-[13px] font-medium min-h-4"
+            {...ds.text(signupState.$._validation.name)}
+          ></small>
         </label>
         <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
           Username
@@ -53,7 +57,10 @@ const SignupPage = () => (
             placeholder="Choose a username"
             {...ds.bind(signupState.$.username)}
           />
-          <FieldError path={signupState.$._validation.username} />
+          <small
+            class="text-danger text-[13px] font-medium min-h-4"
+            {...ds.text(signupState.$._validation.username)}
+          ></small>
         </label>
         <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
           Password
@@ -64,9 +71,15 @@ const SignupPage = () => (
             placeholder="Create a password"
             {...ds.bind(signupState.$.password)}
           />
-          <FieldError path={signupState.$._validation.password} />
+          <small
+            class="text-danger text-[13px] font-medium min-h-4"
+            {...ds.text(signupState.$._validation.password)}
+          ></small>
         </label>
-        <FieldError path={signupState.$._validation.form} />
+        <small
+          class="text-danger text-[13px] font-medium min-h-4"
+          {...ds.text(signupState.$._validation.form)}
+        ></small>
         <button type="submit" class="primary mt-1">
           Create account
         </button>
@@ -84,7 +97,7 @@ const SignupPage = () => (
 export const registerSignupPage = (app: App) => {
   app.get("/signup", async (c) => {
     if ((await getCurrentUser(c)) !== null) {
-      return c.redirect("/app")
+      return c.redirect("/workspace")
     }
 
     return reply.page(<SignupPage />, { title: "Create account · Linear clone", head: pageHead })
@@ -120,7 +133,7 @@ export const registerSignupPage = (app: App) => {
     }
 
     return reply.navigate(
-      "/app",
+      "/workspace",
       {},
       { headers: { "set-cookie": sessionCookie(await createSession(user.id)) } }
     )

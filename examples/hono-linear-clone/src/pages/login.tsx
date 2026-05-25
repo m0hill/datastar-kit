@@ -3,7 +3,7 @@ import { z } from "zod"
 import type { App } from "../app-types.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
 import { authenticate } from "../db/users.js"
-import { FieldError, pageHead } from "../shared/ui.js"
+import { pageHead } from "../shared/ui.js"
 
 const loginSchema = z.object({
   username: z.string().trim().min(3, "Use at least 3 characters"),
@@ -36,7 +36,10 @@ const LoginPage = () => (
             placeholder="Enter username"
             {...ds.bind(loginState.$.username)}
           />
-          <FieldError path={loginState.$._validation.username} />
+          <small
+            class="text-danger text-[13px] font-medium min-h-4"
+            {...ds.text(loginState.$._validation.username)}
+          ></small>
         </label>
         <label class="flex flex-col gap-1.5 text-[11px] font-bold tracking-widest uppercase text-fg-muted">
           Password
@@ -47,9 +50,15 @@ const LoginPage = () => (
             placeholder="Enter password"
             {...ds.bind(loginState.$.password)}
           />
-          <FieldError path={loginState.$._validation.password} />
+          <small
+            class="text-danger text-[13px] font-medium min-h-4"
+            {...ds.text(loginState.$._validation.password)}
+          ></small>
         </label>
-        <FieldError path={loginState.$._validation.form} />
+        <small
+          class="text-danger text-[13px] font-medium min-h-4"
+          {...ds.text(loginState.$._validation.form)}
+        ></small>
         <button type="submit" class="primary mt-1">
           Sign in
         </button>
@@ -66,12 +75,12 @@ const LoginPage = () => (
 
 export const registerLoginPage = (app: App) => {
   app.get("/", async (c) =>
-    (await getCurrentUser(c)) === null ? c.redirect("/login") : c.redirect("/app")
+    (await getCurrentUser(c)) === null ? c.redirect("/login") : c.redirect("/workspace")
   )
 
   app.get("/login", async (c) => {
     if ((await getCurrentUser(c)) !== null) {
-      return c.redirect("/app")
+      return c.redirect("/workspace")
     }
 
     return reply.page(<LoginPage />, { title: "Sign in · Linear clone", head: pageHead })
@@ -106,7 +115,7 @@ export const registerLoginPage = (app: App) => {
     }
 
     return reply.navigate(
-      "/app",
+      "/workspace",
       {},
       { headers: { "set-cookie": sessionCookie(await createSession(user.id)) } }
     )

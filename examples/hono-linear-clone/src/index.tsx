@@ -15,8 +15,8 @@ app.use("/public/*", serveStatic({ root: "./" }))
 registerLoginPage(app)
 registerSignupPage(app)
 
-app.use("/app/*", requireUser)
-app.use("/app", requireUser)
+app.use("/workspace/*", requireUser)
+app.use("/workspace", requireUser)
 app.use("/projects", requireUser)
 app.use("/issues/*", requireUser)
 
