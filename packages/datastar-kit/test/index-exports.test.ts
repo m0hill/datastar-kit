@@ -20,6 +20,7 @@ describe("package root exports", () => {
     expect(event.patch).toBeDefined()
     expect(event.signals).toBeDefined()
     expect(event.script).toBeDefined()
+    expect(event.navigate).toBeDefined()
     expect("patchElements" in event).toBe(false)
     expect("patchSignals" in event).toBe(false)
     expect("executeScript" in event).toBe(false)

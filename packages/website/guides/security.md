@@ -16,7 +16,7 @@ Schema validation proves shape, not authority. Handlers must still check ownersh
 
 - Use `unsafeHtml(...)` only for trusted or sanitized HTML.
 - Use `reply.directScript(...)` only for trusted script text.
-- Prefer `reply.navigate(...)` for Datastar-driven navigation so untrusted URLs are normalized and origin checked.
+- Prefer `reply.navigate(...)` or `event.navigate(...)` for Datastar-driven navigation so untrusted URLs are normalized and origin checked.
 - Treat browser signals as user input, not as durable state or authority.
 
 Next: [Deployment](deployment.md). Related: [Validation and errors](validation-and-errors.md), [Actions and responses](actions-and-responses.md).

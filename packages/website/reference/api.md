@@ -15,7 +15,7 @@ Configure JSX consumers with `jsx: "react-jsx"` and `jsxImportSource: "datastar-
 ## Root namespaces
 
 - `ds` — Datastar attributes, actions, signal refs, signal-state helpers, expression helpers, and modifiers.
-- `event` — rendered Datastar SSE event chunks (`patch`, `signals`, `script`) for `reply.stream(...)`; signal chunks take signal-state objects.
+- `event` — rendered Datastar SSE event chunks (`patch`, `signals`, `script`, `navigate`) for `reply.stream(...)`; signal chunks take signal-state objects.
 - `read` — Datastar JSON object signal decoding from native `Request` values.
 - `reply` — native `Response` helpers for pages, SSE patches, direct responses, navigation, streams, and no-content command completion.
 

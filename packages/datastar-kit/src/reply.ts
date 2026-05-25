@@ -1,5 +1,6 @@
 import { patch as eventPatch, signals as eventSignals } from "./event.js"
 import { h, renderToString, type HtmlChild } from "./html.js"
+import { navigationScript, type NavigationSafetyOptions } from "./navigation.js"
 import {
   type PatchElementsNamespace,
   type PatchElementsMode,
@@ -7,6 +8,8 @@ import {
   type PatchSignalsOptions,
   type SignalState
 } from "./sse.js"
+
+export { NavigationUrlError } from "./navigation.js"
 
 /**
  * Safe network configuration for Datastar action helpers.
@@ -92,12 +95,7 @@ export interface DirectScriptOptions {
 /**
  * Safe navigation response options.
  */
-export interface NavigateOptions extends DirectScriptOptions {
-  /** Base URL used to resolve relative navigation targets. @defaultValue `"http://localhost"` */
-  readonly baseUrl?: string | URL
-  /** Additional absolute origins allowed for cross-origin navigation. */
-  readonly allowedOrigins?: readonly (string | URL)[]
-}
+export interface NavigateOptions extends DirectScriptOptions, NavigationSafetyOptions {}
 
 /**
  * A framed SSE string chunk that can be written to an SSE stream.
@@ -118,18 +116,6 @@ export type SseStreamInput =
   | Iterable<SseChunkInput>
   | AsyncIterable<SseChunkInput>
   | ReadableStream<SseChunkInput>
-
-/**
- * Error thrown when `reply.navigate()` rejects an unsafe navigation target.
- */
-export class NavigationUrlError extends Error {
-  /**
-   * @param url The unsafe URL input that was rejected.
-   */
-  constructor(readonly url: string) {
-    super(`Unsafe navigation URL: ${JSON.stringify(url)}`)
-  }
-}
 
 const textEncoder = new TextEncoder()
 type Timer = ReturnType<typeof setTimeout>
@@ -279,55 +265,6 @@ const readableStreamFrom = (
       void iterator.return?.()
     }
   })
-}
-
-/**
- * Normalizes navigation targets and rejects cross-origin or non-HTTP(S) URLs by default.
- */
-const safeNavigationUrl = (
-  input: string | URL,
-  options: {
-    readonly baseUrl?: string | URL | undefined
-    readonly allowedOrigins?: readonly (string | URL)[] | undefined
-  } = {}
-): string => {
-  const raw = input.toString()
-  if (/[\u0000-\u001F\u007F]/u.test(raw)) {
-    throw new NavigationUrlError(raw)
-  }
-
-  let base: URL
-  let url: URL
-  try {
-    base = new URL(options.baseUrl?.toString() ?? "http://localhost")
-    url = new URL(raw, base)
-  } catch {
-    throw new NavigationUrlError(raw)
-  }
-
-  if (url.protocol !== "http:" && url.protocol !== "https:") {
-    throw new NavigationUrlError(raw)
-  }
-
-  if (url.origin === base.origin) {
-    return `${url.pathname}${url.search}${url.hash}`
-  }
-
-  for (const origin of options.allowedOrigins ?? []) {
-    try {
-      const allowed = new URL(origin.toString())
-      if (
-        (allowed.protocol === "http:" || allowed.protocol === "https:") &&
-        allowed.origin === url.origin
-      ) {
-        return url.toString()
-      }
-    } catch {
-      // Treat malformed allowlist entries as non-matches.
-    }
-  }
-
-  throw new NavigationUrlError(raw)
 }
 
 /**
@@ -495,9 +432,11 @@ export const navigate = (
   init: StreamResponseInit = {}
 ): Response => {
   const { baseUrl, allowedOrigins, ...scriptOptions } = options
-  const safeUrl = safeNavigationUrl(url, { baseUrl, allowedOrigins })
   return directScript(
-    `setTimeout(() => { window.location.href = ${JSON.stringify(safeUrl)} })`,
+    navigationScript(url, {
+      ...(baseUrl === undefined ? {} : { baseUrl }),
+      ...(allowedOrigins === undefined ? {} : { allowedOrigins })
+    }),
     scriptOptions,
     init
   )

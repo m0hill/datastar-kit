@@ -26,4 +26,14 @@ describe("Datastar SSE event helpers", () => {
     )
     expect(event.script("console.log('hello')")).toContain("data: elements <script")
   })
+
+  it("builds safe navigation events", () => {
+    expect(event.navigate("/issues/1", { baseUrl: "https://app.example" })).toBe(
+      'event: datastar-patch-elements\ndata: mode append\ndata: selector body\ndata: elements <script data-effect="el.remove()">setTimeout(() => { window.location.href = "/issues/1" })</script>\n\n'
+    )
+
+    expect(() => event.navigate("javascript:alert(1)", { baseUrl: "https://app.example" })).toThrow(
+      event.NavigationUrlError
+    )
+  })
 })
