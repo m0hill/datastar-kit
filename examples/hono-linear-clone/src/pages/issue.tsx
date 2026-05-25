@@ -39,11 +39,11 @@ const issueState = ds.state({
 })
 
 const IssuePage = (props: { detail: IssueDetail }) => (
-  <main class="min-h-screen bg-bg text-fg" {...issueState.attrs()}>
-    <div
-      {...ds.onIntersect(ds.get(`/issues/${props.detail.issue.id}/live`), { once: true })}
-      class="absolute w-px h-px overflow-hidden"
-    ></div>
+  <main
+    class="min-h-screen bg-bg text-fg"
+    {...issueState.attrs()}
+    {...ds.init(ds.get(`/issues/${props.detail.issue.id}/live`))}
+  >
     <section class="mx-auto flex w-full max-w-3xl flex-col gap-5 p-5 lg:p-8">
       <a
         href="/workspace"

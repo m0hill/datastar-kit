@@ -342,15 +342,15 @@ const IssueModal = (props: { projects: Project[] }) => (
 )
 
 const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
-  <main class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg" {...state.attrs()}>
+  <main
+    class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg"
+    {...state.attrs()}
+    {...ds.init(ds.get("/workspace/live"))}
+  >
     <div class="hidden lg:flex">
       <Sidebar user={props.user} projects={props.projects} />
     </div>
     <section class="p-5 lg:px-7 overflow-auto min-w-0">
-      <div
-        {...ds.onIntersect(ds.get("/workspace/live"), { once: true })}
-        class="absolute w-px h-px overflow-hidden"
-      ></div>
       <div class="flex items-center justify-between mb-5">
         <h2 class="text-[13px] font-semibold text-fg">Issues</h2>
         <button type="button" class="primary" {...ds.on("click", ds.get("/workspace/modal/issue"))}>

@@ -10,7 +10,11 @@ let count = 0
 
 const app = new Hono()
 
-const Count = () => <output id="count" aria-live="polite">{count}</output>
+const Count = () => (
+  <output id="count" aria-live="polite">
+    {count}
+  </output>
+)
 
 const Counter = () => (
   <main id="counter" {...ds.init(ds.get("/live"))}>
