@@ -440,7 +440,7 @@ export const registerWorkspacePage = (app: App) => {
 
     const issue = await createIssue(c.get("user"), parsedIssue.data)
     invalidations.publish()
-    return reply.navigate(`/issues/${issue.id}`)
+    return reply.stream([event.signals(state.reset()), event.navigate(`/issues/${issue.id}`)])
   })
 
   app.post("/logout", async (c) => {
