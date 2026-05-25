@@ -3,13 +3,9 @@ import { ds, event, read, reply } from "datastar-kit"
 import { z } from "zod"
 import type { App } from "../app-types.js"
 import { createComment, loadIssue, type IssueDetail, updateIssue } from "../db/issue.js"
+import { issuePriorityValues, issueStatusValues } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
-import {
-  issuePriorities,
-  issuePriorityValues,
-  issueStatuses,
-  issueStatusValues
-} from "../shared/issue-options.js"
+import { issuePriorities, issueStatuses } from "../shared/issue-options.js"
 import { pageHead } from "../shared/ui.js"
 
 const issueIdParam = z.coerce.number().int().positive()

@@ -15,17 +15,3 @@ export const issuePriorities: Array<{ value: IssuePriority; label: string }> = [
   { value: "high", label: "High" },
   { value: "urgent", label: "Urgent" }
 ]
-
-export const issueStatusValues = issueStatuses.map((status) => status.value) as [
-  IssueStatus,
-  ...IssueStatus[]
-]
-
-export const issuePriorityValues = issuePriorities.map((priority) => priority.value) as [
-  IssuePriority,
-  ...IssuePriority[]
-]
-
-export const StatusDot = ({ class: cls }: { class: string }) => (
-  <span class={`w-[7px] h-[7px] ${cls}`}></span>
-)

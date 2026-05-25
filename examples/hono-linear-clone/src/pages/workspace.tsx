@@ -5,16 +5,10 @@ import type { App } from "../app-types.js"
 import { deleteSessionCookie, deleteSession } from "../auth/session.js"
 import { createIssue, readIssues, type Issue } from "../db/issue.js"
 import { createProject, readProjects, type Project } from "../db/workspace.js"
-import { type User } from "../db/schema.js"
+import { issuePriorityValues, issueStatusValues, type User } from "../db/schema.js"
 import { invalidations } from "../realtime/hub.js"
 import { pageHead } from "../shared/ui.js"
-import {
-  issuePriorities,
-  issuePriorityValues,
-  issueStatuses,
-  issueStatusValues,
-  StatusDot
-} from "../shared/issue-options.js"
+import { issuePriorities, issueStatuses } from "../shared/issue-options.js"
 
 const projectSchema = z.object({
   projectName: z.string().trim().min(2, "Name the project"),
@@ -138,7 +132,7 @@ const StatusLabel = ({ status }: { status: Issue["status"] }) => {
   if (!currentStatus) return <span class="text-fg-muted">{status}</span>
   return (
     <span class="flex items-center gap-1.5 text-[11px] font-mono text-fg-secondary">
-      <StatusDot class={currentStatus.dotClass} />
+      <span class={`w-1.75 h-1.75 ${currentStatus.dotClass}`}></span>
       {currentStatus.label}
     </span>
   )
@@ -197,11 +191,11 @@ export const Board = (props: { issues: Issue[] }) => (
           class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2.5 border-b border-border-subtle items-center cursor-pointer transition-colors hover:bg-surface-hover"
           id={`issue-${issue.id}`}
         >
-          <StatusDot
-            class={
+          <span
+            class={`w-1.75 h-1.75 ${
               issueStatuses.find((status) => status.value === issue.status)?.dotClass ?? "bg-border"
-            }
-          />
+            }`}
+          ></span>
           <span class="font-mono text-[11px] text-fg-muted tabular-nums">
             {issue.projectKey}-{issue.number}
           </span>

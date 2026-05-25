@@ -1,6 +1,9 @@
 import { sql } from "drizzle-orm"
 import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core"
 
+export const issueStatusValues = ["backlog", "todo", "in_progress", "done", "canceled"] as const
+export const issuePriorityValues = ["none", "low", "medium", "high", "urgent"] as const
+
 export const users = sqliteTable("users", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
@@ -44,13 +47,11 @@ export const issues = sqliteTable("issues", {
   title: text("title").notNull(),
   description: text("description").notNull().default(""),
   status: text("status", {
-    enum: ["backlog", "todo", "in_progress", "done", "canceled"]
+    enum: issueStatusValues
   })
     .notNull()
     .default("todo"),
-  priority: text("priority", { enum: ["none", "low", "medium", "high", "urgent"] })
-    .notNull()
-    .default("medium"),
+  priority: text("priority", { enum: issuePriorityValues }).notNull().default("medium"),
   assigneeId: integer("assignee_id").references(() => users.id, { onDelete: "set null" }),
   createdById: integer("created_by_id")
     .notNull()
@@ -81,5 +82,5 @@ export type User = typeof users.$inferSelect
 export type Project = typeof projects.$inferSelect
 export type Issue = typeof issues.$inferSelect
 export type Comment = typeof comments.$inferSelect
-export type IssueStatus = Issue["status"]
-export type IssuePriority = Issue["priority"]
+export type IssueStatus = (typeof issueStatusValues)[number]
+export type IssuePriority = (typeof issuePriorityValues)[number]
