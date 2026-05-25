@@ -18,7 +18,7 @@ pnpm --dir packages/datastar-kit version minor --no-git-tag-version
 pnpm --dir packages/datastar-kit version major --no-git-tag-version
 ```
 
-Then update `CHANGELOG.md` for the same version.
+During development, collect changes under `CHANGELOG.md`'s `Unreleased` section. During release, rename that section to the exact version and date.
 
 ## Release Checklist
 
@@ -53,9 +53,10 @@ pnpm --filter datastar-kit publish --tag latest
 
 Use `--tag beta` instead of `--tag latest` if you want a softer prerelease-style launch while keeping the `0.x` version.
 
-7. After a successful publish, create a matching git commit and tag:
+7. After a successful publish, create a matching git commit and simple version tag:
 
 ```sh
-git tag datastar-kit@0.1.0
-git push origin HEAD --tags
+git tag -a v0.1.0 -m "datastar-kit v0.1.0"
+git push origin HEAD
+git push origin v0.1.0
 ```
