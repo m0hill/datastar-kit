@@ -12,6 +12,8 @@ export class InvalidationBus {
     if (this.#closed) return
 
     for (const subscriber of this.#subscribers) {
+      if (subscriber.closed) continue
+
       if (subscriber.resolve !== undefined) {
         const resolve = subscriber.resolve
         subscriber.resolve = undefined
@@ -32,9 +34,23 @@ export class InvalidationBus {
     }
   }
 
-  subscribe(): AsyncIterable<void> {
-    const subscriber: Subscriber = { queued: 0, closed: this.#closed }
+  subscribe(signal?: AbortSignal): AsyncIterable<void> {
+    if (this.#closed || signal?.aborted === true) {
+      return {
+        async *[Symbol.asyncIterator]() {}
+      }
+    }
+
+    const subscriber: Subscriber = { queued: 0, closed: false }
     const subscribers = this.#subscribers
+    const closeSubscriber = () => {
+      subscriber.closed = true
+      const resolve = subscriber.resolve
+      subscriber.resolve = undefined
+      resolve?.()
+    }
+
+    signal?.addEventListener("abort", closeSubscriber, { once: true })
     subscribers.add(subscriber)
 
     return {
@@ -55,7 +71,8 @@ export class InvalidationBus {
             if (!subscriber.closed) yield
           }
         } finally {
-          subscriber.closed = true
+          signal?.removeEventListener("abort", closeSubscriber)
+          closeSubscriber()
           subscribers.delete(subscriber)
         }
       }

@@ -19,6 +19,7 @@ app.use("/workspace/*", requireUser)
 app.use("/workspace", requireUser)
 app.use("/projects", requireUser)
 app.use("/issues/*", requireUser)
+app.use("/logout", requireUser)
 
 registerWorkspacePage(app)
 registerIssuePage(app)

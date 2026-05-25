@@ -333,7 +333,7 @@ const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
       ></div>
       <div class="flex items-center justify-between mb-5">
         <h2 class="text-[13px] font-semibold text-fg">Issues</h2>
-        <button type="button" class="primary" {...ds.on("click", ds.get("/modal/issue"))}>
+        <button type="button" class="primary" {...ds.on("click", ds.get("/workspace/modal/issue"))}>
           Create issue
         </button>
       </div>
@@ -345,8 +345,9 @@ const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
 
 export const registerWorkspacePage = (app: App) => {
   app.get("/workspace", async (c) => {
+    const user = c.get("user")
     const [projects, issues] = await Promise.all([readProjects(), readIssues()])
-    return reply.page(<Page user={c.get("user")} projects={projects} issues={issues} />, {
+    return reply.page(<Page user={user} projects={projects} issues={issues} />, {
       title: "Linear clone",
       head: pageHead
     })
@@ -367,8 +368,7 @@ export const registerWorkspacePage = (app: App) => {
     async function* stream() {
       yield* await render()
 
-      for await (const _ of invalidations.subscribe()) {
-        if (c.req.raw.signal.aborted) return
+      for await (const _ of invalidations.subscribe(c.req.raw.signal)) {
         yield* await render()
       }
     }
@@ -378,7 +378,7 @@ export const registerWorkspacePage = (app: App) => {
     })
   })
 
-  app.get("/modal/issue", async () => {
+  app.get("/workspace/modal/issue", async () => {
     const projects = await readProjects()
     return reply.stream([
       event.patch(<IssueProjectSelect projects={projects} />),
@@ -414,15 +414,11 @@ export const registerWorkspacePage = (app: App) => {
     }
 
     invalidations.publish()
+    const user = c.get("user")
     const projects = await readProjects()
     return reply.stream([
-      event.signals(
-        state.patch({
-          ...state.defaults,
-          _validation: { ...state.defaults._validation }
-        })
-      ),
-      event.patch(<Sidebar user={c.get("user")} projects={projects} />),
+      event.signals(state.reset()),
+      event.patch(<Sidebar user={user} projects={projects} />),
       event.patch(<IssueProjectSelect projects={projects} />)
     ])
   })

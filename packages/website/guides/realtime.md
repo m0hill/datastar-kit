@@ -7,6 +7,7 @@ import { event, reply } from "datastar-kit"
 
 async function* liveEvents() {
   yield event.patch(renderCurrentState())
+
   for await (const _ of invalidations) {
     yield event.patch(renderCurrentState())
   }
@@ -30,7 +31,12 @@ Because each render reads current backend state, reconnecting can recover by ren
 
 ## App-owned invalidation resources
 
-Use whatever resource matches the app: database notifications, Redis, NATS, in-memory subscribers, queues, or framework-specific channels. Adapt them to `AsyncIterable` or `ReadableStream` and pass generated SSE event strings to `reply.stream(...)`.
+Use whatever resource matches the app: database notifications, Redis, NATS, in-memory subscribers,
+queues, or framework-specific channels. Adapt them to `AsyncIterable` or `ReadableStream` and pass
+generated SSE event strings to `reply.stream(...)`.
+
+If the source can wait forever, connect it to the request `AbortSignal` when your framework exposes
+one so disconnected clients do not leave subscribers behind.
 
 ## Heartbeats
 

@@ -76,7 +76,10 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
         </h3>
         <form
           class="flex flex-col"
-          {...ds.on("change", ds.patch(`/issues/${issue.id}`, { contentType: "form" }))}
+          {...ds.on(
+            "change",
+            ds.patch(`/issues/${issue.id}`, { selector: null, contentType: "form" })
+          )}
         >
           <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2 border-b border-border-subtle">
             <label class="text-[11px] font-bold tracking-widest uppercase text-fg-muted">
@@ -176,8 +179,7 @@ export const registerIssuePage = (app: App) => {
     async function* stream() {
       yield await render()
 
-      for await (const _ of invalidations.subscribe()) {
-        if (c.req.raw.signal.aborted) return
+      for await (const _ of invalidations.subscribe(c.req.raw.signal)) {
         yield await render()
       }
     }
@@ -201,6 +203,7 @@ export const registerIssuePage = (app: App) => {
 
   app.post("/issues/:id/comments", async (c) => {
     const issueId = issueIdParam.parse(c.req.param("id"))
+    const user = c.get("user")
     const parsedComment = commentSchema.safeParse(await read.signals(c.req.raw))
     if (!parsedComment.success) {
       const { fieldErrors } = z.flattenError(parsedComment.error)
@@ -214,15 +217,10 @@ export const registerIssuePage = (app: App) => {
       )
     }
 
-    await createComment(c.get("user"), issueId, parsedComment.data.commentBody)
+    await createComment(user, issueId, parsedComment.data.commentBody)
     invalidations.publish()
     return reply.stream([
-      event.signals(
-        issueState.patch({
-          ...issueState.defaults,
-          _validation: { ...issueState.defaults._validation }
-        })
-      ),
+      event.signals(issueState.reset()),
       event.patch(<IssuePageContent detail={await loadIssue(issueId)} />)
     ])
   })

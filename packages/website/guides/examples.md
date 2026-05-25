@@ -10,6 +10,7 @@ Run commands from the repository root. Each dev script serves its app at `http:/
 | `examples/hono-modal`           | A server-rendered native `<dialog>` controlled by Datastar signals and a small `data-effect` bridge.                          | `pnpm run dev:hono-modal`           |
 | `examples/hono-form-validation` | `data-bind` inputs, `@post(...)`, `read.signals(request)` with direct Zod validation, and validation signal patches.          | `pnpm run dev:hono-form-validation` |
 | `examples/hono-custom-actions`  | Custom Datastar actions/plugins as an alternative to long inline expressions.                                                 | `pnpm run dev:hono-custom-actions`  |
+| `examples/hono-linear-clone`    | Authenticated Linear-style issue tracking with current-state live views, signal-backed forms, and a shared workspace.         | `pnpm run dev:hono-linear-clone`    |
 | `examples/elysia-layout`        | Bun/Elysia structure with a shared shell, named layout slots, route-level data loading, and a targeted `#project-list` patch. | `pnpm run dev:elysia-layout`        |
 | `examples/deno-search-list`     | `Deno.serve(...)`, `@std/http` routing, Tailwind CSS, search patches, and `mode: 'append'` list additions.                    | `pnpm run dev:deno-search-list`     |
 

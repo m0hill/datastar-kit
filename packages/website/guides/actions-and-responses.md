@@ -88,6 +88,8 @@ Commands may read sparse browser signals, but durable state belongs in backend r
 
 Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions use Datastar's default JSON signal transport. Datastar signals and form data are distinct request inputs: use signals for sparse browser state sent by Datastar actions, and use Web APIs or framework facilities for ordinary form posts, file uploads, and non-Datastar HTTP endpoints.
 
-For Datastar's form transport, pass `contentType: 'form'` in the fetch action options and read that request with your platform's form/multipart APIs.
+For Datastar's form transport, pass `contentType: 'form'` in the fetch action options and read
+that request with your platform's form/multipart APIs. Use `selector: null` when the closest form
+should be submitted.
 
 Next: [Patch elements](patch-elements.md). Related: [Signals](signals.md), [Realtime streams](realtime.md).
