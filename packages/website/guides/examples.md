@@ -7,6 +7,7 @@ Run commands from the repository root. Each dev script serves its app at `http:/
 | Example                         | Shows                                                                                                                         | Run                                 |
 | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
 | `examples/hono-counter`         | Minimal Hono routes, TSX views, backend-owned count state, and a focused `reply.patch(...)`.                                  | `pnpm run dev:hono-counter`         |
+| `examples/hono-live-counter`    | A backend-owned count synced across tabs with a live SSE stream and an in-memory invalidation hub.                            | `pnpm run dev:hono-live-counter`    |
 | `examples/hono-modal`           | A server-rendered native `<dialog>` controlled by Datastar signals and a small `data-effect` bridge.                          | `pnpm run dev:hono-modal`           |
 | `examples/hono-form-validation` | `data-bind` inputs, `@post(...)`, `read.signals(request)` with direct Zod validation, and validation signal patches.          | `pnpm run dev:hono-form-validation` |
 | `examples/hono-custom-actions`  | Custom Datastar actions/plugins as an alternative to long inline expressions.                                                 | `pnpm run dev:hono-custom-actions`  |
