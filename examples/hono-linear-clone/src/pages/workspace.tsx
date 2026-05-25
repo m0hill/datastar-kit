@@ -72,7 +72,7 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
     id="sidebar"
     class="bg-surface border-r border-border text-fg-muted flex flex-col overflow-y-auto min-w-0 w-full"
   >
-    <div class="h-12 px-4 border-b border-border flex items-center justify-between">
+    <div class="h-[60px] px-4 border-b border-border flex items-center justify-between shrink-0">
       <div class="flex items-center gap-2 overflow-hidden">
         <span class="text-xs font-semibold text-fg-muted select-none">π</span>
         <span class="text-xs font-bold tracking-wider text-fg truncate">Linear Clone</span>
@@ -80,7 +80,7 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
       <span class="w-2 h-2 rounded-full bg-success" title="System operational"></span>
     </div>
 
-    <div class="p-3 border-b border-border-subtle">
+    <div class="p-3 border-b border-border-subtle shrink-0">
       <div class="flex items-center gap-2 text-[13px] text-fg-secondary px-2.5 py-2 bg-surface-inset border border-border rounded-lg">
         <span class="w-6 h-6 rounded-md bg-border flex items-center justify-center text-[10px] font-bold text-fg-secondary font-mono">
           {props.user.name.charAt(0).toUpperCase()}
@@ -362,8 +362,8 @@ const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
     <div class="hidden lg:flex">
       <Sidebar user={props.user} projects={props.projects} />
     </div>
-    <section class="overflow-auto min-w-0 flex flex-col">
-      <header class="h-15 border-b border-border flex items-center justify-between px-6 bg-surface/40 backdrop-blur-md shrink-0">
+    <section class="overflow-hidden min-w-0 flex flex-col">
+      <header class="h-[60px] border-b border-border flex items-center justify-between px-6 bg-surface/40 backdrop-blur-md shrink-0">
         <div class="flex items-center gap-2">
           <span class="text-xs text-fg-muted select-none">›</span>
           <h2 class="text-[13px] font-semibold uppercase tracking-wide text-fg">Issues</h2>
@@ -372,7 +372,7 @@ const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
           + Create Issue
         </button>
       </header>
-      <div class="p-5 lg:p-7">
+      <div class="flex-1 overflow-auto p-5 lg:p-7">
         <Board issues={props.issues} />
         <IssueModal projects={props.projects} />
       </div>
