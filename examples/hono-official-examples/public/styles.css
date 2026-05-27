@@ -333,6 +333,21 @@ code {
   background: #fde2e1;
 }
 
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.keypad button {
+  min-height: 4rem;
+  font-weight: 750;
+}
+
+.keypad .gray {
+  background: #eef1f4;
+}
+
 .grid {
   display: grid;
   gap: 1rem;

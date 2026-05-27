@@ -10,6 +10,7 @@ import { customPluginExample } from "./examples/custom-plugin.js"
 import { dbmonExample } from "./examples/dbmon.js"
 import { deleteRowExample } from "./examples/delete-row.js"
 import { editRowExample } from "./examples/edit-row.js"
+import { eventBubblingExample } from "./examples/event-bubbling.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -22,5 +23,6 @@ export const examples: readonly ExampleModule[] = [
   customPluginExample,
   dbmonExample,
   deleteRowExample,
-  editRowExample
+  editRowExample,
+  eventBubblingExample
 ]
