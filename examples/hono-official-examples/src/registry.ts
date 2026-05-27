@@ -23,6 +23,7 @@ import { progressiveLoadExample } from "./examples/progressive-load.js"
 import { sortableExample } from "./examples/sortable.js"
 import { svgMorphingExample } from "./examples/svg-morphing.js"
 import { templCounterExample } from "./examples/templ-counter.js"
+import { titleUpdateExample } from "./examples/title-update.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -48,5 +49,6 @@ export const examples: readonly ExampleModule[] = [
   progressiveLoadExample,
   sortableExample,
   svgMorphingExample,
-  templCounterExample
+  templCounterExample,
+  titleUpdateExample
 ]
