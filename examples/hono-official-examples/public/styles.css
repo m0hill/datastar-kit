@@ -251,6 +251,22 @@ code {
     color 600ms ease;
 }
 
+.bad-apple {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.bad-apple pre {
+  min-height: 12rem;
+  overflow: auto;
+  border-radius: 8px;
+  margin: 0;
+  padding: 1rem;
+  background: #111827;
+  color: #f9fafb;
+  line-height: 1;
+}
+
 .grid {
   display: grid;
   gap: 1rem;
