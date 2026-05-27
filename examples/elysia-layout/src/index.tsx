@@ -163,7 +163,7 @@ export const app = new Elysia()
 
     return reply.stream([
       event.patch(<ProjectList projects={projects} />),
-      event.signals(projectForm.patch({ title: "" }))
+      event.signals(projectForm.reset())
     ])
   })
 
