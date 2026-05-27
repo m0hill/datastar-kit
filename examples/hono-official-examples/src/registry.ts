@@ -19,6 +19,7 @@ import { lazyLoadExample } from "./examples/lazy-load.js"
 import { lazyTabsExample } from "./examples/lazy-tabs.js"
 import { onSignalPatchExample } from "./examples/on-signal-patch.js"
 import { progressBarExample } from "./examples/progress-bar.js"
+import { progressiveLoadExample } from "./examples/progressive-load.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -40,5 +41,6 @@ export const examples: readonly ExampleModule[] = [
   lazyLoadExample,
   lazyTabsExample,
   onSignalPatchExample,
-  progressBarExample
+  progressBarExample,
+  progressiveLoadExample
 ]

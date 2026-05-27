@@ -430,6 +430,42 @@ code {
   transform-origin: 100px 100px;
 }
 
+.progressive-content {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.progressive-content > * {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fbfcfe;
+}
+
+.placeholder {
+  color: var(--muted);
+  background: #f1f3f6;
+}
+
+.comments-list {
+  display: grid;
+  gap: 0.65rem;
+  padding: 0;
+  list-style: none;
+}
+
+.comments-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.comments-list img {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+}
+
 .grid {
   display: grid;
   gap: 1rem;
