@@ -306,6 +306,33 @@ code {
   background: #fbfcfe;
 }
 
+.dbmon-table {
+  table-layout: fixed;
+  word-break: break-word;
+}
+
+.dbmon-table td {
+  font-size: 0.84rem;
+}
+
+.query-count {
+  width: 3rem;
+  text-align: center;
+  font-weight: 800;
+}
+
+.ok-cell {
+  background: #e7f7ef;
+}
+
+.warn-cell {
+  background: #fff3cd;
+}
+
+.danger-cell {
+  background: #fde2e1;
+}
+
 .grid {
   display: grid;
   gap: 1rem;
