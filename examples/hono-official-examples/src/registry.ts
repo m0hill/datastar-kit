@@ -12,6 +12,7 @@ import { deleteRowExample } from "./examples/delete-row.js"
 import { editRowExample } from "./examples/edit-row.js"
 import { eventBubblingExample } from "./examples/event-bubbling.js"
 import { fileUploadExample } from "./examples/file-upload.js"
+import { formDataExample } from "./examples/form-data.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -26,5 +27,6 @@ export const examples: readonly ExampleModule[] = [
   deleteRowExample,
   editRowExample,
   eventBubblingExample,
-  fileUploadExample
+  fileUploadExample,
+  formDataExample
 ]

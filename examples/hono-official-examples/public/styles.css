@@ -348,6 +348,21 @@ code {
   background: #eef1f4;
 }
 
+.checks {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.checks label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.checks input {
+  width: auto;
+}
+
 .grid {
   display: grid;
   gap: 1rem;
