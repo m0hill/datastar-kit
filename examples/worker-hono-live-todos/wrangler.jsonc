@@ -24,7 +24,7 @@
     {
       "binding": "DB",
       "database_name": "todos",
-      "database_id": "aekjh234n35opmlqw2345",
+      "database_id": "be3df79e-57e8-4dc0-9e4e-c9b21bacbd72",
       "migrations_dir": "./migrations"
     }
   ]
