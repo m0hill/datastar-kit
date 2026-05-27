@@ -1,27 +1,34 @@
-# Worker Hono Counter
+# Worker Hono counter
 
-A minimal Cloudflare Workers + Hono counter using Datastar Kit and a Durable Object.
+A minimal Cloudflare Workers + Hono counter using Datastar Kit.
 
-Hono routes native `Request` objects, the Durable Object owns the counter state and live subscribers, and Datastar Kit returns native `Response` objects for the full page, action patch, and realtime stream.
+Hono routes native `Request` objects and Datastar Kit returns native `Response` objects for the full page and action patch. The count is process-local, so it is intentionally only a minimal Workers integration example.
+
+## Run locally
+
+From the repository root:
+
+```sh
+pnpm run dev:worker-hono-counter
+```
+
+Or from this directory:
 
 ```sh
 pnpm install
-pnpm dev
+pnpm run dev
 ```
+
+## Deploy
 
 ```sh
-pnpm deploy
+pnpm --filter @datastar-kit/example-worker-hono-counter deploy
 ```
 
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
+## Typegen
+
+This example uses Wrangler-generated `CloudflareBindings` types. Regenerate them after changing `wrangler.jsonc`:
 
 ```sh
-pnpm cf-typegen
-```
-
-Pass the `CloudflareBindings` as generics when instantiating `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
+pnpm --filter @datastar-kit/example-worker-hono-counter cf-typegen
 ```

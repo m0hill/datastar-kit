@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { z } from "zod"
 import { ds, event, read, reply } from "datastar-kit"
-import { database, type Database } from "./db/index.js"
+import { database } from "./db/index.js"
 import {
   createTodo,
   deleteTodo,
@@ -10,20 +10,20 @@ import {
   type TodosSnapshot
 } from "./db/todo.js"
 import type { Todo } from "./db/schema.js"
-import { liveTodos, type VersionedDatastarEvents } from "./realtime/hub.js"
+import { liveRoom, type VersionedDatastarPatch } from "./realtime/hub.js"
 
-export { LiveTodos } from "./realtime/hub.js"
+export { LiveRoom } from "./realtime/hub.js"
 
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
 const MAX_TITLE_LENGTH = 120
+const TODOS_ROOM = "todos"
 
 const app = new Hono<{ Bindings: CloudflareBindings }>()
 
 const todoState = ds.state({
   title: "",
-  liveReady: false,
   _validation: {
     title: ""
   }
@@ -37,42 +37,33 @@ const CreateTodoSignals = z.object({
     .max(MAX_TITLE_LENGTH, `Keep todos under ${MAX_TITLE_LENGTH} characters.`)
 })
 
-const todoEvents = (snapshot: TodosSnapshot): VersionedDatastarEvents => ({
+const todoPatch = (snapshot: TodosSnapshot): VersionedDatastarPatch => ({
   version: snapshot.version,
-  events:
-    event.signals(todoState.patch({ liveReady: true })) + event.patch(<TodoList todos={snapshot.todos} />)
+  events: event.patch(<TodoList todos={snapshot.todos} />)
 })
 
-async function publishTodos(env: CloudflareBindings, db: Database) {
-  const snapshot = await readTodosSnapshot(db)
-  await liveTodos(env).publish(todoEvents(snapshot))
-}
+const publishTodos = (env: CloudflareBindings, snapshot: TodosSnapshot): Promise<number> =>
+  liveRoom(env, TODOS_ROOM).publish(todoPatch(snapshot))
 
 const TodoForm = () => (
-  <form
-    id="todo-form"
-    method="post"
-    action="/todos"
-    class="panel"
-    {...ds.on("submit", ds.post("/todos"), { prevent: true })}
-  >
+  <form class="panel" {...ds.on("submit", ds.post("/todos"), { prevent: true })}>
     <label for="todo-title">New todo</label>
     <div class="new-todo-row">
       <input
         id="todo-title"
-        name="title"
         type="text"
         maxlength={MAX_TITLE_LENGTH}
         autocomplete="off"
         placeholder="Ship the Datastar example"
         {...ds.bind(todoState.$.title)}
       />
-      <button type="submit" disabled {...ds.dataAttr("disabled", ds.expr`!(${todoState.$.liveReady})`)}>
-        Add
-      </button>
+      <button type="submit">Add</button>
     </div>
-    <p class="error" {...ds.show(todoState.$._validation.title)} {...ds.text(todoState.$._validation.title)}></p>
-    <p class="muted">The form enables after the Durable Object-backed live stream connects.</p>
+    <p
+      class="error"
+      {...ds.show(todoState.$._validation.title)}
+      {...ds.text(todoState.$._validation.title)}
+    ></p>
   </form>
 )
 
@@ -108,11 +99,11 @@ const TodoList = ({ todos }: { readonly todos: readonly Todo[] }) => (
 )
 
 const TodosPage = ({ todos }: { readonly todos: readonly Todo[] }) => (
-  <main {...todoState.attrs()} {...ds.init(ds.get("/live", { retry: "always", openWhenHidden: true }))}>
+  <main {...todoState.attrs()} {...ds.init(ds.get("/live"))}>
     <header>
       <h1>Worker Hono live todos</h1>
       <p class="muted">
-        D1 stores the todos. A Durable Object only fans out Datastar SSE patches to open tabs.
+        D1 stores the todos. A named Durable Object room fans out Datastar SSE patches to open tabs.
       </p>
     </header>
     <TodoForm />
@@ -135,7 +126,7 @@ app.get("/", async (c) => {
 
 app.get("/live", async (c) => {
   const snapshot = await readTodosSnapshot(database(c.env.DB))
-  return liveTodos(c.env).subscribe(todoEvents(snapshot))
+  return liveRoom(c.env, TODOS_ROOM).subscribe(todoPatch(snapshot))
 })
 
 app.post("/todos", async (c) => {
@@ -150,27 +141,44 @@ app.post("/todos", async (c) => {
 
   const db = database(c.env.DB)
   await createTodo(db, result.data.title)
-  await publishTodos(c.env, db)
+  const snapshot = await readTodosSnapshot(db)
 
-  return reply.signals(todoState.patch({ title: "", _validation: { title: "" } }))
+  // The current tab gets the patch below immediately; fan-out to other tabs can finish after
+  // the response starts, so keep the Worker alive for that background publish.
+  c.executionCtx.waitUntil(publishTodos(c.env, snapshot))
+
+  return reply.stream([
+    event.signals(todoState.reset()),
+    event.patch(<TodoList todos={snapshot.todos} />)
+  ])
 })
 
 app.patch("/todos/:id/toggle", async (c) => {
   const db = database(c.env.DB)
   const changed = await toggleTodo(db, c.req.param("id"))
 
-  if (changed) await publishTodos(c.env, db)
+  if (!changed) return reply.done()
 
-  return reply.done()
+  const snapshot = await readTodosSnapshot(db)
+
+  // The current tab gets this patch immediately; connected tabs receive the same rendered patch
+  // through the Durable Object room.
+  c.executionCtx.waitUntil(publishTodos(c.env, snapshot))
+  return reply.patch(<TodoList todos={snapshot.todos} />)
 })
 
 app.delete("/todos/:id", async (c) => {
   const db = database(c.env.DB)
   const changed = await deleteTodo(db, c.req.param("id"))
 
-  if (changed) await publishTodos(c.env, db)
+  if (!changed) return reply.done()
 
-  return reply.done()
+  const snapshot = await readTodosSnapshot(db)
+
+  // The current tab gets this patch immediately; connected tabs receive the same rendered patch
+  // through the Durable Object room.
+  c.executionCtx.waitUntil(publishTodos(c.env, snapshot))
+  return reply.patch(<TodoList todos={snapshot.todos} />)
 })
 
 app.notFound((c) => c.text("Not Found", 404))

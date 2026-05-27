@@ -4,6 +4,8 @@ import type { Database } from "./index.js"
 
 const TODO_STATE_KEY = "todos"
 
+// `version` is a monotonically increasing ordering token for the live room cache.
+// It is not user-visible todo state.
 export interface TodosSnapshot {
   todos: Todo[]
   version: number

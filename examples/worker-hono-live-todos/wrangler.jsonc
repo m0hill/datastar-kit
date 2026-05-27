@@ -3,22 +3,21 @@
   "name": "worker-hono-live-todos",
   "main": "src/index.tsx",
   "compatibility_date": "2026-05-25",
-  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": "./public"
   },
   "durable_objects": {
     "bindings": [
       {
-        "name": "LIVE_TODOS",
-        "class_name": "LiveTodos"
+        "name": "LIVE_ROOMS",
+        "class_name": "LiveRoom"
       }
     ]
   },
   "migrations": [
     {
       "tag": "v1",
-      "new_sqlite_classes": ["LiveTodos"]
+      "new_sqlite_classes": ["LiveRoom"]
     }
   ],
   "d1_databases": [
@@ -28,8 +27,5 @@
       "database_id": "aekjh234n35opmlqw2345",
       "migrations_dir": "drizzle"
     }
-  ],
-  "observability": {
-    "enabled": true
-  }
+  ]
 }

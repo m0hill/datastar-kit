@@ -2,7 +2,7 @@
 
 Examples are standalone workspace packages under `examples/*`. Each one should be copyable, own its runtime dependencies, and show one integration or recipe clearly.
 
-Run commands from the repository root. Each dev script serves its app at `http://localhost:3000` or `http://127.0.0.1:3000`.
+Run commands from the repository root. Node/Bun/Deno examples serve at `http://localhost:3000` or `http://127.0.0.1:3000`; Worker examples print Wrangler's local URL.
 
 | Example                            | Shows                                                                                                                         | Run                                    |
 | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
@@ -13,6 +13,8 @@ Run commands from the repository root. Each dev script serves its app at `http:/
 | `examples/hono-form-validation`    | `data-bind` inputs, `@post(...)`, `read.signals(request)` with direct Zod validation, and validation signal patches.          | `pnpm run dev:hono-form-validation`    |
 | `examples/hono-custom-actions`     | Custom Datastar actions/plugins as an alternative to long inline expressions.                                                 | `pnpm run dev:hono-custom-actions`     |
 | `examples/hono-linear-clone`       | Authenticated Linear-style issue tracking with current-state live views, signal-backed forms, and a shared workspace.         | `pnpm run dev:hono-linear-clone`       |
+| `examples/worker-hono-counter`     | Minimal Cloudflare Workers + Hono routes with Datastar page and patch responses.                                              | `pnpm run dev:worker-hono-counter`     |
+| `examples/worker-hono-live-todos`  | Cloudflare Workers + Hono + D1 todos with a Durable Object fan-out hub for live Datastar streams.                             | `pnpm run dev:worker-hono-live-todos`  |
 | `examples/elysia-layout`           | Bun/Elysia structure with a shared shell, named layout slots, route-level data loading, and a targeted `#project-list` patch. | `pnpm run dev:elysia-layout`           |
 | `examples/deno-search-list`        | `Deno.serve(...)`, `@std/http` routing, Tailwind CSS, search patches, and `mode: 'append'` list additions.                    | `pnpm run dev:deno-search-list`        |
 
