@@ -373,6 +373,16 @@ code {
   font-weight: 700;
 }
 
+.field-error {
+  color: var(--danger);
+  font-weight: 650;
+}
+
+.success-text {
+  color: var(--success);
+  font-weight: 650;
+}
+
 .grid {
   display: grid;
   gap: 1rem;
