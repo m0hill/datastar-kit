@@ -6,6 +6,7 @@ import { bulkUpdateExample } from "./examples/bulk-update.js"
 import { clickToEditExample } from "./examples/click-to-edit.js"
 import { clickToLoadExample } from "./examples/click-to-load.js"
 import { customEventExample } from "./examples/custom-event.js"
+import { customPluginExample } from "./examples/custom-plugin.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -14,5 +15,6 @@ export const examples: readonly ExampleModule[] = [
   bulkUpdateExample,
   clickToEditExample,
   clickToLoadExample,
-  customEventExample
+  customEventExample,
+  customPluginExample
 ]
