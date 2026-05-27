@@ -81,5 +81,3 @@ export class LiveRoom extends DurableObject<CloudflareBindings> {
     this.#subscribers.delete(subscriber)
   }
 }
-
-export const liveRoom = (env: CloudflareBindings, name: string) => env.LIVE_ROOMS.getByName(name)

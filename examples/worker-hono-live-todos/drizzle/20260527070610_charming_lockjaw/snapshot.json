@@ -2,9 +2,7 @@
   "version": "7",
   "dialect": "sqlite",
   "id": "2bc35929-6c05-4ec9-9b15-38088cb756ed",
-  "prevIds": [
-    "00000000-0000-0000-0000-000000000000"
-  ],
+  "prevIds": ["00000000-0000-0000-0000-000000000000"],
   "ddl": [
     {
       "name": "todos",
@@ -61,9 +59,7 @@
       "table": "todos"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "todos_pk",
       "table": "todos",

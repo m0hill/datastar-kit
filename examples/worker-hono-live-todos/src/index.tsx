@@ -2,24 +2,15 @@ import { Hono } from "hono"
 import { z } from "zod"
 import { ds, event, read, reply } from "datastar-kit"
 import { database } from "./db/index.js"
-import {
-  createTodo,
-  deleteTodo,
-  readTodos,
-  toggleTodo,
-} from "./db/todo.js"
+import { createTodo, deleteTodo, readTodos, toggleTodo } from "./db/todo.js"
 import type { Todo } from "./db/schema.js"
-import { liveRoom } from "./realtime/hub.js"
 
 export { LiveRoom } from "./realtime/hub.js"
 
 const app = new Hono<{ Bindings: CloudflareBindings }>()
 
 const CreateTodoSignals = z.object({
-  title: z
-    .string()
-    .trim()
-    .min(1, "Enter a todo title.")
+  title: z.string().trim().min(1, "Enter a todo title.")
 })
 
 const todoState = ds.state({
@@ -28,12 +19,6 @@ const todoState = ds.state({
     title: ""
   }
 })
-
-const todoPatch = (todos: Todo[]): string =>
-  event.patch(<TodoList todos={todos} />)
-
-const publishTodos = (env: CloudflareBindings, todos: Todo[]): Promise<number> =>
-  liveRoom(env, "todos").publish(todoPatch(todos))
 
 const TodoForm = () => (
   <form class="panel" {...ds.on("submit", ds.post("/todos"), { prevent: true })}>
@@ -105,14 +90,17 @@ app.get("/", async (c) => {
     head: [
       <meta name="viewport" content="width=device-width, initial-scale=1" />,
       <link href="/styles.css" rel="stylesheet" />,
-      <script type="module" src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js" />
+      <script
+        type="module"
+        src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+      />
     ]
   })
 })
 
 app.get("/live", async (c) => {
   const todos = await readTodos(database(c.env.DB))
-  return liveRoom(c.env, "todos").subscribe(todoPatch(todos))
+  return c.env.LIVE_ROOMS.getByName("todos").subscribe(event.patch(<TodoList todos={todos} />))
 })
 
 app.post("/todos", async (c) => {
@@ -129,12 +117,11 @@ app.post("/todos", async (c) => {
   await createTodo(db, result.data.title)
   const todos = await readTodos(db)
 
-  c.executionCtx.waitUntil(publishTodos(c.env, todos))
+  c.executionCtx.waitUntil(
+    c.env.LIVE_ROOMS.getByName("todos").publish(event.patch(<TodoList todos={todos} />))
+  )
 
-  return reply.stream([
-    event.signals(todoState.reset()),
-    event.patch(<TodoList todos={todos} />)
-  ])
+  return reply.stream([event.signals(todoState.reset()), event.patch(<TodoList todos={todos} />)])
 })
 
 app.patch("/todos/:id/toggle", async (c) => {
@@ -145,7 +132,9 @@ app.patch("/todos/:id/toggle", async (c) => {
 
   const todos = await readTodos(db)
 
-  c.executionCtx.waitUntil(publishTodos(c.env, todos))
+  c.executionCtx.waitUntil(
+    c.env.LIVE_ROOMS.getByName("todos").publish(event.patch(<TodoList todos={todos} />))
+  )
   return reply.patch(<TodoList todos={todos} />)
 })
 
@@ -157,7 +146,9 @@ app.delete("/todos/:id", async (c) => {
 
   const todos = await readTodos(db)
 
-  c.executionCtx.waitUntil(publishTodos(c.env, todos))
+  c.executionCtx.waitUntil(
+    c.env.LIVE_ROOMS.getByName("todos").publish(event.patch(<TodoList todos={todos} />))
+  )
   return reply.patch(<TodoList todos={todos} />)
 })
 
