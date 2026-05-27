@@ -298,6 +298,14 @@ code {
   margin: 0;
 }
 
+.event-output {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 0;
+  padding: 1rem;
+  background: #fbfcfe;
+}
+
 .grid {
   display: grid;
   gap: 1rem;
