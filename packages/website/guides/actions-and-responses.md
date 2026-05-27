@@ -1,101 +1,148 @@
 # Actions and responses
 
-Actions are HTTP requests triggered by Datastar attributes. Some actions are commands that mutate backend resources. Others are queries or streams that read current state and patch the UI.
+Datastar actions turn browser events into HTTP requests. Datastar Kit helps you author those action expressions and return responses that Datastar can apply.
 
-## Default command flow
+## Author actions in TSX
 
-1. Render HTML with a Datastar action attribute, such as `data-on:click="@post('/increment')"`.
-2. Decode Datastar signals with `read.signals(request)`, then validate with app-owned schema code when needed. Use Web APIs directly for non-Datastar query/body/form inputs.
-3. Check security/session/CSRF requirements in app code.
-4. Mutate backend state through app-owned services/resources.
-5. Return `reply.done()` when there is nothing to update, or return a Datastar patch/stream through `reply.*`.
+Use `ds.on(...)` with a fetch action such as `ds.get(...)` or `ds.post(...)`:
+
+```tsx
+import { ds } from "datastar-kit"
+
+;<button type="button" {...ds.on("click", ds.post("/todos/add"))}>
+  Add todo
+</button>
+```
+
+The helper renders Datastar attributes such as:
+
+```html
+<button data-on:click="@post('/todos/add')">Add todo</button>
+```
+
+Build reactive URLs with `ds.queryUrl(...)`:
+
+```tsx
+const search = ds.state({ q: "" })
+
+<input
+  type="search"
+  {...ds.bind(search.$.q)}
+  {...ds.on("input", ds.get(ds.queryUrl("/todos/search", { q: search.$.q })))}
+/>
+```
+
+## Command handlers
+
+A command receives user intent and may mutate backend resources:
+
+```ts
+import { read, reply } from "datastar-kit"
+
+export async function addTodo(request: Request): Promise<Response> {
+  const user = await requireUser(request)
+  const input = TodoSchema.parse(await read.signals(request))
+
+  await todos.create({ ownerId: user.id, title: input.title })
+
+  return reply.done()
+}
+```
+
+Use this order:
+
+1. Decode the request input.
+2. Validate shape and domain rules.
+3. Check session, authorization, CSRF, and rate-limit policy.
+4. Read or mutate backend resources.
+5. Return a Datastar response or a normal HTTP response.
+
+## Choose a response
+
+| Response              | Use it when                                                        |
+| --------------------- | ------------------------------------------------------------------ |
+| `reply.page(...)`     | Rendering a full HTML document.                                    |
+| `reply.done()`        | A command succeeded and the page does not need an immediate patch. |
+| `reply.patch(...)`    | Returning server-rendered HTML for a page region.                  |
+| `reply.signals(...)`  | Updating small browser-side signal state.                          |
+| `reply.stream(...)`   | Sending one or more SSE events, including long-lived live views.   |
+| `reply.navigate(...)` | Navigating the browser from a Datastar response.                   |
+
+`reply.patch(...)`, `reply.signals(...)`, and `reply.stream(...)` return `200` SSE responses. `reply.done()` returns `204` with no body. Datastar fetch actions process patch bodies on `200` and treat `204` as successful completion.
+
+`reply.page(...)` is normal HTTP and can use page-level statuses:
+
+```tsx
+return reply.page(<NotFoundPage />, { title: "Not found" }, { status: 404 })
+```
+
+## Patch after a command
+
+Return a focused patch when the command should update the current view immediately:
+
+```tsx
+export async function toggleTodo(request: Request, id: string): Promise<Response> {
+  const user = await requireUser(request)
+  const todo = await todos.toggle({ id, ownerId: user.id })
+
+  return reply.patch(<TodoItem todo={todo} />)
+}
+```
+
+For the common case, the returned element carries the stable `id` Datastar should patch. Use selectors and patch modes for container operations such as append, prepend, inner replacement, or removal. See [element patches](patch-elements.md).
+
+## Stream multiple events
+
+Use `event.*` helpers when a response needs more than one Datastar event:
+
+```tsx
+import { event, reply } from "datastar-kit"
+
+return reply.stream([event.signals(form.reset()), event.patch(<IssueDetails issue={issue} />)])
+```
+
+`event.navigate(...)` is the composable version of `reply.navigate(...)` when a stream should end by moving the browser to another URL.
+
+## Direct responses
+
+Datastar also supports direct-response headers. Datastar Kit exposes them as:
+
+- `reply.directHtml(...)`
+- `reply.directSignals(...)`
+- `reply.directScript(...)`
+
+Prefer the SSE helpers unless an integration specifically requires direct-response handling. `reply.directScript(...)` executes trusted JavaScript in the browser; use structured patches or `reply.navigate(...)` when possible.
+
+## Forms and request bodies
+
+Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions use Datastar's default JSON signal transport.
+
+For Datastar's form transport, pass `contentType: "form"` in the fetch action options and read the request with your platform's form or multipart APIs:
+
+```tsx
+<form
+  {...ds.on("submit", ds.post("/upload", { contentType: "form", selector: null }), {
+    prevent: true
+  })}
+>
+  <input type="file" name="avatar" />
+  <button>Upload</button>
+</form>
+```
+
+`selector: null` tells Datastar to submit the closest form.
 
 ## Custom browser actions
 
-Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, you can also register a Datastar action/plugin in a browser module and call it from TSX with `ds.action(name, ...args)`:
+Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, register a Datastar action or plugin in a browser module and call it from TSX with `ds.action(...)`:
 
 ```tsx
-<button {...ds.on('click', ds.action('setSignal', 'modalOpen', true))}>Open</button>
-<dialog {...ds.effect(ds.action('syncDialog', ds.signal<boolean>('modalOpen')))} />
+const modalOpen = ds.signal<boolean>("modalOpen")
+
+<button {...ds.on("click", ds.action("setSignal", "modalOpen", true))}>Open</button>
+<dialog {...ds.effect(ds.action("syncDialog", modalOpen))} />
 ```
 
-See `examples/hono-custom-actions` for a complete Hono example with custom actions and a custom attribute plugin.
+See `examples/hono-custom-actions` for a complete example.
 
-## Response helpers
-
-Use `reply` helpers when a handler should produce Datastar-aware native `Response` objects:
-
-- `reply.page(...)` — full HTML page/document response with ordinary HTTP status semantics.
-- `reply.patch(...)` — default SSE element patch response.
-- `reply.signals(...)` — default SSE signal patch response from a signal-state object.
-- `reply.stream(...)` — multiple events or long-lived SSE streams, usually from `event.patch(...)` / `event.signals(...)` chunks.
-- `reply.done(...)` — successful command with no body (`204`).
-- `reply.navigate(...)` — safe Datastar-driven navigation as a single response.
-- `reply.directHtml(...)`, `reply.directSignals(...)`, and `reply.directScript(...)` — explicit Datastar direct-response escape hatches; direct signal responses also take signal-state objects.
-
-Datastar action helpers own their protocol status codes. Keep Datastar protocol options separate from native response options:
-
-```tsx
-reply.patch(<Count />, {}, { headers: { "x-action": "increment" } })
-reply.signals({ saving: false }, { onlyIfMissing: true }, { headers: { "x-action": "save" } })
-```
-
-Pass signal patches as objects at the `reply.*` and `event.*` layers. Raw serialized signal patch source belongs to the low-level `datastar-kit/sse` encoder.
-
-When navigation is part of a larger response, use the composable `event.navigate(...)` chunk instead of hand-writing a script:
-
-```tsx
-return reply.stream([event.signals(state.reset()), event.navigate(`/issues/${issue.id}`)])
-```
-
-## Status semantics
-
-Current Datastar fetch actions process response bodies as patches when the HTTP status is `200`. They treat `204` as successful completion with no body.
-
-Use this policy:
-
-- **`200` with a body** — Datastar may process SSE, HTML, JSON signal, or JavaScript direct responses.
-- **`204` without a body** — the command succeeded and there is no browser patch to apply.
-- **Other statuses** — use normal HTTP semantics for errors, redirects, and API responses.
-
-`reply.page(...)` is normal HTTP and may use page-level statuses such as `404`.
-
-## Patch targets and stable IDs
-
-For ordinary component updates, render a stable `id` on the top-level element you return and omit `selector`:
-
-```tsx
-const CountView = () => <output id="count">{count}</output>
-
-reply.patch(<CountView />)
-event.patch(<CountView />)
-```
-
-Pass `selector` when the target is a container, sibling position, removable element, or CSS match:
-
-```tsx
-reply.patch(<TodoItem todo={todo} />, { selector: "#todo-list", mode: "append" })
-event.patch("", { selector: ".toast", mode: "remove" })
-```
-
-For repeated items, use stable item IDs when those items may be patched individually:
-
-```tsx
-const TodoItem = (props: { todo: Todo }) => <li id={`todo-${props.todo.id}`}>{props.todo.title}</li>
-```
-
-The full selector/mode guide lives in [Patch elements](patch-elements.md).
-
-## State rule
-
-Commands may read sparse browser signals, but durable state belongs in backend resources. For trusted values such as counters, read the current value from the server, mutate it there, and patch the rendered view.
-
-## Forms and other request bodies
-
-Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions use Datastar's default JSON signal transport. Datastar signals and form data are distinct request inputs: use signals for sparse browser state sent by Datastar actions, and use Web APIs or framework facilities for ordinary form posts, file uploads, and non-Datastar HTTP endpoints.
-
-For Datastar's form transport, pass `contentType: 'form'` in the fetch action options and read
-that request with your platform's form/multipart APIs. Use `selector: null` when the closest form
-should be submitted.
-
-Next: [Patch elements](patch-elements.md). Related: [Signals](signals.md), [Realtime streams](realtime.md).
+Next: [Element patches](patch-elements.md).

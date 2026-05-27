@@ -1,8 +1,10 @@
 # datastar-kit
 
-`datastar-kit` is a small TypeScript companion SDK for [Datastar](https://data-star.dev/).
+`datastar-kit` is a small TypeScript SDK for building server-driven UI with [Datastar](https://data-star.dev/).
 
-It provides typed helpers for Datastar attributes/actions/signals, server-rendered TSX/HTML, signal payload reads from `Request`, and native `Response` helpers for Datastar patches and streams.
+It provides typed helpers for Datastar attributes, actions, expressions, and signals; server-rendered HTML/TSX; signal payload reads from `Request`; and native `Response` helpers for Datastar pages, patches, streams, navigation, and command completion.
+
+It is not a framework. Bring your router, auth, database, validation, sessions, and runtime.
 
 [Documentation](https://datastar-kit.mohil.dev) · [GitHub](https://github.com/m0hill/datastar-kit) · [Datastar](https://data-star.dev/)
 
@@ -12,7 +14,7 @@ It provides typed helpers for Datastar attributes/actions/signals, server-render
 npm i datastar-kit
 ```
 
-`datastar-kit` does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; use a pinned runtime URL or a self-hosted copy compatible with that version.
+Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; use a pinned runtime URL or a self-hosted compatible copy.
 
 ```html
 <script
@@ -56,6 +58,7 @@ export function handle(request: Request): Response {
 
   if (request.method === "GET" && url.pathname === "/") {
     return reply.page(<Counter />, {
+      title: "Counter",
       head: <script type="module" src={DATASTAR_RUNTIME} />
     })
   }
@@ -71,7 +74,7 @@ export function handle(request: Request): Response {
 
 The stable `id` is the patch contract. The server returns new HTML for `#count`; Datastar applies it in the browser.
 
-See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for guides, API notes, and examples.
+See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for guides, API reference, and examples.
 
 ## License
 

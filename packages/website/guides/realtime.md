@@ -1,51 +1,66 @@
-# Realtime streams
+# Realtime
 
-Realtime in Datastar Kit is current-state oriented. A live view renders the latest backend state when it connects, then renders again after app-owned invalidation triggers.
+Realtime Datastar Kit views are current-state streams. A stream sends the current view when it connects, then sends a fresh view whenever your app says something changed.
 
-```ts
+```tsx
 import { event, reply } from "datastar-kit"
 
-async function* liveEvents() {
-  yield event.patch(renderCurrentState())
+async function* todoEvents(userId: string) {
+  yield event.patch(<TodoList todos={await todos.forUser(userId)} />)
 
-  for await (const _ of invalidations) {
-    yield event.patch(renderCurrentState())
+  for await (const _ of todoInvalidations.forUser(userId)) {
+    yield event.patch(<TodoList todos={await todos.forUser(userId)} />)
   }
 }
 
-return reply.stream(liveEvents(), {
-  heartbeat: { intervalMs: 15_000, comment: "live" }
+return reply.stream(todoEvents(user.id), {
+  heartbeat: { intervalMs: 15_000, comment: "todos" }
 })
 ```
 
-A live view has four parts:
+The invalidation does not need to contain the full update. It only needs to wake the stream so the handler can reload current backend state.
 
-- `invalidations` — an app-owned `AsyncIterable` of triggers.
-- `load` — reads current backend state.
-- `render` — renders that current state to HTML.
-- patch options — optional Datastar element patch settings for container-targeted updates.
+## Live view parts
+
+| Part                | Responsibility                                               |
+| ------------------- | ------------------------------------------------------------ |
+| Invalidation source | App-owned async source of "something changed" events.        |
+| Load function       | Reads current backend state.                                 |
+| View function       | Renders that state to HTML.                                  |
+| Stream response     | Sends `event.patch(...)` chunks through `reply.stream(...)`. |
+
+Good invalidation sources include in-memory subscribers, Redis pub/sub, NATS, Postgres notifications, queues, Durable Objects, or framework-specific channels. Adapt them to an `AsyncIterable`, `Iterable`, or `ReadableStream` accepted by `reply.stream(...)`.
 
 ## Reconnect safety
 
-Because each render reads current backend state, reconnecting can recover by rendering the latest view. The first event on a new live connection should patch the current view.
+The first event on a live connection should render current state. If a browser tab disconnects and reconnects, it should not need missed events to recover.
 
-## App-owned invalidation resources
-
-Use whatever resource matches the app: database notifications, Redis, NATS, in-memory subscribers,
-queues, or framework-specific channels. Adapt them to `AsyncIterable` or `ReadableStream` and pass
-generated SSE event strings to `reply.stream(...)`.
-
-If the source can wait forever, connect it to the request `AbortSignal` when your framework exposes
-one so disconnected clients do not leave subscribers behind.
+This rule also keeps multi-tab and multi-process behavior simpler. The stream always asks the backend what is true now.
 
 ## Heartbeats
 
-Heartbeat comments are transport-level response behavior, so they live on `reply.stream(...)` options, not in the event generator itself.
+Heartbeat comments keep long-lived SSE connections active across proxies and platforms:
 
-Use `initialDelayMs` for finite tests or one-shot streams where the first patch should arrive before the first heartbeat.
+```ts
+return reply.stream(events, {
+  heartbeat: {
+    intervalMs: 15_000,
+    initialDelayMs: 15_000,
+    comment: "live"
+  }
+})
+```
 
-## Deployment notes
+Heartbeats are response behavior, so they live on `reply.stream(...)` options instead of inside the event generator.
 
-A live view usually means one SSE connection per browser tab or active view. Configure reverse proxies to disable buffering for `text/event-stream`, keep idle timeouts longer than the heartbeat interval, and preserve streaming flush behavior. The deployment checklist has the operational version of this topic.
+## Cancellation
 
-Next: [Security](security.md). Related: [Deployment](deployment.md), [Programming model](../concepts/programming-model.md).
+When your framework exposes a request `AbortSignal`, connect it to the subscription or stream source so disconnected clients do not leave subscribers running.
+
+The exact wiring depends on the runtime. The important part is ownership: Datastar Kit writes the SSE response; your app owns the lifetime of database, broker, or in-memory subscriptions.
+
+## Deployment
+
+A live view usually means one SSE connection per browser tab or active view. Configure proxies to avoid buffering `text/event-stream`, keep idle timeouts longer than the heartbeat interval, and preserve streaming flush behavior.
+
+Next: [Security](security.md).

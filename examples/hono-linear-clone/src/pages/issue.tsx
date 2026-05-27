@@ -131,10 +131,7 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
     >
       <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2.5 border-b border-border-subtle">
         <label class="section-label">Status</label>
-        <select
-          name="status"
-          class="field"
-        >
+        <select name="status" class="field">
           {issueStatuses.map((status) => (
             <option value={status.value} selected={props.issue.status === status.value}>
               {status.label}
@@ -144,10 +141,7 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
       </div>
       <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2.5">
         <label class="section-label">Priority</label>
-        <select
-          name="priority"
-          class="field"
-        >
+        <select name="priority" class="field">
           {issuePriorities.map((priority) => (
             <option value={priority.value} selected={props.issue.priority === priority.value}>
               {priority.label}

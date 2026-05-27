@@ -1,10 +1,27 @@
-# Getting Started
+# Introduction
 
-Datastar Kit is a small TypeScript companion SDK for building server-driven Datastar UI with Web Standard `Request` and `Response` primitives.
+Datastar Kit is a small TypeScript SDK for building server-driven UI with [Datastar](https://data-star.dev/).
 
-Use it when your server owns the important state, Datastar handles browser events and patches, and you want predictable glue code: typed attributes, typed signal refs, native responses, and server-rendered HTML/JSX that can run in any fetch-compatible handler.
+It gives you the Datastar-shaped pieces of an application:
 
-Datastar Kit does **not** try to be your router, auth layer, database adapter, session store, queue, or observability stack. Bring the platform pieces you already like; use this package for the Datastar-shaped parts.
+- typed attributes, actions, expressions, modifiers, and signal refs through `ds`;
+- server-rendered HTML and TSX without a browser component runtime;
+- `read.signals(request)` for Datastar action payloads;
+- native `Response` helpers for pages, patches, streams, navigation, and no-content commands.
+
+It is not a web framework. Bring your router, auth, database, validation, sessions, jobs, and deployment platform. Datastar Kit fits anywhere that can receive a Web Standard `Request` and return a `Response`.
+
+## The model
+
+A Datastar Kit app keeps the important state on the server and sends HTML when the browser needs to change:
+
+1. Render the first page from backend state.
+2. Put Datastar attributes on server-rendered HTML.
+3. Let browser events call your handlers.
+4. Mutate or read backend state in those handlers.
+5. Return HTML or signal patches as ordinary `Response` objects.
+
+The browser stays light. Datastar handles events, requests, signals, and DOM patching. Your TypeScript code owns the route behavior and renders the next view.
 
 ## Install
 
@@ -12,7 +29,7 @@ Datastar Kit does **not** try to be your router, auth layer, database adapter, s
 npm i datastar-kit
 ```
 
-Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; use a pinned runtime URL or a self-hosted copy compatible with that version.
+Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; use a pinned CDN URL or a self-hosted compatible copy.
 
 ```html
 <script
@@ -21,7 +38,7 @@ Datastar Kit does not bundle, install, or serve the Datastar browser runtime. Th
 ></script>
 ```
 
-For JSX, configure TypeScript once:
+For TSX views, configure TypeScript once:
 
 ```json
 {
@@ -32,33 +49,36 @@ For JSX, configure TypeScript once:
 }
 ```
 
-## Tiny Counter
+## First handler
 
-A handler can be just a function that receives a native `Request` and returns a native `Response`:
+This is a complete counter in one fetch-compatible handler:
 
 ```tsx
 import { ds, reply } from "datastar-kit"
 
-const DATASTAR_RUNTIME = "/vendor/datastar.js"
+const DATASTAR_RUNTIME =
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
 let count = 0
+
+const Counter = () => (
+  <main>
+    <h1>Counter</h1>
+    <button type="button" {...ds.on("click", ds.post("/increment"))}>
+      Increment
+    </button>
+    <output id="count">{count}</output>
+  </main>
+)
 
 export function handle(request: Request): Response {
   const url = new URL(request.url)
 
   if (request.method === "GET" && url.pathname === "/") {
-    return reply.page(
-      <main id="counter">
-        <h1>Fetch counter</h1>
-        <button type="button" {...ds.on("click", ds.post("/increment"))}>
-          Increment
-        </button>{" "}
-        <output id="count">{count}</output>
-      </main>,
-      {
-        title: "Fetch counter",
-        head: <script type="module" src={DATASTAR_RUNTIME} />
-      }
-    )
+    return reply.page(<Counter />, {
+      title: "Counter",
+      head: <script type="module" src={DATASTAR_RUNTIME} />
+    })
   }
 
   if (request.method === "POST" && url.pathname === "/increment") {
@@ -70,42 +90,24 @@ export function handle(request: Request): Response {
 }
 ```
 
-The interesting bit is the patch response. The returned `<output id="count">` has the same `id` as the element already on the page, so Datastar can update that element without a client-side component tree.
+There is no client-side counter component. The button sends a Datastar action to `/increment`; the server updates its state and returns a new `#count` element; Datastar patches the existing element in the browser.
 
-## Main Pieces
+That stable `id` is the patch contract.
 
-- `ds` builds Datastar attributes, actions, expressions, modifiers, and typed signal refs.
-- `read` decodes Datastar signal payloads from a `Request`.
-- `reply` returns native `Response` objects for pages, patches, signal patches, streams, navigation, and `204` command completion.
-- `event` builds individual SSE chunks for `reply.stream(...)`.
-- The JSX runtime and low-level HTML helpers render server HTML without adding a browser framework.
+## Core APIs
 
-## Rules Of Thumb
+| Namespace | Use it for                                                                                               |
+| --------- | -------------------------------------------------------------------------------------------------------- |
+| `ds`      | Datastar attributes, actions, expressions, modifiers, signal refs, and typed signal-state helpers.       |
+| `read`    | Decoding Datastar signal payloads from native `Request` values.                                          |
+| `reply`   | Native `Response` helpers for pages, patches, signal patches, streams, navigation, and `204` completion. |
+| `event`   | Individual SSE chunks for `reply.stream(...)`.                                                           |
 
-- Durable state lives in backend resources. Browser signals are request input and local UI feedback.
-- Most UI updates are `reply.patch(<View id="stable-id" />)`.
-- Use `selector` when targeting a container, sibling position, multiple matches, or removal.
-- Use `reply.done()` when a command succeeded and the page does not need immediate feedback.
-- Use `reply.stream(...)` for live views; render current backend state on connect so reconnects recover cleanly.
-- Treat direct-response helpers as integration escape hatches. Start with the SSE helpers unless you specifically need direct-response headers.
+## Next steps
 
-## Where To Go Next
+- Read the [programming model](concepts/programming-model.md) to understand the server-driven flow.
+- Learn [HTML and JSX](guides/html-and-jsx.md), [signals](guides/signals.md), and [actions and responses](guides/actions-and-responses.md) in that order.
+- Use [element patches](guides/patch-elements.md) when you need selectors, insertion modes, removal, or view transitions.
+- Browse [examples](guides/examples.md) when you want a complete app shape for Hono, Elysia, Deno, Bun, or Cloudflare Workers.
 
-Start with the [documentation index](docs.md), or jump straight to the page that matches your next question:
-
-- [Programming model](concepts/programming-model.md) for the server-driven mental model.
-- [HTML and JSX](guides/html-and-jsx.md) for layouts, views, escaping, and low-level helpers.
-- [Signals](guides/signals.md) for authoring and reading Datastar signal state.
-- [Actions and responses](guides/actions-and-responses.md) for command flow, status semantics, and response helpers.
-- [Patch elements](guides/patch-elements.md) for every DOM patch mode.
-- [Examples](guides/examples.md) for runnable workspace apps.
-- [Agents](guides/agent.md) for setting up agent-readable source reference material.
-
-## Links
-
-- [GitHub repository](https://github.com/m0hill/datastar-kit)
-- [Datastar](https://data-star.dev/)
-
-## License
-
-MIT
+MIT licensed. Source is on [GitHub](https://github.com/m0hill/datastar-kit).

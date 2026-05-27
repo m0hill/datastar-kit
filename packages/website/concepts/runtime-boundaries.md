@@ -1,59 +1,78 @@
 # Runtime boundaries
 
-Datastar Kit composes inside ordinary fetch-compatible handlers. The package owns Datastar-specific authoring and response details; your app owns the rest of the request lifecycle.
+Datastar Kit is intentionally narrow. It speaks Datastar from ordinary fetch-compatible handlers and leaves application policy to your app.
 
 ```ts
-const form = FormSchema.parse(await read.signals(request))
-await store.save(form)
+const signals = await read.signals(request)
+const input = FormSchema.parse(signals)
+
+await todos.create({ ownerId: user.id, title: input.title })
+
 return reply.done()
 ```
 
-## SDK surface
+The handler is still yours. Datastar Kit only handles the Datastar-specific parts around it.
+
+## What the SDK owns
 
 Use Datastar Kit for:
 
-- Datastar attributes, actions, expressions, modifiers, and signal refs through `ds`.
-- Server HTML nodes, JSX runtime glue, escaping, prop merging, and `renderToString(...)`.
-- Datastar signal decoding from native `Request` values through `read`.
-- Native `Response` helpers for pages, patches, streams, navigation, and command completion through `reply`.
-- SSE event chunks through `event`, plus low-level `datastar-kit/sse` encoders for protocol tests or custom integrations.
+| Area                            | API                                                                                                 |
+| ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Datastar attributes and actions | `ds.on(...)`, `ds.post(...)`, `ds.bind(...)`, `ds.expr`, `ds.state(...)`                            |
+| Server HTML                     | TSX, `h`, `renderToString`, `mergeProps`, `unsafeHtml`                                              |
+| Signal request decoding         | `read.signals(request)`                                                                             |
+| Datastar responses              | `reply.page(...)`, `reply.patch(...)`, `reply.signals(...)`, `reply.stream(...)`, `reply.done(...)` |
+| Stream chunks                   | `event.patch(...)`, `event.signals(...)`, `event.navigate(...)`, `event.script(...)`                |
+| Low-level protocol tests        | `datastar-kit/sse`                                                                                  |
 
-## App integration points
+The public APIs stay close to Web Standards: `Request`, `Response`, `Headers`, `URL`, `ReadableStream`, and plain objects.
 
-Keep these concerns in your framework, platform, or app-owned services:
+## What your app owns
+
+Keep these concerns outside the SDK:
 
 - routing and middleware;
-- authentication, sessions, CSRF, and rate limits;
-- databases, stores, queues, caches, and broker subscriptions;
-- request-local app context;
-- deployment adapters and process lifecycle;
-- logging, tracing, metrics, and OpenTelemetry setup.
+- auth, sessions, CSRF, ownership checks, and rate limits;
+- databases, caches, queues, brokers, and subscriptions;
+- validation schemas and domain error mapping;
+- request-local context;
+- logging, tracing, metrics, and deployment lifecycle.
 
-## Request boundary
+That boundary is what lets the same SDK work in Hono, Elysia, Bun, Deno, Cloudflare Workers, Node adapters, and custom fetch routers.
 
-Use `read.signals(request)` when the request is a Datastar action carrying JSON signal state. Validate the decoded state with app-owned schema code when the handler needs a typed and checked payload:
+## Request input
+
+Use `read.signals(request)` when a Datastar action sends JSON signal state:
 
 ```ts
 const state = await read.signals(request)
-const payload = FormSchema.parse(state)
+const input = SearchSchema.parse(state)
 ```
 
-Use `new URL(request.url)`, `request.formData()`, `request.json()`, framework middleware, or specialized multipart parsers for other HTTP concerns.
-
-Handle expected errors locally when they should produce Datastar UI feedback. Use app-level middleware for generic decode/security/fatal failures.
-
-## Responses
-
-Use `reply.*` for Datastar response construction and `event.*` for individual SSE chunks in streams:
+Use platform APIs for everything else:
 
 ```ts
-return reply.page(view)
-return reply.patch(view)
+const url = new URL(request.url)
+const form = await request.formData()
+const json = await request.json()
+```
+
+Datastar signals, HTML forms, query params, JSON APIs, and multipart uploads are different request inputs. Choose the reader that matches the route.
+
+## Response output
+
+Use `reply.*` when the browser should receive Datastar-aware responses:
+
+```tsx
+return reply.page(<TodosPage todos={todos} />)
+return reply.patch(<TodoList todos={todos} />)
 return reply.signals({ saved: true })
-return reply.stream([event.patch(view)])
 return reply.stream(events, { heartbeat: { intervalMs: 15_000 } })
 return reply.navigate("/dashboard")
 return reply.done()
 ```
 
-Next: [HTML and JSX](../guides/html-and-jsx.md). Related: [Security](../guides/security.md), [Architecture](../reference/architecture.md).
+Use plain `Response` objects for ordinary HTTP routes and non-Datastar clients.
+
+Next: [HTML and JSX](../guides/html-and-jsx.md).

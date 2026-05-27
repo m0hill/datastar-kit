@@ -1,22 +1,37 @@
 # Security
 
-Datastar Kit does not provide auth, sessions, CSRF protection, ownership checks, or rate limiting. Those policies belong to the application router, middleware, or app-owned services.
+Datastar Kit does not provide auth, sessions, CSRF protection, ownership checks, or rate limiting. Apply those policies in your router, middleware, and app services before changing state.
+
+## Command checklist
 
 A safe Datastar command should:
 
-1. receive a native `Request` through the application framework;
-2. decode Datastar signals with `read.signals(request)` and validate decoded input with app-owned schema code, or use Web APIs/framework readers for other input;
-3. check session, authorization, CSRF, and rate-limit policy in app code;
-4. mutate backend state only after those checks pass;
-5. return a Datastar patch for recoverable UI feedback or a normal HTTP response for non-Datastar clients.
+1. Receive a native `Request` through the application framework.
+2. Decode Datastar signals with `read.signals(request)` or use the correct platform reader for non-signal input.
+3. Validate decoded input with app-owned schema and domain code.
+4. Check session, authorization, CSRF, ownership, request size, and rate-limit policy.
+5. Mutate backend state only after those checks pass.
+6. Return a Datastar patch for recoverable UI feedback or a normal HTTP response for non-Datastar clients.
 
-Schema validation proves shape, not authority. Handlers must still check ownership and permissions on the backend before changing state.
+Schema validation proves shape, not authority. A valid `projectId` still needs an ownership check.
 
 ## Trust boundaries
 
-- Use `unsafeHtml(...)` only for trusted or sanitized HTML.
-- Use `reply.directScript(...)` only for trusted script text.
-- Prefer `reply.navigate(...)` or `event.navigate(...)` for Datastar-driven navigation so untrusted URLs are normalized and origin checked.
-- Treat browser signals as user input, not as durable state or authority.
+| API                                           | Boundary                                                                             |
+| --------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `unsafeHtml(...)`                             | Only pass trusted or sanitized HTML.                                                 |
+| `reply.directScript(...)`                     | Only pass trusted JavaScript produced by application code.                           |
+| `reply.navigate(...)` / `event.navigate(...)` | Prefer these for Datastar-driven navigation because URLs are normalized and checked. |
+| Browser signals                               | Treat as user input, never as durable state or authority.                            |
 
-Next: [Deployment](deployment.md). Related: [Validation and errors](validation-and-errors.md), [Actions and responses](actions-and-responses.md).
+## Navigation
+
+Use relative URLs for normal in-app navigation:
+
+```ts
+return reply.navigate("/dashboard")
+```
+
+For absolute URLs, configure the navigation safety options instead of interpolating untrusted strings into scripts.
+
+Next: [Deployment](deployment.md).

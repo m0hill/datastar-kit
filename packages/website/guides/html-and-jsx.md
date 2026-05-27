@@ -1,10 +1,12 @@
 # HTML and JSX
 
-Datastar Kit renders HTML on the server. The built-in HTML layer is intentionally small: HTML nodes, escaping, explicit unsafe HTML, prop merging, fragment rendering through child arrays, and the backing model for the JSX runtime.
+Datastar Kit renders HTML on the server. TSX is an authoring convenience over a small HTML node model; it is not a browser component runtime, virtual DOM, or hydration system.
 
-## JSX setup
+Use TSX for application views. Use the low-level HTML helpers when you are writing tests, generators, or non-JSX code.
 
-Use TypeScript's automatic JSX runtime:
+## Setup
+
+Configure TypeScript's automatic JSX runtime:
 
 ```json
 {
@@ -15,30 +17,53 @@ Use TypeScript's automatic JSX runtime:
 }
 ```
 
-Then write server-side view functions:
+Then write synchronous view functions:
 
 ```tsx
 import { ds, renderToString } from "datastar-kit"
 
-const view = (
-  <button type="button" {...ds.on("click", ds.post("/save"))}>
+const SaveButton = () => (
+  <button type="button" {...ds.on("click", ds.post("/settings/save"))}>
     Save
   </button>
 )
-const html = renderToString(view)
+
+const html = renderToString(<SaveButton />)
 ```
 
-JSX here is a server rendering convenience, not a browser component lifecycle or virtual DOM runtime. Components should be plain synchronous view functions: load data in the handler or route loader, then pass the data into JSX.
+View functions receive data and return HTML. Load data in handlers or route loaders before rendering.
 
-## Layouts and nested views
+## Pages
 
-Layouts are ordinary JSX functions. Put shared shell markup, navigation, scripts, and stable patch targets in a layout, then pass the page body through `children`.
+`reply.page(...)` renders a full HTML document and returns a native `Response`:
 
 ```tsx
-import { reply, type HtmlChild } from "datastar-kit"
+import { reply } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+
+const ProjectsPage = (props: { projects: Project[] }) => (
+  <main id="page">
+    <h1>Projects</h1>
+    <ProjectList projects={props.projects} />
+  </main>
+)
+
+return reply.page(<ProjectsPage projects={projects} />, {
+  title: "Projects",
+  head: <script type="module" src={DATASTAR_RUNTIME} />
+})
+```
+
+`title` renders a document `<title>`. `head` accepts one node or an array of nodes.
+
+## Layouts
+
+Layouts are plain functions. Put shared shell markup, navigation, scripts, and stable patch targets in the layout, then pass page-specific content through `children`.
+
+```tsx
+import type { HtmlChild } from "datastar-kit"
 
 interface AppLayoutProps {
   title: string
@@ -67,22 +92,11 @@ const ProjectsPage = (props: { projects: Project[] }) => (
     <ProjectList projects={props.projects} />
   </AppLayout>
 )
-
-return reply.page(<ProjectsPage projects={projects} />, {
-  title: "Projects",
-  head: <script type="module" src={DATASTAR_RUNTIME} />
-})
 ```
 
-Datastar Kit does not need a framework-owned layout system for this. Your router or handler chooses which page function to call, and page functions choose their own layouts.
-
-## Named layout slots
-
-Use normal props when a layout needs named regions such as a sidebar, toolbar, breadcrumbs, or actions. Slot props should use `HtmlChild` because they receive already-built server-rendered nodes.
+For named regions such as sidebars, breadcrumbs, and toolbars, use normal props typed as `HtmlChild`:
 
 ```tsx
-import type { HtmlChild } from "datastar-kit"
-
 interface DashboardLayoutProps {
   title: string
   sidebar?: HtmlChild
@@ -93,30 +107,18 @@ interface DashboardLayoutProps {
 const DashboardLayout = (props: DashboardLayoutProps) => (
   <main id="dashboard">
     <aside id="sidebar">{props.sidebar}</aside>
-
     <section id="dashboard-main">
       <header>
         <h1>{props.title}</h1>
         <div class="toolbar">{props.toolbar}</div>
       </header>
-
       <div id="dashboard-content">{props.children}</div>
     </section>
   </main>
 )
-
-const DashboardPage = (props: DashboardData) => (
-  <DashboardLayout
-    title="Dashboard"
-    sidebar={<Sidebar user={props.user} />}
-    toolbar={<DashboardToolbar />}
-  >
-    <ProjectList projects={props.projects} />
-  </DashboardLayout>
-)
 ```
 
-The `id` attributes in the layout are useful patch boundaries. A Datastar action can update just the current content region without re-rendering the full page shell:
+Those layout IDs can become patch boundaries:
 
 ```tsx
 return reply.patch(<ProjectList projects={projects} />, {
@@ -125,11 +127,9 @@ return reply.patch(<ProjectList projects={projects} />, {
 })
 ```
 
-For ordinary component replacement, prefer returning an element with a stable top-level `id` and omit `selector`. Use explicit selectors for container operations such as `inner`, `append`, `prepend`, or `remove`. See [Patch elements](patch-elements.md) for a guide to each mode.
+## Data loading
 
-## Loading data before rendering
-
-Keep data loading outside JSX components. This keeps rendering deterministic, avoids hidden database calls during serialization, and lets handlers control errors, auth, parallelism, and cancellation.
+Keep I/O out of JSX. Handlers should load data, handle auth and errors, then render the view.
 
 ```tsx
 async function loadDashboard(request: Request) {
@@ -145,6 +145,7 @@ async function loadDashboard(request: Request) {
 
 export async function dashboardRoute(request: Request): Promise<Response> {
   const data = await loadDashboard(request)
+
   return reply.page(
     <DashboardLayout title="Dashboard" sidebar={<Sidebar user={data.user} />}>
       <ProjectList projects={data.projects} />
@@ -158,11 +159,11 @@ export async function dashboardRoute(request: Request): Promise<Response> {
 Avoid async JSX components:
 
 ```tsx
-// Avoid: hides I/O inside rendering and would require async HTML serialization.
+// Avoid: I/O hidden inside rendering.
 const Dashboard = async () => <main>{await loadSomething()}</main>
 ```
 
-If one region is slow or live, render a shell first and patch that region through a Datastar action or stream:
+If a region is slow or live, render a shell and patch that region separately:
 
 ```tsx
 const DashboardShell = () => (
@@ -179,30 +180,30 @@ export async function statsRoute(): Promise<Response> {
 }
 ```
 
-This keeps the core model simple: handlers load data, synchronous JSX renders HTML, and Datastar patches update deferred or changing regions.
+## Escaping
 
-For a complete small app using these patterns with Bun and Elysia, see `examples/elysia-layout` in the repository.
+Text and attribute values are escaped by default.
 
-## Escaping and trust boundaries
-
-Text and attribute values are escaped by default. Use `unsafeHtml(renderedHtml)` only for HTML that has already crossed your app's trust boundary, such as sanitized output or trusted renderer output.
+Use `unsafeHtml(...)` only for HTML that has already crossed your application's trust boundary, such as sanitized Markdown output or trusted renderer output.
 
 ```tsx
 import { unsafeHtml } from "datastar-kit"
 
-const trusted = unsafeHtml("<strong>Already sanitized</strong>")
+const body = unsafeHtml(sanitizedHtml)
 ```
 
-## Low-level HTML helpers
+## Low-level helpers
 
-JSX is the primary authoring path. Low-level helpers are useful for tests, code generation, and non-JSX environments:
+The low-level HTML API mirrors the JSX runtime:
 
 ```ts
 import { ds, h, mergeProps, renderToString } from "datastar-kit"
 
-const view = h("button", mergeProps({ type: "button" }, ds.on("click", ds.post("/save"))), "Save")
+const button = h("button", mergeProps({ type: "button" }, ds.on("click", ds.post("/save"))), "Save")
 
-const html = renderToString(view)
+const html = renderToString(button)
 ```
 
-Next: [Signals](signals.md). Related: [Actions and responses](actions-and-responses.md), [Security](security.md).
+Use `h`, `mergeProps`, `renderToString`, and `unsafeHtml` when TSX is not the right tool for the file.
+
+Next: [Signals](signals.md).

@@ -1,32 +1,43 @@
 # Examples
 
-Examples are standalone workspace packages under `examples/*`. Each one should be copyable, own its runtime dependencies, and show one integration or recipe clearly.
+Examples are standalone workspace packages under `examples/*`. Each one owns its runtime dependencies and demonstrates one integration or application shape.
 
-Run commands from the repository root. Node/Bun/Deno examples serve at `http://localhost:3000` or `http://127.0.0.1:3000`; Worker examples print Wrangler's local URL.
+Run commands from the repository root. Node, Bun, and Deno examples usually serve at `http://localhost:3000` or `http://127.0.0.1:3000`. Worker examples print Wrangler's local URL.
 
-| Example                              | Shows                                                                                                                         | Run                                      |
-| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| `examples/hono-counter`              | Minimal Hono routes, TSX views, backend-owned count state, and a focused `reply.patch(...)`.                                  | `pnpm run dev:hono-counter`              |
-| `examples/hono-live-counter`         | A backend-owned count synced across tabs with a live SSE stream and an in-memory invalidation hub.                            | `pnpm run dev:hono-live-counter`         |
-| `examples/hono-live-counter-redis`   | A live Hono counter using Redis pub/sub as the cross-process invalidation bus for SSE streams.                                | `pnpm run dev:hono-live-counter-redis`   |
-| `examples/hono-modal`                | A server-rendered native `<dialog>` controlled by Datastar signals and a small `data-effect` bridge.                          | `pnpm run dev:hono-modal`                |
-| `examples/hono-form-validation`      | `data-bind` inputs, `@post(...)`, `read.signals(request)` with direct Zod validation, and validation signal patches.          | `pnpm run dev:hono-form-validation`      |
-| `examples/hono-custom-actions`       | Custom Datastar actions/plugins as an alternative to long inline expressions.                                                 | `pnpm run dev:hono-custom-actions`       |
-| `examples/hono-linear-clone`         | Authenticated Linear-style issue tracking with current-state live views, signal-backed forms, and a shared workspace.         | `pnpm run dev:hono-linear-clone`         |
-| `examples/worker-hono-counter`       | Minimal Cloudflare Workers + Hono routes with Datastar page and patch responses.                                              | `pnpm run dev:worker-hono-counter`       |
-| `examples/worker-hono-live-todos`    | Cloudflare Workers + Hono + D1 todos with a Durable Object fan-out hub for live Datastar streams.                             | `pnpm run dev:worker-hono-live-todos`    |
-| `examples/worker-do-hono-live-todos` | Cloudflare Workers + Hono todos where one Durable Object owns SQLite persistence and live Datastar fan-out.                   | `pnpm run dev:worker-do-hono-live-todos` |
-| `examples/elysia-layout`             | Bun/Elysia structure with a shared shell, named layout slots, route-level data loading, and a targeted `#project-list` patch. | `pnpm run dev:elysia-layout`             |
-| `examples/deno-search-list`          | `Deno.serve(...)`, `@std/http` routing, Tailwind CSS, search patches, and `mode: 'append'` list additions.                    | `pnpm run dev:deno-search-list`          |
+## Recommended order
+
+| Start here                      | Why                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------- |
+| `examples/hono-counter`         | Smallest complete request, page, action, and patch loop.                  |
+| `examples/hono-form-validation` | Signals, `read.signals(...)`, schema validation, and validation feedback. |
+| `examples/hono-live-counter`    | The live-view model with an in-memory invalidation hub.                   |
+| `examples/elysia-layout`        | Layouts, route-level data loading, named slots, and targeted patches.     |
+
+## Example catalog
+
+| Example                              | Shows                                                                                      | Run                                      |
+| ------------------------------------ | ------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `examples/hono-counter`              | Minimal Hono routes, TSX views, backend-owned count state, and `reply.patch(...)`.         | `pnpm run dev:hono-counter`              |
+| `examples/hono-live-counter`         | Count state synced across tabs with SSE and an in-memory invalidation hub.                 | `pnpm run dev:hono-live-counter`         |
+| `examples/hono-live-counter-redis`   | Redis pub/sub as a cross-process invalidation bus for live streams.                        | `pnpm run dev:hono-live-counter-redis`   |
+| `examples/hono-modal`                | Native `<dialog>` controlled by Datastar signals and a small browser bridge.               | `pnpm run dev:hono-modal`                |
+| `examples/hono-form-validation`      | Bound inputs, Datastar signal decoding, Zod validation, and signal patches.                | `pnpm run dev:hono-form-validation`      |
+| `examples/hono-custom-actions`       | Custom Datastar actions/plugins instead of long inline expressions.                        | `pnpm run dev:hono-custom-actions`       |
+| `examples/hono-linear-clone`         | Authenticated Linear-style issue tracking with live views and signal-backed forms.         | `pnpm run dev:hono-linear-clone`         |
+| `examples/worker-hono-counter`       | Minimal Cloudflare Workers and Hono routes with page and patch responses.                  | `pnpm run dev:worker-hono-counter`       |
+| `examples/worker-hono-live-todos`    | Workers, Hono, D1 todos, and a Durable Object fan-out hub for live streams.                | `pnpm run dev:worker-hono-live-todos`    |
+| `examples/worker-do-hono-live-todos` | Durable Object-owned SQLite persistence and live fan-out.                                  | `pnpm run dev:worker-do-hono-live-todos` |
+| `examples/elysia-layout`             | Bun/Elysia app structure, shared shell, named slots, and targeted `#project-list` patches. | `pnpm run dev:elysia-layout`             |
+| `examples/deno-search-list`          | `Deno.serve(...)`, `@std/http` routing, search patches, and appended list items.           | `pnpm run dev:deno-search-list`          |
 
 ## Adding examples
 
 When adding a new example:
 
 - make it a standalone workspace package under `examples/*`;
-- keep runtime dependencies in that example's `package.json`, `deno.json`, or equivalent runtime config;
+- keep runtime dependencies in that example's package or runtime config;
 - document what the example demonstrates in its own README;
 - add root scripts for `dev:*` and checks when useful;
-- link it from this page and the package README.
+- link it from this catalog and the package README.
 
-Related: [HTML and JSX](html-and-jsx.md), [Actions and responses](actions-and-responses.md), [Testing](testing.md).
+Related: [Actions and responses](actions-and-responses.md), [Realtime](realtime.md), [Testing](testing.md).

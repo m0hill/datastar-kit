@@ -1,36 +1,33 @@
-# Datastar Kit documentation
+# Docs map
 
-This page is the map. Start with [Getting Started](index.md) for install and a quick counter, then use the sections below when you need the deeper version of a topic.
+Start with [Introduction](index.md) if you are new to Datastar Kit. After that, the docs are organized by how people usually adopt the SDK: understand the model, build one interaction, then add validation, realtime behavior, and production concerns.
 
-## Recommended reading order
+## Learn the model
 
-### 1. Concepts
+1. [Programming model](concepts/programming-model.md) explains the server-driven loop: pages, actions, commands, queries, patches, signals, and live views.
+2. [Runtime boundaries](concepts/runtime-boundaries.md) defines what Datastar Kit owns and what stays in your app or framework.
 
-1. [Programming model](concepts/programming-model.md) — the server-driven shape: pages, commands, queries, live views, and invalidations.
-2. [Runtime boundaries](concepts/runtime-boundaries.md) — what Datastar Kit owns, and what stays in your app.
+## Build UI
 
-### 2. Core guides
+3. [HTML and JSX](guides/html-and-jsx.md) covers server-rendered views, layouts, data loading, escaping, and the low-level HTML helpers.
+4. [Signals](guides/signals.md) covers browser-side signal state, typed refs, request decoding, and signal patches.
+5. [Actions and responses](guides/actions-and-responses.md) shows how browser events become HTTP handlers and how to choose the right `reply.*` helper.
+6. [Element patches](guides/patch-elements.md) explains stable IDs, selectors, patch modes, removal, and view transitions.
 
-3. [HTML and JSX](guides/html-and-jsx.md) — views, layouts, named slots, data loading, escaping, and low-level HTML helpers.
-4. [Signals](guides/signals.md) — authoring, reading, and patching browser signal state.
-5. [Actions and responses](guides/actions-and-responses.md) — command flow, status semantics, response helpers, and request bodies.
-6. [Patch elements](guides/patch-elements.md) — stable IDs, selectors, and DOM patch modes.
-7. [Validation and errors](guides/validation-and-errors.md) — app-owned schema validation and recoverable UI feedback.
-8. [Realtime streams](guides/realtime.md) — app-owned live views with `reply.stream(...)`.
+## Add app behavior
 
-### 3. Operations
+7. [Validation](guides/validation-and-errors.md) shows the app-owned decode-then-validate pattern and user-facing error patches.
+8. [Realtime](guides/realtime.md) explains current-state live views with `reply.stream(...)` and app-owned invalidation sources.
 
-9. [Security](guides/security.md) — auth, CSRF, ownership checks, and safe navigation boundaries.
-10. [Deployment](guides/deployment.md) — runtime adapters, Datastar assets, SSE proxy settings, and smoke tests.
-11. [Testing](guides/testing.md) — request/response tests, protocol tests, and browser-runtime tests.
-12. [Examples](guides/examples.md) — workspace examples and what they demonstrate.
-13. [Agents](guides/agent.md) — how to vendor Datastar Kit source as read-only reference material for coding agents.
+## Operate it
 
-### 4. Reference
+9. [Security](guides/security.md) covers trust boundaries, auth, CSRF, ownership checks, and safe navigation.
+10. [Deployment](guides/deployment.md) covers runtime adapters, Datastar assets, SSE proxy settings, and production checks.
+11. [Testing](guides/testing.md) covers request/response tests and protocol-level verification.
 
-- [API reference](reference/api.md) — public modules, root exports, and explicit subpaths.
-- [Architecture](reference/architecture.md) — source layout and contributor-oriented design notes.
+## Reference
 
-## Documentation style
-
-The user-facing path is: Getting Started -> Concepts -> Core guides -> Operations -> Reference. Design details and contributor-facing notes should live under `reference/`, not in the first-run learning path.
+- [API reference](reference/api.md) lists the public modules and the main helpers in each namespace.
+- [Examples](guides/examples.md) maps runnable workspace examples to the concepts they demonstrate.
+- [Architecture](reference/architecture.md) describes source layout and contributor-facing design constraints.
+- [Agent setup](guides/agent.md) shows how to vendor the repository as read-only reference material for coding agents.

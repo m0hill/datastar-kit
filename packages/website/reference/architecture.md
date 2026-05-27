@@ -1,41 +1,47 @@
 # Architecture
 
-Datastar Kit is a Web Standards Datastar SDK for server-driven TypeScript UI. This page is contributor-oriented: it explains the source layout and the boundaries that keep the package small.
+This page is for contributors and maintainers. It explains the source layout and the boundaries that keep Datastar Kit small.
 
-## Architecture stance
+## Design constraints
 
-The SDK makes Datastar pleasant from fetch-compatible handlers. Public APIs stay close to standard primitives such as `Request`, `Response`, `Headers`, `URL`, and `ReadableStream`.
-
-## Foundational decisions
-
-- **Backend state is the source of truth.** Browser signals are sparse request inputs and UI affordances.
-- **Datastar is the browser runtime and patch protocol.** Datastar Kit generates Datastar-compatible attributes, direct responses, and SSE events; it does not replace Datastar.
-- **Fetch-compatible composition.** The helpers fit inside Hono, custom fetch handlers, Workers, Bun, Deno, Node, and similar hosts.
-- **HTML is generated on the server.** View code uses the automatic JSX runtime over a tiny HTML node model; external renderer output can cross the trust boundary with `unsafeHtml(renderedHtml)`.
-- **SSE patches are the default response style.** Direct responses remain available for integrations that specifically need Datastar direct-response handling.
-- **Signals are mostly ephemeral.** Use them for form/input state, validation feedback, loading flags, and request parameters.
+- Public APIs stay close to Web Standard primitives: `Request`, `Response`, `Headers`, `URL`, and `ReadableStream`.
+- Datastar remains the browser runtime and patch protocol. The SDK generates Datastar-compatible attributes, actions, SSE events, and direct responses.
+- Server-rendered HTML is the primary UI payload. TSX compiles to Datastar Kit's small HTML node model.
+- SSE patches are the default Datastar response style. Direct responses exist for integrations that need them.
+- Signals are browser-side input and feedback, not the durable state model for an application.
+- Framework concerns stay outside the package.
 
 ## Source layers
 
-### Protocol layer
+### Datastar protocol
 
 - `src/sse.ts` encodes low-level Datastar SSE events.
-- `src/event.ts` renders HTML nodes into Datastar SSE event chunks for streams.
-- `src/reply.ts` turns events and rendered HTML into native `Response` objects.
+- `src/event.ts` renders HTML nodes into Datastar SSE chunks for streams.
+- `src/reply.ts` turns rendered HTML and SSE chunks into native `Response` objects.
+- `src/navigation.ts` builds safe navigation scripts used by navigation helpers.
 
-### View layer
+### HTML and JSX
 
-- `src/html.ts` exposes `h`, `mergeProps`, `renderToString`, and `unsafeHtml` as the low-level node model.
-- `src/jsx-runtime.ts` and `src/jsx-dev-runtime.ts` provide the automatic JSX runtime for `jsxImportSource: "datastar-kit"`.
-- `src/jsx.ts` is the internal JSX node adapter used by the automatic runtime.
-- `src/ds/index.ts` is the public `ds` barrel; sibling files in `src/ds/` group expressions, actions, attributes, modifiers, and signal references by concern.
+- `src/html.ts` defines `h`, `mergeProps`, `renderToString`, and `unsafeHtml`.
+- `src/jsx-runtime.ts` and `src/jsx-dev-runtime.ts` provide automatic JSX runtime entrypoints.
+- `src/jsx.ts` adapts JSX calls into the HTML node model.
 
-### Request boundary layer
+### Datastar authoring
 
-- `src/read.ts` decodes JSON object Datastar signal payloads from an explicit `Request`.
-- Generic query params, forms, multipart bodies, JSON APIs, and auth/session inputs use the host platform's Web APIs or framework utilities.
+- `src/ds/index.ts` is the public `ds` barrel.
+- `src/ds/actions.ts` builds Datastar action expressions.
+- `src/ds/attributes.ts` builds Datastar attributes.
+- `src/ds/expression.ts` serializes Datastar expressions.
+- `src/ds/modifiers.ts` serializes attribute modifiers.
+- `src/ds/signals.ts` defines signal refs and name validation.
+- `src/ds/state.ts` builds typed helpers around grouped signal defaults.
 
-## Public module boundary
+### Request boundary
+
+- `src/read.ts` decodes Datastar signal payloads from native `Request` values.
+- Generic query params, form posts, multipart uploads, JSON APIs, auth, and request context remain platform or framework concerns.
+
+## Public boundary
 
 Root exports:
 
@@ -48,6 +54,7 @@ Root exports:
 Explicit subpaths:
 
 - `datastar-kit/sse`
-- `datastar-kit/jsx-runtime` / `datastar-kit/jsx-dev-runtime`
+- `datastar-kit/jsx-runtime`
+- `datastar-kit/jsx-dev-runtime`
 
 Related: [API reference](api.md), [Runtime boundaries](../concepts/runtime-boundaries.md).

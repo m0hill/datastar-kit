@@ -1,12 +1,12 @@
-# Coding Agents
+# Agent setup
 
-Coding agents write better Datastar Kit code when they can inspect real source, tests, and examples instead of guessing from package types or short documentation snippets.
+Coding agents produce better Datastar Kit code when they can inspect the SDK source, tests, examples, and docs. Package types help, but they do not show the intended application patterns.
 
-The best setup is to vendor the Datastar Kit repository into your application as read-only reference material, then tell your agent when to inspect it.
+The recommended setup is to vendor this repository into your application as read-only reference material and tell the agent when to inspect it.
 
-## Vendor the source
+## Vendor the repository
 
-Add the repository under a dedicated `repos/` directory:
+Add Datastar Kit under a dedicated `repos/` directory:
 
 ```sh
 git subtree add \
@@ -16,7 +16,7 @@ git subtree add \
   --squash
 ```
 
-Update it when you want the agent to see newer patterns:
+Update it when you want newer examples and tests:
 
 ```sh
 git subtree pull \
@@ -26,9 +26,9 @@ git subtree pull \
   --squash
 ```
 
-The `--squash` flag keeps the vendored repository from importing its full commit history into your project.
+`--squash` avoids importing the repository's full commit history into your project.
 
-## Configure the agent
+## Add agent instructions
 
 Add a short note to `AGENTS.md`, `CLAUDE.md`, or the instruction file your agent reads:
 
@@ -41,16 +41,16 @@ This project vendors external repositories under @repos/.
 - Inspect its source, tests, examples, and docs for idiomatic `ds`, `read`, `reply`, JSX, signals, patches, streams, and Request/Response patterns.
 - Prefer patterns from the vendored source over generated guesses or web search.
 - Do not edit files under @repos/ unless explicitly asked.
-- Do not import from @repos/; application code should import from normal package dependencies.
+- Do not import from @repos/; application code should import from package dependencies.
 ```
 
-For a focused task, ask the agent to read the relevant area first:
+For focused work, ask the agent to inspect the relevant area first:
 
 ```md
 Before changing this Datastar Kit flow, inspect @repos/datastar-kit/packages/datastar-kit/test and @repos/datastar-kit/examples for matching patterns. Use the vendored repository as reference only.
 ```
 
-## Keep editor noise down
+## Reduce editor noise
 
 If your editor starts suggesting imports from `repos/`, exclude that directory from search, file watching, and auto-imports. In VS Code:
 
@@ -70,4 +70,4 @@ If your editor starts suggesting imports from `repos/`, exclude that directory f
 }
 ```
 
-Next: [Examples](examples.md). Related: [Testing](testing.md), [Architecture](../reference/architecture.md).
+Related: [Examples](examples.md), [Architecture](../reference/architecture.md).

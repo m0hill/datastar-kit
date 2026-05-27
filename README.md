@@ -1,10 +1,10 @@
 # Datastar Kit
 
-Datastar Kit is a small TypeScript companion SDK for [Datastar](https://data-star.dev/).
+Datastar Kit is a small TypeScript SDK for building server-driven UI with [Datastar](https://data-star.dev/).
 
-It provides typed APIs for the Datastar parts of a server-driven app: authoring attributes/actions/signals in TSX, reading signal payloads from `Request`, rendering server HTML, and returning native `Response` objects that Datastar can patch into the page.
+It provides the Datastar-shaped pieces of an application: typed attributes and actions, typed signal refs, server-rendered HTML/TSX, Datastar signal decoding from `Request`, and native `Response` helpers for pages, patches, streams, navigation, and no-content commands.
 
-It is not a framework. Bring your own router, auth, database, validation, and runtime. Use it with Hono, Elysia, Bun, Deno, Workers, or any app layer that can handle a `Request` and return a `Response`.
+It is not a framework. Bring your router, auth, database, validation, sessions, and runtime. Use it with Hono, Elysia, Bun, Deno, Cloudflare Workers, Node fetch adapters, or any app layer that can handle a `Request` and return a `Response`.
 
 [Documentation](https://datastar-kit.mohil.dev) · [Examples](examples) · [Datastar](https://data-star.dev/)
 
@@ -32,6 +32,7 @@ export function handle(request: Request): Response {
 
   if (request.method === "GET" && url.pathname === "/") {
     return reply.page(<Counter />, {
+      title: "Counter",
       head: <script type="module" src={DATASTAR_RUNTIME} />
     })
   }
@@ -53,7 +54,7 @@ The stable `id` is the patch contract. The server returns new HTML for `#count`;
 npm i datastar-kit
 ```
 
-Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; use a pinned runtime URL or a self-hosted copy compatible with that version.
+Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; use a pinned runtime URL or a self-hosted compatible copy.
 
 ```html
 <script
@@ -73,7 +74,7 @@ For TSX views, set `jsxImportSource`:
 }
 ```
 
-See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for setup, guides, API notes, and examples.
+See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for the programming model, guides, API reference, and runnable examples.
 
 ## Repository
 

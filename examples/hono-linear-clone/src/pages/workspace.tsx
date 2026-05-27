@@ -332,11 +332,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
     </div>
     <div class="flex justify-end gap-2 pt-4 border-t border-border">
-      <button
-        type="button"
-        class="btn"
-        {...ds.on("click", ds.expr`${state.$.modalOpen} = false`)}
-      >
+      <button type="button" class="btn" {...ds.on("click", ds.expr`${state.$.modalOpen} = false`)}>
         Cancel
       </button>
       <button type="submit" class="btn-primary">

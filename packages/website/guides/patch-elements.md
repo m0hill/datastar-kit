@@ -1,126 +1,100 @@
-# Patch elements
+# Element patches
 
-Element patches are the core Datastar UI update. A handler renders HTML, Datastar Kit frames it as a `datastar-patch-elements` SSE event, and the browser runtime applies that HTML to the current document.
+Element patches are the primary UI update in Datastar Kit. A handler renders HTML, Datastar Kit frames it as a `datastar-patch-elements` SSE event, and Datastar applies it to the current document.
 
-Most patches should use the default `outer` mode with stable top-level `id` attributes. Reach for other modes when you are targeting a container, inserting siblings, appending rows, or removing elements.
-
-## Patch flow
-
-1. A Datastar attribute runs an action such as `@post('/save')`.
-2. The handler reads inputs, changes backend state, and renders HTML.
-3. `reply.patch(...)` frames that HTML as a `datastar-patch-elements` event.
-4. Datastar finds the target element and applies the selected patch mode.
-
-For a default `outer` patch, send the new element directly:
+Most patches use the default `outer` mode with a stable top-level `id`.
 
 ```tsx
-reply.patch(
-  <section id="target" class="panel is-live">
-    <h2>Server view</h2>
-    <p>Fresh HTML from the handler.</p>
-  </section>
+const CartSummary = (props: { cart: Cart }) => (
+  <aside id="cart-summary">
+    <strong>{props.cart.total}</strong>
+  </aside>
 )
+
+return reply.patch(<CartSummary cart={cart} />)
 ```
 
-Datastar Kit sends an event like this:
+Datastar matches the returned `#cart-summary` element to the existing one and morphs it.
 
-```text
-event: datastar-patch-elements
-data: elements <section id="target" class="panel is-live">
-data: elements   <h2>Server view</h2>
-data: elements   <p>Fresh HTML from the handler.</p>
-data: elements </section>
-```
+## The three decisions
 
-The browser matches `#target` and morphs the existing element:
+Every patch answers three questions:
 
-```diff
-  <main id="app">
-    <nav id="filters">...</nav>
--   <section id="target" class="panel">
--     <h2>Current view</h2>
--     <p>Rendered on page load.</p>
-+   <section id="target" class="panel is-live">
-+     <h2>Server view</h2>
-+     <p>Fresh HTML from the handler.</p>
-    </section>
-    <footer id="status">Idle</footer>
-  </main>
-```
+| Question             | Meaning                                          |
+| -------------------- | ------------------------------------------------ |
+| What is the target?  | The browser element Datastar operates on.        |
+| What is the payload? | The server-rendered HTML sent in the event.      |
+| What is the mode?    | The DOM operation connecting target and payload. |
 
-## Targets, payloads, and modes
-
-A patch has three pieces:
-
-- **Target** — the browser element Datastar will operate on.
-- **Payload** — the server-rendered HTML sent in the patch event.
-- **Mode** — the DOM operation that connects target and payload.
-
-For ordinary component replacement, let the payload choose the target by its top-level `id`:
+For ordinary replacement, the payload chooses the target by its top-level `id`:
 
 ```tsx
-const Count = () => <output id="count">{count}</output>
-
-return reply.patch(<Count />)
+return reply.patch(<TodoItem todo={todo} />)
 ```
 
-Use `selector` when the patch target is not the returned element itself:
+Use `selector` when the target is not the returned element itself:
 
 ```tsx
-reply.patch(<ModalBody />, { selector: "#modal-slot", mode: "inner" })
-reply.patch(<Toast id="saved" />, { selector: "#notifications", mode: "prepend" })
-reply.patch("", { selector: "#empty-state", mode: "remove" })
-```
-
-| Mode      | Target                                         | Payload effect                                                                      |
-| --------- | ---------------------------------------------- | ----------------------------------------------------------------------------------- |
-| `outer`   | Payload top-level `id`, or explicit `selector` | Morphs the target element itself. This is the default.                              |
-| `inner`   | `selector`                                     | Morphs only the target's children. The target tag and attributes remain.            |
-| `replace` | Payload top-level `id`, or explicit `selector` | Replaces the selected element without morphing.                                     |
-| `prepend` | `selector`                                     | Inserts payload as the first child of the target.                                   |
-| `append`  | `selector`                                     | Inserts payload as the last child of the target.                                    |
-| `before`  | `selector`                                     | Inserts payload immediately before the target.                                      |
-| `after`   | `selector`                                     | Inserts payload immediately after the target.                                       |
-| `remove`  | `selector`                                     | Removes the target. Datastar Kit does not send an `elements` payload for this mode. |
-
-## View transitions
-
-Pass `useViewTransition: true` when a patch should opt into Datastar's native browser View Transition handling:
-
-```tsx
-reply.patch(<Card id="featured-card" />, { useViewTransition: true })
-reply.patch(<Toast id="saved" />, {
-  selector: "#notifications",
-  mode: "prepend",
-  useViewTransition: true
+return reply.patch(<TodoItem todo={todo} />, {
+  selector: "#todos",
+  mode: "append"
 })
 ```
 
-Datastar Kit forwards this as Datastar protocol data (`useViewTransition true` for SSE patches, or the `datastar-use-view-transition` header for direct HTML responses). It only affects browsers where Datastar can use the View Transition API, so patches should still work without it.
+## Patch modes
 
-The option is available on `reply.patch(...)`, `event.patch(...)`, `reply.directHtml(...)`, and fetch action `responseOverrides`.
+| Mode      | Target                                         | Effect                                                 |
+| --------- | ---------------------------------------------- | ------------------------------------------------------ |
+| `outer`   | Payload top-level `id`, or explicit `selector` | Morphs the target element itself. This is the default. |
+| `inner`   | `selector`                                     | Morphs only the target's children.                     |
+| `replace` | Payload top-level `id`, or explicit `selector` | Replaces the target without morphing.                  |
+| `prepend` | `selector`                                     | Inserts payload as the first child of the target.      |
+| `append`  | `selector`                                     | Inserts payload as the last child of the target.       |
+| `before`  | `selector`                                     | Inserts payload immediately before the target.         |
+| `after`   | `selector`                                     | Inserts payload immediately after the target.          |
+| `remove`  | `selector`                                     | Removes the target. No element payload is sent.        |
 
-## Mode examples
+## `outer`: replace a component boundary
 
-Use `inner` when a stable shell should keep its outer element:
+Use the default for stable component regions:
 
 ```tsx
-reply.patch(<PanelBody />, { selector: "#target", mode: "inner" })
+const Count = (props: { value: number }) => <output id="count">{props.value}</output>
+
+return reply.patch(<Count value={count} />)
+```
+
+This is the happy path. If a region can be refreshed from backend state, give the initial HTML and every later patch the same durable `id`.
+
+Do not generate a fresh `id` on each render. A changing `id` turns a patch boundary into a new unrelated element.
+
+## `inner`: refresh a container
+
+Use `inner` when the outer element carries state, layout, or attributes that should stay in place:
+
+```tsx
+return reply.patch(<ProjectList projects={projects} />, {
+  selector: "#project-panel",
+  mode: "inner"
+})
 ```
 
 ```diff
-  <section id="target" class="panel">
--   <h2>Current view</h2>
--   <p>Rendered on page load.</p>
-+   <h2>Server view</h2>
-+   <p>Only the children are patched.</p>
+  <section id="project-panel" class="panel">
+-   <p>Loading...</p>
++   <ul id="projects">...</ul>
   </section>
 ```
 
-Use `append` or `prepend` when the payload belongs inside a container:
+## `append` and `prepend`: add children
+
+Use insertion modes when the payload belongs inside a container:
 
 ```tsx
-reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
+return reply.patch(<TodoItem todo={todo} />, {
+  selector: "#todos",
+  mode: "append"
+})
 ```
 
 ```diff
@@ -130,10 +104,18 @@ reply.patch(<TodoItem todo={todo} />, { selector: "#todos", mode: "append" })
   </ul>
 ```
 
-Use `before` or `after` when the payload belongs next to a known element:
+Repeated items should have stable item IDs when they may be patched individually:
 
 ```tsx
-reply.patch(
+const TodoItem = (props: { todo: Todo }) => <li id={`todo-${props.todo.id}`}>{props.todo.title}</li>
+```
+
+## `before` and `after`: insert siblings
+
+Use sibling modes when the payload belongs next to a known element:
+
+```tsx
+return reply.patch(
   <p id="email-error" class="error">
     Enter a valid email.
   </p>,
@@ -147,11 +129,18 @@ reply.patch(
 + <p id="email-error" class="error">Enter a valid email.</p>
 ```
 
-Use `remove` when the selected element should leave the document:
+## `remove`: delete an element
+
+Use `remove` with a selector and an empty payload:
 
 ```tsx
-reply.patch("", { selector: "#toast-saved", mode: "remove" })
+return reply.patch("", {
+  selector: "#toast-saved",
+  mode: "remove"
+})
 ```
+
+Datastar Kit sends a patch event without `elements` data:
 
 ```text
 event: datastar-patch-elements
@@ -159,31 +148,29 @@ data: selector #toast-saved
 data: mode remove
 ```
 
-## Stable IDs
+## View transitions
 
-Stable IDs are the patch contract. If a region can be refreshed from current backend state, give the top-level returned element a durable `id` and use that same `id` on the initial page and every later patch.
+Pass `useViewTransition: true` when Datastar should opt into the browser View Transition API:
 
 ```tsx
-const CartSummary = (props: { cart: Cart }) => (
-  <aside id="cart-summary">
-    <strong>{props.cart.total}</strong>
-  </aside>
-)
-
-return reply.patch(<CartSummary cart={cart} />)
+return reply.patch(<article id="featured-card">Featured card</article>, {
+  useViewTransition: true
+})
 ```
 
-Do not generate a fresh id on every render. A changing id turns a predictable patch boundary into a new unrelated element.
+The same option is available on `reply.patch(...)`, `event.patch(...)`, `reply.directHtml(...)`, and fetch action `responseOverrides`. Patches should still work in browsers where view transitions are unavailable.
 
-## Direct responses
+## Direct HTML responses
 
-`reply.patch(...)` is the normal path because it sends an SSE patch event. `reply.directHtml(...)` can express the same patch options through Datastar direct-response headers, but it should stay an integration escape hatch:
+`reply.patch(...)` is the normal path because it sends an SSE patch event. `reply.directHtml(...)` expresses similar options through Datastar direct-response headers:
 
 ```tsx
-reply.directHtml(<TodoItem todo={todo} />, {
+return reply.directHtml(<TodoItem todo={todo} />, {
   selector: "#todos",
   mode: "append"
 })
 ```
 
-Next: [Validation and errors](validation-and-errors.md). Related: [Actions and responses](actions-and-responses.md), [HTML and JSX](html-and-jsx.md), [Realtime streams](realtime.md).
+Use direct HTML responses only when an integration specifically needs Datastar direct-response behavior.
+
+Next: [Validation](validation-and-errors.md).

@@ -1,56 +1,126 @@
 # Signals
 
-Datastar signals are browser-side values used as sparse request input or local UI feedback. They are useful, but they are not your application database.
+Datastar signals are browser-side values. Use them for sparse input and local UI feedback: form fields, filters, loading state, temporary messages, and validation text.
 
-## Authoring signals
+Do not treat signals as durable application state. Decode and validate them at the request boundary, then read trusted data from backend resources when authority matters.
 
-For a group of related browser signals, use `ds.state(...)` so defaults, typed refs, reset payloads, and partial patches come from one object:
+## Start with `ds.state`
+
+For a related group of signals, define the defaults once:
 
 ```tsx
-import { ds } from 'datastar-kit'
+import { ds } from "datastar-kit"
 
 const signup = ds.state({
-  name: '',
-  email: '',
-  errors: { name: '', email: '' }
+  name: "",
+  email: "",
+  errors: {
+    email: ""
+  }
 })
-
-<main {...signup.attrs()}>
-  <input {...ds.bind(signup.$.name)} />
-  <small {...ds.text(signup.$.errors.email)} />
-</main>
 ```
 
-`state.attrs()` renders `data-signals` with `ifMissing: true` by default. Use `state.patch(...)` for type-checked signal patches and `state.reset()` when returning the defaults:
+`ds.state(...)` gives you four useful things:
+
+| API                        | Use                                                      |
+| -------------------------- | -------------------------------------------------------- |
+| `signup.attrs()`           | Initial `data-signals` attributes for the page.          |
+| `signup.$` / `signup.refs` | Typed nested signal refs for attributes and expressions. |
+| `signup.patch(...)`        | Type-checked partial signal patches.                     |
+| `signup.reset(...)`        | Defaults, optionally merged with overrides.              |
+
+Use those refs in Datastar attributes:
+
+```tsx
+const SignupForm = () => (
+  <form {...signup.attrs()} {...ds.on("submit", ds.post("/signup"), { prevent: true })}>
+    <label>
+      Name
+      <input name="name" {...ds.bind(signup.$.name)} />
+    </label>
+
+    <label>
+      Email
+      <input name="email" {...ds.bind(signup.$.email)} />
+    </label>
+
+    <small {...ds.text(signup.$.errors.email)} />
+  </form>
+)
+```
+
+`state.attrs()` renders `data-signals` with `ifMissing: true` by default, so reconnects and partial page updates do not overwrite existing browser input unless you opt into that behavior.
+
+## Patch signal state
+
+Return signal patches for small browser-side state changes:
 
 ```ts
 return reply.signals(signup.patch({ errors: { email: "Enter a valid email" } }))
+```
+
+Reset a form back to defaults:
+
+```ts
 return reply.signals(signup.reset())
 ```
 
-Use `ds.signal(...)` with `ds.dataSignals(...)` / `ds.dataSignal(...)` directly when you only need one or two standalone signal refs.
+Signal patches are best for messages, validation, toggles, and UI flags. If visible HTML depends on backend state, render HTML and use `reply.patch(...)`.
 
-### Signal name casing
+## Standalone signals
 
-Datastar Kit signal helper arguments are Datastar signal names, not raw HTML attribute suffixes. CamelCase names such as `projectName` stay camelCase in state, patches, and request payloads:
+Use `ds.signal(...)` when you only need one signal ref or when the signal name is not part of a grouped state helper:
+
+```tsx
+const query = ds.signal<string>("query")
+
+<input type="search" {...ds.bind(query)} />
+```
+
+Use `ds.local(...)` for underscore-prefixed local/private signal refs:
+
+```tsx
+const saving = ds.local<boolean>("saving")
+
+<button {...ds.dataAttr("disabled", saving)}>Save</button>
+```
+
+Private names are a convention, not a security boundary. The browser still controls browser state.
+
+## Expressions
+
+For anything beyond a bare signal ref, use `ds.expr` so signal refs and JavaScript literals are serialized consistently:
+
+```tsx
+const count = ds.signal<number>("count")
+
+<button {...ds.dataAttr("disabled", ds.expr`${count} >= ${10}`)}>+</button>
+```
+
+## Read signal payloads
+
+Use `read.signals(request)` for Datastar action requests that carry JSON signal state:
+
+```ts
+import { read } from "datastar-kit"
+
+const signals = await read.signals(request)
+const input = FormSchema.parse(signals)
+```
+
+Datastar Kit decodes the transport and verifies that the payload is a JSON object signal tree. Your application still owns schema validation and domain validation.
+
+`GET` and `DELETE` actions read the `datastar` query parameter. Other methods read the request body as JSON. For ordinary HTML forms, multipart uploads, and non-Datastar APIs, use platform or framework readers instead.
+
+## Signal names
+
+Pass Datastar signal names to helpers, not raw HTML attribute suffixes:
 
 ```tsx
 <input {...ds.bind("projectName")} />
 ```
 
-Datastar Kit renders case-preserving Datastar forms for signal helpers because HTML attribute names are case-insensitive. For `data-bind`, the helper uses Datastar's value form:
-
-```html
-<input data-bind="projectName" />
-```
-
-For singular signal-definition helpers such as `ds.dataSignal("projectName", "")`, Datastar Kit uses DOM-safe keyed attributes when the signal name can round-trip through Datastar's default camel casing:
-
-```html
-<div data-signals:project-name='""'></div>
-```
-
-Those singular helpers stay composable on one element. For grouped initialization, prefer the plural helpers:
+Datastar Kit renders case-preserving forms where needed because HTML attribute names are case-insensitive. Grouped initialization is usually simplest:
 
 ```tsx
 <div {...ds.dataSignals({ projectName: "", projectKey: "" })} />
@@ -62,41 +132,6 @@ If you write raw keyed Datastar attributes by hand, use Datastar's DOM-safe keye
 <input data-bind:project-name />
 ```
 
-Both forms bind the Datastar signal `$projectName`. Use Datastar's `__case` modifier only when you intentionally need keyed attribute casing behavior.
+Both bind the Datastar signal `$projectName`.
 
-For client-side Datastar expressions that need more than a bare signal, prefer the `ds.expr` tagged template so signal refs and JavaScript literals are quoted consistently:
-
-```tsx
-const count = ds.signal<number>('count')
-
-<button {...ds.dataAttr('disabled', ds.expr`${count} >= ${10}`)}>+</button>
-```
-
-Use private/local names such as `_validation.email` for UI-only feedback that should never be treated as durable state.
-
-## Reading signals
-
-Use `read.signals(request)` at Datastar action boundaries when you want parsed JSON object signal state.
-
-```ts
-const signals = await read.signals(request)
-const input = FormSchema.parse(signals)
-```
-
-For user input, validate the decoded state with the schema library your app already uses. Datastar Kit owns Datastar transport decoding; your app owns validation and validator-specific error handling.
-
-`GET` and `DELETE` actions read the `datastar` query parameter. Other methods read the request body as JSON.
-
-## Patching signals
-
-Use `reply.signals(...)` for SSE signal patches or `reply.directSignals(...)` as an explicit direct-response escape hatch. Both helpers accept signal-state objects:
-
-```ts
-return reply.signals({ saved: true })
-```
-
-Datastar's wire protocol carries serialized patch source, but Datastar Kit keeps that raw string form in `datastar-kit/sse`. Use `event.signals(...)` and `reply.signals(...)` with objects such as `{ message: 'Saved' }`, not pre-serialized JSON strings.
-
-Signal patches are best for UI flags, validation messages, and small browser-side state changes. If the visible HTML depends on backend state, render that HTML on the server and patch elements instead.
-
-Next: [Actions and responses](actions-and-responses.md). Related: [Validation and errors](validation-and-errors.md), [Security](security.md).
+Next: [Actions and responses](actions-and-responses.md).

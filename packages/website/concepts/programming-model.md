@@ -1,55 +1,74 @@
 # Programming model
 
-Datastar Kit works best when the server owns the application truth and the browser stays light. Datastar gives the browser a small runtime for events, requests, signals, and DOM/signal patches; Datastar Kit gives your TypeScript handlers a pleasant way to speak that protocol.
+Datastar Kit is built around one idea: the server can remain the source of truth for interactive UI.
 
-Keep the model simple:
+Instead of moving application state and rendering logic into a large browser app, you render HTML on the server, let Datastar send small requests from browser events, and return patches that update the current document. The result still feels interactive, but the important decisions stay close to your database, session, authorization, and domain code.
 
-- backend resources are authoritative;
-- browser signals are sparse input and local UI feedback;
-- server-rendered HTML is the usual patch payload;
-- SSE is the normal patch transport;
-- client-side code should stay small enough to understand in one sitting.
+## The loop
 
-## CQRS-shaped flow
+Most interactions follow the same loop:
 
-Most applications end up with a CQRS-shaped rhythm:
+1. A page renders HTML from backend state.
+2. Datastar attributes describe browser behavior, such as `data-on:click="@post('/todos/add')"`.
+3. The browser sends a Datastar action request.
+4. Your handler reads input, checks policy, and reads or mutates backend resources.
+5. The handler returns `reply.done()`, `reply.patch(...)`, `reply.signals(...)`, or `reply.stream(...)`.
+6. Datastar applies the response in the browser.
 
-- **Pages** render the first view from current backend state.
-- **Commands** receive user intent, validate input, mutate backend resources, and return `204` or local feedback patches.
-- **Queries and live views** read current backend state and patch the UI.
-- **Invalidations** say "something changed"; live views can reload current state when they receive one.
+Datastar Kit exists to make steps 2, 4, and 5 pleasant in TypeScript. It does not replace the rest of your application stack.
 
-The core invariant is:
+## The four shapes
 
-> A client can recover by reconnecting and rendering current backend state.
+Think in these four handler shapes before reaching for individual APIs:
 
-## Request flow
+| Shape     | What it does                                       | Typical response                  |
+| --------- | -------------------------------------------------- | --------------------------------- |
+| Page      | Renders the first document or a route-level page.  | `reply.page(...)`                 |
+| Command   | Accepts user intent and may mutate backend state.  | `reply.done()` or a focused patch |
+| Query     | Reads current backend state for a region.          | `reply.patch(...)`                |
+| Live view | Keeps a region aligned with current backend state. | `reply.stream(...)`               |
 
-1. A page renders initial HTML from backend state or renders a shell that opens a query/live stream.
-2. A browser event invokes a Datastar action URL such as `@post('/todos/add')`.
-3. A command decodes signals/form/query input at the request boundary, optionally validates it, mutates backend state, and publishes an app-owned invalidation if a current-state view should rerender.
-4. The command returns `reply.done()` or a patch response.
-5. A query/live recipe renders current backend state and returns a Datastar element patch.
+Commands should be small and explicit. Queries and live views should render from current backend state, not from assumptions about the browser's last known state.
 
-## Commands
+## Signals are input, not authority
 
-For command handlers:
+Datastar signals are browser-side values. They are useful for form fields, filters, loading flags, and local validation feedback. Treat them like any other user input:
 
-- Decode Datastar signal input with `read.signals(request)`; validate the decoded state with app-owned schema code when the handler needs schema guarantees.
-- Use Web APIs or your framework directly for ordinary query params, form posts, files, JSON APIs, and framework-specific context.
-- Check auth, ownership, CSRF, and rate limits before mutating.
-- Return `reply.done()` by default when no immediate UI feedback is needed.
-- Return `200` patches for recoverable validation or domain errors that the user should see in the current view.
+- decode them with `read.signals(request)`;
+- validate them with your schema library when shape matters;
+- use them to decide what the user requested;
+- read trusted values from backend resources before making durable changes.
 
-## Action URLs and routing
+A signal can say "the user typed this title." It should not be the authority for "this issue belongs to this user" or "the current count is 42."
 
-Datastar Kit helps you generate action expressions such as `ds.post('/increment')` or `ds.get(ds.queryUrl('/search', { q }))`. Your framework still owns route registration.
+## Patches are the UI contract
 
-Suggested route names:
+An element patch sends server-rendered HTML back to Datastar. For the common case, the returned element has the same stable `id` as the element already on the page:
 
-- `POST /todos/add` — command;
-- `POST /todos/:id/toggle` — command;
-- `GET /todos/list` — query patch;
-- `GET /todos/live` — live stream recipe.
+```tsx
+const TodoCount = (props: { count: number }) => <output id="todo-count">{props.count}</output>
 
-Next: [Runtime boundaries](runtime-boundaries.md). Related: [Actions and responses](../guides/actions-and-responses.md), [Realtime streams](../guides/realtime.md).
+return reply.patch(<TodoCount count={count} />)
+```
+
+Use explicit selectors only when the target is a container, a sibling position, multiple matches, or an element to remove. The [element patches](../guides/patch-elements.md) guide covers each mode.
+
+## Reconnect safety
+
+For live views, use a current-state rule:
+
+> A client should recover by reconnecting and rendering the latest backend state.
+
+That rule keeps streams simple. An invalidation only means "something changed"; the live handler reloads current state and renders a fresh patch.
+
+## Route naming
+
+Clear route names make the model easier to maintain:
+
+- `GET /todos` renders the page.
+- `POST /todos/add` runs a command.
+- `POST /todos/:id/toggle` runs a command.
+- `GET /todos/list` returns a query patch.
+- `GET /todos/live` returns a live stream.
+
+Next: [Runtime boundaries](runtime-boundaries.md).
