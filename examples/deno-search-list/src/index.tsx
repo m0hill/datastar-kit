@@ -89,7 +89,8 @@ const routes: Route[] = [
                 />
                 <button
                   type="submit"
-                  class="rounded-lg bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700">
+                  class="rounded-lg bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700"
+                >
                   Add
                 </button>
               </form>
