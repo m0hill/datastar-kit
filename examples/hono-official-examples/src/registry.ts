@@ -11,6 +11,7 @@ import { dbmonExample } from "./examples/dbmon.js"
 import { deleteRowExample } from "./examples/delete-row.js"
 import { editRowExample } from "./examples/edit-row.js"
 import { eventBubblingExample } from "./examples/event-bubbling.js"
+import { fileUploadExample } from "./examples/file-upload.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -24,5 +25,6 @@ export const examples: readonly ExampleModule[] = [
   dbmonExample,
   deleteRowExample,
   editRowExample,
-  eventBubblingExample
+  eventBubblingExample,
+  fileUploadExample
 ]
