@@ -5,13 +5,13 @@ import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
 
 const app = new Hono()
-const modalOpen = ds.signal<boolean, "modalOpen">("modalOpen")
+const dialogState = ds.state({ modalOpen: false })
 
 app.use("/static/*", serveStatic({ root: fileURLToPath(new URL("../", import.meta.url)) }))
 
 app.get("/", () =>
   reply.page(
-    <main id="app" {...ds.dataSignals({ modalOpen: false }, { ifMissing: true })}>
+    <main id="app" {...dialogState.attrs()}>
       <h1>Custom Datastar actions</h1>
       <p>
         This example shows custom browser actions from <code>static/datastar-actions.js</code>. The
@@ -29,7 +29,7 @@ app.get("/", () =>
           <button
             type="button"
             class="primary"
-            {...ds.on("click", ds.action("setSignal", modalOpen.name, true))}
+            {...ds.on("click", ds.action("setSignal", dialogState.$.modalOpen.name, true))}
           >
             Open custom-action dialog
           </button>
@@ -60,9 +60,9 @@ app.get("/", () =>
       <dialog
         id="confirm-dialog"
         aria-labelledby="confirm-dialog-title"
-        {...ds.effect(ds.action("syncDialog", modalOpen))}
-        {...ds.on("click", ds.action("closeDialogOnBackdrop", modalOpen.name))}
-        {...ds.on("close", ds.action("setSignal", modalOpen.name, false))}
+        {...ds.effect(ds.action("syncDialog", dialogState.$.modalOpen))}
+        {...ds.on("click", ds.action("closeDialogOnBackdrop", dialogState.$.modalOpen.name))}
+        {...ds.on("close", ds.action("setSignal", dialogState.$.modalOpen.name, false))}
       >
         <section class="dialog-body">
           <h2 id="confirm-dialog-title">Run a server action?</h2>
@@ -74,8 +74,8 @@ app.get("/", () =>
             <button
               type="button"
               class="secondary"
-              data-focus-when={modalOpen.toDatastarExpression()}
-              {...ds.on("click", ds.action("setSignal", modalOpen.name, false))}
+              data-focus-when={dialogState.$.modalOpen.toDatastarExpression()}
+              {...ds.on("click", ds.action("setSignal", dialogState.$.modalOpen.name, false))}
             >
               Cancel
             </button>
@@ -98,7 +98,7 @@ app.get("/", () =>
 
 app.post("/confirm", () =>
   reply.stream([
-    event.signals({ modalOpen: false }),
+    event.signals(dialogState.reset()),
     event.patch(
       <output id="result" class="result">
         Confirmed at {new Date().toLocaleTimeString()}.
