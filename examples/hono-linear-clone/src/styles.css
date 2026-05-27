@@ -57,74 +57,32 @@ body {
   scrollbar-color: #262626 transparent;
 }
 
-button {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  border: 1px solid #262626;
-  background: #111111;
-  color: #a3a3a3;
-  padding: 8px 14px;
-  cursor: pointer;
-  border-radius: 10px;
-  transition:
-    background-color 0.12s ease,
-    border-color 0.12s ease,
-    box-shadow 0.12s ease,
-    color 0.12s ease,
-    transform 0.12s ease;
-  white-space: nowrap;
-  line-height: 1;
-}
-
-button:hover {
-  background: #1a1a1a;
-  color: #f6fff5;
-  border-color: #404040;
-  transform: translateY(-0.5px);
-  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.3);
-}
-
-button.primary {
-  background: #e5e5e5;
-  border-color: #e5e5e5;
-  color: #0a0a0a;
-  font-weight: 600;
-}
-
-button.primary:hover {
-  opacity: 0.92;
-  transform: translateY(-0.5px);
-  box-shadow:
-    0 4px 6px -1px rgb(0 0 0 / 0.3),
-    0 2px 4px -2px rgb(0 0 0 / 0.3);
-}
-
 button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-lg border border-border bg-surface px-3.5 py-2 text-[13px] font-medium leading-none text-fg-secondary outline-none transition-[background-color,border-color,color,box-shadow,transform];
+  @apply hover:-translate-y-px hover:border-border-strong hover:bg-surface-hover hover:text-fg hover:shadow-sm;
+  @apply focus-visible:ring-2 focus-visible:ring-border-strong disabled:pointer-events-none disabled:opacity-40;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center rounded-lg border border-accent bg-accent px-3.5 py-2 text-[13px] font-semibold leading-none text-accent-fg outline-none transition-[opacity,box-shadow,transform];
+  @apply hover:-translate-y-px hover:opacity-90 hover:shadow-md focus-visible:ring-2 focus-visible:ring-border-strong disabled:pointer-events-none disabled:opacity-40;
+}
+
+.field {
+  @apply w-full rounded-lg border border-border bg-surface-inset px-3 py-2 text-[13px] leading-5 text-fg outline-none transition-colors placeholder:text-fg-muted;
+  @apply focus:border-border-strong focus-visible:ring-2 focus-visible:ring-border-strong/50;
 }
 
 input,
 textarea,
 select {
   width: 100%;
-  background: #0d0d0d;
-  color: #f6fff5;
-  border: 1px solid #262626;
-  padding: 8px 12px;
   font-family: var(--font-ui);
-  font-size: 13px;
-  line-height: 1.5;
-  outline: none;
-  border-radius: 10px;
-  transition:
-    background-color 0.12s ease,
-    border-color 0.12s ease,
-    box-shadow 0.12s ease;
 }
 
 input::placeholder,
@@ -133,13 +91,6 @@ textarea::placeholder {
 }
 textarea {
   resize: vertical;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: #404040;
-  box-shadow: none;
 }
 
 select {
@@ -171,18 +122,4 @@ dialog::backdrop {
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-}
-
-.interactive-card {
-  background: #151515;
-  border: 1px solid #262626;
-  border-radius: 10px;
-  transition:
-    background-color 0.12s ease,
-    border-color 0.12s ease;
-}
-
-.interactive-card:hover {
-  background: #181818;
-  border-color: #404040;
 }

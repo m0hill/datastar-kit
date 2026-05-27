@@ -40,7 +40,7 @@ const SignupPage = () => (
         <label class="flex flex-col gap-1.5 section-label">
           Name
           <input
-            class="w-full text-sm placeholder:text-fg-muted/50"
+            class="field"
             autocomplete="name"
             placeholder="Your name"
             {...ds.bind(signupState.$.name)}
@@ -53,7 +53,7 @@ const SignupPage = () => (
         <label class="flex flex-col gap-1.5 section-label">
           Username
           <input
-            class="w-full text-sm placeholder:text-fg-muted/50"
+            class="field"
             autocomplete="username"
             placeholder="Choose a username"
             {...ds.bind(signupState.$.username)}
@@ -66,7 +66,7 @@ const SignupPage = () => (
         <label class="flex flex-col gap-1.5 section-label">
           Password
           <input
-            class="w-full text-sm placeholder:text-fg-muted/50"
+            class="field"
             type="password"
             autocomplete="new-password"
             placeholder="Create a password"
@@ -81,7 +81,7 @@ const SignupPage = () => (
           class="text-danger text-[13px] font-medium min-h-4"
           {...ds.text(signupState.$._validation.form)}
         ></small>
-        <button type="submit" class="primary mt-1 py-2.5">
+        <button type="submit" class="btn-primary mt-1 py-2.5">
           Initialize Instance
         </button>
       </form>

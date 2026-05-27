@@ -82,6 +82,7 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
         <label class="flex flex-col gap-1.5 section-label">
           Add a comment
           <textarea
+            class="field"
             rows={3}
             placeholder="Write a comment..."
             {...ds.bind(issueState.$.commentBody)}
@@ -91,7 +92,7 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
             {...ds.text(issueState.$._validation.commentBody)}
           ></small>
         </label>
-        <button type="submit" class="primary self-start">
+        <button type="submit" class="btn-primary self-start">
           Post comment
         </button>
       </form>
@@ -132,7 +133,7 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
         <label class="section-label">Status</label>
         <select
           name="status"
-          class="w-full border border-border hover:border-border-strong hover:bg-surface-hover px-2 py-1.5 bg-surface text-fg text-sm cursor-pointer transition-colors appearance-none"
+          class="field"
         >
           {issueStatuses.map((status) => (
             <option value={status.value} selected={props.issue.status === status.value}>
@@ -145,7 +146,7 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
         <label class="section-label">Priority</label>
         <select
           name="priority"
-          class="w-full border border-border hover:border-border-strong hover:bg-surface-hover px-2 py-1.5 bg-surface text-fg text-sm cursor-pointer transition-colors appearance-none"
+          class="field"
         >
           {issuePriorities.map((priority) => (
             <option value={priority.value} selected={props.issue.priority === priority.value}>

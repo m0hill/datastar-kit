@@ -72,7 +72,7 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
     id="sidebar"
     class="bg-surface border-r border-border text-fg-muted flex flex-col overflow-y-auto min-w-0 w-full"
   >
-    <div class="h-[60px] px-4 border-b border-border flex items-center justify-between shrink-0">
+    <div class="h-15 px-4 border-b border-border flex items-center justify-between shrink-0">
       <div class="flex items-center gap-2 overflow-hidden">
         <span class="text-xs font-semibold text-fg-muted select-none">π</span>
         <span class="text-xs font-bold tracking-wider text-fg truncate">Linear Clone</span>
@@ -103,7 +103,7 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
         >
           <label class="flex flex-col gap-1.5 section-label">
             Name
-            <input placeholder="Engineering" {...ds.bind(state.$.projectName)} />
+            <input class="field" placeholder="Engineering" {...ds.bind(state.$.projectName)} />
             <small
               class="text-danger text-[13px] font-medium min-h-4"
               {...ds.text(state.$._validation.projectName)}
@@ -111,7 +111,7 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
           </label>
           <label class="flex flex-col gap-1.5 section-label">
             Key
-            <input placeholder="ENG" maxlength={8} {...ds.bind(state.$.projectKey)} />
+            <input class="field" placeholder="ENG" maxlength={8} {...ds.bind(state.$.projectKey)} />
             <small
               class="text-danger text-[13px] font-medium min-h-4"
               {...ds.text(state.$._validation.projectKey)}
@@ -119,9 +119,9 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
           </label>
           <label class="flex flex-col gap-1.5 section-label">
             Description
-            <textarea rows={2} {...ds.bind(state.$.projectDescription)}></textarea>
+            <textarea class="field" rows={2} {...ds.bind(state.$.projectDescription)}></textarea>
           </label>
-          <button type="submit" class="primary">
+          <button type="submit" class="btn-primary">
             Create project
           </button>
         </form>
@@ -129,7 +129,7 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
     </div>
 
     <form method="post" action="/logout" class="p-3 border-t border-border bg-surface">
-      <button type="submit" class="w-full">
+      <button type="submit" class="btn w-full">
         Sign out
       </button>
     </form>
@@ -200,8 +200,8 @@ const AssigneeCell = ({ name }: { name: string | null }) => {
 }
 
 export const Board = (props: { issues: Issue[] }) => (
-  <section id="board" class="border border-border bg-surface-card">
-    <div class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2 bg-surface border-b border-border text-[11px] font-bold tracking-widest uppercase text-fg-muted">
+  <section id="board" class="overflow-hidden rounded-lg border border-border bg-surface-card">
+    <div class="hidden md:grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2 bg-surface border-b border-border text-[11px] font-bold tracking-widest uppercase text-fg-muted">
       <span></span>
       <span>ID</span>
       <span>Title</span>
@@ -217,7 +217,7 @@ export const Board = (props: { issues: Issue[] }) => (
       props.issues.map((issue) => (
         <a
           href={`/issues/${issue.id}`}
-          class="grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2.5 border-b border-border-subtle items-center cursor-pointer transition-colors hover:bg-surface-card-hover"
+          class="grid grid-cols-[24px_1fr_auto] gap-x-3 gap-y-2 px-3 py-3 border-b border-border-subtle items-center cursor-pointer transition-colors hover:bg-surface-card-hover md:grid-cols-[40px_100px_1fr_100px_60px_120px] md:gap-3 md:px-4 md:py-2.5"
           id={`issue-${issue.id}`}
         >
           <span
@@ -228,10 +228,14 @@ export const Board = (props: { issues: Issue[] }) => (
           <span class="font-mono text-[11px] text-fg-muted tabular-nums bg-surface-inset border border-border px-1.5 py-0.5 rounded-md w-fit">
             {issue.projectKey}-{issue.number}
           </span>
-          <span class="text-[13px] text-fg-secondary truncate hover:text-fg">{issue.title}</span>
-          <StatusLabel status={issue.status} />
-          <PriorityBadge priority={issue.priority} />
-          <AssigneeCell name={issue.assigneeName} />
+          <span class="col-span-3 min-w-0 text-[13px] text-fg-secondary hover:text-fg md:col-span-1 md:truncate">
+            {issue.title}
+          </span>
+          <div class="col-start-2 flex min-w-0 items-center gap-3 md:contents">
+            <StatusLabel status={issue.status} />
+            <PriorityBadge priority={issue.priority} />
+            <AssigneeCell name={issue.assigneeName} />
+          </div>
         </a>
       ))
     )}
@@ -239,7 +243,7 @@ export const Board = (props: { issues: Issue[] }) => (
 )
 
 export const IssueProjectSelect = (props: { projects: Project[] }) => (
-  <select id="issue-project-select" {...ds.bind(state.$.projectId)}>
+  <select id="issue-project-select" class="field" {...ds.bind(state.$.projectId)}>
     <option value="">Select project</option>
     {props.projects.map((project) => (
       <option value={project.id}>
@@ -262,7 +266,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </div>
       <button
         type="button"
-        class="text-fg-muted hover:text-fg"
+        class="btn h-8 w-8 p-0"
         {...ds.on("click", ds.expr`${state.$.modalOpen} = false`)}
       >
         <svg
@@ -282,6 +286,8 @@ const IssueModalForm = (props: { projects: Project[] }) => (
     <label class="flex flex-col gap-1.5 section-label">
       Title
       <input
+        class="field"
+        autofocus
         placeholder="Fix keyboard focus after creating an issue"
         {...ds.bind(state.$.issueTitle)}
       />
@@ -293,6 +299,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
     <label class="flex flex-col gap-1.5 section-label">
       Description
       <textarea
+        class="field"
         rows={3}
         placeholder="Add a description..."
         {...ds.bind(state.$.issueDescription)}
@@ -309,7 +316,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
       <label class="flex flex-col gap-1.5 section-label">
         Status
-        <select {...ds.bind(state.$.issueStatus)}>
+        <select class="field" {...ds.bind(state.$.issueStatus)}>
           {issueStatuses.map((status) => (
             <option value={status.value}>{status.label}</option>
           ))}
@@ -317,7 +324,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
       <label class="flex flex-col gap-1.5 section-label">
         Priority
-        <select {...ds.bind(state.$.issuePriority)}>
+        <select class="field" {...ds.bind(state.$.issuePriority)}>
           {issuePriorities.map((priority) => (
             <option value={priority.value}>{priority.label}</option>
           ))}
@@ -325,10 +332,14 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
     </div>
     <div class="flex justify-end gap-2 pt-4 border-t border-border">
-      <button type="button" {...ds.on("click", ds.expr`${state.$.modalOpen} = false`)}>
+      <button
+        type="button"
+        class="btn"
+        {...ds.on("click", ds.expr`${state.$.modalOpen} = false`)}
+      >
         Cancel
       </button>
-      <button type="submit" class="primary">
+      <button type="submit" class="btn-primary">
         Create
       </button>
     </div>
@@ -363,12 +374,16 @@ const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
       <Sidebar user={props.user} projects={props.projects} />
     </div>
     <section class="overflow-hidden min-w-0 flex flex-col">
-      <header class="h-[60px] border-b border-border flex items-center justify-between px-6 bg-surface/40 backdrop-blur-md shrink-0">
+      <header class="h-15 border-b border-border flex items-center justify-between px-6 bg-surface/40 backdrop-blur-md shrink-0">
         <div class="flex items-center gap-2">
           <span class="text-xs text-fg-muted select-none">›</span>
           <h2 class="text-[13px] font-semibold uppercase tracking-wide text-fg">Issues</h2>
         </div>
-        <button type="button" class="primary" {...ds.on("click", ds.get("/workspace/modal/issue"))}>
+        <button
+          type="button"
+          class="btn-primary"
+          {...ds.on("click", ds.get("/workspace/modal/issue"))}
+        >
           + Create Issue
         </button>
       </header>

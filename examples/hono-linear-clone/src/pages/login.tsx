@@ -32,7 +32,7 @@ const LoginPage = () => (
         <label class="flex flex-col gap-1.5 section-label">
           Username
           <input
-            class="w-full text-sm placeholder:text-fg-muted/50"
+            class="field"
             autocomplete="username"
             placeholder="Enter username"
             {...ds.bind(loginState.$.username)}
@@ -45,7 +45,7 @@ const LoginPage = () => (
         <label class="flex flex-col gap-1.5 section-label">
           Password
           <input
-            class="w-full text-sm placeholder:text-fg-muted/50"
+            class="field"
             type="password"
             autocomplete="current-password"
             placeholder="Enter password"
@@ -60,7 +60,7 @@ const LoginPage = () => (
           class="text-danger text-[13px] font-medium min-h-4"
           {...ds.text(loginState.$._validation.form)}
         ></small>
-        <button type="submit" class="primary mt-1 py-2.5">
+        <button type="submit" class="btn-primary mt-1 py-2.5">
           Proceed Securely
         </button>
       </form>
