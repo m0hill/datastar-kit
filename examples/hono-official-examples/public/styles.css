@@ -391,6 +391,19 @@ code {
   border-radius: 8px;
 }
 
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tab-panel {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fbfcfe;
+}
+
 .grid {
   display: grid;
   gap: 1rem;

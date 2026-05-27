@@ -16,6 +16,7 @@ import { formDataExample } from "./examples/form-data.js"
 import { infiniteScrollExample } from "./examples/infinite-scroll.js"
 import { inlineValidationExample } from "./examples/inline-validation.js"
 import { lazyLoadExample } from "./examples/lazy-load.js"
+import { lazyTabsExample } from "./examples/lazy-tabs.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -34,5 +35,6 @@ export const examples: readonly ExampleModule[] = [
   formDataExample,
   infiniteScrollExample,
   inlineValidationExample,
-  lazyLoadExample
+  lazyLoadExample,
+  lazyTabsExample
 ]
