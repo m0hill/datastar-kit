@@ -10,7 +10,7 @@ import {
   type TodosSnapshot
 } from "./db/todo.js"
 import type { Todo } from "./db/schema.js"
-import { liveRoom, type VersionedDatastarPatch } from "./realtime/hub.js"
+import { liveRoom } from "./realtime/hub.js"
 
 export { LiveRoom } from "./realtime/hub.js"
 
@@ -37,10 +37,8 @@ const CreateTodoSignals = z.object({
     .max(MAX_TITLE_LENGTH, `Keep todos under ${MAX_TITLE_LENGTH} characters.`)
 })
 
-const todoPatch = (snapshot: TodosSnapshot): VersionedDatastarPatch => ({
-  version: snapshot.version,
-  events: event.patch(<TodoList todos={snapshot.todos} />)
-})
+const todoPatch = (snapshot: TodosSnapshot): string =>
+  event.patch(<TodoList todos={snapshot.todos} />)
 
 const publishTodos = (env: CloudflareBindings, snapshot: TodosSnapshot): Promise<number> =>
   liveRoom(env, TODOS_ROOM).publish(todoPatch(snapshot))
@@ -143,8 +141,6 @@ app.post("/todos", async (c) => {
   await createTodo(db, result.data.title)
   const snapshot = await readTodosSnapshot(db)
 
-  // The current tab gets the patch below immediately; fan-out to other tabs can finish after
-  // the response starts, so keep the Worker alive for that background publish.
   c.executionCtx.waitUntil(publishTodos(c.env, snapshot))
 
   return reply.stream([
@@ -161,8 +157,6 @@ app.patch("/todos/:id/toggle", async (c) => {
 
   const snapshot = await readTodosSnapshot(db)
 
-  // The current tab gets this patch immediately; connected tabs receive the same rendered patch
-  // through the Durable Object room.
   c.executionCtx.waitUntil(publishTodos(c.env, snapshot))
   return reply.patch(<TodoList todos={snapshot.todos} />)
 })
@@ -175,8 +169,6 @@ app.delete("/todos/:id", async (c) => {
 
   const snapshot = await readTodosSnapshot(db)
 
-  // The current tab gets this patch immediately; connected tabs receive the same rendered patch
-  // through the Durable Object room.
   c.executionCtx.waitUntil(publishTodos(c.env, snapshot))
   return reply.patch(<TodoList todos={snapshot.todos} />)
 })

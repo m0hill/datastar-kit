@@ -48,7 +48,17 @@ On mutation:
 4. The Worker also queues a publish to the Durable Object room with `ctx.waitUntil(...)`.
 5. The Durable Object fans out the same rendered patch to every connected tab.
 
-The D1 `version` value is only ordering metadata for the live room cache. It lets the room avoid replacing a newer cached patch with an older snapshot.
+## No room cache or version
+
+This example intentionally keeps the live room simple: the Durable Object does **not** cache the latest patch, and D1 does **not** store a live-view version.
+
+That means:
+
+- every `/live` connection gets its initial patch from a fresh D1 read in the Worker;
+- the Durable Object only broadcasts to tabs that are currently connected;
+- there is no ordering token to maintain alongside todo writes.
+
+For apps that need replay, missed-event recovery, or stale-publish protection inside the Durable Object, add a database-backed monotonic version and have the room cache only the latest versioned event. This example skips that extra machinery to keep the fan-out pattern clear.
 
 ## Run locally
 

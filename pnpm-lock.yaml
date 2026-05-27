@@ -243,6 +243,9 @@ importers:
         specifier: ^4.4.3
         version: 4.4.3
     devDependencies:
+      better-sqlite3:
+        specifier: ^12.10.0
+        version: 12.10.0
       drizzle-kit:
         specifier: 1.0.0-rc.4-5d5b77c
         version: 1.0.0-rc.4-5d5b77c

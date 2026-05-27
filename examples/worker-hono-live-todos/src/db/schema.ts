@@ -13,9 +13,4 @@ export const todos = sqliteTable("todos", {
     .default(sql`(unixepoch('subsec') * 1000)`)
 })
 
-export const appState = sqliteTable("app_state", {
-  key: text("key").primaryKey(),
-  version: integer("version").notNull().default(0)
-})
-
 export type Todo = typeof todos.$inferSelect
