@@ -24,6 +24,7 @@ import { sortableExample } from "./examples/sortable.js"
 import { svgMorphingExample } from "./examples/svg-morphing.js"
 import { templCounterExample } from "./examples/templ-counter.js"
 import { titleUpdateExample } from "./examples/title-update.js"
+import { todomvcExample } from "./examples/todomvc.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -50,5 +51,6 @@ export const examples: readonly ExampleModule[] = [
   sortableExample,
   svgMorphingExample,
   templCounterExample,
-  titleUpdateExample
+  titleUpdateExample,
+  todomvcExample
 ]

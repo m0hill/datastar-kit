@@ -497,6 +497,63 @@ code {
   transition: all 300ms ease;
 }
 
+.small {
+  min-height: 2rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.88rem;
+}
+
+.todo-shell {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 42rem;
+}
+
+.todo-header {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.todo-header input[type="checkbox"],
+.todo-list input[type="checkbox"] {
+  width: auto;
+}
+
+.todo-list {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.todo-list li {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem;
+  background: #fbfcfe;
+}
+
+.todo-list label {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.todo-list .completed span {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.todo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+
 .grid {
   display: grid;
   gap: 1rem;
