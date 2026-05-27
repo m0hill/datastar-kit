@@ -21,6 +21,7 @@ import { onSignalPatchExample } from "./examples/on-signal-patch.js"
 import { progressBarExample } from "./examples/progress-bar.js"
 import { progressiveLoadExample } from "./examples/progressive-load.js"
 import { sortableExample } from "./examples/sortable.js"
+import { svgMorphingExample } from "./examples/svg-morphing.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -44,5 +45,6 @@ export const examples: readonly ExampleModule[] = [
   onSignalPatchExample,
   progressBarExample,
   progressiveLoadExample,
-  sortableExample
+  sortableExample,
+  svgMorphingExample
 ]
