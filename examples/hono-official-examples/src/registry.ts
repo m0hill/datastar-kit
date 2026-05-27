@@ -22,6 +22,7 @@ import { progressBarExample } from "./examples/progress-bar.js"
 import { progressiveLoadExample } from "./examples/progressive-load.js"
 import { sortableExample } from "./examples/sortable.js"
 import { svgMorphingExample } from "./examples/svg-morphing.js"
+import { templCounterExample } from "./examples/templ-counter.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -46,5 +47,6 @@ export const examples: readonly ExampleModule[] = [
   progressBarExample,
   progressiveLoadExample,
   sortableExample,
-  svgMorphingExample
+  svgMorphingExample,
+  templCounterExample
 ]
