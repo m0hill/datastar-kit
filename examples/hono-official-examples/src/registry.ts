@@ -3,10 +3,12 @@ import { activeSearchExample } from "./examples/active-search.js"
 import { animationsExample } from "./examples/animations.js"
 import { badAppleExample } from "./examples/bad-apple.js"
 import { bulkUpdateExample } from "./examples/bulk-update.js"
+import { clickToEditExample } from "./examples/click-to-edit.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
   animationsExample,
   badAppleExample,
-  bulkUpdateExample
+  bulkUpdateExample,
+  clickToEditExample
 ]

@@ -285,6 +285,19 @@ code {
   color: #586270;
 }
 
+.contact-card {
+  display: grid;
+  gap: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem;
+  background: #fbfcfe;
+}
+
+.contact-card p {
+  margin: 0;
+}
+
 .grid {
   display: grid;
   gap: 1rem;
