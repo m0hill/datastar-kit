@@ -415,6 +415,21 @@ code {
   white-space: pre-wrap;
 }
 
+.progress-demo {
+  display: grid;
+  justify-items: center;
+  gap: 1rem;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring text {
+  transform: rotate(90deg);
+  transform-origin: 100px 100px;
+}
+
 .grid {
   display: grid;
   gap: 1rem;

@@ -18,6 +18,7 @@ import { inlineValidationExample } from "./examples/inline-validation.js"
 import { lazyLoadExample } from "./examples/lazy-load.js"
 import { lazyTabsExample } from "./examples/lazy-tabs.js"
 import { onSignalPatchExample } from "./examples/on-signal-patch.js"
+import { progressBarExample } from "./examples/progress-bar.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -38,5 +39,6 @@ export const examples: readonly ExampleModule[] = [
   inlineValidationExample,
   lazyLoadExample,
   lazyTabsExample,
-  onSignalPatchExample
+  onSignalPatchExample,
+  progressBarExample
 ]
