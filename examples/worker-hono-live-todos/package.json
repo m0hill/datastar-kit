@@ -9,6 +9,7 @@
     "deploy": "wrangler deploy --minify",
     "db:generate": "drizzle-kit generate && node ./scripts/sync-drizzle-d1-migrations.mjs",
     "db:migrate:local": "wrangler d1 migrations apply todos --local",
+    "db:migrate:remote": "wrangler d1 migrations apply todos --remote",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings"
   },
   "dependencies": {

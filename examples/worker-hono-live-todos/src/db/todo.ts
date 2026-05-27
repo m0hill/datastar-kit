@@ -2,14 +2,10 @@ import { asc, eq, sql } from "drizzle-orm"
 import { todos, type Todo } from "./schema.js"
 import type { Database } from "./index.js"
 
-export interface TodosSnapshot {
-  todos: Todo[]
-}
-
-export async function readTodosSnapshot(db: Database): Promise<TodosSnapshot> {
+export async function readTodos(db: Database): Promise<Todo[]> {
   const rows = await db.select().from(todos).orderBy(asc(todos.createdAt), asc(todos.id)).all()
 
-  return { todos: rows }
+  return rows
 }
 
 export async function createTodo(db: Database, title: string) {
