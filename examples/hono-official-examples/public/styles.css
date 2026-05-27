@@ -466,6 +466,20 @@ code {
   border-radius: 50%;
 }
 
+.sortable-list {
+  display: grid;
+  gap: 0.5rem;
+  max-width: 26rem;
+}
+
+.sortable-list button {
+  justify-content: flex-start;
+}
+
+.sortable-list .dragging {
+  opacity: 0.35;
+}
+
 .grid {
   display: grid;
   gap: 1rem;
