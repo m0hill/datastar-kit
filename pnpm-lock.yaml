@@ -212,6 +212,28 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  examples/hono-official-examples:
+    dependencies:
+      '@hono/node-server':
+        specifier: ^2.0.3
+        version: 2.0.3(hono@4.12.21)
+      datastar-kit:
+        specifier: workspace:*
+        version: link:../../packages/datastar-kit
+      hono:
+        specifier: ^4.12.19
+        version: 4.12.21
+    devDependencies:
+      '@types/node':
+        specifier: ^24.10.1
+        version: 24.12.4
+      tsx:
+        specifier: ^4.22.3
+        version: 4.22.3
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   examples/worker-do-hono-live-todos:
     dependencies:
       datastar-kit:
