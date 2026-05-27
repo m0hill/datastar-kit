@@ -9,6 +9,7 @@ import { customEventExample } from "./examples/custom-event.js"
 import { customPluginExample } from "./examples/custom-plugin.js"
 import { dbmonExample } from "./examples/dbmon.js"
 import { deleteRowExample } from "./examples/delete-row.js"
+import { editRowExample } from "./examples/edit-row.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -20,5 +21,6 @@ export const examples: readonly ExampleModule[] = [
   customEventExample,
   customPluginExample,
   dbmonExample,
-  deleteRowExample
+  deleteRowExample,
+  editRowExample
 ]
