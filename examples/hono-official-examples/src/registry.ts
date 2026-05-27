@@ -15,6 +15,7 @@ import { fileUploadExample } from "./examples/file-upload.js"
 import { formDataExample } from "./examples/form-data.js"
 import { infiniteScrollExample } from "./examples/infinite-scroll.js"
 import { inlineValidationExample } from "./examples/inline-validation.js"
+import { lazyLoadExample } from "./examples/lazy-load.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -32,5 +33,6 @@ export const examples: readonly ExampleModule[] = [
   fileUploadExample,
   formDataExample,
   infiniteScrollExample,
-  inlineValidationExample
+  inlineValidationExample,
+  lazyLoadExample
 ]
