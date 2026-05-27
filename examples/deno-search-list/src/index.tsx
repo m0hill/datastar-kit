@@ -23,13 +23,9 @@ const items: Item[] = [
 
 const listState = ds.state({ query: "", name: "" })
 
-const SearchSignals = z.object({
-  query: z.string().optional().default("")
-})
-
-const ItemSignals = z.object({
-  name: z.string(),
-  query: z.string().optional().default("")
+const ListSignals = z.object({
+  query: z.string().optional().default(""),
+  name: z.string().optional().default("")
 })
 
 const ItemRow = (props: { item: Item }) => (
@@ -91,7 +87,9 @@ const routes: Route[] = [
                   placeholder="New item"
                   {...ds.bind(listState.$.name)}
                 />
-                <button class="rounded-lg bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700">
+                <button
+                  type="submit"
+                  class="rounded-lg bg-blue-600 px-4 py-3 font-medium text-white hover:bg-blue-700">
                   Add
                 </button>
               </form>
@@ -113,7 +111,7 @@ const routes: Route[] = [
     method: "GET",
     pattern: new URLPattern({ pathname: "/items/search" }),
     handler: async (request) => {
-      const signals = SearchSignals.parse(await read.signals(request))
+      const signals = ListSignals.parse(await read.signals(request))
       const query = signals.query.trim().toLowerCase()
       const results =
         query.length === 0 ? items : items.filter((item) => item.name.toLowerCase().includes(query))
@@ -125,7 +123,7 @@ const routes: Route[] = [
     method: "POST",
     pattern: new URLPattern({ pathname: "/items" }),
     handler: async (request) => {
-      const signals = ItemSignals.parse(await read.signals(request))
+      const signals = ListSignals.parse(await read.signals(request))
       const itemName = signals.name.trim()
 
       if (itemName.length === 0) {
