@@ -13,6 +13,7 @@ import { editRowExample } from "./examples/edit-row.js"
 import { eventBubblingExample } from "./examples/event-bubbling.js"
 import { fileUploadExample } from "./examples/file-upload.js"
 import { formDataExample } from "./examples/form-data.js"
+import { infiniteScrollExample } from "./examples/infinite-scroll.js"
 
 export const examples: readonly ExampleModule[] = [
   activeSearchExample,
@@ -28,5 +29,6 @@ export const examples: readonly ExampleModule[] = [
   editRowExample,
   eventBubblingExample,
   fileUploadExample,
-  formDataExample
+  formDataExample,
+  infiniteScrollExample
 ]

@@ -363,6 +363,16 @@ code {
   width: auto;
 }
 
+.loading-row {
+  display: grid;
+  min-height: 4rem;
+  place-items: center;
+  border-radius: 8px;
+  background: #f2f6ff;
+  color: #174ea6;
+  font-weight: 700;
+}
+
 .grid {
   display: grid;
   gap: 1rem;
