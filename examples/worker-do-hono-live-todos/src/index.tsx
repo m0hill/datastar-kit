@@ -1,7 +1,7 @@
 import { Hono } from "hono"
 import { z } from "zod"
 import { ds, event, read, reply } from "datastar-kit"
-import type { Todo } from "./todo.js"
+import type { Todo } from "./realtime/hub.js"
 
 export { TodoRoom } from "./realtime/hub.js"
 
@@ -121,11 +121,10 @@ app.post("/todos", async (c) => {
 
   const room = todoRoom(c.env)
   const todos = await room.createTodo(result.data.title)
-  const patch = event.patch(<TodoList todos={todos} />)
 
-  c.executionCtx.waitUntil(room.publish(patch))
+  c.executionCtx.waitUntil(room.publish(event.patch(<TodoList todos={todos} />)))
 
-  return reply.stream([event.signals(todoState.reset()), patch])
+  return reply.stream([event.signals(todoState.reset()), event.patch(<TodoList todos={todos} />)])
 })
 
 app.patch("/todos/:id/toggle", async (c) => {
@@ -134,10 +133,8 @@ app.patch("/todos/:id/toggle", async (c) => {
 
   if (!changed) return reply.done()
 
-  const patch = event.patch(<TodoList todos={todos} />)
-
-  c.executionCtx.waitUntil(room.publish(patch))
-  return reply.stream([patch])
+  c.executionCtx.waitUntil(room.publish(event.patch(<TodoList todos={todos} />)))
+  return reply.stream([event.patch(<TodoList todos={todos} />)])
 })
 
 app.delete("/todos/:id", async (c) => {
@@ -146,10 +143,8 @@ app.delete("/todos/:id", async (c) => {
 
   if (!changed) return reply.done()
 
-  const patch = event.patch(<TodoList todos={todos} />)
-
-  c.executionCtx.waitUntil(room.publish(patch))
-  return reply.stream([patch])
+  c.executionCtx.waitUntil(room.publish(event.patch(<TodoList todos={todos} />)))
+  return reply.stream([event.patch(<TodoList todos={todos} />)])
 })
 
 app.notFound((c) => c.text("Not Found", 404))

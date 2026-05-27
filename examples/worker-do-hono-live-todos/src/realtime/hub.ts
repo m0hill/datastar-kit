@@ -1,13 +1,12 @@
 import { DurableObject } from "cloudflare:workers"
 import { reply } from "datastar-kit"
-import type { Todo } from "../todo.js"
 
-type LiveIteratorResult = IteratorResult<string, undefined>
-
-interface LiveSubscriber {
-  closed: boolean
-  queued: string[]
-  resolve?: ((result: LiveIteratorResult) => void) | undefined
+export interface Todo {
+  id: string
+  title: string
+  completed: boolean
+  createdAt: number
+  updatedAt: number
 }
 
 interface TodoMutationResult {
@@ -15,12 +14,14 @@ interface TodoMutationResult {
   todos: Todo[]
 }
 
-type TodoRow = Record<string, SqlStorageValue> & {
-  id: string
-  title: string
-  completed: number
-  created_at: number
-  updated_at: number
+type TodoRow = Record<string, SqlStorageValue> & Todo
+
+type LiveIteratorResult = IteratorResult<string, undefined>
+
+interface LiveSubscriber {
+  closed: boolean
+  queued: string[]
+  resolve?: ((result: LiveIteratorResult) => void) | undefined
 }
 
 export class TodoRoom extends DurableObject<CloudflareBindings> {
