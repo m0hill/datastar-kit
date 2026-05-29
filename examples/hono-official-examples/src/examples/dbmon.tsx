@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { randomInt, readSignals, sleep } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 interface Query {
   elapsed: number
@@ -51,7 +51,9 @@ const DbmonFrame = ({ renderTime }: { readonly renderTime: number }) => (
         {databases.map((database) => (
           <tr>
             <td>{database.name}</td>
-            <td class="query-count">{database.queries.filter((query) => query.elapsed > 0).length}</td>
+            <td class="query-count">
+              {database.queries.filter((query) => query.elapsed > 0).length}
+            </td>
             {database.queries.map((query) => (
               <td class={queryClass(query.elapsed)} title={query.text}>
                 {query.elapsed === 0 ? "0s" : `${query.elapsed}ms`}
@@ -97,42 +99,43 @@ const DbmonDemo = () => (
   </div>
 )
 
-export const dbmonExample: ExampleModule = {
-  slug: "dbmon",
-  title: "DBmon",
-  summary: "Streams a changing database monitor table while form inputs tune the update rate.",
-  source: "https://data-star.dev/examples/dbmon",
-  register(app) {
-    app.get("/examples/dbmon", () =>
-      examplePage({
-        title: "DBmon",
-        slug: "dbmon",
-        summary: this.summary,
-        source: this.source,
-        children: <DbmonDemo />
-      })
-    )
+export const example = new Hono()
 
-    app.put("/examples/dbmon/inputs", async (c) => {
-      const signals = await readSignals<{ mutationRate?: number; fps?: number }>(c.req.raw)
-      config = {
-        mutationRate: Math.max(0, Math.min(100, Number(signals.mutationRate ?? config.mutationRate))),
-        fps: Math.max(1, Math.min(12, Number(signals.fps ?? config.fps)))
-      }
-      return reply.done()
-    })
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="DBmon"
+      slug="dbmon"
+      summary="Streams a changing database monitor table while form inputs tune the update rate."
+      source="https://data-star.dev/examples/dbmon"
+    >
+      <DbmonDemo />
+    </ExampleLayout>,
+    {
+      title: "DBmon - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
 
-    app.get("/examples/dbmon/updates", (c) => {
-      async function* stream() {
-        while (!c.req.raw.signal.aborted) {
-          const start = performance.now()
-          mutate()
-          yield event.patch(<DbmonFrame renderTime={performance.now() - start} />)
-          await sleep(1000 / config.fps)
-        }
-      }
-
-      return reply.stream(stream(), { heartbeat: { intervalMs: 15_000, comment: "dbmon" } })
-    })
+example.put("/inputs", async (c) => {
+  const signals = await readSignals<{ mutationRate?: number; fps?: number }>(c.req.raw)
+  config = {
+    mutationRate: Math.max(0, Math.min(100, Number(signals.mutationRate ?? config.mutationRate))),
+    fps: Math.max(1, Math.min(12, Number(signals.fps ?? config.fps)))
   }
-}
+  return reply.done()
+})
+
+example.get("/updates", (c) => {
+  async function* stream() {
+    while (!c.req.raw.signal.aborted) {
+      const start = performance.now()
+      mutate()
+      yield event.patch(<DbmonFrame renderTime={performance.now() - start} />)
+      await sleep(1000 / config.fps)
+    }
+  }
+
+  return reply.stream(stream(), { heartbeat: { intervalMs: 15_000, comment: "dbmon" } })
+})

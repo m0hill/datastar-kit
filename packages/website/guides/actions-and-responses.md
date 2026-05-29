@@ -8,7 +8,6 @@ Use `ds.on(...)` with a fetch action such as `ds.get(...)` or `ds.post(...)`:
 
 ```tsx
 import { ds } from "datastar-kit"
-
 ;<button type="button" {...ds.on("click", ds.post("/todos/add"))}>
   Add todo
 </button>

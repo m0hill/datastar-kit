@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { sleep } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 const Graph = () => (
   <div id="lazy-load-graph" class="lazy-graph">
@@ -9,33 +9,32 @@ const Graph = () => (
   </div>
 )
 
-export const lazyLoadExample: ExampleModule = {
-  slug: "lazy_load",
-  title: "Lazy Load",
-  summary: "Loads expensive content after the shell is already interactive.",
-  source: "https://data-star.dev/examples/lazy_load",
-  register(app) {
-    app.get("/examples/lazy_load", () =>
-      examplePage({
-        title: "Lazy Load",
-        slug: "lazy_load",
-        summary: this.summary,
-        source: this.source,
-        children: (
-          <div
-            id="lazy-load-graph"
-            class="loading-row"
-            {...ds.init(ds.get("/examples/lazy_load/graph"))}
-          >
-            Loading...
-          </div>
-        )
-      })
-    )
+export const example = new Hono()
 
-    app.get("/examples/lazy_load/graph", async () => {
-      await sleep(700)
-      return reply.patch(<Graph />)
-    })
-  }
-}
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Lazy Load"
+      slug="lazy_load"
+      summary="Loads expensive content after the shell is already interactive."
+      source="https://data-star.dev/examples/lazy_load"
+    >
+      <div
+        id="lazy-load-graph"
+        class="loading-row"
+        {...ds.init(ds.get("/examples/lazy_load/graph"))}
+      >
+        Loading...
+      </div>
+    </ExampleLayout>,
+    {
+      title: "Lazy Load - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
+
+example.get("/graph", async () => {
+  await sleep(700)
+  return reply.patch(<Graph />)
+})

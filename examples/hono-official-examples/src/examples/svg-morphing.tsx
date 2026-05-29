@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { randomInt, sleep } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 const colors = ["#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#8b5cf6"] as const
 
@@ -76,48 +76,45 @@ const SvgMorphingDemo = () => (
   </div>
 )
 
-export const svgMorphingExample: ExampleModule = {
-  slug: "svg_morphing",
-  title: "SVG Morphing",
-  summary: "Patches stable SVG ids so Datastar morphs vector elements in place.",
-  source: "https://data-star.dev/examples/svg_morphing",
-  register(app) {
-    app.get("/examples/svg_morphing", () =>
-      examplePage({
-        title: "SVG Morphing",
-        slug: "svg_morphing",
-        summary: this.summary,
-        source: this.source,
-        children: <SvgMorphingDemo />
-      })
-    )
+export const example = new Hono()
 
-    app.get("/examples/svg_morphing/circle_color", () => reply.patch(<ColorSvg fill={color()} />))
-    app.get("/examples/svg_morphing/circle_size", () =>
-      reply.patch(<SizeSvg radius={randomInt(15, 45)} />)
-    )
-    app.get("/examples/svg_morphing/shape_transform", () =>
-      reply.patch(<ShapeSvg variant={randomInt(0, 10)} />)
-    )
-    app.get("/examples/svg_morphing/multiple_elements", () => reply.patch(<MultiSvg />))
-    app.get("/examples/svg_morphing/animated_morph", () =>
-      reply.stream(
-        (async function* () {
-          for (const [radius, fill] of [
-            [28, "#ef4444"],
-            [42, "#f97316"],
-            [34, "#eab308"],
-            [22, "#22c55e"]
-          ] as const) {
-            yield event.patch(
-              <svg id="animated-demo" viewBox="0 0 100 100" class="morph-svg">
-                <circle cx="50" cy="50" r={radius} fill={fill}></circle>
-              </svg>
-            )
-            await sleep(400)
-          }
-        })()
-      )
-    )
-  }
-}
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="SVG Morphing"
+      slug="svg_morphing"
+      summary="Patches stable SVG ids so Datastar morphs vector elements in place."
+      source="https://data-star.dev/examples/svg_morphing"
+    >
+      <SvgMorphingDemo />
+    </ExampleLayout>,
+    {
+      title: "SVG Morphing - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
+
+example.get("/circle_color", () => reply.patch(<ColorSvg fill={color()} />))
+example.get("/circle_size", () => reply.patch(<SizeSvg radius={randomInt(15, 45)} />))
+example.get("/shape_transform", () => reply.patch(<ShapeSvg variant={randomInt(0, 10)} />))
+example.get("/multiple_elements", () => reply.patch(<MultiSvg />))
+example.get("/animated_morph", () =>
+  reply.stream(
+    (async function* () {
+      for (const [radius, fill] of [
+        [28, "#ef4444"],
+        [42, "#f97316"],
+        [34, "#eab308"],
+        [22, "#22c55e"]
+      ] as const) {
+        yield event.patch(
+          <svg id="animated-demo" viewBox="0 0 100 100" class="morph-svg">
+            <circle cx="50" cy="50" r={radius} fill={fill}></circle>
+          </svg>
+        )
+        await sleep(400)
+      }
+    })()
+  )
+)

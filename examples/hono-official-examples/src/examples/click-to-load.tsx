@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { readSignals } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 const agents = Array.from({ length: 32 }, (_, index) => ({
   name: `Agent Smith ${index}`,
@@ -29,10 +29,7 @@ const AgentRows = ({ count }: { readonly count: number }) => (
             class="info wide"
             {...ds.indicator("_fetching")}
             {...ds.dataAttr("aria-disabled", ds.expr("`${$_fetching}`"))}
-            {...ds.on(
-              "click",
-              ds.expr("!$_fetching && @get('/examples/click_to_load/more')")
-            )}
+            {...ds.on("click", ds.expr("!$_fetching && @get('/examples/click_to_load/more')"))}
           >
             Load More
           </button>
@@ -48,42 +45,41 @@ const AgentRows = ({ count }: { readonly count: number }) => (
   </tbody>
 )
 
-export const clickToLoadExample: ExampleModule = {
-  slug: "click_to_load",
-  title: "Click To Load",
-  summary: "Requests the next slice of table rows and patches the body in place.",
-  source: "https://data-star.dev/examples/click_to_load",
-  register(app) {
-    app.get("/examples/click_to_load", () =>
-      examplePage({
-        title: "Click To Load",
-        slug: "click_to_load",
-        summary: this.summary,
-        source: this.source,
-        children: (
-          <div class="stack" {...ds.dataSignals({ offset: pageSize }, { ifMissing: true })}>
-            <table>
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>ID</th>
-                </tr>
-              </thead>
-              <AgentRows count={pageSize} />
-            </table>
-          </div>
-        )
-      })
-    )
+export const example = new Hono()
 
-    app.get("/examples/click_to_load/more", async (c) => {
-      const { offset = pageSize } = await readSignals<{ offset?: number }>(c.req.raw)
-      const nextOffset = Math.min(offset + pageSize, agents.length)
-      return reply.stream([
-        event.signals({ offset: nextOffset }),
-        event.patch(<AgentRows count={nextOffset} />)
-      ])
-    })
-  }
-}
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Click To Load"
+      slug="click_to_load"
+      summary="Requests the next slice of table rows and patches the body in place."
+      source="https://data-star.dev/examples/click_to_load"
+    >
+      <div class="stack" {...ds.dataSignals({ offset: pageSize }, { ifMissing: true })}>
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>ID</th>
+            </tr>
+          </thead>
+          <AgentRows count={pageSize} />
+        </table>
+      </div>
+    </ExampleLayout>,
+    {
+      title: "Click To Load - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
+
+example.get("/more", async (c) => {
+  const { offset = pageSize } = await readSignals<{ offset?: number }>(c.req.raw)
+  const nextOffset = Math.min(offset + pageSize, agents.length)
+  return reply.stream([
+    event.signals({ offset: nextOffset }),
+    event.patch(<AgentRows count={nextOffset} />)
+  ])
+})

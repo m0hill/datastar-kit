@@ -1,6 +1,6 @@
+import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
-import type { ExampleModule } from "../types.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 
 const tabText = [
   "Sed laudantium non eum nobis facere. Est repudiandae consectetur debitis et libero.",
@@ -33,25 +33,26 @@ const LazyTabs = ({ active }: { readonly active: number }) => (
   </div>
 )
 
-export const lazyTabsExample: ExampleModule = {
-  slug: "lazy_tabs",
-  title: "Lazy Tabs",
-  summary: "Fetches tab panel content only when a tab is selected.",
-  source: "https://data-star.dev/examples/lazy_tabs",
-  register(app) {
-    app.get("/examples/lazy_tabs", () =>
-      examplePage({
-        title: "Lazy Tabs",
-        slug: "lazy_tabs",
-        summary: this.summary,
-        source: this.source,
-        children: <LazyTabs active={0} />
-      })
-    )
+export const example = new Hono()
 
-    app.get("/examples/lazy_tabs/:index", (c) => {
-      const index = Math.max(0, Math.min(tabText.length - 1, Number(c.req.param("index"))))
-      return reply.patch(<LazyTabs active={index} />)
-    })
-  }
-}
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Lazy Tabs"
+      slug="lazy_tabs"
+      summary="Fetches tab panel content only when a tab is selected."
+      source="https://data-star.dev/examples/lazy_tabs"
+    >
+      <LazyTabs active={0} />
+    </ExampleLayout>,
+    {
+      title: "Lazy Tabs - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
+
+example.get("/:index", (c) => {
+  const index = Math.max(0, Math.min(tabText.length - 1, Number(c.req.param("index"))))
+  return reply.patch(<LazyTabs active={index} />)
+})

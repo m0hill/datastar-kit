@@ -23,6 +23,7 @@
     "no-control-regex": "off",
     "no-unused-vars": "warn",
     "typescript/no-base-to-string": "warn",
+    "no-await-in-loop": "off",
     "typescript/no-explicit-any": "off",
     "vitest/no-standalone-expect": "off",
     "no-underscore-dangle": "off"

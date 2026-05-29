@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { readSignals } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 interface BulkRow {
   readonly name: string
@@ -24,9 +24,12 @@ const BulkTable = () => (
   <div
     id="bulk-update-demo"
     class="stack"
-    {...ds.dataSignals({ _fetching: false, _all: false, selections: selectionDefaults() }, {
-      ifMissing: true
-    })}
+    {...ds.dataSignals(
+      { _fetching: false, _all: false, selections: selectionDefaults() },
+      {
+        ifMissing: true
+      }
+    )}
   >
     <table>
       <thead>
@@ -37,10 +40,7 @@ const BulkTable = () => (
               aria-label="Select all rows"
               {...ds.bind("_all")}
               {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
-              {...ds.on(
-                "change",
-                ds.expr(`$selections = Array(${rows.length}).fill($_all)`)
-              )}
+              {...ds.on("change", ds.expr(`$selections = Array(${rows.length}).fill($_all)`))}
               {...ds.effect(ds.expr("$selections; $_all = $selections.every(Boolean)"))}
             />
           </th>
@@ -90,7 +90,10 @@ const BulkTable = () => (
   </div>
 )
 
-const updateSelectedRows = async (request: Request, status: BulkRow["status"]): Promise<Response> => {
+const updateSelectedRows = async (
+  request: Request,
+  status: BulkRow["status"]
+): Promise<Response> => {
   const signals = await readSignals<{ selections?: readonly boolean[] }>(request)
   const selections = signals.selections ?? []
   rows = rows.map((row, index) => (selections[index] === true ? { ...row, status } : row))
@@ -101,23 +104,24 @@ const updateSelectedRows = async (request: Request, status: BulkRow["status"]): 
   ])
 }
 
-export const bulkUpdateExample: ExampleModule = {
-  slug: "bulk_update",
-  title: "Bulk Update",
-  summary: "Uses checkbox signals to update selected rows on the server.",
-  source: "https://data-star.dev/examples/bulk_update",
-  register(app) {
-    app.get("/examples/bulk_update", () =>
-      examplePage({
-        title: "Bulk Update",
-        slug: "bulk_update",
-        summary: this.summary,
-        source: this.source,
-        children: <BulkTable />
-      })
-    )
+export const example = new Hono()
 
-    app.put("/examples/bulk_update/activate", (c) => updateSelectedRows(c.req.raw, "Active"))
-    app.put("/examples/bulk_update/deactivate", (c) => updateSelectedRows(c.req.raw, "Inactive"))
-  }
-}
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Bulk Update"
+      slug="bulk_update"
+      summary="Uses checkbox signals to update selected rows on the server."
+      source="https://data-star.dev/examples/bulk_update"
+    >
+      <BulkTable />
+    </ExampleLayout>,
+    {
+      title: "Bulk Update - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
+
+example.put("/activate", (c) => updateSelectedRows(c.req.raw, "Active"))
+example.put("/deactivate", (c) => updateSelectedRows(c.req.raw, "Inactive"))

@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { readSignals } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 interface EditableRow extends Record<string, string> {
   name: string
@@ -70,54 +70,52 @@ const EditRowTable = () => (
   </div>
 )
 
-export const editRowExample: ExampleModule = {
-  slug: "edit_row",
-  title: "Edit Row",
-  summary: "Replaces a single table row with an inline edit row and patches the saved result.",
-  source: "https://data-star.dev/examples/edit_row",
-  register(app) {
-    app.get("/examples/edit_row", () =>
-      examplePage({
-        title: "Edit Row",
-        slug: "edit_row",
-        summary: this.summary,
-        source: this.source,
-        children: <EditRowTable />
-      })
-    )
+export const example = new Hono()
 
-    app.get("/examples/edit_row/:index", (c) => {
-      const index = Number(c.req.param("index"))
-      const row = rows[index]
-      return row === undefined
-        ? reply.done()
-        : reply.patch(<EditingRow row={row} index={index} />)
-    })
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Edit Row"
+      slug="edit_row"
+      summary="Replaces a single table row with an inline edit row and patches the saved result."
+      source="https://data-star.dev/examples/edit_row"
+    >
+      <EditRowTable />
+    </ExampleLayout>,
+    {
+      title: "Edit Row - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
 
-    app.get("/examples/edit_row/:index/cancel", (c) => {
-      const index = Number(c.req.param("index"))
-      const row = rows[index]
-      return row === undefined ? reply.done() : reply.patch(<DisplayRow row={row} index={index} />)
-    })
+example.get("/:index", (c) => {
+  const index = Number(c.req.param("index"))
+  const row = rows[index]
+  return row === undefined ? reply.done() : reply.patch(<EditingRow row={row} index={index} />)
+})
 
-    app.patch("/examples/edit_row/reset", () => {
-      rows = initialRows.map((row) => ({ ...row }))
-      return reply.patch(<EditRowTable />)
-    })
+example.get("/:index/cancel", (c) => {
+  const index = Number(c.req.param("index"))
+  const row = rows[index]
+  return row === undefined ? reply.done() : reply.patch(<DisplayRow row={row} index={index} />)
+})
 
-    app.patch("/examples/edit_row/:index", async (c) => {
-      const index = Number(c.req.param("index"))
-      const row = rows[index]
-      if (row === undefined) return reply.done()
-      const signals = await readSignals<Partial<EditableRow>>(c.req.raw)
-      rows[index] = {
-        name:
-          typeof signals.name === "string" && signals.name.trim() ? signals.name.trim() : row.name,
-        email:
-          typeof signals.email === "string" && signals.email.trim() ? signals.email.trim() : row.email
-      }
-      const updated = rows[index] ?? row
-      return reply.patch(<DisplayRow row={updated} index={index} />)
-    })
+example.patch("/reset", () => {
+  rows = initialRows.map((row) => ({ ...row }))
+  return reply.patch(<EditRowTable />)
+})
+
+example.patch("/:index", async (c) => {
+  const index = Number(c.req.param("index"))
+  const row = rows[index]
+  if (row === undefined) return reply.done()
+  const signals = await readSignals<Partial<EditableRow>>(c.req.raw)
+  rows[index] = {
+    name: typeof signals.name === "string" && signals.name.trim() ? signals.name.trim() : row.name,
+    email:
+      typeof signals.email === "string" && signals.email.trim() ? signals.email.trim() : row.email
   }
-}
+  const updated = rows[index] ?? row
+  return reply.patch(<DisplayRow row={updated} index={index} />)
+})

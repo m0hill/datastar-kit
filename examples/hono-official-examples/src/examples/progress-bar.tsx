@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { sleep } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 const circumference = 565.48
 
@@ -13,9 +13,7 @@ const ProgressBar = ({ progress }: { readonly progress: number }) => {
     <div
       id="progress-bar-demo"
       class="progress-demo"
-      {...(done
-        ? {}
-        : ds.init(ds.get("/examples/progress_bar/updates", { openWhenHidden: true })))}
+      {...(done ? {} : ds.init(ds.get("/examples/progress_bar/updates", { openWhenHidden: true })))}
     >
       <svg width="220" height="220" viewBox="-25 -25 250 250" class="progress-ring">
         <circle
@@ -52,31 +50,32 @@ const ProgressBar = ({ progress }: { readonly progress: number }) => {
   )
 }
 
-export const progressBarExample: ExampleModule = {
-  slug: "progress_bar",
-  title: "Progress Bar",
-  summary: "Streams progress updates that morph an SVG progress ring.",
-  source: "https://data-star.dev/examples/progress_bar",
-  register(app) {
-    app.get("/examples/progress_bar", () =>
-      examplePage({
-        title: "Progress Bar",
-        slug: "progress_bar",
-        summary: this.summary,
-        source: this.source,
-        children: <ProgressBar progress={0} />
-      })
-    )
+export const example = new Hono()
 
-    app.get("/examples/progress_bar/updates", (c) => {
-      async function* stream() {
-        for (let progress = 0; progress <= 100 && !c.req.raw.signal.aborted; progress += 5) {
-          yield event.patch(<ProgressBar progress={progress} />)
-          await sleep(120)
-        }
-      }
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Progress Bar"
+      slug="progress_bar"
+      summary="Streams progress updates that morph an SVG progress ring."
+      source="https://data-star.dev/examples/progress_bar"
+    >
+      <ProgressBar progress={0} />
+    </ExampleLayout>,
+    {
+      title: "Progress Bar - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
 
-      return reply.stream(stream(), { heartbeat: { intervalMs: 15_000, comment: "progress-bar" } })
-    })
+example.get("/updates", (c) => {
+  async function* stream() {
+    for (let progress = 0; progress <= 100 && !c.req.raw.signal.aborted; progress += 5) {
+      yield event.patch(<ProgressBar progress={progress} />)
+      await sleep(120)
+    }
   }
-}
+
+  return reply.stream(stream(), { heartbeat: { intervalMs: 15_000, comment: "progress-bar" } })
+})

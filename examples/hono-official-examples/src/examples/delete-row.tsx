@@ -1,6 +1,6 @@
+import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
-import type { ExampleModule } from "../types.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 
 const initialRows = [
   { name: "Joe Smith", email: "joe@smith.org" },
@@ -39,9 +39,7 @@ const DeleteRowTable = () => (
                   {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
                   {...ds.on(
                     "click",
-                    ds.expr(
-                      `confirm('Are you sure?') && @delete('/examples/delete_row/${index}')`
-                    )
+                    ds.expr(`confirm('Are you sure?') && @delete('/examples/delete_row/${index}')`)
                   )}
                 >
                   Delete
@@ -58,31 +56,32 @@ const DeleteRowTable = () => (
   </div>
 )
 
-export const deleteRowExample: ExampleModule = {
-  slug: "delete_row",
-  title: "Delete Row",
-  summary: "Confirms a delete action and patches the remaining table rows from the server.",
-  source: "https://data-star.dev/examples/delete_row",
-  register(app) {
-    app.get("/examples/delete_row", () =>
-      examplePage({
-        title: "Delete Row",
-        slug: "delete_row",
-        summary: this.summary,
-        source: this.source,
-        children: <DeleteRowTable />
-      })
-    )
+export const example = new Hono()
 
-    app.delete("/examples/delete_row/:index", (c) => {
-      const index = Number(c.req.param("index"))
-      rows = rows.filter((_, rowIndex) => rowIndex !== index)
-      return reply.patch(<DeleteRowTable />)
-    })
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Delete Row"
+      slug="delete_row"
+      summary="Confirms a delete action and patches the remaining table rows from the server."
+      source="https://data-star.dev/examples/delete_row"
+    >
+      <DeleteRowTable />
+    </ExampleLayout>,
+    {
+      title: "Delete Row - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
 
-    app.patch("/examples/delete_row/reset", () => {
-      rows = initialRows.map((row) => ({ ...row }))
-      return reply.patch(<DeleteRowTable />)
-    })
-  }
-}
+example.delete("/:index", (c) => {
+  const index = Number(c.req.param("index"))
+  rows = rows.filter((_, rowIndex) => rowIndex !== index)
+  return reply.patch(<DeleteRowTable />)
+})
+
+example.patch("/reset", () => {
+  rows = initialRows.map((row) => ({ ...row }))
+  return reply.patch(<DeleteRowTable />)
+})

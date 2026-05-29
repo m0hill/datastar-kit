@@ -164,7 +164,7 @@ code {
   text-decoration: none;
 }
 
-.sidebar nav a[aria-current="page"] {
+.sidebar nav a.active {
   background: var(--accent-soft);
   color: #174ea6;
   font-weight: 650;

@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { readSignals } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 interface Todo {
   readonly id: number
@@ -51,7 +51,11 @@ const TodoMvc = () => {
   const allCompleted = todos.length > 0 && pending === 0
 
   return (
-    <section id="todomvc" class="todo-shell" {...ds.dataSignals({ input: "" }, { ifMissing: true })}>
+    <section
+      id="todomvc"
+      class="todo-shell"
+      {...ds.dataSignals({ input: "" }, { ifMissing: true })}
+    >
       <header class="todo-header">
         <input
           type="checkbox"
@@ -101,61 +105,60 @@ const TodoMvc = () => {
 
 const patchTodos = () => reply.patch(<TodoMvc />)
 
-export const todomvcExample: ExampleModule = {
-  slug: "todomvc",
-  title: "TodoMVC",
-  summary: "Implements the classic TodoMVC interactions with server-owned state and Datastar patches.",
-  source: "https://data-star.dev/examples/todomvc",
-  register(app) {
-    app.get("/examples/todomvc", () =>
-      examplePage({
-        title: "TodoMVC",
-        slug: "todomvc",
-        summary: this.summary,
-        source: this.source,
-        children: <TodoMvc />
-      })
-    )
+export const example = new Hono()
 
-    app.patch("/examples/todomvc/-1", async (c) => {
-      const { input = "" } = await readSignals<{ input?: string }>(c.req.raw)
-      const text = input.trim()
-      if (text.length > 0) {
-        todos = [...todos, { id: nextId, text, completed: false }]
-        nextId += 1
-      }
-      return reply.stream([event.signals({ input: "" }), event.patch(<TodoMvc />)])
-    })
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="TodoMVC"
+      slug="todomvc"
+      summary="Implements the classic TodoMVC interactions with server-owned state and Datastar patches."
+      source="https://data-star.dev/examples/todomvc"
+    >
+      <TodoMvc />
+    </ExampleLayout>,
+    {
+      title: "TodoMVC - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
 
-    app.post("/examples/todomvc/-1/toggle", () => {
-      const shouldComplete = todos.some((todo) => !todo.completed)
-      todos = todos.map((todo) => ({ ...todo, completed: shouldComplete }))
-      return patchTodos()
-    })
-
-    app.post("/examples/todomvc/:id/toggle", (c) => {
-      const id = Number(c.req.param("id"))
-      todos = todos.map((todo) =>
-        todo.id === id ? { ...todo, completed: !todo.completed } : todo
-      )
-      return patchTodos()
-    })
-
-    app.put("/examples/todomvc/mode/:mode", (c) => {
-      mode = Math.max(0, Math.min(2, Number(c.req.param("mode"))))
-      return patchTodos()
-    })
-
-    app.delete("/examples/todomvc/completed", () => {
-      todos = todos.filter((todo) => !todo.completed)
-      return patchTodos()
-    })
-
-    app.put("/examples/todomvc/reset", () => {
-      todos = initialTodos.map((todo) => ({ ...todo }))
-      nextId = 5
-      mode = 0
-      return reply.stream([event.signals({ input: "" }), event.patch(<TodoMvc />)])
-    })
+example.patch("/-1", async (c) => {
+  const { input = "" } = await readSignals<{ input?: string }>(c.req.raw)
+  const text = input.trim()
+  if (text.length > 0) {
+    todos = [...todos, { id: nextId, text, completed: false }]
+    nextId += 1
   }
-}
+  return reply.stream([event.signals({ input: "" }), event.patch(<TodoMvc />)])
+})
+
+example.post("/-1/toggle", () => {
+  const shouldComplete = todos.some((todo) => !todo.completed)
+  todos = todos.map((todo) => ({ ...todo, completed: shouldComplete }))
+  return patchTodos()
+})
+
+example.post("/:id/toggle", (c) => {
+  const id = Number(c.req.param("id"))
+  todos = todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo))
+  return patchTodos()
+})
+
+example.put("/mode/:mode", (c) => {
+  mode = Math.max(0, Math.min(2, Number(c.req.param("mode"))))
+  return patchTodos()
+})
+
+example.delete("/completed", () => {
+  todos = todos.filter((todo) => !todo.completed)
+  return patchTodos()
+})
+
+example.put("/reset", () => {
+  todos = initialTodos.map((todo) => ({ ...todo }))
+  nextId = 5
+  mode = 0
+  return reply.stream([event.signals({ input: "" }), event.patch(<TodoMvc />)])
+})

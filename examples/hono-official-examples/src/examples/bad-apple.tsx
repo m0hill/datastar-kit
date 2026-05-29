@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { sleep } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 const frames = [
   String.raw`
@@ -74,35 +74,36 @@ const BadApplePanel = () => (
   </div>
 )
 
-export const badAppleExample: ExampleModule = {
-  slug: "bad_apple",
-  title: "Bad Apple",
-  summary: "Streams signal patches that update a progress control and ASCII frame output.",
-  source: "https://data-star.dev/examples/bad_apple",
-  register(app) {
-    app.get("/examples/bad_apple", () =>
-      examplePage({
-        title: "Bad Apple",
-        slug: "bad_apple",
-        summary: this.summary,
-        source: this.source,
-        children: <BadApplePanel />
+export const example = new Hono()
+
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Bad Apple"
+      slug="bad_apple"
+      summary="Streams signal patches that update a progress control and ASCII frame output."
+      source="https://data-star.dev/examples/bad_apple"
+    >
+      <BadApplePanel />
+    </ExampleLayout>,
+    {
+      title: "Bad Apple - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
+
+example.get("/updates", (c) => {
+  async function* stream() {
+    const total = 60
+    for (let index = 0; index <= total && !c.req.raw.signal.aborted; index += 1) {
+      yield event.signals({
+        _percentage: (index / total) * 100,
+        _contents: frames[index % frames.length] ?? firstFrame
       })
-    )
-
-    app.get("/examples/bad_apple/updates", (c) => {
-      async function* stream() {
-        const total = 60
-        for (let index = 0; index <= total && !c.req.raw.signal.aborted; index += 1) {
-          yield event.signals({
-            _percentage: (index / total) * 100,
-            _contents: frames[index % frames.length] ?? firstFrame
-          })
-          await sleep(90)
-        }
-      }
-
-      return reply.stream(stream(), { heartbeat: { intervalMs: 15_000, comment: "bad-apple" } })
-    })
+      await sleep(90)
+    }
   }
-}
+
+  return reply.stream(stream(), { heartbeat: { intervalMs: 15_000, comment: "bad-apple" } })
+})

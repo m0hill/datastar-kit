@@ -1,24 +1,52 @@
 import { reply, type HtmlChild } from "datastar-kit"
-import type { ExampleModule, ExamplePageOptions } from "./types.js"
-import { examples } from "./registry.js"
+
+const examples = [
+  { slug: "active_search", title: "Active Search" },
+  { slug: "animations", title: "Animations" },
+  { slug: "bad_apple", title: "Bad Apple" },
+  { slug: "bulk_update", title: "Bulk Update" },
+  { slug: "click_to_edit", title: "Click To Edit" },
+  { slug: "click_to_load", title: "Click To Load" },
+  { slug: "custom_event", title: "Custom Event" },
+  { slug: "custom_plugin", title: "Custom Plugin" },
+  { slug: "dbmon", title: "DBmon" },
+  { slug: "delete_row", title: "Delete Row" },
+  { slug: "edit_row", title: "Edit Row" },
+  { slug: "event_bubbling", title: "Event Bubbling" },
+  { slug: "file_upload", title: "File Upload" },
+  { slug: "form_data", title: "Form Data" },
+  { slug: "infinite_scroll", title: "Infinite Scroll" },
+  { slug: "inline_validation", title: "Inline Validation" },
+  { slug: "lazy_load", title: "Lazy Load" },
+  { slug: "lazy_tabs", title: "Lazy Tabs" },
+  { slug: "on_signal_patch", title: "On Signal Patch" },
+  { slug: "progress_bar", title: "Progress Bar" },
+  { slug: "progressive_load", title: "Progressive Load" },
+  { slug: "sortable", title: "Sortable" },
+  { slug: "svg_morphing", title: "SVG Morphing" },
+  { slug: "templ_counter", title: "Templ Counter" },
+  { slug: "title_update", title: "Title Update" },
+  { slug: "todomvc", title: "TodoMVC" },
+  { slug: "web_component", title: "Web Component" }
+] as const
 
 export const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
 
-const pageHead = (extra?: HtmlChild | readonly HtmlChild[]): readonly HtmlChild[] => [
+export const pageHead = (extra?: HtmlChild | readonly HtmlChild[]): readonly HtmlChild[] => [
   <meta name="viewport" content="width=device-width, initial-scale=1" />,
   <link rel="stylesheet" href="/public/styles.css" />,
   <script type="module" src={DATASTAR_RUNTIME} />,
   ...(extra === undefined ? [] : Array.isArray(extra) ? extra : [extra])
 ]
 
-const Shell = (props: {
+export const Shell = (props: {
   readonly title: string
   readonly activeSlug?: string
   readonly children: HtmlChild | readonly HtmlChild[]
-}) => (
+}): import("datastar-kit/jsx-runtime").JSX.Element => (
   <main class="shell">
-    <aside class="sidebar" aria-label="Examples">
+    <aside class="sidebar">
       <a class="brand" href="/">
         Datastar Kit Examples
       </a>
@@ -26,14 +54,14 @@ const Shell = (props: {
         {examples.map((example) => (
           <a
             href={`/examples/${example.slug}`}
-            aria-current={example.slug === props.activeSlug ? "page" : undefined}
+            class={example.slug === props.activeSlug ? "active" : undefined}
           >
             {example.title}
           </a>
         ))}
       </nav>
     </aside>
-    <section class="content" aria-labelledby="page-title">
+    <section class="content">
       <header class="page-header">
         <div>
           <a class="back-link" href="/">
@@ -47,43 +75,20 @@ const Shell = (props: {
   </main>
 )
 
-export const indexPage = (): Response =>
-  reply.page(
-    <Shell title="Official Datastar Examples">
-      <section class="panel">
-        <p>This app implements all official Datastar examples using Datastar Kit.</p>
-      </section>
-    </Shell>,
-    {
-      title: "Official Datastar Examples",
-      head: pageHead()
-    }
-  )
-
-export const examplePage = (options: ExamplePageOptions): Response =>
-  reply.page(
-    <Shell title={options.title} activeSlug={options.slug}>
-      <section class="intro">
-        <p>{options.summary}</p>
-        <a href={options.source} target="_blank" rel="noreferrer">
-          Official example
-        </a>
-      </section>
-      <section class="demo" aria-label={`${options.title} demo`}>
-        {options.children}
-      </section>
-    </Shell>,
-    {
-      title: `${options.title} - Datastar Kit`,
-      head: pageHead(options.head)
-    }
-  )
-
-export const notImplementedPage = (example: ExampleModule): Response =>
-  examplePage({
-    title: example.title,
-    slug: example.slug,
-    summary: example.summary,
-    source: example.source,
-    children: <p>This example has not been implemented yet.</p>
-  })
+export const ExampleLayout = (props: {
+  readonly title: string
+  readonly slug: string
+  readonly summary: string
+  readonly source: string
+  readonly children: HtmlChild | readonly HtmlChild[]
+}): import("datastar-kit/jsx-runtime").JSX.Element => (
+  <Shell title={props.title} activeSlug={props.slug}>
+    <section class="intro">
+      <p>{props.summary}</p>
+      <a href={props.source} target="_blank" rel="noreferrer">
+        Official example
+      </a>
+    </section>
+    <section class="demo">{props.children}</section>
+  </Shell>
+)

@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { readSignals, sleep } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 const throbStates = [
   { fg: "#174ea6", bg: "#fff4cc", label: "blue on yellow" },
@@ -62,81 +62,80 @@ const FadeInButton = ({ visible = true }: { readonly visible?: boolean }) => (
   </button>
 )
 
-export const animationsExample: ExampleModule = {
-  slug: "animations",
-  title: "Animations",
-  summary: "Uses stable element ids, SSE patches, and view transitions for CSS-driven animation.",
-  source: "https://data-star.dev/examples/animations",
-  register(app) {
-    app.get("/examples/animations", () =>
-      examplePage({
-        title: "Animations",
-        slug: "animations",
-        summary: this.summary,
-        source: this.source,
-        children: (
-          <div class="stack">
-            <section class="subdemo">
-              <h2>Color Throb</h2>
-              <div {...ds.init(ds.get("/examples/animations/throb"))}>
-                <Throb index={1} />
-              </div>
-            </section>
-            <section class="subdemo">
-              <h2>View Transitions</h2>
-              <ViewTransitionButton restored={false} />
-            </section>
-            <section class="subdemo">
-              <h2>Fade Out On Swap</h2>
-              <FadeOutButton />
-            </section>
-            <section class="subdemo">
-              <h2>Fade In On Addition</h2>
-              <FadeInButton />
-            </section>
+export const example = new Hono()
+
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Animations"
+      slug="animations"
+      summary="Uses stable element ids, SSE patches, and view transitions for CSS-driven animation."
+      source="https://data-star.dev/examples/animations"
+    >
+      <div class="stack">
+        <section class="subdemo">
+          <h2>Color Throb</h2>
+          <div {...ds.init(ds.get("/examples/animations/throb"))}>
+            <Throb index={1} />
           </div>
-        )
-      })
-    )
+        </section>
+        <section class="subdemo">
+          <h2>View Transitions</h2>
+          <ViewTransitionButton restored={false} />
+        </section>
+        <section class="subdemo">
+          <h2>Fade Out On Swap</h2>
+          <FadeOutButton />
+        </section>
+        <section class="subdemo">
+          <h2>Fade In On Addition</h2>
+          <FadeInButton />
+        </section>
+      </div>
+    </ExampleLayout>,
+    {
+      title: "Animations - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
 
-    app.get("/examples/animations/throb", (c) => {
-      async function* stream() {
-        let index = 0
-        while (!c.req.raw.signal.aborted) {
-          yield event.patch(<Throb index={index} />)
-          index += 1
-          await sleep(1000)
-        }
-      }
-
-      return reply.stream(stream(), { heartbeat: { intervalMs: 15_000, comment: "animations" } })
-    })
-
-    app.get("/examples/animations/view_transition", async (c) => {
-      const { shouldRestore = false } = await readSignals<{ shouldRestore?: boolean }>(c.req.raw)
-      return reply.patch(<ViewTransitionButton restored={!shouldRestore} />, {
-        useViewTransition: true
-      })
-    })
-
-    app.delete("/examples/animations/fade_out", () =>
-      reply.stream(
-        (async function* () {
-          yield event.patch(<FadeOutButton fading />)
-          await sleep(1000)
-          yield event.patch("", { selector: "#fade-out-swap", mode: "remove" })
-        })()
-      )
-    )
-
-    app.get("/examples/animations/fade_me_in", () =>
-      reply.stream(
-        (async function* () {
-          yield event.patch(<FadeInButton visible={false} />)
-          await sleep(40)
-          yield event.patch(<FadeInButton visible />)
-        })()
-      )
-    )
+example.get("/throb", (c) => {
+  async function* stream() {
+    let index = 0
+    while (!c.req.raw.signal.aborted) {
+      yield event.patch(<Throb index={index} />)
+      index += 1
+      await sleep(1000)
+    }
   }
-}
+
+  return reply.stream(stream(), { heartbeat: { intervalMs: 15_000, comment: "animations" } })
+})
+
+example.get("/view_transition", async (c) => {
+  const { shouldRestore = false } = await readSignals<{ shouldRestore?: boolean }>(c.req.raw)
+  return reply.patch(<ViewTransitionButton restored={!shouldRestore} />, {
+    useViewTransition: true
+  })
+})
+
+example.delete("/fade_out", () =>
+  reply.stream(
+    (async function* () {
+      yield event.patch(<FadeOutButton fading />)
+      await sleep(1000)
+      yield event.patch("", { selector: "#fade-out-swap", mode: "remove" })
+    })()
+  )
+)
+
+example.get("/fade_me_in", () =>
+  reply.stream(
+    (async function* () {
+      yield event.patch(<FadeInButton visible={false} />)
+      await sleep(40)
+      yield event.patch(<FadeInButton visible />)
+    })()
+  )
+)

@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { readSignals } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 const people = [
   ["Elda", "Reynolds"],
@@ -44,48 +44,47 @@ const Results = ({ search = "" }: { readonly search?: string | undefined }) => {
   )
 }
 
-export const activeSearchExample: ExampleModule = {
-  slug: "active_search",
-  title: "Active Search",
-  summary: "Filters a server-rendered result set as the user types.",
-  source: "https://data-star.dev/examples/active_search",
-  register(app) {
-    app.get("/examples/active_search", () =>
-      examplePage({
-        title: "Active Search",
-        slug: "active_search",
-        summary: this.summary,
-        source: this.source,
-        children: (
-          <div class="stack" {...state.attrs()}>
-            <label>
-              Search
-              <input
-                type="text"
-                placeholder="Search..."
-                {...ds.bind(state.$.search)}
-                {...ds.on("input", ds.get("/examples/active_search/search"), {
-                  debounce: "200ms"
-                })}
-              />
-            </label>
-            <table>
-              <thead>
-                <tr>
-                  <th>First Name</th>
-                  <th>Last Name</th>
-                </tr>
-              </thead>
-              <Results />
-            </table>
-          </div>
-        )
-      })
-    )
+export const example = new Hono()
 
-    app.get("/examples/active_search/search", async (c) => {
-      const signals = await readSignals<{ search?: string }>(c.req.raw)
-      return reply.patch(<Results search={signals.search} />)
-    })
-  }
-}
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Active Search"
+      slug="active_search"
+      summary="Filters a server-rendered result set as the user types."
+      source="https://data-star.dev/examples/active_search"
+    >
+      <div class="stack" {...state.attrs()}>
+        <label>
+          Search
+          <input
+            type="text"
+            placeholder="Search..."
+            {...ds.bind(state.$.search)}
+            {...ds.on("input", ds.get("/examples/active_search/search"), {
+              debounce: "200ms"
+            })}
+          />
+        </label>
+        <table>
+          <thead>
+            <tr>
+              <th>First Name</th>
+              <th>Last Name</th>
+            </tr>
+          </thead>
+          <Results />
+        </table>
+      </div>
+    </ExampleLayout>,
+    {
+      title: "Active Search - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
+
+example.get("/search", async (c) => {
+  const signals = await readSignals<{ search?: string }>(c.req.raw)
+  return reply.patch(<Results search={signals.search} />)
+})

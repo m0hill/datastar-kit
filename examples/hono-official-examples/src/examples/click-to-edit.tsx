@@ -1,7 +1,7 @@
+import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
-import { examplePage } from "../layout.js"
+import { ExampleLayout, pageHead } from "../layout.js"
 import { readSignals } from "../helpers.js"
-import type { ExampleModule } from "../types.js"
 
 interface Contact extends Record<string, string> {
   readonly firstName: string
@@ -105,39 +105,40 @@ const ContactForm = () => (
   </div>
 )
 
-export const clickToEditExample: ExampleModule = {
-  slug: "click_to_edit",
-  title: "Click To Edit",
-  summary: "Swaps a read-only record for an edit form and saves the signal payload server-side.",
-  source: "https://data-star.dev/examples/click_to_edit",
-  register(app) {
-    app.get("/examples/click_to_edit", () =>
-      examplePage({
-        title: "Click To Edit",
-        slug: "click_to_edit",
-        summary: this.summary,
-        source: this.source,
-        children: <ContactView />
-      })
-    )
+export const example = new Hono()
 
-    app.get("/examples/click_to_edit/edit", () => reply.patch(<ContactForm />))
-    app.get("/examples/click_to_edit/cancel", () => reply.patch(<ContactView />))
+example.get("/", () =>
+  reply.page(
+    <ExampleLayout
+      title="Click To Edit"
+      slug="click_to_edit"
+      summary="Swaps a read-only record for an edit form and saves the signal payload server-side."
+      source="https://data-star.dev/examples/click_to_edit"
+    >
+      <ContactView />
+    </ExampleLayout>,
+    {
+      title: "Click To Edit - Datastar Kit",
+      head: pageHead()
+    }
+  )
+)
 
-    app.patch("/examples/click_to_edit/reset", () => {
-      contact = { ...originalContact }
-      return reply.stream([event.signals(contact), event.patch(<ContactView />)])
-    })
+example.get("/edit", () => reply.patch(<ContactForm />))
+example.get("/cancel", () => reply.patch(<ContactView />))
 
-    app.put("/examples/click_to_edit", async (c) => {
-      const signals = await readSignals<Partial<Contact>>(c.req.raw)
-      contact = {
-        firstName: clean(signals.firstName, contact.firstName),
-        lastName: clean(signals.lastName, contact.lastName),
-        email: clean(signals.email, contact.email)
-      }
+example.patch("/reset", () => {
+  contact = { ...originalContact }
+  return reply.stream([event.signals(contact), event.patch(<ContactView />)])
+})
 
-      return reply.stream([event.signals(contact), event.patch(<ContactView />)])
-    })
+example.put("/", async (c) => {
+  const signals = await readSignals<Partial<Contact>>(c.req.raw)
+  contact = {
+    firstName: clean(signals.firstName, contact.firstName),
+    lastName: clean(signals.lastName, contact.lastName),
+    email: clean(signals.email, contact.email)
   }
-}
+
+  return reply.stream([event.signals(contact), event.patch(<ContactView />)])
+})
