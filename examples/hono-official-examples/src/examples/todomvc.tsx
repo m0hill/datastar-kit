@@ -18,7 +18,11 @@ const initialTodos: readonly Todo[] = [
 
 let nextId = 5
 let mode = 0
-let todos: Todo[] = initialTodos.map((todo) => ({ ...todo }))
+let todos: Todo[] = initialTodos.map((todo) => ({
+  id: todo.id,
+  text: todo.text,
+  completed: todo.completed
+}))
 
 const visibleTodos = () =>
   todos.filter((todo) => (mode === 1 ? !todo.completed : mode === 2 ? todo.completed : true))
@@ -157,7 +161,11 @@ example.delete("/completed", () => {
 })
 
 example.put("/reset", () => {
-  todos = initialTodos.map((todo) => ({ ...todo }))
+  todos = initialTodos.map((todo) => ({
+    id: todo.id,
+    text: todo.text,
+    completed: todo.completed
+  }))
   nextId = 5
   mode = 0
   return reply.stream([event.signals({ input: "" }), event.patch(<TodoMvc />)])

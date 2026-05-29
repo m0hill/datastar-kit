@@ -15,7 +15,7 @@ const initialRows: readonly EditableRow[] = [
   { name: "Kim Yee", email: "kim@yee.org" }
 ]
 
-let rows = initialRows.map((row) => ({ ...row }))
+let rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
 
 const DisplayRow = ({ row, index }: { readonly row: EditableRow; readonly index: number }) => (
   <tr id={`edit-row-${index}`}>
@@ -102,7 +102,7 @@ example.get("/:index/cancel", (c) => {
 })
 
 example.patch("/reset", () => {
-  rows = initialRows.map((row) => ({ ...row }))
+  rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
   return reply.patch(<EditRowTable />)
 })
 

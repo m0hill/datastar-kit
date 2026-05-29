@@ -8,4 +8,5 @@ export const randomInt = (min: number, max: number): number =>
 
 export const readSignals = async <T extends Record<string, unknown>>(
   request: Request
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
 ): Promise<T> => (await read.signals(request)) as T

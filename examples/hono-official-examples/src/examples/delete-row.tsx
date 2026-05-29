@@ -8,7 +8,7 @@ const initialRows = [
   { name: "Kim Yee", email: "kim@yee.org" }
 ]
 
-let rows = initialRows.map((row) => ({ ...row }))
+let rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
 
 const DeleteRowTable = () => (
   <div id="delete-row-demo" class="stack">
@@ -82,6 +82,6 @@ example.delete("/:index", (c) => {
 })
 
 example.patch("/reset", () => {
-  rows = initialRows.map((row) => ({ ...row }))
+  rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
   return reply.patch(<DeleteRowTable />)
 })

@@ -121,8 +121,8 @@ example.get("/", () =>
 example.put("/inputs", async (c) => {
   const signals = await readSignals<{ mutationRate?: number; fps?: number }>(c.req.raw)
   config = {
-    mutationRate: Math.max(0, Math.min(100, Number(signals.mutationRate ?? config.mutationRate))),
-    fps: Math.max(1, Math.min(12, Number(signals.fps ?? config.fps)))
+    mutationRate: Math.max(0, Math.min(100, signals.mutationRate ?? config.mutationRate)),
+    fps: Math.max(1, Math.min(12, signals.fps ?? config.fps))
   }
   return reply.done()
 })

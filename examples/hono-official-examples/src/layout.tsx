@@ -1,4 +1,4 @@
-import { reply, type HtmlChild } from "datastar-kit"
+import { type HtmlChild } from "datastar-kit"
 
 const examples = [
   { slug: "active_search", title: "Active Search" },
@@ -30,13 +30,13 @@ const examples = [
   { slug: "web_component", title: "Web Component" }
 ] as const
 
-export const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
-
 export const pageHead = (extra?: HtmlChild | readonly HtmlChild[]): readonly HtmlChild[] => [
   <meta name="viewport" content="width=device-width, initial-scale=1" />,
   <link rel="stylesheet" href="/public/styles.css" />,
-  <script type="module" src={DATASTAR_RUNTIME} />,
+  <script
+    type="module"
+    src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  />,
   ...(extra === undefined ? [] : Array.isArray(extra) ? extra : [extra])
 ]
 
@@ -44,7 +44,7 @@ export const Shell = (props: {
   readonly title: string
   readonly activeSlug?: string
   readonly children: HtmlChild | readonly HtmlChild[]
-}): import("datastar-kit/jsx-runtime").JSX.Element => (
+}) => (
   <main class="shell">
     <aside class="sidebar">
       <a class="brand" href="/">
@@ -81,7 +81,7 @@ export const ExampleLayout = (props: {
   readonly summary: string
   readonly source: string
   readonly children: HtmlChild | readonly HtmlChild[]
-}): import("datastar-kit/jsx-runtime").JSX.Element => (
+}) => (
   <Shell title={props.title} activeSlug={props.slug}>
     <section class="intro">
       <p>{props.summary}</p>

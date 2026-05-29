@@ -16,7 +16,11 @@ const initialRows: readonly BulkRow[] = [
   { name: "Kim Yee", email: "kim@yee.org", status: "Inactive" }
 ]
 
-let rows: BulkRow[] = initialRows.map((row) => ({ ...row }))
+let rows: BulkRow[] = initialRows.map((row) => ({
+  name: row.name,
+  email: row.email,
+  status: row.status
+}))
 
 const selectionDefaults = () => Array.from({ length: rows.length }, () => false)
 
@@ -96,7 +100,15 @@ const updateSelectedRows = async (
 ): Promise<Response> => {
   const signals = await readSignals<{ selections?: readonly boolean[] }>(request)
   const selections = signals.selections ?? []
-  rows = rows.map((row, index) => (selections[index] === true ? { ...row, status } : row))
+  rows = rows.map((row, index) =>
+    selections[index] === true
+      ? {
+          name: row.name,
+          email: row.email,
+          status
+        }
+      : row
+  )
 
   return reply.stream([
     event.signals({ _all: false, selections: selectionDefaults() }),
