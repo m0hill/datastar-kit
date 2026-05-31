@@ -21,7 +21,11 @@ example.get("/", () =>
           >
             Alert using an action
           </button>
-          <button class="warning" type="button" data-alert="'Hello from an attribute'">
+          <button
+            class="warning"
+            type="button"
+            {...ds.pluginAttr("alert", "Hello from an attribute")}
+          >
             Alert using an attribute
           </button>
         </div>

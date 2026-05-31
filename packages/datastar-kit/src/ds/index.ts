@@ -36,6 +36,8 @@ export {
   onInterval,
   onSignalPatch,
   onSignalPatchFilter,
+  pluginAttr,
+  PluginAttributeNameError,
   preserveAttr,
   ref,
   show,

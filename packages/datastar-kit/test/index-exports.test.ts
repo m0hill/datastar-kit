@@ -16,6 +16,7 @@ describe("package root exports", () => {
     expect(ds.signal).toBeDefined()
     expect(ds.state).toBeDefined()
     expect(ds.action).toBeDefined()
+    expect(ds.pluginAttr).toBeDefined()
     expect(ds.delete).toBeDefined()
     expect(event.patch).toBeDefined()
     expect(event.signals).toBeDefined()

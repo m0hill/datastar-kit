@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest"
-import { jsonSignals, preserveAttr, ref, regex, signal, SignalNameError } from "../src/ds/index.js"
+import {
+  jsonSignals,
+  pluginAttr,
+  PluginAttributeNameError,
+  preserveAttr,
+  ref,
+  regex,
+  signal,
+  SignalNameError
+} from "../src/ds/index.js"
 
 describe("misc Datastar attribute helpers", () => {
   it("builds data-ref attributes from names and signals", () => {
@@ -22,5 +31,22 @@ describe("misc Datastar attribute helpers", () => {
     expect(preserveAttr("open", "class")).toEqual({
       "data-preserve-attr": "open class"
     })
+  })
+
+  it("builds custom plugin attributes", () => {
+    const modalOpen = signal<boolean, "modalOpen">("modalOpen")
+
+    expect(pluginAttr("alert", "Hello from an attribute")).toEqual({
+      "data-alert": '"Hello from an attribute"'
+    })
+    expect(pluginAttr("focus-when", modalOpen)).toEqual({
+      "data-focus-when": "$modalOpen"
+    })
+    expect(pluginAttr("loaded")).toEqual({ "data-loaded": true })
+  })
+
+  it("rejects invalid custom plugin attribute names", () => {
+    expect(() => pluginAttr("data-alert", "bad")).toThrow(PluginAttributeNameError)
+    expect(() => pluginAttr("bad attr", "bad")).toThrow(PluginAttributeNameError)
   })
 })

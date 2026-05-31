@@ -52,6 +52,15 @@ export interface DataSignalsOptions {
   readonly ifMissing?: boolean
 }
 
+/**
+ * Error thrown when a custom Datastar plugin attribute name cannot be rendered safely.
+ */
+export class PluginAttributeNameError extends Error {
+  constructor(readonly attributeName: string) {
+    super(`Invalid Datastar plugin attribute name: ${JSON.stringify(attributeName)}`)
+  }
+}
+
 /** A nested object of computed signal functions. */
 export type DataComputedValue =
   | Expr<DatastarFunction>
@@ -63,6 +72,14 @@ export type DataComputedObject = Readonly<Record<string, DataComputedValue>>
 const assertUnmodifiedSignalName = (name: string, modifiers: CaseModifiers): void => {
   if (modifiers.case === undefined) {
     assertSignalName(name)
+  }
+}
+
+const pluginAttributeNamePattern = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
+
+const assertPluginAttributeName = (name: string): void => {
+  if (!pluginAttributeNamePattern.test(name) || name.startsWith("data-")) {
+    throw new PluginAttributeNameError(name)
   }
 }
 
@@ -267,6 +284,21 @@ export const dataAttr = (name: string, expression: ExprInput<unknown>): HtmlProp
 export const dataAttrs = (mapping: Readonly<Record<string, ExprInput<unknown>>>): HtmlProps => ({
   "data-attr": toJs(mapping)
 })
+
+/**
+ * Creates an app-defined Datastar plugin attribute such as `data-alert`.
+ *
+ * Pass the plugin name without the `data-` prefix. When a value is supplied, it is serialized as a
+ * Datastar expression; omit the value for boolean/no-value attribute plugins.
+ *
+ * @throws {@link PluginAttributeNameError} When the plugin attribute name is invalid.
+ */
+export function pluginAttr(name: string): HtmlProps
+export function pluginAttr(name: string, value: ExprInput<unknown>): HtmlProps
+export function pluginAttr(name: string, value?: ExprInput<unknown>): HtmlProps {
+  assertPluginAttributeName(name)
+  return { [`data-${name}`]: arguments.length < 2 ? true : toJs(value) }
+}
 
 /** Creates a keyed Datastar `data-class:*` attribute. @see https://data-star.dev/reference/attributes#data-class */
 export const dataClass = (

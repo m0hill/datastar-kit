@@ -74,7 +74,7 @@ app.get("/", () =>
             <button
               type="button"
               class="secondary"
-              data-focus-when={dialogState.$.modalOpen.toDatastarExpression()}
+              {...ds.pluginAttr("focus-when", dialogState.$.modalOpen)}
               {...ds.on("click", ds.action("setSignal", dialogState.$.modalOpen.name, false))}
             >
               Cancel

@@ -131,15 +131,16 @@ For Datastar's form transport, pass `contentType: "form"` in the fetch action op
 
 `selector: null` tells Datastar to submit the closest form.
 
-## Custom browser actions
+## Custom browser actions and plugins
 
-Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, register a Datastar action or plugin in a browser module and call it from TSX with `ds.action(...)`:
+Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, register a Datastar action or plugin in a browser module and call it from TSX with `ds.action(...)` or `ds.pluginAttr(...)`:
 
 ```tsx
 const modalOpen = ds.signal<boolean>("modalOpen")
 
 <button {...ds.on("click", ds.action("setSignal", "modalOpen", true))}>Open</button>
 <dialog {...ds.effect(ds.action("syncDialog", modalOpen))} />
+<button {...ds.pluginAttr("focus-when", modalOpen)}>Cancel</button>
 ```
 
 See `examples/hono-custom-actions` for a complete example.

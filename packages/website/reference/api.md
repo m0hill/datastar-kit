@@ -63,6 +63,7 @@ Fetch action options include `headers`, `contentType`, `filterSignals`, `payload
 | `ds.init(expression, modifiers?)`                            | Render `data-init`.                           |
 | `ds.ref(...)`, `ds.indicator(...)`                           | Render Datastar ref and indicator attributes. |
 | `ds.dataAttr(...)`, `ds.dataAttrs(...)`                      | Render reactive DOM attributes.               |
+| `ds.pluginAttr(name, value?)`                                | Render app-defined plugin attributes.         |
 | `ds.dataClass(...)`, `ds.dataClasses(...)`                   | Render reactive class bindings.               |
 | `ds.dataStyle(...)`, `ds.dataStyles(...)`                    | Render reactive style bindings.               |
 | `ds.dataComputed(...)`, `ds.dataComputeds(...)`              | Render computed signal definitions.           |
