@@ -46,3 +46,7 @@
 11. `Tighten worker live todo response paths`
     - Centralized the D1 Worker live todo room lookup.
     - Replaced single-event Durable Object todo streams with `reply.patch(...)`.
+
+12. `Use lint-clean regex validation`
+    - Replaced constructor side-effect validation with a direct `RegExp(...)` call.
+    - Kept the `ds.regex(...)` Interface and output unchanged.

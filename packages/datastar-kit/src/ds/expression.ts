@@ -134,7 +134,7 @@ export class RegexExpressionError extends Error {
  */
 export const regex = (pattern: string, flags = ""): Expr<RegExp> => {
   try {
-    new RegExp(pattern, flags)
+    RegExp(pattern, flags)
   } catch (cause) {
     throw new RegexExpressionError(pattern, flags, { cause })
   }
