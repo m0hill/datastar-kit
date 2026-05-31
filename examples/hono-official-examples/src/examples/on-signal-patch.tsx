@@ -22,14 +22,20 @@ example.get("/", () =>
       <div class="stack" {...state.attrs()}>
         <div class="actions">
           <button
-            {...ds.on("click", ds.expr("$message = `Updated: ${performance.now().toFixed(2)}`"))}
+            {...ds.on(
+              "click",
+              ds.expr`${state.$.message} = ${"Updated: "} + performance.now().toFixed(2)`
+            )}
           >
             Update Message
           </button>
-          <button {...ds.on("click", ds.expr("$counter++"))}>Increment Counter</button>
+          <button {...ds.on("click", ds.expr`${state.$.counter}++`)}>Increment Counter</button>
           <button
             class="error"
-            {...ds.on("click", ds.expr("$allChanges.length = 0; $counterChanges.length = 0"))}
+            {...ds.on(
+              "click",
+              ds.expr`${state.$.allChanges}.length = 0; ${state.$.counterChanges}.length = 0`
+            )}
           >
             Clear All Changes
           </button>
@@ -38,32 +44,32 @@ example.get("/", () =>
           <section class="subdemo">
             <h2>Current Values</h2>
             <p>
-              Counter: <span {...ds.text(ds.expr("$counter"))}></span>
+              Counter: <span {...ds.text(state.$.counter)}></span>
             </p>
             <p>
-              Message: <span {...ds.text(ds.expr("$message"))}></span>
+              Message: <span {...ds.text(state.$.message)}></span>
             </p>
           </section>
           <section
             class="subdemo"
-            {...ds.onSignalPatch(ds.expr("$counterChanges.push(patch)"))}
+            {...ds.onSignalPatch(ds.expr`${state.$.counterChanges}.push(patch)`)}
             {...ds.onSignalPatchFilter({ include: ds.regex("^counter$") })}
           >
             <h2>Counter Changes Only</h2>
             <pre
               class="signal-log"
-              {...ds.text(ds.expr("JSON.stringify({ counterChanges: $counterChanges })"))}
+              {...ds.text(ds.expr`JSON.stringify({ counterChanges: ${state.$.counterChanges} })`)}
             ></pre>
           </section>
           <section
             class="subdemo"
-            {...ds.onSignalPatch(ds.expr("$allChanges.push(patch)"))}
+            {...ds.onSignalPatch(ds.expr`${state.$.allChanges}.push(patch)`)}
             {...ds.onSignalPatchFilter({ exclude: ds.regex("(^|\\.)_|allChanges|counterChanges") })}
           >
             <h2>All Signal Changes</h2>
             <pre
               class="signal-log"
-              {...ds.text(ds.expr("JSON.stringify({ allChanges: $allChanges })"))}
+              {...ds.text(ds.expr`JSON.stringify({ allChanges: ${state.$.allChanges} })`)}
             ></pre>
           </section>
         </div>

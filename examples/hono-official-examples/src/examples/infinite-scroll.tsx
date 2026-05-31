@@ -72,7 +72,7 @@ example.get("/", () =>
         {...ds.init(
           ds.get("/examples/infinite_scroll/initial", {
             payload: {
-              limit: ds.expr("Math.ceil(window.innerHeight / 44) + 4")
+              limit: ds.expr`Math.ceil(window.innerHeight / 44) + 4`
             }
           })
         )}

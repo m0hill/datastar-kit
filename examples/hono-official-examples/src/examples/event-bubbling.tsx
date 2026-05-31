@@ -38,7 +38,7 @@ example.get("/", () =>
           class="keypad"
           {...ds.on(
             "click",
-            ds.expr("$key = evt.target.closest('button[data-id]')?.dataset.id ?? $key")
+            ds.expr`${state.$.key} = evt.target.closest(${"button[data-id]"})?.dataset.id ?? ${state.$.key}`
           )}
         >
           {keys.map((key) => (

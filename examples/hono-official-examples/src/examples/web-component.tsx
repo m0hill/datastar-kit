@@ -3,6 +3,7 @@ import { ds, reply } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const state = ds.state({ _name: "Your Name" })
+const reversed = ds.local<string>("reversed")
 
 export const example = new Hono()
 
@@ -19,10 +20,10 @@ example.get("/", () =>
           Reversed
           <input type="text" {...ds.bind(state.$._name)} />
         </label>
-        <span {...ds.dataSignal("_reversed", "")} {...ds.text(ds.expr("$_reversed"))}></span>
+        <span {...ds.dataSignal(reversed.name, "")} {...ds.text(reversed)}></span>
         <reverse-component
-          {...ds.on("reverse", ds.expr("$_reversed = evt.detail.value"))}
-          {...ds.dataAttr("name", ds.expr("$_name"))}
+          {...ds.on("reverse", ds.expr`${reversed} = evt.detail.value`)}
+          {...ds.dataAttr("name", state.$._name)}
         ></reverse-component>
       </div>
     </ExampleLayout>,

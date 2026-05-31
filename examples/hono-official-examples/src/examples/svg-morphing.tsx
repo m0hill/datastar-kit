@@ -78,14 +78,16 @@ const AnimatedSvg = ({ radius = 20, fill = "green" }: { radius?: number; fill?: 
   </svg>
 )
 
+const fetching = ds.local<boolean>("fetching")
+
 const SvgMorphingDemo = () => (
   <div class="grid morph-grid">
     <section class="subdemo">
       <ColorSvg />
       <button
         class="info"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
         {...ds.on("click", ds.get("/examples/svg_morphing/circle_color"))}
       >
         Change Color
@@ -95,8 +97,8 @@ const SvgMorphingDemo = () => (
       <SizeSvg />
       <button
         class="info"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
         {...ds.on("click", ds.get("/examples/svg_morphing/circle_size"))}
       >
         Change Radius
@@ -106,8 +108,8 @@ const SvgMorphingDemo = () => (
       <ShapeSvg />
       <button
         class="info"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
         {...ds.on("click", ds.get("/examples/svg_morphing/shape_transform"))}
       >
         Random Shape
@@ -117,8 +119,8 @@ const SvgMorphingDemo = () => (
       <MultiSvg />
       <button
         class="info"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
         {...ds.on("click", ds.get("/examples/svg_morphing/multiple_elements"))}
       >
         Randomize All Circles
@@ -128,8 +130,8 @@ const SvgMorphingDemo = () => (
       <AnimatedSvg />
       <button
         class="success"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
         {...ds.on("click", ds.get("/examples/svg_morphing/animated_morph"))}
       >
         Start Animation Sequence

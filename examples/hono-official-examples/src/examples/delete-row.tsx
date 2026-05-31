@@ -10,9 +10,10 @@ const initialRows = [
 ]
 
 let rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
+const fetching = ds.local<boolean>("fetching")
 
 const DeleteRowTable = () => (
-  <div id="demo" {...ds.dataSignal("_fetching", false, { ifMissing: true })}>
+  <div id="demo" {...ds.dataSignal(fetching.name, false, { ifMissing: true })}>
     <table>
       <thead>
         <tr>
@@ -38,10 +39,10 @@ const DeleteRowTable = () => (
                   class="error"
                   {...ds.on(
                     "click",
-                    ds.expr(`confirm('Are you sure?') && @delete('/examples/delete_row/${index}')`)
+                    ds.expr`confirm(${"Are you sure?"}) && ${ds.delete(`/examples/delete_row/${index}`)}`
                   )}
-                  {...ds.indicator("_fetching")}
-                  {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+                  {...ds.indicator(fetching)}
+                  {...ds.dataAttr("disabled", fetching)}
                 >
                   Delete
                 </button>
@@ -54,7 +55,7 @@ const DeleteRowTable = () => (
     <button
       class="warning"
       {...ds.on("click", ds.put("/examples/delete_row/reset"))}
-      {...ds.indicator("_fetching")}
+      {...ds.indicator(fetching)}
     >
       Reset
     </button>

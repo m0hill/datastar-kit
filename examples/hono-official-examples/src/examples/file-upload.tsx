@@ -71,8 +71,8 @@ example.get("/", () =>
           <input
             type="file"
             multiple
-            {...ds.bind("files")}
-            {...ds.on("change", ds.expr("$errors.files = ''"))}
+            {...ds.bind(state.$.files)}
+            {...ds.on("change", ds.expr`${state.$.errors.files} = ${""}`)}
           />
         </label>
         <small
@@ -83,8 +83,11 @@ example.get("/", () =>
         ></small>
         <button
           class="warning"
-          {...ds.dataAttr("disabled", ds.expr("!$files.length"))}
-          {...ds.on("click", ds.expr("$files.length && @post('/examples/file_upload')"))}
+          {...ds.dataAttr("disabled", ds.expr`!${state.$.files}.length`)}
+          {...ds.on(
+            "click",
+            ds.expr`${state.$.files}.length && ${ds.post("/examples/file_upload")}`
+          )}
         >
           Submit
         </button>

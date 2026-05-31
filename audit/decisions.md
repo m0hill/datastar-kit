@@ -23,3 +23,9 @@
 - Decision: Use public JavaScript modules for browser-only example code.
 - Reasoning: Inline `unsafeHtml(...)` is appropriate for trusted HTML boundaries, not as the main authoring surface for DOM-heavy scripts. A script module is a better Seam: TSX owns markup, browser modules own browser APIs.
 - Rejected alternative: Add an SDK script-builder DSL. That would reinvent JavaScript instead of using the platform.
+
+## D-005: Use existing expression interpolation before adding an expression DSL
+
+- Decision: Replace raw expression strings in examples with tagged `ds.expr` templates and signal/action refs.
+- Reasoning: The SDK already has a Datastar expression Interface that serializes refs and literals. Using it gives leverage without hiding Datastar's expression language.
+- Rejected alternative: Add builders such as `assign(...)`, `when(...)`, or `onKey(...)`. That would create a second expression language and fail the guardrail against abstraction towers.

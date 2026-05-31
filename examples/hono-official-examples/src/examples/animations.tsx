@@ -27,14 +27,15 @@ const Throb = ({ index }: { index: number }) => {
 
 const ViewTransitionButton = ({ restored }: { restored: boolean }) => {
   const state = ds.state({ shouldRestore: restored })
+  const fetching = ds.local<boolean>("vtFetching")
 
   return (
     <button
       id="view-transition"
       class={restored ? "success" : "info"}
       {...state.attrs()}
-      {...ds.indicator("_vtFetching")}
-      {...ds.dataAttr("disabled", ds.expr("$_vtFetching"))}
+      {...ds.indicator(fetching)}
+      {...ds.dataAttr("disabled", fetching)}
       {...ds.on("click", ds.get("/examples/animations/view_transition"))}
     >
       {restored ? "Restored. Swap again." : "Swap It!"}
@@ -42,19 +43,23 @@ const ViewTransitionButton = ({ restored }: { restored: boolean }) => {
   )
 }
 
+const fadeOutFetching = ds.local<boolean>("fadeOutFetching")
+
 const FadeOutButton = ({ fading = false }: { fading?: boolean }) => (
   <button
     id="fade-out-swap"
     class="warning"
     style={fading ? "transition: opacity 1s ease-out; opacity: 0" : undefined}
     disabled={fading}
-    {...ds.indicator("_fadeOutFetching")}
-    {...ds.dataAttr("disabled", ds.expr("$_fadeOutFetching"))}
+    {...ds.indicator(fadeOutFetching)}
+    {...ds.dataAttr("disabled", fadeOutFetching)}
     {...ds.on("click", ds.delete("/examples/animations"))}
   >
     Fade out then delete on click
   </button>
 )
+
+const fadeInFetching = ds.local<boolean>("fadeInFetching")
 
 const FadeInButton = ({ invisible = false }: { invisible?: boolean }) => (
   <button
@@ -62,8 +67,8 @@ const FadeInButton = ({ invisible = false }: { invisible?: boolean }) => (
     class="success"
     style={invisible ? "opacity: 0" : "transition: opacity 1s ease-out"}
     disabled={invisible}
-    {...ds.indicator("_fadeInFetching")}
-    {...ds.dataAttr("disabled", ds.expr("$_fadeInFetching"))}
+    {...ds.indicator(fadeInFetching)}
+    {...ds.dataAttr("disabled", fadeInFetching)}
     {...ds.on("click", ds.get("/examples/animations/fade_me_in"))}
   >
     Fade me in on click

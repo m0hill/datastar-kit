@@ -9,3 +9,8 @@
    - Moved Custom Event, Sortable, and Web Component browser code out of inline `unsafeHtml(...)`.
    - Added public module files served by the official examples app.
    - Verified with `pnpm --filter @datastar-kit/example-hono-official-examples typecheck`.
+
+3. `Use signal refs in official expressions`
+   - Replaced raw `ds.expr("...")` signal/action strings in official example TSX with tagged `ds.expr` templates and typed refs.
+   - Corrected Bulk Update's loading state from unused `fetching` to the `_fetching` signal consumed by `data-indicator`.
+   - Verified with `pnpm --filter @datastar-kit/example-hono-official-examples typecheck`.

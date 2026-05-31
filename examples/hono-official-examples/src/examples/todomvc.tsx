@@ -41,17 +41,17 @@ const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
           id="edit-todo"
           type="text"
           {...ds.bind(state.$.input)}
-          {...ds.init(ds.expr("el.focus()"))}
+          {...ds.init(ds.expr`el.focus()`)}
           {...ds.on("blur", ds.put("/examples/todomvc/cancel"))}
           {...ds.on(
             "keydown",
-            ds.expr(`
-              if (evt.key === 'Escape') {
+            ds.expr`
+              if (evt.key === ${"Escape"}) {
                 el.blur()
-              } else if (evt.key === 'Enter' && $input.trim()) {
-                @patch('/examples/todomvc/${index}')
+              } else if (evt.key === ${"Enter"} && ${state.$.input}.trim()) {
+                ${ds.patch(`/examples/todomvc/${index}`)}
               }
-            `)
+            `
           )}
         />
       </li>
@@ -63,12 +63,12 @@ const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
       class={todo.completed ? "completed" : undefined}
       role="button"
       tabindex="0"
-      {...ds.on("dblclick", ds.expr(`evt.target === el && @get('/examples/todomvc/${index}')`))}
+      {...ds.on("dblclick", ds.expr`evt.target === el && ${ds.get(`/examples/todomvc/${index}`)}`)}
     >
       <input
         id={`todo-checkbox-${index}`}
         type="checkbox"
-        {...ds.init(ds.expr(`el.checked = ${todo.completed}`))}
+        {...ds.init(ds.expr`el.checked = ${todo.completed}`)}
         {...ds.on("click", ds.post(`/examples/todomvc/${index}/toggle`), { prevent: true })}
       />
       <label for={`todo-checkbox-${index}`}>
@@ -101,7 +101,7 @@ const TodoMvc = () => {
         <input
           type="checkbox"
           aria-label="Toggle all todos"
-          {...ds.init(ds.expr(`el.checked = ${allCompleted}`))}
+          {...ds.init(ds.expr`el.checked = ${allCompleted}`)}
           {...ds.on("click", ds.post("/examples/todomvc/-1/toggle"), { prevent: true })}
         />
         <input
@@ -114,9 +114,9 @@ const TodoMvc = () => {
                 ...ds.bind(state.$.input),
                 ...ds.on(
                   "keydown",
-                  ds.expr(
-                    "evt.key === 'Enter' && $input.trim() && @patch('/examples/todomvc/-1') && ($input = '')"
-                  )
+                  ds.expr`evt.key === ${"Enter"} && ${state.$.input}.trim() && ${ds.patch(
+                    "/examples/todomvc/-1"
+                  )} && (${state.$.input} = ${""})`
                 )
               }
             : {})}

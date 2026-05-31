@@ -35,3 +35,12 @@
 - Leverage: Callers retain direct Datastar vocabulary.
 - Locality: Loading policy stays in each app where signal naming and accessibility choices differ.
 - Status: Ruled out for core changes.
+
+## F-005: Official examples bypassed signal refs inside Datastar expressions
+
+- Area: Official example TSX under `examples/hono-official-examples/src/examples`.
+- Problem: Many examples wrote raw signal names and action calls inside `ds.expr("...")`, so renaming a signal or route required editing string internals.
+- Resolution: Rewrote official example expressions to use existing `ds.signal(...)`, `ds.local(...)`, `ds.state(...).$`, action helpers, and tagged `ds.expr` templates. Also corrected Bulk Update's unused `fetching` default to the actual `_fetching` signal used by `data-indicator`.
+- Leverage: Callers keep writing Datastar expressions, but signal names and action serialization now come from the same small Interfaces used elsewhere.
+- Locality: Signal naming mistakes concentrate in signal definitions instead of being duplicated through expression strings.
+- Status: Fixed in working tree; official example typecheck passed.

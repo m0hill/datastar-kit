@@ -2,6 +2,8 @@ import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
+const orderInfo = ds.signal<string>("orderInfo")
+
 export const example = new Hono()
 
 example.get("/", () =>
@@ -15,13 +17,13 @@ example.get("/", () =>
       <div class="stack">
         <output
           class="event-output"
-          {...ds.dataSignal("orderInfo", "Initial order")}
-          {...ds.text(ds.expr("$orderInfo"))}
+          {...ds.dataSignal(orderInfo.name, "Initial order")}
+          {...ds.text(orderInfo)}
         ></output>
         <div
           id="sortContainer"
           class="sortable-list"
-          {...ds.on("reordered", ds.expr("$orderInfo = evt.detail.orderInfo"))}
+          {...ds.on("reordered", ds.expr`${orderInfo} = evt.detail.orderInfo`)}
         >
           {Array.from({ length: 5 }, (_, index) => (
             <button type="button">Item {index + 1}</button>

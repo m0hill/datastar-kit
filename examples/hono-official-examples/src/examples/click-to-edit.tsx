@@ -21,6 +21,7 @@ const state = ds.state({
     email: ""
   }
 })
+const fetching = ds.local<boolean>("fetching")
 
 const originalContact: Contact = {
   firstName: "John",
@@ -38,16 +39,16 @@ const ContactView = () => (
     <div role="group">
       <button
         class="info"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
         {...ds.on("click", ds.get("/examples/click_to_edit/edit"))}
       >
         Edit
       </button>
       <button
         class="warning"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
         {...ds.on("click", ds.patch("/examples/click_to_edit/reset"))}
       >
         Reset
@@ -64,7 +65,7 @@ const ContactForm = () => (
         type="text"
         required
         {...ds.bind(state.$.firstName)}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.dataAttr("disabled", fetching)}
       />
       <small
         class="field-error"
@@ -79,7 +80,7 @@ const ContactForm = () => (
         type="text"
         required
         {...ds.bind(state.$.lastName)}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.dataAttr("disabled", fetching)}
       />
       <small
         class="field-error"
@@ -94,7 +95,7 @@ const ContactForm = () => (
         type="email"
         required
         {...ds.bind(state.$.email)}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.dataAttr("disabled", fetching)}
       />
       <small
         class="field-error"
@@ -106,16 +107,16 @@ const ContactForm = () => (
     <div role="group">
       <button
         class="success"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
         {...ds.on("click", ds.put("/examples/click_to_edit"))}
       >
         Save
       </button>
       <button
         class="error"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
         {...ds.on("click", ds.get("/examples/click_to_edit/cancel"))}
       >
         Cancel

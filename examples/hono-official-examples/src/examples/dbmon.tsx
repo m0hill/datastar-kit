@@ -20,6 +20,7 @@ interface Database {
 const queryTexts = ["SELECT blah from something", "<IDLE> in transaction", "vacuum"] as const
 
 let config = { mutationRate: 20, fps: 60 }
+const editing = ds.local<boolean>("editing")
 
 const randomDatabase = (name: string): Database => ({
   name,
@@ -39,7 +40,7 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
   <div
     id="demo"
     {...ds.init(ds.get("/examples/dbmon/updates"))}
-    {...ds.dataSignal("_editing", false, { ifMissing: true })}
+    {...ds.dataSignal(editing.name, false, { ifMissing: true })}
   >
     <p>
       Average render time for entire page: {renderTime === 0 ? "0s" : `${renderTime.toFixed(3)}µs`}
@@ -52,10 +53,10 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
           min="0"
           max="100"
           value={config.mutationRate}
-          {...ds.on("focus", ds.expr("$_editing = true"))}
-          {...ds.on("blur", ds.expr("@put('/examples/dbmon/inputs'); $_editing = false"))}
-          {...ds.dataAttr("data-bind:mutation-rate", ds.expr("$_editing"))}
-          {...ds.dataAttr("data-bind:_mutation-rate", ds.expr("!$_editing"))}
+          {...ds.on("focus", ds.expr`${editing} = true`)}
+          {...ds.on("blur", ds.expr`${ds.put("/examples/dbmon/inputs")}; ${editing} = false`)}
+          {...ds.dataAttr("data-bind:mutation-rate", editing)}
+          {...ds.dataAttr("data-bind:_mutation-rate", ds.expr`!${editing}`)}
         />
       </label>
       <label>
@@ -65,10 +66,10 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
           min="1"
           max="144"
           value={config.fps}
-          {...ds.on("focus", ds.expr("$_editing = true"))}
-          {...ds.on("blur", ds.expr("@put('/examples/dbmon/inputs'); $_editing = false"))}
-          {...ds.dataAttr("data-bind:fps", ds.expr("$_editing"))}
-          {...ds.dataAttr("data-bind:_fps", ds.expr("!$_editing"))}
+          {...ds.on("focus", ds.expr`${editing} = true`)}
+          {...ds.on("blur", ds.expr`${ds.put("/examples/dbmon/inputs")}; ${editing} = false`)}
+          {...ds.dataAttr("data-bind:fps", editing)}
+          {...ds.dataAttr("data-bind:_fps", ds.expr`!${editing}`)}
         />
       </label>
     </div>

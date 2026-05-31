@@ -5,8 +5,8 @@ import { ExampleLayout, pageHead } from "../layout.js"
 
 const schema = z.object({ selections: z.array(z.boolean()).default([]) })
 
-const state = ds.state<{ fetching: boolean; selections: boolean[] }>({
-  fetching: false,
+const state = ds.state<{ _fetching: boolean; selections: boolean[] }>({
+  _fetching: false,
   selections: []
 })
 
@@ -42,10 +42,10 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
               aria-label="Select all rows"
               {...ds.on(
                 "change",
-                ds.setAll(ds.expr("el.checked"), { include: ds.regex("^selections") })
+                ds.setAll(ds.expr`el.checked`, { include: ds.regex("^selections") })
               )}
-              {...ds.effect(ds.expr("el.checked = $selections.every(Boolean)"))}
-              {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+              {...ds.effect(ds.expr`el.checked = ${state.$.selections}.every(Boolean)`)}
+              {...ds.dataAttr("disabled", state.$._fetching)}
             />
           </th>
           <th>Name</th>
@@ -61,7 +61,7 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
                 type="checkbox"
                 aria-label={`Select ${row.name}`}
                 {...ds.bind(state.$.selections)}
-                {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+                {...ds.dataAttr("disabled", state.$._fetching)}
               />
             </td>
             <td>{row.name}</td>
@@ -86,16 +86,16 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
     <div role="group">
       <button
         class="success"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(state.$._fetching)}
+        {...ds.dataAttr("disabled", state.$._fetching)}
         {...ds.on("click", ds.put("/examples/bulk_update/activate"))}
       >
         Activate
       </button>
       <button
         class="error"
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(state.$._fetching)}
+        {...ds.dataAttr("disabled", state.$._fetching)}
         {...ds.on("click", ds.put("/examples/bulk_update/deactivate"))}
       >
         Deactivate

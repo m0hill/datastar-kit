@@ -2,6 +2,8 @@ import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
+const state = ds.state({ _eventDetails: "Waiting for event..." })
+
 export const example = new Hono()
 
 example.get("/", () =>
@@ -16,9 +18,9 @@ example.get("/", () =>
         <p
           id="custom-event-target"
           class="event-output"
-          {...ds.dataSignal("_eventDetails", "Waiting for event...")}
-          {...ds.on("myevent", ds.expr("$_eventDetails = evt.detail"))}
-          {...ds.text(ds.expr("`Last Event Details: ${$_eventDetails}`"))}
+          {...state.attrs()}
+          {...ds.on("myevent", ds.expr`${state.$._eventDetails} = evt.detail`)}
+          {...ds.text(ds.expr`${"Last Event Details: "} + ${state.$._eventDetails}`)}
         ></p>
       </div>
     </ExampleLayout>,

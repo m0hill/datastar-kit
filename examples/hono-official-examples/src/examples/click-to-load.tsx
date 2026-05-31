@@ -11,6 +11,7 @@ const schema = z.object({
 })
 
 const state = ds.state({ offset: 0, limit: pageSize })
+const fetching = ds.local<boolean>("fetching")
 
 const agents = Array.from({ length: 50 }, (_, index) => ({
   name: `Agent Smith ${index}`,
@@ -70,9 +71,9 @@ example.get("/", () =>
         </table>
         <button
           class="info wide"
-          {...ds.indicator("_fetching")}
-          {...ds.dataAttr("aria-disabled", ds.expr("`${$_fetching}`"))}
-          {...ds.on("click", ds.expr("!$_fetching && @get('/examples/click_to_load/more')"))}
+          {...ds.indicator(fetching)}
+          {...ds.dataAttr("aria-disabled", ds.expr`\`${fetching}\``)}
+          {...ds.on("click", ds.expr`!${fetching} && ${ds.get("/examples/click_to_load/more")}`)}
         >
           Load More
         </button>

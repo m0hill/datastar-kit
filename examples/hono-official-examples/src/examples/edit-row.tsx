@@ -27,6 +27,7 @@ const initialRows: EditableRow[] = [
 ]
 
 let rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
+const fetching = ds.local<boolean>("fetching")
 
 const DisplayRow = ({
   row,
@@ -49,8 +50,8 @@ const DisplayRow = ({
         <button
           class="small info"
           {...ds.on("click", ds.get(`/examples/edit_row/${index}`))}
-          {...ds.indicator("_fetching")}
-          {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+          {...ds.indicator(fetching)}
+          {...ds.dataAttr("disabled", fetching)}
         >
           Edit
         </button>
@@ -66,7 +67,7 @@ const EditingRow = ({ index }: { index: number }) => (
         type="text"
         required
         {...ds.bind(state.$.name)}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.dataAttr("disabled", fetching)}
       />
       <small
         class="field-error"
@@ -80,7 +81,7 @@ const EditingRow = ({ index }: { index: number }) => (
         type="email"
         required
         {...ds.bind(state.$.email)}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.dataAttr("disabled", fetching)}
       />
       <small
         class="field-error"
@@ -93,16 +94,16 @@ const EditingRow = ({ index }: { index: number }) => (
       <button
         class="small error"
         {...ds.on("click", ds.get("/examples/edit_row/cancel"))}
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
       >
         Cancel
       </button>{" "}
       <button
         class="small success"
         {...ds.on("click", ds.patch(`/examples/edit_row/${index}`))}
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
       >
         Save
       </button>
@@ -111,7 +112,7 @@ const EditingRow = ({ index }: { index: number }) => (
 )
 
 const EditRowTable = ({ editingIndex }: { editingIndex?: number } = {}) => (
-  <div id="demo" {...ds.dataSignal("_fetching", false, { ifMissing: true })}>
+  <div id="demo" {...ds.dataSignal(fetching.name, false, { ifMissing: true })}>
     <table>
       <thead>
         <tr>
@@ -134,8 +135,8 @@ const EditRowTable = ({ editingIndex }: { editingIndex?: number } = {}) => (
       <button
         class="warning"
         {...ds.on("click", ds.put("/examples/edit_row/reset"))}
-        {...ds.indicator("_fetching")}
-        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        {...ds.indicator(fetching)}
+        {...ds.dataAttr("disabled", fetching)}
       >
         Reset
       </button>

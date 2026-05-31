@@ -48,6 +48,7 @@ const Comment = ({ id, name }: { id: number; name: string }) => (
 )
 
 const Footer = () => <div id="footer">Hope you like it.</div>
+const progressiveLoad = ds.signal<boolean>("progressiveLoad")
 
 export const example = new Hono()
 
@@ -64,13 +65,13 @@ example.get("/", () =>
           <button
             id="load-button"
             class="info"
-            {...ds.indicator("progressiveLoad")}
-            {...ds.dataAttr("disabled", ds.expr("$progressiveLoad"))}
+            {...ds.indicator(progressiveLoad)}
+            {...ds.dataAttr("disabled", progressiveLoad)}
             {...ds.on("click", ds.get("/examples/progressive_load/updates"))}
           >
             Load
           </button>
-          <span class="muted" {...ds.show(ds.expr("$progressiveLoad"))}>
+          <span class="muted" {...ds.show(progressiveLoad)}>
             Loading sections...
           </span>
         </div>
