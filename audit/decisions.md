@@ -29,3 +29,9 @@
 - Decision: Replace raw expression strings in examples with tagged `ds.expr` templates and signal/action refs.
 - Reasoning: The SDK already has a Datastar expression Interface that serializes refs and literals. Using it gives leverage without hiding Datastar's expression language.
 - Rejected alternative: Add builders such as `assign(...)`, `when(...)`, or `onKey(...)`. That would create a second expression language and fail the guardrail against abstraction towers.
+
+## D-006: Keep keyed plugin attributes inside `pluginAttr(name, value?)`
+
+- Decision: Accept an optional keyed suffix in the existing `name` parameter, for example `pluginAttr("match-media:is-dark", value)`.
+- Reasoning: This matches Datastar's attribute spelling and avoids overload ambiguity between a string key and a string expression value.
+- Rejected alternative: Add `pluginAttr(name, key, value)` overloads. That creates an awkward Interface because the two-argument form already accepts string values.

@@ -14,3 +14,8 @@
    - Replaced raw `ds.expr("...")` signal/action strings in official example TSX with tagged `ds.expr` templates and typed refs.
    - Corrected Bulk Update's loading state from unused `fetching` to the `_fetching` signal consumed by `data-indicator`.
    - Verified with `pnpm --filter @datastar-kit/example-hono-official-examples typecheck`.
+
+4. `Allow keyed plugin attributes`
+   - Allowed `ds.pluginAttr(...)` to render keyed plugin attributes such as `data-match-media:is-dark`.
+   - Updated SDK tests and docs.
+   - Verified with `pnpm --filter datastar-kit typecheck` and `pnpm --filter datastar-kit test -- --run packages/datastar-kit/test/misc-attributes.test.ts`.

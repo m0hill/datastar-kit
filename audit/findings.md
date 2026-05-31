@@ -44,3 +44,12 @@
 - Leverage: Callers keep writing Datastar expressions, but signal names and action serialization now come from the same small Interfaces used elsewhere.
 - Locality: Signal naming mistakes concentrate in signal definitions instead of being duplicated through expression strings.
 - Status: Fixed in working tree; official example typecheck passed.
+
+## F-006: `pluginAttr` rejected keyed plugin attributes
+
+- Area: SDK `ds.pluginAttr`.
+- Problem: Datastar plugin attributes can use keyed names such as `data-match-media:is-dark`, but the helper only accepted unkeyed kebab-case names.
+- Resolution: Allowed one validated keyed suffix in `ds.pluginAttr(name, value?)`, preserving the existing single-string Interface.
+- Leverage: Callers can render both unkeyed and keyed app plugin attributes without raw `data-*` props.
+- Locality: The name grammar remains in the plugin attribute Module instead of leaking into example markup.
+- Status: Fixed in working tree; SDK typecheck and tests passed.
