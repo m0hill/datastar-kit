@@ -107,3 +107,12 @@
 - Leverage: Example readers see the room boundary and default patch response Interface directly.
 - Locality: The room name now lives in one Module-level constant, and single-patch response semantics stay in `reply.patch(...)`.
 - Status: Fixed and verified with both Worker live todo example typechecks.
+
+## F-013: Package changelog did not record new public SDK surface
+
+- Area: `packages/datastar-kit/CHANGELOG.md`.
+- Problem: Public SDK changes from this audit were documented in website/reference pages and audit logs, but not in the package changelog consumed at release time.
+- Resolution: Added an Unreleased section covering `ds.pluginAttr(...)`, `HtmlNameError`, `ds.RegexExpressionError`, and the `ds.regex(...)` output change.
+- Leverage: Release readers get one package-local record of Interface changes.
+- Locality: Package release notes live with the package instead of being reconstructed from audit history.
+- Status: Fixed in working tree.

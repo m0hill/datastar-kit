@@ -50,3 +50,6 @@
 12. `Use lint-clean regex validation`
     - Replaced constructor side-effect validation with a direct `RegExp(...)` call.
     - Kept the `ds.regex(...)` Interface and output unchanged.
+
+13. `Document unreleased SDK changes`
+    - Added package changelog entries for the public SDK Interfaces changed during this audit.
