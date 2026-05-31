@@ -98,3 +98,12 @@
 - Leverage: Callers pass ordinary `RegExp` constructor inputs and get valid Datastar expression source.
 - Locality: Regex escaping and invalid-pattern errors live in the expression Module.
 - Status: Fixed and verified with focused SDK test/typecheck runs.
+
+## F-012: Worker live todo examples repeated room plumbing and overused streams
+
+- Area: Worker Hono live todos, Worker Durable Object Hono live todos.
+- Problem: The D1 live todo example repeated the `"todos"` room lookup at every publish/subscribe call site, and the Durable Object example wrapped single element patches in `reply.stream([event.patch(...)])`.
+- Resolution: Added a local room helper for the D1 Worker example and replaced single-patch streams with `reply.patch(...)` in the Durable Object example.
+- Leverage: Example readers see the room boundary and default patch response Interface directly.
+- Locality: The room name now lives in one Module-level constant, and single-patch response semantics stay in `reply.patch(...)`.
+- Status: Fixed and verified with both Worker live todo example typechecks.

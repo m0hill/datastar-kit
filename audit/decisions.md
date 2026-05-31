@@ -47,3 +47,9 @@
 - Decision: Make `ds.regex(pattern, flags)` emit a constructor expression instead of a slash-delimited literal.
 - Reasoning: `pattern` and `flags` match the native `RegExp` constructor Interface. Rendering the same shape avoids a second escaping rule for Datastar expression output.
 - Rejected alternative: Keep regex literals and document slash escaping. That fails the deletion test because the escaping rule reappears at every dynamic filter call site.
+
+## D-009: Keep live room helpers local to examples
+
+- Decision: Centralize repeated room lookup in the Worker example, but do not add a generic live-room SDK Module.
+- Reasoning: The room helper earns locality inside one app because the room name is a boundary. A shared SDK live-room abstraction would pick platform semantics Datastar Kit intentionally leaves to the host app.
+- Rejected alternative: Add `reply.liveRoom(...)` or a reusable realtime bus to the SDK. That would turn example infrastructure into core API without enough variants.

@@ -8,6 +8,7 @@ import type { Todo } from "./db/schema.js"
 export { LiveRoom } from "./realtime/hub.js"
 
 const app = new Hono<{ Bindings: CloudflareBindings }>()
+const TODO_ROOM = "todos"
 
 const CreateTodoSignals = z.object({
   title: z.string().trim().min(1, "Enter a todo title.")
@@ -82,6 +83,8 @@ const TodosPage = ({ todos }: { readonly todos: readonly Todo[] }) => (
   </main>
 )
 
+const liveRoom = (env: CloudflareBindings) => env.LIVE_ROOMS.getByName(TODO_ROOM)
+
 app.get("/", async (c) => {
   const todos = await readTodos(database(c.env.DB))
 
@@ -100,7 +103,7 @@ app.get("/", async (c) => {
 
 app.get("/live", async (c) => {
   const todos = await readTodos(database(c.env.DB))
-  return c.env.LIVE_ROOMS.getByName("todos").subscribe(event.patch(<TodoList todos={todos} />))
+  return liveRoom(c.env).subscribe(event.patch(<TodoList todos={todos} />))
 })
 
 app.post("/todos", async (c) => {
@@ -117,9 +120,7 @@ app.post("/todos", async (c) => {
   await createTodo(db, result.data.title)
   const todos = await readTodos(db)
 
-  c.executionCtx.waitUntil(
-    c.env.LIVE_ROOMS.getByName("todos").publish(event.patch(<TodoList todos={todos} />))
-  )
+  c.executionCtx.waitUntil(liveRoom(c.env).publish(event.patch(<TodoList todos={todos} />)))
 
   return reply.stream([event.signals(todoState.reset()), event.patch(<TodoList todos={todos} />)])
 })
@@ -132,9 +133,7 @@ app.patch("/todos/:id/toggle", async (c) => {
 
   const todos = await readTodos(db)
 
-  c.executionCtx.waitUntil(
-    c.env.LIVE_ROOMS.getByName("todos").publish(event.patch(<TodoList todos={todos} />))
-  )
+  c.executionCtx.waitUntil(liveRoom(c.env).publish(event.patch(<TodoList todos={todos} />)))
   return reply.patch(<TodoList todos={todos} />)
 })
 
@@ -146,9 +145,7 @@ app.delete("/todos/:id", async (c) => {
 
   const todos = await readTodos(db)
 
-  c.executionCtx.waitUntil(
-    c.env.LIVE_ROOMS.getByName("todos").publish(event.patch(<TodoList todos={todos} />))
-  )
+  c.executionCtx.waitUntil(liveRoom(c.env).publish(event.patch(<TodoList todos={todos} />)))
   return reply.patch(<TodoList todos={todos} />)
 })
 

@@ -134,7 +134,7 @@ app.patch("/todos/:id/toggle", async (c) => {
   if (!changed) return reply.done()
 
   c.executionCtx.waitUntil(room.publish(event.patch(<TodoList todos={todos} />)))
-  return reply.stream([event.patch(<TodoList todos={todos} />)])
+  return reply.patch(<TodoList todos={todos} />)
 })
 
 app.delete("/todos/:id", async (c) => {
@@ -144,7 +144,7 @@ app.delete("/todos/:id", async (c) => {
   if (!changed) return reply.done()
 
   c.executionCtx.waitUntil(room.publish(event.patch(<TodoList todos={todos} />)))
-  return reply.stream([event.patch(<TodoList todos={todos} />)])
+  return reply.patch(<TodoList todos={todos} />)
 })
 
 app.notFound((c) => c.text("Not Found", 404))

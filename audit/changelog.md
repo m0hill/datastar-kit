@@ -42,3 +42,7 @@
 10. `Render regex expressions via constructor`
     - Changed `ds.regex(...)` from slash-delimited literals to `new RegExp(...)` expressions.
     - Added invalid regex errors and tests for patterns containing `/`.
+
+11. `Tighten worker live todo response paths`
+    - Centralized the D1 Worker live todo room lookup.
+    - Replaced single-event Durable Object todo streams with `reply.patch(...)`.
