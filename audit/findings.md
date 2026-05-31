@@ -45,11 +45,20 @@
 - Locality: Signal naming mistakes concentrate in signal definitions instead of being duplicated through expression strings.
 - Status: Fixed in working tree; official example typecheck passed.
 
-## F-006: `pluginAttr` rejected keyed plugin attributes
+## F-006: Keyed plugin attributes were ruled out for normal Datastar scope
 
 - Area: SDK `ds.pluginAttr`.
-- Problem: Datastar plugin attributes can use keyed names such as `data-match-media:is-dark`, but the helper only accepted unkeyed kebab-case names.
-- Resolution: Allowed one validated keyed suffix in `ds.pluginAttr(name, value?)`, preserving the existing single-string Interface.
-- Leverage: Callers can render both unkeyed and keyed app plugin attributes without raw `data-*` props.
-- Locality: The name grammar remains in the plugin attribute Module instead of leaking into example markup.
-- Status: Fixed in working tree; SDK typecheck and tests passed.
+- Problem: Keyed plugin support was considered because Match Media uses `data-match-media:is-dark`, but Match Media is Datastar Pro.
+- Resolution: Removed keyed plugin attribute support and Pro-specific docs/tests from this audit.
+- Leverage: Normal Datastar callers get the app plugin attribute helper already justified by custom examples without importing Pro-only surface.
+- Locality: Pro catalog concerns stay out of the normal Datastar SDK.
+- Status: Removed after user correction.
+
+## F-007: Counter example metadata pointed at the examples root
+
+- Area: Official examples navigation and counter example layout.
+- Problem: The local counter example is the official Templ Counter port, but the page title was generic and its source link pointed at the examples root.
+- Resolution: Renamed the local navigation/page title to Templ Counter and linked to `/examples/templ_counter`.
+- Leverage: Readers can move from the SDK port to the exact official example.
+- Locality: Example catalog metadata stays in the official examples app.
+- Status: Fixed in working tree.

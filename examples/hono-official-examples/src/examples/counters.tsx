@@ -29,10 +29,10 @@ export const example = new Hono()
 example.get("/", (c) =>
   reply.page(
     <ExampleLayout
-      title="Counters"
+      title="Templ Counter"
       slug="counters"
       summary="Shows a server-global counter streamed with SSE and a cookie-backed per-user counter."
-      source="https://data-star.dev/examples"
+      source="https://data-star.dev/examples/templ_counter"
     >
       <div class="actions" {...ds.init(ds.get("/examples/counters/updates"))}>
         <GlobalButton />
@@ -40,7 +40,7 @@ example.get("/", (c) =>
       </div>
     </ExampleLayout>,
     {
-      title: "Counters - Datastar Kit",
+      title: "Templ Counter - Datastar Kit",
       head: pageHead()
     }
   )

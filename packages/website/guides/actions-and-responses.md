@@ -141,7 +141,6 @@ const modalOpen = ds.signal<boolean>("modalOpen")
 <button {...ds.on("click", ds.action("setSignal", "modalOpen", true))}>Open</button>
 <dialog {...ds.effect(ds.action("syncDialog", modalOpen))} />
 <button {...ds.pluginAttr("focus-when", modalOpen)}>Cancel</button>
-<div {...ds.pluginAttr("match-media:is-dark", "prefers-color-scheme: dark")} />
 ```
 
 See `examples/hono-custom-actions` for a complete example.

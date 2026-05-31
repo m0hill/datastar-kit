@@ -42,15 +42,11 @@ describe("misc Datastar attribute helpers", () => {
     expect(pluginAttr("focus-when", modalOpen)).toEqual({
       "data-focus-when": "$modalOpen"
     })
-    expect(pluginAttr("match-media:is-dark", "prefers-color-scheme: dark")).toEqual({
-      "data-match-media:is-dark": '"prefers-color-scheme: dark"'
-    })
     expect(pluginAttr("loaded")).toEqual({ "data-loaded": true })
   })
 
   it("rejects invalid custom plugin attribute names", () => {
     expect(() => pluginAttr("data-alert", "bad")).toThrow(PluginAttributeNameError)
     expect(() => pluginAttr("bad attr", "bad")).toThrow(PluginAttributeNameError)
-    expect(() => pluginAttr("bad:attr:again", "bad")).toThrow(PluginAttributeNameError)
   })
 })

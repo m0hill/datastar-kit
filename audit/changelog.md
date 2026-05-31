@@ -16,6 +16,13 @@
    - Verified with `pnpm --filter @datastar-kit/example-hono-official-examples typecheck`.
 
 4. `Allow keyed plugin attributes`
-   - Allowed `ds.pluginAttr(...)` to render keyed plugin attributes such as `data-match-media:is-dark`.
-   - Updated SDK tests and docs.
-   - Verified with `pnpm --filter datastar-kit typecheck` and `pnpm --filter datastar-kit test -- --run packages/datastar-kit/test/misc-attributes.test.ts`.
+   - Added keyed `ds.pluginAttr(...)` support based on Match Media.
+   - Superseded by the next commit because Match Media is Datastar Pro and out of normal Datastar scope.
+
+5. `Fix counter example source metadata`
+   - Renamed the implemented counter port to Templ Counter in the local catalog.
+   - Linked the source badge to `https://data-star.dev/examples/templ_counter`.
+
+6. `Drop pro-only keyed plugin support`
+   - Removed keyed `pluginAttr(...)` support and Match Media docs/tests.
+   - Recorded Datastar Pro examples as out of scope.
