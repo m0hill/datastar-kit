@@ -129,6 +129,7 @@ Use `event.*` when one response needs multiple events or a long-lived stream.
 | `mergeProps(...props)`       | Merge prop objects left-to-right.                 |
 | `renderToString(node)`       | Serialize Datastar Kit HTML nodes and TSX output. |
 | `unsafeHtml(html)`           | Mark trusted HTML as already safe.                |
+| `HtmlNameError`              | Thrown for unsafe rendered tag or attribute names. |
 
 Types exported from the root include `HtmlChild`, `HtmlNode`, `HtmlProps`, `HtmlPropValue`, `SignalState`, and `SignalValue`.
 

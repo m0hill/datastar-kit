@@ -1,7 +1,17 @@
 import { describe, expect, it } from "vitest"
 import * as Root from "datastar-kit"
 import * as sse from "datastar-kit/sse"
-import { ds, event, h, mergeProps, read, renderToString, reply, unsafeHtml } from "datastar-kit"
+import {
+  ds,
+  event,
+  h,
+  HtmlNameError,
+  mergeProps,
+  read,
+  renderToString,
+  reply,
+  unsafeHtml
+} from "datastar-kit"
 
 describe("package root exports", () => {
   it("exports the tiny HTML surface and Web Standards SDK namespaces", () => {
@@ -33,6 +43,7 @@ describe("package root exports", () => {
     expect("props" in Root).toBe(false)
     expect("raw" in Root).toBe(false)
     expect(unsafeHtml).toBeDefined()
+    expect(HtmlNameError).toBeDefined()
     expect(mergeProps).toBeDefined()
     expect("Sse" in Root).toBe(false)
     expect("sse" in Root).toBe(false)

@@ -34,3 +34,7 @@
 8. `Type Durable Object todo rows explicitly`
    - Split SQL row typing from the public todo shape in the Durable Object live todos example.
    - Fixed the workspace typecheck failure caused by `SqlStorageValue` row values.
+
+9. `Validate rendered HTML names`
+   - Added `HtmlNameError` for unsafe rendered tag or attribute names.
+   - Kept text and value escaping in the HTML Module and moved name safety into the same boundary.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { dataSignals, signal, text } from "../src/ds/index.js"
-import { h, mergeProps, renderToString, unsafeHtml } from "../src/html.js"
+import { h, HtmlNameError, mergeProps, renderToString, unsafeHtml } from "../src/html.js"
 import { page } from "../src/reply.js"
 
 describe("HTML rendering boundary", () => {
@@ -10,6 +10,18 @@ describe("HTML rendering boundary", () => {
     )
     expect(renderToString(h("p", {}, unsafeHtml("<strong>trusted</strong>")))).toBe(
       "<p><strong>trusted</strong></p>"
+    )
+  })
+
+  it("rejects unsafe tag and rendered attribute names", () => {
+    expect(() => h('div onclick="alert(1)"')).toThrow(HtmlNameError)
+
+    expect(() => renderToString(h("button", { 'data-x" onclick="alert(1)': true }))).toThrow(
+      HtmlNameError
+    )
+
+    expect(renderToString(h("button", { 'data-x" onclick="alert(1)': false }))).toBe(
+      "<button></button>"
     )
   })
 

@@ -7,6 +7,6 @@ export * as read from "./read.js"
 /** Native `Response` helpers for Datastar handlers. */
 export * as reply from "./reply.js"
 
-export { h, mergeProps, renderToString, unsafeHtml } from "./html.js"
+export { h, HtmlNameError, mergeProps, renderToString, unsafeHtml } from "./html.js"
 export type { HtmlChild, HtmlNode, HtmlProps, HtmlPropValue } from "./html.js"
 export type { SignalState, SignalValue } from "./types.js"

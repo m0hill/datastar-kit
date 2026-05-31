@@ -1,10 +1,10 @@
 # Decisions
 
-## D-001: Audit the implemented official-example package, not every current site example
+## D-001: Audit the whole repo, not only the official-example package
 
-- Decision: Treat `examples/hono-official-examples` as the target set for this goal.
-- Reasoning: The user asked for official Datastar examples "as implemented in this SDK." The live Datastar site now includes additional entries not present in this package. Adding new examples is a different Module with different risk and review shape.
-- Rejected alternative: Add Match Media, Templ Counter, and Rocket examples during this audit. That would mix catalog expansion with Interface cleanup and make commits less atomic.
+- Decision: Treat the SDK package, website, docs, and all examples as the target set for this goal.
+- Reasoning: The official Datastar examples exposed several Interface issues first, but the same depth, leverage, and locality standards apply across the repository.
+- Rejected alternative: Stop after `examples/hono-official-examples`. That would leave SDK and non-official example seams unaudited.
 
 ## D-002: Keep browser plugin attributes in the SDK, not in each example
 
@@ -35,3 +35,9 @@
 - Decision: Do not add support or docs driven only by Datastar Pro examples.
 - Reasoning: This SDK targets normal Datastar. Match Media and Rocket examples are Pro catalog entries and should not shape the normal SDK Interface in this audit.
 - Rejected alternative: Keep keyed `pluginAttr(...)` support because it is syntactically possible. That lacks a normal Datastar example to justify the wider Interface.
+
+## D-007: Validate HTML names inside the renderer
+
+- Decision: Make the HTML Module reject unsafe tag and emitted attribute names.
+- Reasoning: Escaping values is not enough when names are part of the serialized output. The renderer is the right Seam because every TSX and `h(...)` caller passes through it.
+- Rejected alternative: Document that callers must sanitize names themselves. That fails the deletion test because every dynamic wrapper would need to repeat the same boundary check.

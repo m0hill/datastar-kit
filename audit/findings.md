@@ -80,3 +80,12 @@
 - Leverage: The example keeps SQL transport details out of caller-facing todo data.
 - Locality: Database row coercion lives at the Durable Object read boundary.
 - Status: Fixed in working tree.
+
+## F-010: HTML name serialization trusted caller-provided names
+
+- Area: SDK HTML renderer, root exports, website security/API docs.
+- Problem: `renderToString(...)` escaped text and attribute values, but tag names and rendered attribute names crossed the HTML boundary verbatim.
+- Resolution: Added `HtmlNameError`, validated tag names at `h(...)` and render time, and validated emitted attribute names before serialization.
+- Leverage: Callers keep the same tiny HTML Interface while the renderer owns a larger part of the serialization safety boundary.
+- Locality: Name validation now lives in the HTML Module instead of being every caller's responsibility.
+- Status: Fixed and verified with focused SDK test/typecheck runs.

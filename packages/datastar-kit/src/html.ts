@@ -38,6 +38,18 @@ export interface HtmlNode {
   readonly children: readonly HtmlChild[]
 }
 
+/**
+ * Error thrown when an HTML tag or attribute name cannot be rendered safely.
+ */
+export class HtmlNameError extends Error {
+  constructor(
+    readonly kind: "tag" | "attribute",
+    readonly htmlName: string
+  ) {
+    super(`Invalid HTML ${kind} name: ${JSON.stringify(htmlName)}`)
+  }
+}
+
 const voidTags = new Set([
   "area",
   "base",
@@ -71,6 +83,21 @@ const escapeHtmlText = (value: string): string =>
 export const escapeHtmlAttribute = (value: string): string =>
   escapeHtmlText(value).replaceAll('"', "&quot;").replaceAll("'", "&#39;")
 
+const tagNamePattern = /^[A-Za-z][A-Za-z0-9:-]*$/
+const attributeNamePattern = /^[^\s"'<>/=]+$/
+
+const assertTagName = (name: string): void => {
+  if (!tagNamePattern.test(name)) {
+    throw new HtmlNameError("tag", name)
+  }
+}
+
+const assertAttributeName = (name: string): void => {
+  if (!attributeNamePattern.test(name)) {
+    throw new HtmlNameError("attribute", name)
+  }
+}
+
 const renderProps = (props: HtmlProps): string => {
   const rendered: Array<string> = []
 
@@ -78,6 +105,8 @@ const renderProps = (props: HtmlProps): string => {
     if (value === false || value === null || value === undefined) {
       continue
     }
+
+    assertAttributeName(key)
 
     if (value === true) {
       rendered.push(key)
@@ -102,11 +131,14 @@ export const h = (
   tag: string,
   props: HtmlProps = {},
   ...children: readonly HtmlChild[]
-): HtmlNode => ({
-  tag,
-  props,
-  children
-})
+): HtmlNode => {
+  assertTagName(tag)
+  return {
+    tag,
+    props,
+    children
+  }
+}
 
 /**
  * Marks a string as trusted HTML so it is inserted without escaping.
@@ -163,6 +195,7 @@ export const renderToString = (child: HtmlChild): string => {
     return escapeHtmlText(String(child))
   }
 
+  assertTagName(child.tag)
   const renderedProps = renderProps(child.props)
 
   if (voidTags.has(child.tag)) {
