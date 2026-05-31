@@ -1,7 +1,11 @@
 import { Hono } from "hono"
-import { ds, reply } from "datastar-kit"
+import { ds, reply, read } from "datastar-kit"
+import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
-import { readSignals } from "../helpers.js"
+
+const schema = z.object({ search: z.string().default("") })
+
+const state = ds.state({ search: "" })
 
 const people = [
   ["Elda", "Reynolds"],
@@ -18,9 +22,7 @@ const people = [
   ["Jazmin", "Wilder"]
 ] as const
 
-const state = ds.state({ search: "" })
-
-const Results = ({ search = "" }: { readonly search?: string | undefined }) => {
+const Results = ({ search = "" }: { search?: string }) => {
   const term = search.trim().toLowerCase()
   const filtered = people.filter(([first, last]) => `${first} ${last}`.toLowerCase().includes(term))
 
@@ -85,6 +87,6 @@ example.get("/", () =>
 )
 
 example.get("/search", async (c) => {
-  const signals = await readSignals<{ search?: string }>(c.req.raw)
+  const signals = schema.parse(await read.signals(c.req.raw))
   return reply.patch(<Results search={signals.search} />)
 })

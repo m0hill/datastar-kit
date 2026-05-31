@@ -1,57 +1,53 @@
 import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
-import { sleep } from "../helpers.js"
 
-const PlaceholderContent = () => (
-  <div id="progressive-load-content" class="progressive-content">
-    <header id="progressive-header" class="placeholder">
-      Header waits for the stream.
-    </header>
-    <section id="progressive-article" class="placeholder">
-      Article shell waits for the stream.
-    </section>
-    <section id="progressive-comments" class="placeholder">
-      Comments wait for the stream.
-    </section>
-    <footer id="progressive-footer" class="placeholder">
-      Footer waits for the stream.
-    </footer>
+const LoadShell = () => (
+  <div id="Load" class="progressive-content">
+    <header id="header"></header>
+    <section id="article"></section>
+    <section id="comments"></section>
+    <div id="footer"></div>
   </div>
 )
 
-const LoadedHeader = () => <header id="progressive-header">Welcome to my blog</header>
+const Header = () => <header id="header">Welcome to my blog</header>
 
-const LoadedArticle = () => (
-  <section id="progressive-article">
-    <h2>This is my article</h2>
-    <section id="progressive-article-body">
-      <p>
-        Each part is loaded randomly and progressively, showing that Datastar streams can update
-        independent regions as soon as each result is available.
-      </p>
-    </section>
+const Article = () => (
+  <section id="article">
+    <h4>This is my article</h4>
+    <section id="articleBody"></section>
   </section>
 )
 
-const LoadedComments = () => (
-  <section id="progressive-comments">
-    <h3>Comments</h3>
-    <ul class="comments-list">
-      {["Ada Lovelace", "Grace Hopper", "Katherine Johnson"].map((name) => (
-        <li>
-          <img
-            src={`https://avatar.iran.liara.run/username?username=${encodeURIComponent(name)}`}
-            alt=""
-          />
-          <span>{name} liked the progressive load.</span>
-        </li>
-      ))}
-    </ul>
+const ArticleBody = () => (
+  <section id="articleBody">
+    <p>
+      Each section can be patched as soon as the server has it. The article shell, body, comments,
+      and footer all arrive independently over one event stream.
+    </p>
   </section>
 )
 
-const LoadedFooter = () => <footer id="progressive-footer">Hope you like it.</footer>
+const Comments = () => (
+  <section id="comments">
+    <h5>Comments</h5>
+    <p>This comments section is also filled progressively.</p>
+    <ul id="comments-list" class="comments-list"></ul>
+  </section>
+)
+
+const Comment = ({ id, name }: { id: number; name: string }) => (
+  <li id={`${id}`}>
+    <img
+      src={`https://avatar.iran.liara.run/username?username=${encodeURIComponent(name)}`}
+      alt="Avatar"
+    />
+    <span>{name} liked the progressive load.</span>
+  </li>
+)
+
+const Footer = () => <div id="footer">Hope you like it.</div>
 
 export const example = new Hono()
 
@@ -68,13 +64,9 @@ example.get("/", () =>
           <button
             id="load-button"
             class="info"
-            {...ds.dataSignal("loadDisabled", false)}
             {...ds.indicator("progressiveLoad")}
-            {...ds.dataAttr("disabled", ds.expr("$loadDisabled"))}
-            {...ds.on(
-              "click",
-              ds.expr("$loadDisabled = true; @get('/examples/progressive_load/updates')")
-            )}
+            {...ds.dataAttr("disabled", ds.expr("$progressiveLoad"))}
+            {...ds.on("click", ds.get("/examples/progressive_load/updates"))}
           >
             Load
           </button>
@@ -83,7 +75,7 @@ example.get("/", () =>
           </span>
         </div>
         <p>Each part is loaded randomly and progressively.</p>
-        <PlaceholderContent />
+        <LoadShell />
       </div>
     </ExampleLayout>,
     {
@@ -96,16 +88,25 @@ example.get("/", () =>
 example.get("/updates", () =>
   reply.stream(
     (async function* () {
-      yield event.patch(<PlaceholderContent />)
-      await sleep(250)
-      yield event.patch(<LoadedHeader />)
-      await sleep(350)
-      yield event.patch(<LoadedArticle />)
-      await sleep(300)
-      yield event.patch(<LoadedComments />)
-      await sleep(250)
-      yield event.patch(<LoadedFooter />)
-      yield event.signals({ loadDisabled: false })
+      yield event.patch(<LoadShell />)
+
+      for (const section of [<Header />, <Article />, <Comments />, <Footer />].toSorted(
+        () => Math.random() - 0.5
+      )) {
+        await new Promise((resolve) => setTimeout(resolve, 250 + Math.random() * 350))
+        yield event.patch(section)
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 250))
+      yield event.patch(<ArticleBody />)
+
+      for (const [index, name] of ["Ada Lovelace", "Grace Hopper", "Katherine Johnson"].entries()) {
+        await new Promise((resolve) => setTimeout(resolve, 200))
+        yield event.patch(<Comment id={index + 1} name={name} />, {
+          selector: "#comments-list",
+          mode: "append"
+        })
+      }
     })()
   )
 )

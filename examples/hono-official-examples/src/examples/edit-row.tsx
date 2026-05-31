@@ -1,14 +1,25 @@
 import { Hono } from "hono"
-import { ds, reply } from "datastar-kit"
+import { ds, event, reply, read } from "datastar-kit"
+import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
-import { readSignals } from "../helpers.js"
 
-interface EditableRow extends Record<string, string> {
-  name: string
-  email: string
-}
+const schema = z.object({
+  name: z.string().trim().min(1, "Name is required."),
+  email: z.email("Enter a valid email address.")
+})
 
-const initialRows: readonly EditableRow[] = [
+type EditableRow = z.infer<typeof schema>
+
+const state = ds.state({
+  name: "",
+  email: "",
+  errors: {
+    name: "",
+    email: ""
+  }
+})
+
+const initialRows: EditableRow[] = [
   { name: "Joe Smith", email: "joe@smith.org" },
   { name: "Angie MacDowell", email: "angie@macdowell.org" },
   { name: "Fuqua Tarkenton", email: "fuqua@tarkenton.org" },
@@ -17,39 +28,90 @@ const initialRows: readonly EditableRow[] = [
 
 let rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
 
-const DisplayRow = ({ row, index }: { readonly row: EditableRow; readonly index: number }) => (
-  <tr id={`edit-row-${index}`}>
+const DisplayRow = ({
+  row,
+  index,
+  disabled = false
+}: {
+  row: EditableRow
+  index: number
+  disabled?: boolean
+}) => (
+  <tr>
     <td>{row.name}</td>
     <td>{row.email}</td>
     <td>
-      <button class="info" {...ds.on("click", ds.get(`/examples/edit_row/${index}`))}>
-        Edit
+      {disabled ? (
+        <button class="small info" {...ds.dataAttr("disabled", true)}>
+          Edit
+        </button>
+      ) : (
+        <button
+          class="small info"
+          {...ds.on("click", ds.get(`/examples/edit_row/${index}`))}
+          {...ds.indicator("_fetching")}
+          {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+        >
+          Edit
+        </button>
+      )}
+    </td>
+  </tr>
+)
+
+const EditingRow = ({ index }: { index: number }) => (
+  <tr>
+    <td>
+      <input
+        type="text"
+        required
+        {...ds.bind(state.$.name)}
+        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+      />
+      <small
+        class="field-error"
+        style="display: none"
+        {...ds.show(state.$.errors.name)}
+        {...ds.text(state.$.errors.name)}
+      ></small>
+    </td>
+    <td>
+      <input
+        type="email"
+        required
+        {...ds.bind(state.$.email)}
+        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+      />
+      <small
+        class="field-error"
+        style="display: none"
+        {...ds.show(state.$.errors.email)}
+        {...ds.text(state.$.errors.email)}
+      ></small>
+    </td>
+    <td>
+      <button
+        class="small error"
+        {...ds.on("click", ds.get("/examples/edit_row/cancel"))}
+        {...ds.indicator("_fetching")}
+        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+      >
+        Cancel
+      </button>{" "}
+      <button
+        class="small success"
+        {...ds.on("click", ds.patch(`/examples/edit_row/${index}`))}
+        {...ds.indicator("_fetching")}
+        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+      >
+        Save
       </button>
     </td>
   </tr>
 )
 
-const EditingRow = ({ row, index }: { readonly row: EditableRow; readonly index: number }) => (
-  <tr id={`edit-row-${index}`} {...ds.dataSignals(row)}>
-    <td>
-      <input type="text" {...ds.bind("name")} />
-    </td>
-    <td>
-      <input type="email" {...ds.bind("email")} />
-    </td>
-    <td>
-      <div role="group">
-        <button {...ds.on("click", ds.get(`/examples/edit_row/${index}/cancel`))}>Cancel</button>
-        <button class="success" {...ds.on("click", ds.patch(`/examples/edit_row/${index}`))}>
-          Save
-        </button>
-      </div>
-    </td>
-  </tr>
-)
-
-const EditRowTable = () => (
-  <div id="edit-row-demo" class="stack">
+const EditRowTable = ({ editingIndex }: { editingIndex?: number } = {}) => (
+  <div id="demo" {...ds.dataSignal("_fetching", false, { ifMissing: true })}>
     <table>
       <thead>
         <tr>
@@ -59,14 +121,25 @@ const EditRowTable = () => (
         </tr>
       </thead>
       <tbody>
-        {rows.map((row, index) => (
-          <DisplayRow row={row} index={index} />
-        ))}
+        {rows.map((row, index) =>
+          editingIndex === index ? (
+            <EditingRow index={index} />
+          ) : (
+            <DisplayRow row={row} index={index} disabled={editingIndex !== undefined} />
+          )
+        )}
       </tbody>
     </table>
-    <button class="warning" {...ds.on("click", ds.patch("/examples/edit_row/reset"))}>
-      Reset
-    </button>
+    <div>
+      <button
+        class="warning"
+        {...ds.on("click", ds.put("/examples/edit_row/reset"))}
+        {...ds.indicator("_fetching")}
+        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+      >
+        Reset
+      </button>
+    </div>
   </div>
 )
 
@@ -89,33 +162,51 @@ example.get("/", () =>
   )
 )
 
+example.get("/cancel", () =>
+  reply.stream([event.signals(state.reset()), event.patch(<EditRowTable />)])
+)
+
 example.get("/:index", (c) => {
-  const index = Number(c.req.param("index"))
+  const param = c.req.param("index")
+  const index = Number(param)
   const row = rows[index]
-  return row === undefined ? reply.done() : reply.patch(<EditingRow row={row} index={index} />)
+  if (!Number.isInteger(index) || row === undefined) {
+    return c.text(`invalid index: ${param}`, 400)
+  }
+
+  return reply.stream([
+    event.signals(state.reset(row)),
+    event.patch(<EditRowTable editingIndex={index} />)
+  ])
 })
 
-example.get("/:index/cancel", (c) => {
-  const index = Number(c.req.param("index"))
-  const row = rows[index]
-  return row === undefined ? reply.done() : reply.patch(<DisplayRow row={row} index={index} />)
-})
-
-example.patch("/reset", () => {
+example.put("/reset", () => {
   rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
-  return reply.patch(<EditRowTable />)
+  return reply.stream([event.signals(state.reset()), event.patch(<EditRowTable />)])
 })
 
 example.patch("/:index", async (c) => {
-  const index = Number(c.req.param("index"))
-  const row = rows[index]
-  if (row === undefined) return reply.done()
-  const signals = await readSignals<Partial<EditableRow>>(c.req.raw)
-  rows[index] = {
-    name: typeof signals.name === "string" && signals.name.trim() ? signals.name.trim() : row.name,
-    email:
-      typeof signals.email === "string" && signals.email.trim() ? signals.email.trim() : row.email
+  const param = c.req.param("index")
+  const index = Number(param)
+  if (!Number.isInteger(index) || rows[index] === undefined) {
+    return c.text(`invalid index: ${param}`, 400)
   }
-  const updated = rows[index] ?? row
-  return reply.patch(<DisplayRow row={updated} index={index} />)
+
+  const result = schema.safeParse(await read.signals(c.req.raw))
+
+  if (!result.success) {
+    const { fieldErrors } = z.flattenError(result.error)
+
+    return reply.signals(
+      state.patch({
+        errors: {
+          name: fieldErrors.name?.[0] ?? "",
+          email: fieldErrors.email?.[0] ?? ""
+        }
+      })
+    )
+  }
+
+  rows[index] = result.data
+  return reply.stream([event.signals(state.reset()), event.patch(<EditRowTable />)])
 })

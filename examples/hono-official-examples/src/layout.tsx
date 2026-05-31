@@ -1,4 +1,5 @@
 import { type HtmlChild } from "datastar-kit"
+import type { JSX } from "datastar-kit/jsx-runtime"
 
 const examples = [
   { slug: "active_search", title: "Active Search" },
@@ -24,13 +25,13 @@ const examples = [
   { slug: "progressive_load", title: "Progressive Load" },
   { slug: "sortable", title: "Sortable" },
   { slug: "svg_morphing", title: "SVG Morphing" },
-  { slug: "templ_counter", title: "Templ Counter" },
+  { slug: "counters", title: "Counters" },
   { slug: "title_update", title: "Title Update" },
   { slug: "todomvc", title: "TodoMVC" },
   { slug: "web_component", title: "Web Component" }
 ] as const
 
-export const pageHead = (extra?: HtmlChild | readonly HtmlChild[]): readonly HtmlChild[] => [
+export const pageHead = (extra?: HtmlChild | HtmlChild[]): HtmlChild[] => [
   <meta name="viewport" content="width=device-width, initial-scale=1" />,
   <link rel="stylesheet" href="/public/styles.css" />,
   <script
@@ -41,10 +42,10 @@ export const pageHead = (extra?: HtmlChild | readonly HtmlChild[]): readonly Htm
 ]
 
 export const Shell = (props: {
-  readonly title: string
-  readonly activeSlug?: string
-  readonly children: HtmlChild | readonly HtmlChild[]
-}) => (
+  title: string
+  activeSlug?: string
+  children: HtmlChild | HtmlChild[]
+}): JSX.Element => (
   <main class="shell">
     <aside class="sidebar">
       <a class="brand" href="/">
@@ -76,12 +77,12 @@ export const Shell = (props: {
 )
 
 export const ExampleLayout = (props: {
-  readonly title: string
-  readonly slug: string
-  readonly summary: string
-  readonly source: string
-  readonly children: HtmlChild | readonly HtmlChild[]
-}) => (
+  title: string
+  slug: string
+  summary: string
+  source: string
+  children: HtmlChild | HtmlChild[]
+}): JSX.Element => (
   <Shell title={props.title} activeSlug={props.slug}>
     <section class="intro">
       <p>{props.summary}</p>

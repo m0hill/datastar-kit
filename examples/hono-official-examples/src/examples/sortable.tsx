@@ -29,11 +29,15 @@ example.get("/", () =>
         </div>
         <script type="module">
           {unsafeHtml(`import Sortable from "https://cdn.jsdelivr.net/npm/sortablejs/+esm"
-      const sortContainer = document.getElementById("sortContainer")
-      new Sortable(sortContainer, {
-        animation: 150,
-        ghostClass: "dragging",
-        onEnd: (evt) => {
+
+const sortContainer = document.getElementById("sortContainer")
+if (sortContainer !== null) {
+  new Sortable(sortContainer, {
+    animation: 150,
+    ghostClass: "dragging",
+    onEnd: (evt) => {
+      if (evt.oldIndex === undefined || evt.newIndex === undefined) return
+
       sortContainer.dispatchEvent(
         new CustomEvent("reordered", {
           detail: {
@@ -41,8 +45,9 @@ example.get("/", () =>
           }
         })
       )
-        }
-      })`)}
+    }
+  })
+}`)}
         </script>
       </div>
     </ExampleLayout>,

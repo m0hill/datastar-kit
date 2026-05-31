@@ -2,6 +2,13 @@ import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
+const state = ds.state({
+  counter: 0,
+  message: "Hello World",
+  allChanges: [],
+  counterChanges: []
+})
+
 export const example = new Hono()
 
 example.get("/", () =>
@@ -12,15 +19,7 @@ example.get("/", () =>
       summary="Records signal patches with Datastar's signal-patch event hooks."
       source="https://data-star.dev/examples/on_signal_patch"
     >
-      <div
-        class="stack"
-        {...ds.dataSignals({
-          counter: 0,
-          message: "Hello World",
-          allChanges: [],
-          counterChanges: []
-        })}
-      >
+      <div class="stack" {...state.attrs()}>
         <div class="actions">
           <button
             {...ds.on("click", ds.expr("$message = `Updated: ${performance.now().toFixed(2)}`"))}
@@ -53,18 +52,18 @@ example.get("/", () =>
             <h2>Counter Changes Only</h2>
             <pre
               class="signal-log"
-              {...ds.jsonSignals({ include: ds.regex("^counterChanges") }, { terse: true })}
+              {...ds.text(ds.expr("JSON.stringify({ counterChanges: $counterChanges })"))}
             ></pre>
           </section>
           <section
             class="subdemo"
             {...ds.onSignalPatch(ds.expr("$allChanges.push(patch)"))}
-            {...ds.onSignalPatchFilter({ exclude: ds.regex("allChanges|counterChanges") })}
+            {...ds.onSignalPatchFilter({ exclude: ds.regex("(^|\\.)_|allChanges|counterChanges") })}
           >
             <h2>All Signal Changes</h2>
             <pre
               class="signal-log"
-              {...ds.jsonSignals({ include: ds.regex("^allChanges") }, { terse: true })}
+              {...ds.text(ds.expr("JSON.stringify({ allChanges: $allChanges })"))}
             ></pre>
           </section>
         </div>

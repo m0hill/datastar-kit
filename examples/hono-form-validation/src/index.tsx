@@ -17,7 +17,7 @@ const signup = ds.state({
 
 const SignupSignals = z.object({
   name: z.string().trim().min(2, "Enter your name"),
-  email: z.string().trim().email("Enter a valid email")
+  email: z.email("Enter a valid email address")
 })
 const app = new Hono()
 

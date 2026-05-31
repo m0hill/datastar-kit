@@ -27,7 +27,7 @@ import { example as progressBar } from "./examples/progress-bar.js"
 import { example as progressiveLoad } from "./examples/progressive-load.js"
 import { example as sortable } from "./examples/sortable.js"
 import { example as svgMorphing } from "./examples/svg-morphing.js"
-import { example as templCounter } from "./examples/templ-counter.js"
+import { example as counters } from "./examples/counters.js"
 import { example as titleUpdate } from "./examples/title-update.js"
 import { example as todomvc } from "./examples/todomvc.js"
 import { example as webComponent } from "./examples/web-component.js"
@@ -47,7 +47,15 @@ export const indexPage = (): Response =>
     }
   )
 
-app.use("/public/*", serveStatic({ root: fileURLToPath(new URL("../", import.meta.url)) }))
+app.use(
+  "/public/*",
+  serveStatic({
+    root: fileURLToPath(new URL("../", import.meta.url)),
+    onFound: (_path, c) => {
+      c.header("Cache-Control", "no-store")
+    }
+  })
+)
 
 app.get("/", () => indexPage())
 
@@ -74,7 +82,7 @@ app.route("/examples/progress_bar", progressBar)
 app.route("/examples/progressive_load", progressiveLoad)
 app.route("/examples/sortable", sortable)
 app.route("/examples/svg_morphing", svgMorphing)
-app.route("/examples/templ_counter", templCounter)
+app.route("/examples/counters", counters)
 app.route("/examples/title_update", titleUpdate)
 app.route("/examples/todomvc", todomvc)
 app.route("/examples/web_component", webComponent)

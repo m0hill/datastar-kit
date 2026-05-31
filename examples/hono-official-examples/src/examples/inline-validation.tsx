@@ -1,15 +1,17 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { ds, event, reply, read } from "datastar-kit"
+import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
-import { readSignals } from "../helpers.js"
 
-interface SignupSignals extends Record<string, unknown> {
-  readonly email?: string
-  readonly firstName?: string
-  readonly lastName?: string
-}
+const schema = z.object({
+  email: z
+    .email("Enter a valid email address.")
+    .refine((email) => email === "test@test.com", "Use test@test.com."),
+  firstName: z.string().trim().min(1, "First name is required."),
+  lastName: z.string().trim().min(1, "Last name is required.")
+})
 
-const defaults = {
+const state = ds.state({
   email: "",
   firstName: "",
   lastName: "",
@@ -18,28 +20,7 @@ const defaults = {
     firstName: "",
     lastName: ""
   }
-}
-
-const validate = (signals: SignupSignals) => ({
-  email: signals.email === "test@test.com" ? "" : "Use test@test.com.",
-  firstName:
-    typeof signals.firstName === "string" && signals.firstName.trim().length > 0
-      ? ""
-      : "First name is required.",
-  lastName:
-    typeof signals.lastName === "string" && signals.lastName.trim().length > 0
-      ? ""
-      : "Last name is required."
 })
-
-const ValidationMessage = ({ path }: { readonly path: string }) => (
-  <small
-    class="field-error"
-    style="display:none"
-    {...ds.show(ds.expr(`$errors.${path}`))}
-    {...ds.text(ds.expr(`$errors.${path}`))}
-  ></small>
-)
 
 export const example = new Hono()
 
@@ -51,7 +32,7 @@ example.get("/", () =>
       summary="Posts signal state for validation while the form is being edited."
       source="https://data-star.dev/examples/inline_validation"
     >
-      <div id="inline-validation-demo" class="stack" {...ds.dataSignals(defaults)}>
+      <div id="inline-validation-demo" class="stack" {...state.attrs()}>
         <label>
           Email Address
           <input
@@ -67,7 +48,12 @@ example.get("/", () =>
         <p id="email-info" class="muted">
           The only valid email address is "test@test.com".
         </p>
-        <ValidationMessage path="email" />
+        <small
+          class="field-error"
+          style="display:none"
+          {...ds.show(state.$.errors.email)}
+          {...ds.text(state.$.errors.email)}
+        ></small>
         <label>
           First Name
           <input
@@ -79,7 +65,12 @@ example.get("/", () =>
             })}
           />
         </label>
-        <ValidationMessage path="firstName" />
+        <small
+          class="field-error"
+          style="display:none"
+          {...ds.show(state.$.errors.firstName)}
+          {...ds.text(state.$.errors.firstName)}
+        ></small>
         <label>
           Last Name
           <input
@@ -91,7 +82,12 @@ example.get("/", () =>
             })}
           />
         </label>
-        <ValidationMessage path="lastName" />
+        <small
+          class="field-error"
+          style="display:none"
+          {...ds.show(state.$.errors.lastName)}
+          {...ds.text(state.$.errors.lastName)}
+        ></small>
         <button class="success" {...ds.on("click", ds.post("/examples/inline_validation"))}>
           Sign Up
         </button>
@@ -106,19 +102,52 @@ example.get("/", () =>
 )
 
 example.post("/validate", async (c) => {
-  const signals = await readSignals<SignupSignals>(c.req.raw)
-  return reply.signals({ errors: validate(signals) })
+  const result = schema.safeParse(await read.signals(c.req.raw))
+
+  if (result.success) {
+    return reply.signals(state.reset(result.data))
+  }
+
+  const { fieldErrors } = z.flattenError(result.error)
+  return reply.signals(
+    state.patch({
+      errors: {
+        email: fieldErrors.email?.[0] ?? "",
+        firstName: fieldErrors.firstName?.[0] ?? "",
+        lastName: fieldErrors.lastName?.[0] ?? ""
+      }
+    })
+  )
 })
 
 example.post("/", async (c) => {
-  const signals = await readSignals<SignupSignals>(c.req.raw)
-  const errors = validate(signals)
-  const hasErrors = Object.values(errors).some(Boolean)
+  const result = schema.safeParse(await read.signals(c.req.raw))
+
+  if (!result.success) {
+    const { fieldErrors } = z.flattenError(result.error)
+    return reply.stream([
+      event.signals(
+        state.patch({
+          errors: {
+            email: fieldErrors.email?.[0] ?? "",
+            firstName: fieldErrors.firstName?.[0] ?? "",
+            lastName: fieldErrors.lastName?.[0] ?? ""
+          }
+        })
+      ),
+      event.patch(
+        <output id="inline-validation-result" class="field-error">
+          Please fix the form.
+        </output>
+      )
+    ])
+  }
+
   return reply.stream([
-    event.signals({ errors }),
+    event.signals(state.reset()),
     event.patch(
-      <output id="inline-validation-result" class={hasErrors ? "field-error" : "success-text"}>
-        {hasErrors ? "Please fix the form." : "Signed up successfully."}
+      <output id="inline-validation-result" class="success-text">
+        Signed up successfully.
       </output>
     )
   ])

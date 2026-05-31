@@ -391,17 +391,33 @@ code {
   border-radius: 8px;
 }
 
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+#lazy-tabs {
+  display: grid;
+  gap: 1rem;
 }
 
-.tab-panel {
+#lazy-tabs [role="tablist"] {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+#lazy-tabs [role="tab"][aria-selected="true"] {
+  border-color: #9ab7ff;
+  background: var(--accent-soft);
+  color: #174ea6;
+  font-weight: 700;
+}
+
+#lazy-tabs [role="tabpanel"] {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 1rem;
   background: #fbfcfe;
+}
+
+#lazy-tabs [role="tabpanel"] p {
+  margin: 0;
 }
 
 .signal-log {

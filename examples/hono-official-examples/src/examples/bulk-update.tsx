@@ -1,19 +1,28 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { ds, event, reply, read } from "datastar-kit"
+import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
-import { readSignals } from "../helpers.js"
+
+const schema = z.object({ selections: z.array(z.boolean()).default([]) })
+
+const state = ds.state<{ fetching: boolean; selections: boolean[] }>({
+  fetching: false,
+  selections: []
+})
+
+type BulkStatus = "Active" | "Inactive"
 
 interface BulkRow {
-  readonly name: string
-  readonly email: string
-  status: "Active" | "Inactive"
+  name: string
+  email: string
+  status: BulkStatus
 }
 
-const initialRows: readonly BulkRow[] = [
-  { name: "Joe Smith", email: "joe@smith.org", status: "Inactive" },
+const initialRows: BulkRow[] = [
+  { name: "Joe Smith", email: "joe@smith.org", status: "Active" },
   { name: "Angie MacDowell", email: "angie@macdowell.org", status: "Inactive" },
-  { name: "Fuqua Tarkenton", email: "fuqua@tarkenton.org", status: "Active" },
-  { name: "Kim Yee", email: "kim@yee.org", status: "Inactive" }
+  { name: "Fuqua Tarkenton", email: "fuqua@tarkenton.org", status: "Inactive" },
+  { name: "Kim Yee", email: "kim@yee.org", status: "Active" }
 ]
 
 let rows: BulkRow[] = initialRows.map((row) => ({
@@ -22,30 +31,21 @@ let rows: BulkRow[] = initialRows.map((row) => ({
   status: row.status
 }))
 
-const selectionDefaults = () => Array.from({ length: rows.length }, () => false)
-
-const BulkTable = () => (
-  <div
-    id="bulk-update-demo"
-    class="stack"
-    {...ds.dataSignals(
-      { _fetching: false, _all: false, selections: selectionDefaults() },
-      {
-        ifMissing: true
-      }
-    )}
-  >
-    <table>
+const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) => (
+  <div id="demo" class="stack" {...state.attrs()}>
+    <table id="bulk-update">
       <thead>
         <tr>
           <th>
             <input
               type="checkbox"
               aria-label="Select all rows"
-              {...ds.bind("_all")}
+              {...ds.on(
+                "change",
+                ds.setAll(ds.expr("el.checked"), { include: ds.regex("^selections") })
+              )}
+              {...ds.effect(ds.expr("el.checked = $selections.every(Boolean)"))}
               {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
-              {...ds.on("change", ds.expr(`$selections = Array(${rows.length}).fill($_all)`))}
-              {...ds.effect(ds.expr("$selections; $_all = $selections.every(Boolean)"))}
             />
           </th>
           <th>Name</th>
@@ -54,20 +54,30 @@ const BulkTable = () => (
         </tr>
       </thead>
       <tbody>
-        {rows.map((row) => (
-          <tr>
+        {rows.map((row, index) => (
+          <tr id={`contact-${index}`}>
             <td>
               <input
                 type="checkbox"
                 aria-label={`Select ${row.name}`}
-                {...ds.bind("selections")}
+                {...ds.bind(state.$.selections)}
                 {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
               />
             </td>
             <td>{row.name}</td>
             <td>{row.email}</td>
-            <td>
-              <span class={`status ${row.status.toLowerCase()}`}>{row.status}</span>
+            <td
+              class={
+                highlightedRows === undefined
+                  ? row.status === "Inactive"
+                    ? "inactive"
+                    : undefined
+                  : highlightedRows.has(index)
+                    ? row.status.toLowerCase()
+                    : undefined
+              }
+            >
+              {row.status}
             </td>
           </tr>
         ))}
@@ -94,25 +104,24 @@ const BulkTable = () => (
   </div>
 )
 
-const updateSelectedRows = async (
-  request: Request,
-  status: BulkRow["status"]
-): Promise<Response> => {
-  const signals = await readSignals<{ selections?: readonly boolean[] }>(request)
-  const selections = signals.selections ?? []
-  rows = rows.map((row, index) =>
-    selections[index] === true
-      ? {
-          name: row.name,
-          email: row.email,
-          status
-        }
-      : row
-  )
+const updateSelectedRows = async (request: Request, status: BulkStatus): Promise<Response> => {
+  const { selections } = schema.parse(await read.signals(request))
+  const selectedRows = new Set<number>()
+
+  rows = rows.map((row, index) => {
+    if (selections[index] !== true) return row
+
+    selectedRows.add(index)
+    return {
+      name: row.name,
+      email: row.email,
+      status
+    }
+  })
 
   return reply.stream([
-    event.signals({ _all: false, selections: selectionDefaults() }),
-    event.patch(<BulkTable />)
+    event.signals({ selections: Array.from({ length: rows.length }, () => false) }),
+    event.patch(<BulkTable highlightedRows={selectedRows} />)
   ])
 }
 

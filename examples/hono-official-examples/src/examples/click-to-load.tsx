@@ -1,48 +1,48 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { ds, event, reply, read } from "datastar-kit"
+import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
-import { readSignals } from "../helpers.js"
 
-const agents = Array.from({ length: 32 }, (_, index) => ({
+const pageSize = 10
+
+const schema = z.object({
+  offset: z.number().default(0),
+  limit: z.number().default(pageSize)
+})
+
+const state = ds.state({ offset: 0, limit: pageSize })
+
+const agents = Array.from({ length: 50 }, (_, index) => ({
   name: `Agent Smith ${index}`,
-  email: `agent.smith.${index}@matrix.example`,
+  email: `void${index + 1}@null.org`,
   id: (0x1982e3a7bb241055n + BigInt(index) * 0x12345n).toString(16)
 }))
 
-const pageSize = 6
-
-const AgentRows = ({ count }: { readonly count: number }) => (
-  <tbody id="click-to-load-body">
-    {agents.slice(0, count).map((agent) => (
+const AgentRows = ({ offset, limit }: { offset: number; limit: number }) => (
+  <>
+    {agents.slice(offset, offset + limit).map((agent) => (
       <tr>
         <td>{agent.name}</td>
         <td>{agent.email}</td>
-        <td>
-          <code>{agent.id}</code>
-        </td>
+        <td>{agent.id}</td>
       </tr>
     ))}
-    {count < agents.length ? (
-      <tr>
-        <td colSpan={3}>
-          <button
-            class="info wide"
-            {...ds.indicator("_fetching")}
-            {...ds.dataAttr("aria-disabled", ds.expr("`${$_fetching}`"))}
-            {...ds.on("click", ds.expr("!$_fetching && @get('/examples/click_to_load/more')"))}
-          >
-            Load More
-          </button>
-        </td>
-      </tr>
-    ) : (
-      <tr>
-        <td colSpan={3} class="muted">
-          All agents loaded.
-        </td>
-      </tr>
-    )}
-  </tbody>
+  </>
+)
+
+const EnoughClicking = () => (
+  <div id="demo" class="stack">
+    <p>That’s enough clicking for you.</p>
+    <iframe
+      class="wide"
+      width="560"
+      height="315"
+      src="https://www.youtube.com/embed/dQw4w9WgXcQ?si=Flaiw-OADzippqDg?rel=0&autoplay=1"
+      title="YouTube video player"
+      allow="autoplay"
+      referrerpolicy="strict-origin-when-cross-origin"
+    ></iframe>
+  </div>
 )
 
 export const example = new Hono()
@@ -55,7 +55,7 @@ example.get("/", () =>
       summary="Requests the next slice of table rows and patches the body in place."
       source="https://data-star.dev/examples/click_to_load"
     >
-      <div class="stack" {...ds.dataSignals({ offset: pageSize }, { ifMissing: true })}>
+      <div id="demo" {...state.attrs()}>
         <table>
           <thead>
             <tr>
@@ -64,8 +64,18 @@ example.get("/", () =>
               <th>ID</th>
             </tr>
           </thead>
-          <AgentRows count={pageSize} />
+          <tbody id="agents">
+            <AgentRows offset={0} limit={pageSize} />
+          </tbody>
         </table>
+        <button
+          class="info wide"
+          {...ds.indicator("_fetching")}
+          {...ds.dataAttr("aria-disabled", ds.expr("`${$_fetching}`"))}
+          {...ds.on("click", ds.expr("!$_fetching && @get('/examples/click_to_load/more')"))}
+        >
+          Load More
+        </button>
       </div>
     </ExampleLayout>,
     {
@@ -76,10 +86,18 @@ example.get("/", () =>
 )
 
 example.get("/more", async (c) => {
-  const { offset = pageSize } = await readSignals<{ offset?: number }>(c.req.raw)
-  const nextOffset = Math.min(offset + pageSize, agents.length)
+  const { offset, limit } = schema.parse(await read.signals(c.req.raw))
+  const nextOffset = offset + limit
+
+  if (offset >= agents.length) {
+    return reply.patch(<EnoughClicking />)
+  }
+
   return reply.stream([
-    event.signals({ offset: nextOffset }),
-    event.patch(<AgentRows count={nextOffset} />)
+    event.signals(state.patch({ offset: nextOffset, limit })),
+    event.patch(<AgentRows offset={nextOffset} limit={limit} />, {
+      selector: "#agents",
+      mode: "append"
+    })
   ])
 })

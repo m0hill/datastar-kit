@@ -1,46 +1,87 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { ds, event, reply, read } from "datastar-kit"
+import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
-import { readSignals } from "../helpers.js"
+
+const schema = z.object({ input: z.string().default("") })
+
+const state = ds.state({ input: "" })
 
 interface Todo {
-  readonly id: number
-  readonly text: string
-  readonly completed: boolean
+  text: string
+  completed: boolean
 }
 
 const initialTodos: readonly Todo[] = [
-  { id: 1, text: "Learn any backend language", completed: false },
-  { id: 2, text: "Learn Datastar", completed: false },
-  { id: 3, text: "???", completed: true },
-  { id: 4, text: "Profit", completed: false }
+  { text: "Learn any backend language", completed: true },
+  { text: "Learn Datastar", completed: false },
+  { text: "???", completed: false },
+  { text: "Profit", completed: false }
 ]
 
-let nextId = 5
-let mode = 0
-let todos: Todo[] = initialTodos.map((todo) => ({
-  id: todo.id,
+const cloneTodo = (todo: Todo): Todo => ({
   text: todo.text,
   completed: todo.completed
-}))
+})
+
+let mode = 0
+let editingIndex: number | undefined
+let todos: Todo[] = initialTodos.map(cloneTodo)
 
 const visibleTodos = () =>
-  todos.filter((todo) => (mode === 1 ? !todo.completed : mode === 2 ? todo.completed : true))
+  todos
+    .map((todo, index) => ({ todo, index }))
+    .filter(({ todo }) => (mode === 1 ? !todo.completed : mode === 2 ? todo.completed : true))
 
-const TodoItem = ({ todo }: { readonly todo: Todo }) => (
-  <li class={todo.completed ? "completed" : undefined}>
-    <label>
+const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
+  if (editingIndex === index) {
+    return (
+      <li>
+        <input
+          id="edit-todo"
+          type="text"
+          {...ds.bind(state.$.input)}
+          {...ds.init(ds.expr("el.focus()"))}
+          {...ds.on("blur", ds.put("/examples/todomvc/cancel"))}
+          {...ds.on(
+            "keydown",
+            ds.expr(`
+              if (evt.key === 'Escape') {
+                el.blur()
+              } else if (evt.key === 'Enter' && $input.trim()) {
+                @patch('/examples/todomvc/${index}')
+              }
+            `)
+          )}
+        />
+      </li>
+    )
+  }
+
+  return (
+    <li
+      class={todo.completed ? "completed" : undefined}
+      role="button"
+      tabindex="0"
+      {...ds.on("dblclick", ds.expr(`evt.target === el && @get('/examples/todomvc/${index}')`))}
+    >
       <input
+        id={`todo-checkbox-${index}`}
         type="checkbox"
-        checked={todo.completed}
-        {...ds.on("click", ds.post(`/examples/todomvc/${todo.id}/toggle`), { prevent: true })}
+        {...ds.init(ds.expr(`el.checked = ${todo.completed}`))}
+        {...ds.on("click", ds.post(`/examples/todomvc/${index}/toggle`), { prevent: true })}
       />
-      <span>{todo.text}</span>
-    </label>
-  </li>
-)
+      <label for={`todo-checkbox-${index}`}>
+        <span>{todo.text}</span>
+      </label>
+      <button class="error small" {...ds.on("click", ds.delete(`/examples/todomvc/${index}`))}>
+        ×
+      </button>
+    </li>
+  )
+}
 
-const ModeButton = ({ value, label }: { readonly value: number; readonly label: string }) => (
+const ModeButton = ({ value, label }: { value: number; label: string }) => (
   <button
     class={mode === value ? "small info" : "small"}
     {...ds.on("click", ds.put(`/examples/todomvc/mode/${value}`))}
@@ -55,37 +96,38 @@ const TodoMvc = () => {
   const allCompleted = todos.length > 0 && pending === 0
 
   return (
-    <section
-      id="todomvc"
-      class="todo-shell"
-      {...ds.dataSignals({ input: "" }, { ifMissing: true })}
-    >
-      <header class="todo-header">
+    <section id="todomvc" class="todo-shell" {...ds.init(ds.get("/examples/todomvc/updates"))}>
+      <header id="todo-header" class="todo-header">
         <input
           type="checkbox"
-          checked={allCompleted}
           aria-label="Toggle all todos"
+          {...ds.init(ds.expr(`el.checked = ${allCompleted}`))}
           {...ds.on("click", ds.post("/examples/todomvc/-1/toggle"), { prevent: true })}
         />
         <input
           id="new-todo"
           type="text"
           placeholder="What needs to be done?"
-          {...ds.bind("input")}
-          {...ds.on(
-            "keydown",
-            ds.expr(
-              "evt.key === 'Enter' && $input.trim() && @patch('/examples/todomvc/-1') && ($input = '')"
-            )
-          )}
+          {...(editingIndex === undefined
+            ? {
+                ...state.attrs(),
+                ...ds.bind(state.$.input),
+                ...ds.on(
+                  "keydown",
+                  ds.expr(
+                    "evt.key === 'Enter' && $input.trim() && @patch('/examples/todomvc/-1') && ($input = '')"
+                  )
+                )
+              }
+            : {})}
         />
       </header>
-      <ul class="todo-list">
-        {visibleTodos().map((todo) => (
-          <TodoItem todo={todo} />
+      <ul id="todo-list" class="todo-list">
+        {visibleTodos().map(({ todo, index }) => (
+          <TodoItem todo={todo} index={index} />
         ))}
       </ul>
-      <div class="todo-actions">
+      <div id="todo-actions" class="todo-actions">
         <span>
           <strong>{pending}</strong> items pending
         </span>
@@ -95,7 +137,7 @@ const TodoMvc = () => {
         <button
           class="error small"
           disabled={completed === 0}
-          {...ds.on("click", ds.delete("/examples/todomvc/completed"))}
+          {...ds.on("click", ds.delete("/examples/todomvc/-1"))}
         >
           Delete
         </button>
@@ -128,45 +170,89 @@ example.get("/", () =>
   )
 )
 
+example.get("/updates", () => patchTodos())
+
 example.patch("/-1", async (c) => {
-  const { input = "" } = await readSignals<{ input?: string }>(c.req.raw)
+  const { input } = schema.parse(await read.signals(c.req.raw))
   const text = input.trim()
   if (text.length > 0) {
-    todos = [...todos, { id: nextId, text, completed: false }]
-    nextId += 1
+    todos = [...todos, { text, completed: false }]
   }
-  return reply.stream([event.signals({ input: "" }), event.patch(<TodoMvc />)])
+  editingIndex = undefined
+  return reply.stream([event.signals(state.reset()), event.patch(<TodoMvc />)])
 })
 
 example.post("/-1/toggle", () => {
   const shouldComplete = todos.some((todo) => !todo.completed)
-  todos = todos.map((todo) => ({ ...todo, completed: shouldComplete }))
+  for (const todo of todos) {
+    todo.completed = shouldComplete
+  }
+  editingIndex = undefined
   return patchTodos()
 })
 
 example.post("/:id/toggle", (c) => {
-  const id = Number(c.req.param("id"))
-  todos = todos.map((todo) => (todo.id === id ? { ...todo, completed: !todo.completed } : todo))
+  const index = Number(c.req.param("id"))
+  const todo = todos[index]
+  if (todo !== undefined) {
+    todo.completed = !todo.completed
+  }
+  editingIndex = undefined
   return patchTodos()
+})
+
+example.get("/:id", (c) => {
+  const index = Number(c.req.param("id"))
+  const todo = todos[index]
+  if (todo !== undefined) {
+    editingIndex = index
+    return reply.stream([
+      event.signals(state.reset({ input: todo.text })),
+      event.patch(<TodoMvc />)
+    ])
+  }
+  return patchTodos()
+})
+
+example.patch("/:id", async (c) => {
+  const index = Number(c.req.param("id"))
+  const { input } = schema.parse(await read.signals(c.req.raw))
+  const text = input.trim()
+  const todo = todos[index]
+  if (text.length > 0 && todo !== undefined) {
+    todo.text = text
+  }
+  editingIndex = undefined
+  return reply.stream([event.signals(state.reset()), event.patch(<TodoMvc />)])
+})
+
+example.put("/cancel", () => {
+  editingIndex = undefined
+  return reply.stream([event.signals(state.reset()), event.patch(<TodoMvc />)])
 })
 
 example.put("/mode/:mode", (c) => {
   mode = Math.max(0, Math.min(2, Number(c.req.param("mode"))))
+  editingIndex = undefined
   return patchTodos()
 })
 
-example.delete("/completed", () => {
+example.delete("/-1", () => {
   todos = todos.filter((todo) => !todo.completed)
+  editingIndex = undefined
+  return patchTodos()
+})
+
+example.delete("/:id", (c) => {
+  const index = Number(c.req.param("id"))
+  todos = todos.filter((_, todoIndex) => todoIndex !== index)
+  editingIndex = undefined
   return patchTodos()
 })
 
 example.put("/reset", () => {
-  todos = initialTodos.map((todo) => ({
-    id: todo.id,
-    text: todo.text,
-    completed: todo.completed
-  }))
-  nextId = 5
+  todos = initialTodos.map(cloneTodo)
   mode = 0
-  return reply.stream([event.signals({ input: "" }), event.patch(<TodoMvc />)])
+  editingIndex = undefined
+  return reply.stream([event.signals(state.reset()), event.patch(<TodoMvc />)])
 })

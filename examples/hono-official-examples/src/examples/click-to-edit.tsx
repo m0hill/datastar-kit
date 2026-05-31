@@ -1,13 +1,26 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { ds, event, reply, read } from "datastar-kit"
+import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
-import { readSignals } from "../helpers.js"
 
-interface Contact extends Record<string, string> {
-  readonly firstName: string
-  readonly lastName: string
-  readonly email: string
-}
+const schema = z.object({
+  firstName: z.string().trim().min(1, "First name is required."),
+  lastName: z.string().trim().min(1, "Last name is required."),
+  email: z.email("Enter a valid email address.")
+})
+
+type Contact = z.infer<typeof schema>
+
+const state = ds.state({
+  firstName: "",
+  lastName: "",
+  email: "",
+  errors: {
+    firstName: "",
+    lastName: "",
+    email: ""
+  }
+})
 
 const originalContact: Contact = {
   firstName: "John",
@@ -15,26 +28,13 @@ const originalContact: Contact = {
   email: "joe@blow.com"
 }
 
-let contact: Contact = { ...originalContact }
-
-const clean = (value: unknown, fallback: string): string => {
-  const input = typeof value === "string" ? value.trim() : fallback
-  return input.replace(/heck|dang/gi, "****") || fallback
-}
+let contact = { ...originalContact }
 
 const ContactView = () => (
-  <div id="click-to-edit-demo" class="stack" {...ds.dataSignals(contact, { ifMissing: true })}>
-    <div class="contact-card">
-      <p>
-        <strong>First Name:</strong> {contact.firstName}
-      </p>
-      <p>
-        <strong>Last Name:</strong> {contact.lastName}
-      </p>
-      <p>
-        <strong>Email:</strong> {contact.email}
-      </p>
-    </div>
+  <div id="demo">
+    <p>First Name: {contact.firstName}</p>
+    <p>Last Name: {contact.lastName}</p>
+    <p>Email: {contact.email}</p>
     <div role="group">
       <button
         class="info"
@@ -57,33 +57,52 @@ const ContactView = () => (
 )
 
 const ContactForm = () => (
-  <div id="click-to-edit-demo" class="stack" {...ds.dataSignals(contact)}>
-    <div class="grid">
-      <label>
-        First Name
-        <input
-          type="text"
-          {...ds.bind("firstName")}
-          {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
-        />
-      </label>
-      <label>
-        Last Name
-        <input
-          type="text"
-          {...ds.bind("lastName")}
-          {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
-        />
-      </label>
-      <label>
-        Email
-        <input
-          type="email"
-          {...ds.bind("email")}
-          {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
-        />
-      </label>
-    </div>
+  <div id="demo">
+    <label>
+      First Name
+      <input
+        type="text"
+        required
+        {...ds.bind(state.$.firstName)}
+        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+      />
+      <small
+        class="field-error"
+        style="display: none"
+        {...ds.show(state.$.errors.firstName)}
+        {...ds.text(state.$.errors.firstName)}
+      ></small>
+    </label>
+    <label>
+      Last Name
+      <input
+        type="text"
+        required
+        {...ds.bind(state.$.lastName)}
+        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+      />
+      <small
+        class="field-error"
+        style="display: none"
+        {...ds.show(state.$.errors.lastName)}
+        {...ds.text(state.$.errors.lastName)}
+      ></small>
+    </label>
+    <label>
+      Email
+      <input
+        type="email"
+        required
+        {...ds.bind(state.$.email)}
+        {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
+      />
+      <small
+        class="field-error"
+        style="display: none"
+        {...ds.show(state.$.errors.email)}
+        {...ds.text(state.$.errors.email)}
+      ></small>
+    </label>
     <div role="group">
       <button
         class="success"
@@ -124,21 +143,36 @@ example.get("/", () =>
   )
 )
 
-example.get("/edit", () => reply.patch(<ContactForm />))
-example.get("/cancel", () => reply.patch(<ContactView />))
+example.get("/edit", () =>
+  reply.stream([event.signals(state.reset(contact)), event.patch(<ContactForm />)])
+)
+
+example.get("/cancel", () =>
+  reply.stream([event.signals(state.reset(contact)), event.patch(<ContactView />)])
+)
 
 example.patch("/reset", () => {
   contact = { ...originalContact }
-  return reply.stream([event.signals(contact), event.patch(<ContactView />)])
+  return reply.stream([event.signals(state.reset(contact)), event.patch(<ContactView />)])
 })
 
 example.put("/", async (c) => {
-  const signals = await readSignals<Partial<Contact>>(c.req.raw)
-  contact = {
-    firstName: clean(signals.firstName, contact.firstName),
-    lastName: clean(signals.lastName, contact.lastName),
-    email: clean(signals.email, contact.email)
+  const result = schema.safeParse(await read.signals(c.req.raw))
+
+  if (!result.success) {
+    const { fieldErrors } = z.flattenError(result.error)
+
+    return reply.signals(
+      state.patch({
+        errors: {
+          firstName: fieldErrors.firstName?.[0] ?? "",
+          lastName: fieldErrors.lastName?.[0] ?? "",
+          email: fieldErrors.email?.[0] ?? ""
+        }
+      })
+    )
   }
 
-  return reply.stream([event.signals(contact), event.patch(<ContactView />)])
+  contact = result.data
+  return reply.stream([event.signals(state.reset(contact)), event.patch(<ContactView />)])
 })

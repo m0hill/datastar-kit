@@ -2,6 +2,8 @@ import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
+const state = ds.state({ key: "" })
+
 const keys = [
   "KEY ELSE",
   "CM",
@@ -27,11 +29,12 @@ example.get("/", () =>
       summary="Uses one delegated click listener to read button metadata from bubbled events."
       source="https://data-star.dev/examples/event_bubbling"
     >
-      <div class="stack" {...ds.dataSignals({ key: "" })}>
+      <div id="demo" {...state.attrs()}>
         <p>
-          Key pressed: <strong {...ds.text(ds.expr("$key || 'none'"))}></strong>
+          Key pressed: <span {...ds.text(state.$.key)}></span>
         </p>
         <div
+          id="event-bubbling-container"
           class="keypad"
           {...ds.on(
             "click",
@@ -40,7 +43,7 @@ example.get("/", () =>
         >
           {keys.map((key) => (
             <button data-id={key} class={key.includes(" ") ? "gray" : undefined}>
-              {key}
+              {key.includes(" ") ? key.split(" ").map((part) => [part, <br />]) : key}
             </button>
           ))}
         </div>

@@ -1,19 +1,18 @@
 import { Hono } from "hono"
 import { ds, event, reply } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
-import { sleep } from "../helpers.js"
 
 const circumference = 565.48
 
-const ProgressBar = ({ progress }: { readonly progress: number }) => {
+const ProgressBar = ({ progress }: { progress: number }) => {
   const offset = circumference - (progress / 100) * circumference
   const done = progress >= 100
 
   return (
     <div
-      id="progress-bar-demo"
+      id="progress-bar"
       class="progress-demo"
-      {...(done ? {} : ds.init(ds.get("/examples/progress_bar/updates", { openWhenHidden: true })))}
+      {...ds.init(ds.get("/examples/progress_bar/updates", { openWhenHidden: true }))}
     >
       <svg width="220" height="220" viewBox="-25 -25 250 250" class="progress-ring">
         <circle
@@ -41,11 +40,9 @@ const ProgressBar = ({ progress }: { readonly progress: number }) => {
           {Math.round(progress)}%
         </text>
       </svg>
-      {done ? (
-        <button class="success" {...ds.on("click", ds.get("/examples/progress_bar/updates"))}>
-          Completed! Try again?
-        </button>
-      ) : null}
+      <div {...ds.on("click", ds.get("/examples/progress_bar/updates", { openWhenHidden: true }))}>
+        {done ? <button class="success">Completed! Try again?</button> : null}
+      </div>
     </div>
   )
 }
@@ -71,9 +68,11 @@ example.get("/", () =>
 
 example.get("/updates", (c) => {
   async function* stream() {
-    for (let progress = 0; progress <= 100 && !c.req.raw.signal.aborted; progress += 5) {
+    let progress = 0
+    while (progress < 100 && !c.req.raw.signal.aborted) {
+      progress = Math.min(progress + Math.floor(Math.random() * 10) + 1, 100)
       yield event.patch(<ProgressBar progress={progress} />)
-      await sleep(120)
+      await new Promise((resolve) => setTimeout(resolve, 250))
     }
   }
 

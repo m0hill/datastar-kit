@@ -2,19 +2,13 @@ import { Hono } from "hono"
 import { ds, reply } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
-const FormResult = ({
-  method,
-  values
-}: {
-  readonly method: string
-  readonly values: readonly string[]
-}) => (
+const FormResult = ({ method, values }: { method: string; values: string[] }) => (
   <output id="form-data-result" class="event-output">
     {values.length === 0 ? `${method}: no values submitted` : `${method}: ${values.join(", ")}`}
   </output>
 )
 
-const valuesFromRequest = async (request: Request): Promise<readonly string[]> => {
+const valuesFromRequest = async (request: Request): Promise<string[]> => {
   if (request.method === "GET") {
     return new URL(request.url).searchParams.getAll("checkboxes")
   }
@@ -34,7 +28,7 @@ example.get("/", () =>
       source="https://data-star.dev/examples/form_data"
     >
       <div class="stack">
-        <form id="form-data-demo" class="checks">
+        <form id="myform" class="checks">
           <label>
             <input type="checkbox" name="checkboxes" value="foo" /> foo
           </label>
@@ -47,13 +41,13 @@ example.get("/", () =>
           <div role="group">
             <button
               type="button"
-              {...ds.on("click", ds.get("/examples/form_data/endpoint", { contentType: "form" }))}
+              {...ds.on("click", ds.get("/examples/form_data/data", { contentType: "form" }))}
             >
               Submit GET request
             </button>
             <button
               type="button"
-              {...ds.on("click", ds.post("/examples/form_data/endpoint", { contentType: "form" }))}
+              {...ds.on("click", ds.post("/examples/form_data/data", { contentType: "form" }))}
             >
               Submit POST request
             </button>
@@ -63,9 +57,9 @@ example.get("/", () =>
           type="button"
           {...ds.on(
             "click",
-            ds.get("/examples/form_data/endpoint", {
+            ds.get("/examples/form_data/data", {
               contentType: "form",
-              selector: "#form-data-demo"
+              selector: "#myform"
             })
           )}
         >
@@ -81,10 +75,10 @@ example.get("/", () =>
   )
 )
 
-example.get("/endpoint", async (c) =>
+example.get("/data", async (c) =>
   reply.patch(<FormResult method="GET" values={await valuesFromRequest(c.req.raw)} />)
 )
 
-example.post("/endpoint", async (c) =>
+example.post("/data", async (c) =>
   reply.patch(<FormResult method="POST" values={await valuesFromRequest(c.req.raw)} />)
 )

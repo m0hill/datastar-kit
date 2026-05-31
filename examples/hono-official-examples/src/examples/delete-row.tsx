@@ -5,13 +5,14 @@ import { ExampleLayout, pageHead } from "../layout.js"
 const initialRows = [
   { name: "Joe Smith", email: "joe@smith.org" },
   { name: "Angie MacDowell", email: "angie@macdowell.org" },
+  { name: "Fuqua Tarkenton", email: "fuqua@tarkenton.org" },
   { name: "Kim Yee", email: "kim@yee.org" }
 ]
 
 let rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
 
 const DeleteRowTable = () => (
-  <div id="delete-row-demo" class="stack">
+  <div id="demo" {...ds.dataSignal("_fetching", false, { ifMissing: true })}>
     <table>
       <thead>
         <tr>
@@ -35,12 +36,12 @@ const DeleteRowTable = () => (
               <td>
                 <button
                   class="error"
-                  {...ds.indicator("_fetching")}
-                  {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
                   {...ds.on(
                     "click",
                     ds.expr(`confirm('Are you sure?') && @delete('/examples/delete_row/${index}')`)
                   )}
+                  {...ds.indicator("_fetching")}
+                  {...ds.dataAttr("disabled", ds.expr("$_fetching"))}
                 >
                   Delete
                 </button>
@@ -50,7 +51,11 @@ const DeleteRowTable = () => (
         )}
       </tbody>
     </table>
-    <button class="warning" {...ds.on("click", ds.patch("/examples/delete_row/reset"))}>
+    <button
+      class="warning"
+      {...ds.on("click", ds.put("/examples/delete_row/reset"))}
+      {...ds.indicator("_fetching")}
+    >
       Reset
     </button>
   </div>
@@ -77,11 +82,15 @@ example.get("/", () =>
 
 example.delete("/:index", (c) => {
   const index = Number(c.req.param("index"))
+  if (!Number.isInteger(index) || index < 0 || index >= rows.length) {
+    return c.text(`invalid index: ${c.req.param("index")}`, 400)
+  }
+
   rows = rows.filter((_, rowIndex) => rowIndex !== index)
   return reply.patch(<DeleteRowTable />)
 })
 
-example.patch("/reset", () => {
+example.put("/reset", () => {
   rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
   return reply.patch(<DeleteRowTable />)
 })

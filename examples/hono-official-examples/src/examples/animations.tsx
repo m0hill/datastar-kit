@@ -1,7 +1,9 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { ds, event, reply, read } from "datastar-kit"
+import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
-import { readSignals, sleep } from "../helpers.js"
+
+const schema = z.object({ shouldRestore: z.boolean().default(false) })
 
 const throbStates = [
   { fg: "#174ea6", bg: "#fff4cc", label: "blue on yellow" },
@@ -10,7 +12,7 @@ const throbStates = [
   { fg: "#6b2bbd", bg: "#f0e8ff", label: "purple on lavender" }
 ] as const
 
-const Throb = ({ index }: { readonly index: number }) => {
+const Throb = ({ index }: { index: number }) => {
   const item = throbStates[index % throbStates.length] ?? throbStates[0]
   return (
     <div
@@ -23,42 +25,48 @@ const Throb = ({ index }: { readonly index: number }) => {
   )
 }
 
-const ViewTransitionButton = ({ restored }: { readonly restored: boolean }) => (
-  <button
-    id="view-transition"
-    class={restored ? "success" : "info"}
-    {...ds.dataSignals({ shouldRestore: restored })}
-    {...ds.indicator("_vtFetching")}
-    {...ds.dataAttr("disabled", ds.expr("$_vtFetching"))}
-    {...ds.on("click", ds.get("/examples/animations/view_transition"))}
-  >
-    {restored ? "Restored. Swap again." : "Swap It!"}
-  </button>
-)
+const ViewTransitionButton = ({ restored }: { restored: boolean }) => {
+  const state = ds.state({ shouldRestore: restored })
 
-const FadeOutButton = ({ fading = false }: { readonly fading?: boolean }) => (
+  return (
+    <button
+      id="view-transition"
+      class={restored ? "success" : "info"}
+      {...state.attrs()}
+      {...ds.indicator("_vtFetching")}
+      {...ds.dataAttr("disabled", ds.expr("$_vtFetching"))}
+      {...ds.on("click", ds.get("/examples/animations/view_transition"))}
+    >
+      {restored ? "Restored. Swap again." : "Swap It!"}
+    </button>
+  )
+}
+
+const FadeOutButton = ({ fading = false }: { fading?: boolean }) => (
   <button
     id="fade-out-swap"
     class="warning"
-    style={`transition: opacity 1s ease-out; opacity: ${fading ? "0" : "1"};`}
+    style={fading ? "transition: opacity 1s ease-out; opacity: 0" : undefined}
+    disabled={fading}
     {...ds.indicator("_fadeOutFetching")}
     {...ds.dataAttr("disabled", ds.expr("$_fadeOutFetching"))}
-    {...ds.on("click", ds.delete("/examples/animations/fade_out"))}
+    {...ds.on("click", ds.delete("/examples/animations"))}
   >
     Fade out then delete on click
   </button>
 )
 
-const FadeInButton = ({ visible = true }: { readonly visible?: boolean }) => (
+const FadeInButton = ({ invisible = false }: { invisible?: boolean }) => (
   <button
     id="fade-me-in"
     class="success"
-    style={`transition: opacity 1s ease-out; opacity: ${visible ? "1" : "0"};`}
+    style={invisible ? "opacity: 0" : "transition: opacity 1s ease-out"}
+    disabled={invisible}
     {...ds.indicator("_fadeInFetching")}
     {...ds.dataAttr("disabled", ds.expr("$_fadeInFetching"))}
     {...ds.on("click", ds.get("/examples/animations/fade_me_in"))}
   >
-    {visible ? "Fade me in on click" : "Preparing fade in..."}
+    Fade me in on click
   </button>
 )
 
@@ -100,32 +108,36 @@ example.get("/", () =>
   )
 )
 
-example.get("/throb", (c) => {
-  async function* stream() {
-    let index = 0
-    while (!c.req.raw.signal.aborted) {
-      yield event.patch(<Throb index={index} />)
-      index += 1
-      await sleep(1000)
-    }
-  }
-
-  return reply.stream(stream(), { heartbeat: { intervalMs: 15_000, comment: "animations" } })
-})
+example.get("/throb", (c) =>
+  reply.stream(
+    (async function* () {
+      let index = 0
+      while (!c.req.raw.signal.aborted) {
+        yield event.patch(<Throb index={index} />)
+        index += 1
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    })(),
+    { heartbeat: { intervalMs: 15_000, comment: "animations" } }
+  )
+)
 
 example.get("/view_transition", async (c) => {
-  const { shouldRestore = false } = await readSignals<{ shouldRestore?: boolean }>(c.req.raw)
+  const { shouldRestore } = schema.parse(await read.signals(c.req.raw))
+
   return reply.patch(<ViewTransitionButton restored={!shouldRestore} />, {
     useViewTransition: true
   })
 })
 
-example.delete("/fade_out", () =>
+example.delete("/", () =>
   reply.stream(
     (async function* () {
       yield event.patch(<FadeOutButton fading />)
-      await sleep(1000)
-      yield event.patch("", { selector: "#fade-out-swap", mode: "remove" })
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      yield event.patch(<div id="fade-out-swap"></div>)
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      yield event.patch(<FadeOutButton />)
     })()
   )
 )
@@ -133,9 +145,9 @@ example.delete("/fade_out", () =>
 example.get("/fade_me_in", () =>
   reply.stream(
     (async function* () {
-      yield event.patch(<FadeInButton visible={false} />)
-      await sleep(40)
-      yield event.patch(<FadeInButton visible />)
+      yield event.patch(<FadeInButton invisible />)
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+      yield event.patch(<FadeInButton />)
     })()
   )
 )
