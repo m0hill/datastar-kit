@@ -14,7 +14,13 @@ interface TodoMutationResult {
   todos: Todo[]
 }
 
-type TodoRow = Record<string, SqlStorageValue> & Todo
+interface TodoRow extends Record<string, SqlStorageValue> {
+  id: string
+  title: string
+  completed: number
+  created_at: number
+  updated_at: number
+}
 
 type LiveIteratorResult = IteratorResult<string, undefined>
 

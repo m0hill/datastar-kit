@@ -71,3 +71,12 @@
 - Leverage: The example now teaches the default SDK command and patch Interfaces.
 - Locality: Direct-response handling stays reserved for examples that actually need that protocol path.
 - Status: Fixed in working tree.
+
+## F-009: Durable Object todo rows used the public Todo type as the SQL row type
+
+- Area: `examples/worker-do-hono-live-todos/src/realtime/hub.ts`.
+- Problem: The SQL cursor row type intersected `SqlStorageValue` records with the public `Todo` type, making `completed` look boolean while the database returns `0 | 1` numbers and making timestamps too wide.
+- Resolution: Added an explicit `TodoRow` Interface for database rows and kept the public `Todo` Interface as the rendered application shape.
+- Leverage: The example keeps SQL transport details out of caller-facing todo data.
+- Locality: Database row coercion lives at the Durable Object read boundary.
+- Status: Fixed in working tree.

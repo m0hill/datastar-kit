@@ -30,3 +30,7 @@
 7. `Use default counter responses`
    - Replaced a raw `204` with `reply.done()`.
    - Replaced `reply.directHtml(...)` with `reply.patch(...)` while preserving the cookie header.
+
+8. `Type Durable Object todo rows explicitly`
+   - Split SQL row typing from the public todo shape in the Durable Object live todos example.
+   - Fixed the workspace typecheck failure caused by `SqlStorageValue` row values.
