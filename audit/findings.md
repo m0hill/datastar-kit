@@ -21,11 +21,11 @@
 ## F-003: Browser-only scripts are embedded as unsafe inline TSX strings
 
 - Area: `custom-event.tsx`, `sortable.tsx`, `web-component.tsx`.
-- Problem: Browser-only behaviour with DOM APIs is embedded in TSX through `unsafeHtml(...)`, making formatting, syntax checking, and reuse weaker.
-- Resolution: Move each browser script into a public module and include it through `pageHead(<script type="module" ...>)`.
+- Problem: Browser-only behaviour with DOM APIs is embedded in TSX through `unsafeHtml(...)`, making formatting, syntax checking, and reuse weaker. In Custom Event, the head script also ran before the target element existed.
+- Resolution: Moved each browser script into a public module and included it through `pageHead(<script type="module" ...>)`.
 - Leverage: The TSX Interface describes markup and Datastar wiring; browser code gets normal JavaScript module ergonomics.
 - Locality: DOM API behaviour moves out of server-rendered views into files the browser owns.
-- Status: Planned.
+- Status: Fixed in working tree; official example typecheck passed.
 
 ## F-004: Repeated pending-state attributes add boilerplate in official examples
 

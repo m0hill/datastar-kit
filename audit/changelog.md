@@ -1,3 +1,11 @@
 # Changelog
 
-Commits will be appended here in order.
+1. `d46f524 feat: data attr`
+   - Added the audit ledger.
+   - Added `ds.pluginAttr(name, value?)` for app-defined Datastar plugin attributes.
+   - Updated custom plugin/action examples, docs, and tests to use the new Interface.
+
+2. `Move official browser scripts into modules`
+   - Moved Custom Event, Sortable, and Web Component browser code out of inline `unsafeHtml(...)`.
+   - Added public module files served by the official examples app.
+   - Verified with `pnpm --filter @datastar-kit/example-hono-official-examples typecheck`.

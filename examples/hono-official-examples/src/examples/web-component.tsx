@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, reply, unsafeHtml } from "datastar-kit"
+import { ds, reply } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const state = ds.state({ _name: "Your Name" })
@@ -14,20 +14,6 @@ example.get("/", () =>
       summary="Keeps a custom element attribute synchronized from a Datastar signal."
       source="https://data-star.dev/examples/web_component"
     >
-      <script>
-        {unsafeHtml(`class ReverseComponent extends HTMLElement {
-  static get observedAttributes() {
-    return ["name"]
-  }
-
-  attributeChangedCallback(_name, _oldValue, newValue) {
-    const value = [...newValue].reverse().join("")
-    this.dispatchEvent(new CustomEvent("reverse", { detail: { value } }))
-  }
-}
-
-customElements.define("reverse-component", ReverseComponent)`)}
-      </script>
       <div class="stack" {...state.attrs()}>
         <label>
           Reversed
@@ -42,7 +28,7 @@ customElements.define("reverse-component", ReverseComponent)`)}
     </ExampleLayout>,
     {
       title: "Web Component - Datastar Kit",
-      head: pageHead()
+      head: pageHead(<script type="module" src="/public/reverse-component.js" />)
     }
   )
 )

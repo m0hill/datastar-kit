@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, reply, unsafeHtml } from "datastar-kit"
+import { ds, reply } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 export const example = new Hono()
@@ -24,21 +24,7 @@ example.get("/", () =>
     </ExampleLayout>,
     {
       title: "Custom Event - Datastar Kit",
-      head: pageHead(
-        <script>
-          {unsafeHtml(`const target = document.getElementById("custom-event-target")
-
-setInterval(() => {
-  target?.dispatchEvent(
-    new CustomEvent("myevent", {
-      detail: JSON.stringify({
-        eventTime: new Date().toLocaleTimeString()
-      })
-    })
-  )
-}, 1000)`)}
-        </script>
-      )
+      head: pageHead(<script type="module" src="/public/custom-event.js" />)
     }
   )
 )
