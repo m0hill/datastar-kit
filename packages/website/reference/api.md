@@ -71,10 +71,11 @@ Fetch action options include `headers`, `contentType`, `filterSignals`, `payload
 
 ### Expressions
 
-| API             | Use                                                                                    |
-| --------------- | -------------------------------------------------------------------------------------- |
-| `ds.expr`       | Tagged template for Datastar expressions with safe serialization of refs and literals. |
-| `ds.regex(...)` | Build a regular expression expression value.                                           |
+| API                       | Use                                                                                    |
+| ------------------------- | -------------------------------------------------------------------------------------- |
+| `ds.expr`                 | Tagged template for Datastar expressions with safe serialization of refs and literals. |
+| `ds.regex(...)`           | Build a regular expression expression value.                                           |
+| `ds.RegexExpressionError` | Thrown when regex pattern or flags cannot create a `RegExp`.                           |
 
 ## `read`
 

@@ -89,3 +89,12 @@
 - Leverage: Callers keep the same tiny HTML Interface while the renderer owns a larger part of the serialization safety boundary.
 - Locality: Name validation now lives in the HTML Module instead of being every caller's responsibility.
 - Status: Fixed and verified with focused SDK test/typecheck runs.
+
+## F-011: `ds.regex(...)` leaked JavaScript regex literal escaping
+
+- Area: SDK expression helpers, signal patch filters, docs.
+- Problem: `ds.regex(pattern, flags)` rendered `/pattern/flags`, so a caller-provided `/` in the pattern produced invalid JavaScript unless the caller knew to pre-escape it for a regex literal.
+- Resolution: Validate with native `RegExp` and render `new RegExp(pattern, flags)` with JSON-escaped arguments.
+- Leverage: Callers pass ordinary `RegExp` constructor inputs and get valid Datastar expression source.
+- Locality: Regex escaping and invalid-pattern errors live in the expression Module.
+- Status: Fixed and verified with focused SDK test/typecheck runs.

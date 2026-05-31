@@ -51,7 +51,7 @@ export type {
   JsonSignalsOptions
 } from "./attributes.js"
 
-export { expr, regex } from "./expression.js"
+export { expr, regex, RegexExpressionError } from "./expression.js"
 export type { DatastarFunction, Expr, ExprInput } from "./expression.js"
 
 export { local, Signal, SignalNameError, signal } from "./signals.js"

@@ -38,3 +38,7 @@
 9. `Validate rendered HTML names`
    - Added `HtmlNameError` for unsafe rendered tag or attribute names.
    - Kept text and value escaping in the HTML Module and moved name safety into the same boundary.
+
+10. `Render regex expressions via constructor`
+    - Changed `ds.regex(...)` from slash-delimited literals to `new RegExp(...)` expressions.
+    - Added invalid regex errors and tests for patterns containing `/`.

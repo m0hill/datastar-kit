@@ -41,3 +41,9 @@
 - Decision: Make the HTML Module reject unsafe tag and emitted attribute names.
 - Reasoning: Escaping values is not enough when names are part of the serialized output. The renderer is the right Seam because every TSX and `h(...)` caller passes through it.
 - Rejected alternative: Document that callers must sanitize names themselves. That fails the deletion test because every dynamic wrapper would need to repeat the same boundary check.
+
+## D-008: Render regex expressions with `new RegExp(...)`
+
+- Decision: Make `ds.regex(pattern, flags)` emit a constructor expression instead of a slash-delimited literal.
+- Reasoning: `pattern` and `flags` match the native `RegExp` constructor Interface. Rendering the same shape avoids a second escaping rule for Datastar expression output.
+- Rejected alternative: Keep regex literals and document slash escaping. That fails the deletion test because the escaping rule reappears at every dynamic filter call site.

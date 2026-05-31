@@ -23,7 +23,7 @@ describe("misc Datastar attribute helpers", () => {
   it("builds JSON signal inspector attributes", () => {
     expect(jsonSignals()).toEqual({ "data-json-signals": true })
     expect(jsonSignals({ include: regex("^user") }, { terse: true })).toEqual({
-      "data-json-signals__terse": '{"include": /^user/}'
+      "data-json-signals__terse": '{"include": new RegExp("^user", "")}'
     })
   })
 

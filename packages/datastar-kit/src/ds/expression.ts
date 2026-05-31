@@ -113,10 +113,31 @@ export function expr<T = unknown>(
 }
 
 /**
+ * Error thrown when `ds.regex(...)` receives a pattern or flags pair that cannot create a `RegExp`.
+ */
+export class RegexExpressionError extends Error {
+  constructor(
+    readonly pattern: string,
+    readonly flags: string,
+    options: { readonly cause?: unknown } = {}
+  ) {
+    super(`Invalid regular expression: ${JSON.stringify(pattern)}`, options)
+  }
+}
+
+/**
  * Creates a regular-expression literal for Datastar expression options.
  *
  * @param pattern Regular expression pattern.
  * @param flags Regular expression flags.
  * @returns A Datastar expression that evaluates to a `RegExp`.
  */
-export const regex = (pattern: string, flags = ""): Expr<RegExp> => raw(`/${pattern}/${flags}`)
+export const regex = (pattern: string, flags = ""): Expr<RegExp> => {
+  try {
+    new RegExp(pattern, flags)
+  } catch (cause) {
+    throw new RegexExpressionError(pattern, flags, { cause })
+  }
+
+  return raw(`new RegExp(${JSON.stringify(pattern)}, ${JSON.stringify(flags)})`)
+}

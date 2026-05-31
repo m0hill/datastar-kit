@@ -23,6 +23,11 @@ describe("expression escape hatches", () => {
     expect(ds.expr`${count} === ${"done"}`.toDatastarExpression()).toBe('$count === "done"')
   })
 
+  it("builds regular expressions without caller-managed literal escaping", () => {
+    expect(ds.regex("a/b", "i").toDatastarExpression()).toBe('new RegExp("a/b", "i")')
+    expect(() => ds.regex("[")).toThrow(ds.RegexExpressionError)
+  })
+
   it("builds custom action expressions", () => {
     const modalOpen = ds.signal<boolean>("modalOpen")
 

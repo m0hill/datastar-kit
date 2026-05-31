@@ -5,7 +5,8 @@ import { mergeProps } from "../src/html.js"
 describe("signal patch helpers", () => {
   it("builds signal patch filter attributes", () => {
     expect(onSignalPatchFilter({ include: regex("^counter$"), exclude: regex("_temp$") })).toEqual({
-      "data-on-signal-patch-filter": '{"include": /^counter$/, "exclude": /_temp$/}'
+      "data-on-signal-patch-filter":
+        '{"include": new RegExp("^counter$", ""), "exclude": new RegExp("_temp$", "")}'
     })
   })
 
@@ -17,7 +18,7 @@ describe("signal patch helpers", () => {
       )
     ).toEqual({
       "data-on-signal-patch__debounce.500ms": '@post("/autosave")',
-      "data-on-signal-patch-filter": '{"include": /^draft/}'
+      "data-on-signal-patch-filter": '{"include": new RegExp("^draft", "")}'
     })
   })
 })
