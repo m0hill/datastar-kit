@@ -20,9 +20,13 @@
    - Superseded by the next commit because Match Media is Datastar Pro and out of normal Datastar scope.
 
 5. `Fix counter example source metadata`
-   - Renamed the implemented counter port to Templ Counter in the local catalog.
+   - Kept the local JSX port named Counters.
    - Linked the source badge to `https://data-star.dev/examples/templ_counter`.
 
 6. `Drop pro-only keyed plugin support`
    - Removed keyed `pluginAttr(...)` support and Match Media docs/tests.
    - Recorded Datastar Pro examples as out of scope.
+
+7. `Use default counter responses`
+   - Replaced a raw `204` with `reply.done()`.
+   - Replaced `reply.directHtml(...)` with `reply.patch(...)` while preserving the cookie header.

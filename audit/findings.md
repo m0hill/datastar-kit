@@ -54,11 +54,20 @@
 - Locality: Pro catalog concerns stay out of the normal Datastar SDK.
 - Status: Removed after user correction.
 
-## F-007: Counter example metadata pointed at the examples root
+## F-007: Counter example source link pointed at the examples root
 
 - Area: Official examples navigation and counter example layout.
-- Problem: The local counter example is the official Templ Counter port, but the page title was generic and its source link pointed at the examples root.
-- Resolution: Renamed the local navigation/page title to Templ Counter and linked to `/examples/templ_counter`.
+- Problem: The local JSX counter port linked its source badge to the examples root instead of the official counter example path.
+- Resolution: Kept the local Counter/Counters naming because this is not a Go Templ implementation, and linked the source badge to `/examples/templ_counter`.
 - Leverage: Readers can move from the SDK port to the exact official example.
 - Locality: Example catalog metadata stays in the official examples app.
+- Status: Fixed in working tree.
+
+## F-008: Counter example bypassed default response helpers
+
+- Area: `counters.tsx`.
+- Problem: The global counter returned a hand-written `204` and the user counter used `reply.directHtml(...)` even though normal Datastar SSE helpers were enough.
+- Resolution: Replaced the raw response with `reply.done()` and the direct HTML response with `reply.patch(...)` while preserving the cookie header.
+- Leverage: The example now teaches the default SDK command and patch Interfaces.
+- Locality: Direct-response handling stays reserved for examples that actually need that protocol path.
 - Status: Fixed in working tree.

@@ -29,7 +29,7 @@ export const example = new Hono()
 example.get("/", (c) =>
   reply.page(
     <ExampleLayout
-      title="Templ Counter"
+      title="Counters"
       slug="counters"
       summary="Shows a server-global counter streamed with SSE and a cookie-backed per-user counter."
       source="https://data-star.dev/examples/templ_counter"
@@ -40,7 +40,7 @@ example.get("/", (c) =>
       </div>
     </ExampleLayout>,
     {
-      title: "Templ Counter - Datastar Kit",
+      title: "Counters - Datastar Kit",
       head: pageHead()
     }
   )
@@ -48,13 +48,13 @@ example.get("/", (c) =>
 
 example.patch("/global", () => {
   globalClicks += 1
-  return new Response(null, { status: 204 })
+  return reply.done()
 })
 
 example.patch("/user", (c) => {
   const next = userClicks(c) + 1
 
-  return reply.directHtml(
+  return reply.patch(
     <UserButton count={next} />,
     {},
     {

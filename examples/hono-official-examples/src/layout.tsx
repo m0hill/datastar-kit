@@ -25,7 +25,7 @@ const examples = [
   { slug: "progressive_load", title: "Progressive Load" },
   { slug: "sortable", title: "Sortable" },
   { slug: "svg_morphing", title: "SVG Morphing" },
-  { slug: "counters", title: "Templ Counter" },
+  { slug: "counters", title: "Counters" },
   { slug: "title_update", title: "Title Update" },
   { slug: "todomvc", title: "TodoMVC" },
   { slug: "web_component", title: "Web Component" }
