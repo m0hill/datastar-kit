@@ -265,9 +265,6 @@
   .h-15 {
     height: calc(var(--spacing) * 15);
   }
-  .h-\[60px\] {
-    height: 60px;
-  }
   .h-full {
     height: 100%;
   }
