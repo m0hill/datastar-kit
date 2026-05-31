@@ -7,13 +7,13 @@
 - Resolution: Keep the existing worktree direction: expose `ds.pluginAttr(name, value?)`, validate safe plugin names, serialize values through the same expression path as first-party attributes, and update examples/docs to use it.
 - Leverage: Callers get one small Interface for any app plugin attribute instead of knowing raw HTML attribute spelling and expression serialization.
 - Locality: Plugin attribute name validation and serialization live in one SDK Module.
-- Status: Existing dirty worktree change reviewed; tests still need to be run and committed.
+- Status: Fixed, tested, and committed.
 
 ## F-002: Implemented example scope differs from the current official site catalog
 
 - Area: `examples/hono-official-examples`.
 - Problem: The current Datastar examples page lists newer entries such as Match Media, Templ Counter, and Rocket examples that this SDK package does not implement.
-- Resolution: Audit the SDK's implemented official-example package in this pass. Do not add new examples during a refactor pass unless a later change explicitly targets catalog coverage.
+- Resolution: Audit the repository's implemented SDK, docs, website, and examples. Do not add live-site catalog entries during this pass unless a later change explicitly targets catalog coverage.
 - Leverage: The audit stays focused on improving existing Interfaces instead of becoming a feature-import project.
 - Locality: Catalog drift is recorded here so future work can choose a separate example parity change.
 - Status: Recorded as a boundary decision.
@@ -25,7 +25,7 @@
 - Resolution: Moved each browser script into a public module and included it through `pageHead(<script type="module" ...>)`.
 - Leverage: The TSX Interface describes markup and Datastar wiring; browser code gets normal JavaScript module ergonomics.
 - Locality: DOM API behaviour moves out of server-rendered views into files the browser owns.
-- Status: Fixed in working tree; official example typecheck passed.
+- Status: Fixed, verified with the official examples typecheck, and committed.
 
 ## F-004: Repeated pending-state attributes add boilerplate in official examples
 
@@ -43,7 +43,7 @@
 - Resolution: Rewrote official example expressions to use existing `ds.signal(...)`, `ds.local(...)`, `ds.state(...).$`, action helpers, and tagged `ds.expr` templates. Also corrected Bulk Update's unused `fetching` default to the actual `_fetching` signal used by `data-indicator`.
 - Leverage: Callers keep writing Datastar expressions, but signal names and action serialization now come from the same small Interfaces used elsewhere.
 - Locality: Signal naming mistakes concentrate in signal definitions instead of being duplicated through expression strings.
-- Status: Fixed in working tree; official example typecheck passed.
+- Status: Fixed, verified with the official examples typecheck, and committed.
 
 ## F-006: Keyed plugin attributes were ruled out for normal Datastar scope
 
@@ -61,7 +61,7 @@
 - Resolution: Kept the local Counter/Counters naming because this is not a Go Templ implementation, and linked the source badge to `/examples/templ_counter`.
 - Leverage: Readers can move from the SDK port to the exact official example.
 - Locality: Example catalog metadata stays in the official examples app.
-- Status: Fixed in working tree.
+- Status: Fixed and committed.
 
 ## F-008: Counter example bypassed default response helpers
 
@@ -70,7 +70,7 @@
 - Resolution: Replaced the raw response with `reply.done()` and the direct HTML response with `reply.patch(...)` while preserving the cookie header.
 - Leverage: The example now teaches the default SDK command and patch Interfaces.
 - Locality: Direct-response handling stays reserved for examples that actually need that protocol path.
-- Status: Fixed in working tree.
+- Status: Fixed and committed.
 
 ## F-009: Durable Object todo rows used the public Todo type as the SQL row type
 
@@ -79,7 +79,7 @@
 - Resolution: Added an explicit `TodoRow` Interface for database rows and kept the public `Todo` Interface as the rendered application shape.
 - Leverage: The example keeps SQL transport details out of caller-facing todo data.
 - Locality: Database row coercion lives at the Durable Object read boundary.
-- Status: Fixed in working tree.
+- Status: Fixed and committed.
 
 ## F-010: HTML name serialization trusted caller-provided names
 
@@ -115,4 +115,4 @@
 - Resolution: Added an Unreleased section covering `ds.pluginAttr(...)`, `HtmlNameError`, `ds.RegexExpressionError`, and the `ds.regex(...)` output change.
 - Leverage: Release readers get one package-local record of Interface changes.
 - Locality: Package release notes live with the package instead of being reconstructed from audit history.
-- Status: Fixed in working tree.
+- Status: Fixed and committed.

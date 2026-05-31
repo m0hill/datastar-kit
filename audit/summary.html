@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Datastar Kit Audit Summary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module">
+      import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs"
+      mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "strict" })
+    </script>
+    <style>
+      body {
+        background: #f7f7f4;
+      }
+
+      .diagram-box {
+        border: 1px solid #d8d6ce;
+        background: #fff;
+      }
+
+      .mass-bar {
+        height: 0.75rem;
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body class="text-zinc-900">
+    <main class="mx-auto flex max-w-7xl flex-col gap-8 px-5 py-8 lg:px-8">
+      <header class="border-b border-zinc-300 pb-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-zinc-500">Audit Summary</p>
+        <h1 class="mt-2 text-4xl font-semibold tracking-normal">Datastar Kit SDK</h1>
+        <p class="mt-3 max-w-3xl text-base text-zinc-700">
+          Scope: SDK package, website, docs, official ports, and runnable examples. Datastar Pro
+          examples stayed out of scope.
+        </p>
+      </header>
+
+      <section class="grid gap-5 lg:grid-cols-2">
+        <article class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-zinc-500">d46f524</p>
+              <h2 class="mt-1 text-xl font-semibold">Plugin Attribute Interface</h2>
+            </div>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
+            <li>
+              <strong>Files:</strong> SDK `ds` attributes, custom plugin/action examples, website
+              docs, SDK tests.
+            </li>
+            <li>
+              <strong>Problem:</strong> App plugin attributes required raw `data-*` props and manual
+              expression serialization.
+            </li>
+            <li>
+              <strong>Solution:</strong> Add `ds.pluginAttr(name, value?)` with normal Datastar
+              expression serialization.
+            </li>
+            <li>
+              <strong>Leverage:</strong> Callers get one small Interface for app-defined attribute
+              plugins.
+            </li>
+            <li>
+              <strong>Locality:</strong> Plugin name validation and value serialization live in one
+              Module.
+            </li>
+          </ul>
+          <div class="diagram-box mt-4 rounded-md p-3">
+            <pre class="mermaid">
+flowchart LR
+  A["Before: callers know raw data-alert"] --> B["manual value expression"]
+  C["After: ds.pluginAttr"] --> D["data-alert + serialized value"]
+  D --> E["Datastar plugin"]
+            </pre>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-zinc-500">6c1db10</p>
+              <h2 class="mt-1 text-xl font-semibold">Browser Scripts Became Modules</h2>
+            </div>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
+            <li>
+              <strong>Files:</strong> Custom Event, Sortable, Web Component TSX and public
+              JavaScript modules.
+            </li>
+            <li>
+              <strong>Problem:</strong> Browser-only DOM code lived in inline `unsafeHtml(...)`
+              strings.
+            </li>
+            <li>
+              <strong>Solution:</strong> Move DOM behavior into served module scripts and keep TSX
+              on markup.
+            </li>
+            <li>
+              <strong>Leverage:</strong> Example authors get normal JavaScript editing and module
+              loading.
+            </li>
+            <li>
+              <strong>Locality:</strong> Browser behavior changes stay in browser-owned files.
+            </li>
+          </ul>
+          <svg class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50" viewBox="0 0 620 210" role="img">
+            <rect x="24" y="36" width="250" height="120" rx="8" fill="#fee2e2" />
+            <text x="44" y="72" font-size="16" font-weight="700">Before</text>
+            <text x="44" y="104" font-size="13">TSX view</text>
+            <text x="44" y="130" font-size="13">unsafeHtml(script string)</text>
+            <path d="M295 96 L345 96" stroke="#71717a" stroke-width="3" marker-end="url(#arrow)" />
+            <rect x="366" y="36" width="230" height="120" rx="8" fill="#dcfce7" />
+            <text x="386" y="72" font-size="16" font-weight="700">After</text>
+            <text x="386" y="104" font-size="13">TSX view</text>
+            <text x="386" y="130" font-size="13">public/*.js module</text>
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L9,3 z" fill="#71717a" />
+              </marker>
+            </defs>
+          </svg>
+        </article>
+
+        <article class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-zinc-500">0e58afa</p>
+              <h2 class="mt-1 text-xl font-semibold">Signal Refs In Expressions</h2>
+            </div>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
+            <li><strong>Files:</strong> Official example TSX files.</li>
+            <li>
+              <strong>Problem:</strong> Raw `$signal` names and action calls were duplicated inside
+              expression strings.
+            </li>
+            <li>
+              <strong>Solution:</strong> Use `ds.signal`, `ds.local`, `ds.state(...).$`, and tagged
+              `ds.expr` interpolation.
+            </li>
+            <li>
+              <strong>Leverage:</strong> Renames and action serialization go through typed refs.
+            </li>
+            <li>
+              <strong>Locality:</strong> Signal names concentrate at definitions instead of string
+              interiors.
+            </li>
+          </ul>
+          <div class="diagram-box mt-4 rounded-md p-4">
+            <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3 text-sm">
+              <div class="rounded border border-red-200 bg-red-50 p-3">
+                <p class="font-semibold">Before</p>
+                <p>`ds.expr("$count++")`</p>
+                <div class="mt-3 space-y-1">
+                  <div class="mass-bar w-11/12 bg-red-300"></div>
+                  <div class="mass-bar w-10/12 bg-red-200"></div>
+                  <div class="mass-bar w-9/12 bg-red-100"></div>
+                </div>
+              </div>
+              <div class="font-semibold text-zinc-500">to</div>
+              <div class="rounded border border-emerald-200 bg-emerald-50 p-3">
+                <p class="font-semibold">After</p>
+                <p>`ds.expr`${"$"}{count}++``</p>
+                <div class="mt-3 space-y-1">
+                  <div class="mass-bar w-7/12 bg-emerald-300"></div>
+                  <div class="mass-bar w-5/12 bg-emerald-200"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-zinc-500">6df4b18</p>
+              <h2 class="mt-1 text-xl font-semibold">Normal Datastar Boundary</h2>
+            </div>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
+            <li><strong>Files:</strong> SDK plugin attributes, docs, tests, official examples metadata.</li>
+            <li>
+              <strong>Problem:</strong> Keyed plugin attributes were added only because Match Media
+              exists in Datastar Pro.
+            </li>
+            <li>
+              <strong>Solution:</strong> Remove Pro-driven keyed support and keep Counter/Counters
+              naming for the JSX port.
+            </li>
+            <li><strong>Leverage:</strong> Normal Datastar users get the helper they need.</li>
+            <li><strong>Locality:</strong> Pro catalog concerns stay out of the normal SDK Interface.</li>
+          </ul>
+          <div class="diagram-box mt-4 rounded-md p-3">
+            <pre class="mermaid">
+flowchart TB
+  A["Datastar Kit"] --> B["Normal Datastar"]
+  A -. rejected .-> C["Datastar Pro examples"]
+  B --> D["pluginAttr('alert')"]
+  C -. not shaping Interface .-> E["match-media / rocket"]
+            </pre>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-zinc-500">2a7e304</p>
+              <h2 class="mt-1 text-xl font-semibold">Counter Response Defaults</h2>
+            </div>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
+            <li><strong>Files:</strong> `examples/hono-official-examples/src/examples/counters.tsx`.</li>
+            <li>
+              <strong>Problem:</strong> The counter mixed raw `204` and `reply.directHtml(...)` into
+              a normal Datastar response path.
+            </li>
+            <li>
+              <strong>Solution:</strong> Use `reply.done()` and `reply.patch(...)`; preserve the user
+              counter cookie.
+            </li>
+            <li><strong>Leverage:</strong> The example teaches default SDK responses.</li>
+            <li><strong>Locality:</strong> Direct responses remain reserved for direct-response cases.</li>
+          </ul>
+          <svg class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50" viewBox="0 0 620 210" role="img">
+            <rect x="30" y="34" width="160" height="56" rx="6" fill="#fee2e2" />
+            <text x="48" y="67" font-size="13">new Response(204)</text>
+            <rect x="30" y="118" width="160" height="56" rx="6" fill="#fee2e2" />
+            <text x="48" y="151" font-size="13">directHtml(...)</text>
+            <path d="M215 62 L350 62" stroke="#71717a" stroke-width="3" marker-end="url(#arrow2)" />
+            <path d="M215 146 L350 146" stroke="#71717a" stroke-width="3" marker-end="url(#arrow2)" />
+            <rect x="380" y="34" width="160" height="56" rx="6" fill="#dcfce7" />
+            <text x="425" y="67" font-size="13">done()</text>
+            <rect x="380" y="118" width="160" height="56" rx="6" fill="#dcfce7" />
+            <text x="425" y="151" font-size="13">patch(...)</text>
+            <defs>
+              <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L9,3 z" fill="#71717a" />
+              </marker>
+            </defs>
+          </svg>
+        </article>
+
+        <article class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-zinc-500">b6f3247</p>
+              <h2 class="mt-1 text-xl font-semibold">Durable Object Row Interface</h2>
+            </div>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
+            <li>
+              <strong>Files:</strong>
+              `examples/worker-do-hono-live-todos/src/realtime/hub.ts`.
+            </li>
+            <li>
+              <strong>Problem:</strong> SQL rows intersected with the public `Todo` Interface and
+              blurred number/boolean fields.
+            </li>
+            <li>
+              <strong>Solution:</strong> Add explicit `TodoRow` and map it to `Todo` at the storage
+              boundary.
+            </li>
+            <li><strong>Leverage:</strong> Callers receive clean application todo data.</li>
+            <li><strong>Locality:</strong> SQL coercion lives at the Durable Object read Seam.</li>
+          </ul>
+          <div class="diagram-box mt-4 rounded-md p-3">
+            <pre class="mermaid">
+flowchart LR
+  DB["SQLite row\ncompleted: 0 | 1"] --> R["TodoRow"]
+  R --> M["map at DO boundary"]
+  M --> T["Todo\ncompleted: boolean"]
+            </pre>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-zinc-500">533622b</p>
+              <h2 class="mt-1 text-xl font-semibold">HTML Name Validation</h2>
+            </div>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
+            <li><strong>Files:</strong> HTML renderer, root exports, SDK tests, website docs.</li>
+            <li>
+              <strong>Problem:</strong> Text and values were escaped, but tag and attribute names
+              crossed the renderer boundary verbatim.
+            </li>
+            <li>
+              <strong>Solution:</strong> Add `HtmlNameError` and validate names before serialization.
+            </li>
+            <li><strong>Leverage:</strong> The same renderer Interface owns a deeper safety boundary.</li>
+            <li><strong>Locality:</strong> Name safety is one HTML Module concern.</li>
+          </ul>
+          <svg class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50" viewBox="0 0 620 210" role="img">
+            <rect x="24" y="34" width="250" height="128" rx="8" fill="#fef3c7" />
+            <text x="44" y="67" font-size="15" font-weight="700">Before</text>
+            <text x="44" y="100" font-size="13">escape text</text>
+            <text x="44" y="125" font-size="13">escape values</text>
+            <text x="44" y="150" font-size="13">trust names</text>
+            <rect x="346" y="34" width="250" height="128" rx="8" fill="#dcfce7" />
+            <text x="366" y="67" font-size="15" font-weight="700">After</text>
+            <text x="366" y="100" font-size="13">escape text</text>
+            <text x="366" y="125" font-size="13">escape values</text>
+            <text x="366" y="150" font-size="13">validate names</text>
+            <path d="M286 98 L334 98" stroke="#71717a" stroke-width="3" marker-end="url(#arrow3)" />
+            <defs>
+              <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L9,3 z" fill="#71717a" />
+              </marker>
+            </defs>
+          </svg>
+        </article>
+
+        <article class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-zinc-500">3b8a741 + 732a35b</p>
+              <h2 class="mt-1 text-xl font-semibold">Regex Expression Escaping</h2>
+            </div>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
+            <li><strong>Files:</strong> Expression Module, `ds` exports, SDK tests, API docs.</li>
+            <li>
+              <strong>Problem:</strong> `ds.regex("a/b")` rendered an invalid slash-delimited
+              JavaScript regex.
+            </li>
+            <li>
+              <strong>Solution:</strong> Validate with `RegExp(...)` and render
+              `new RegExp(pattern, flags)`.
+            </li>
+            <li><strong>Leverage:</strong> Callers pass ordinary constructor inputs.</li>
+            <li><strong>Locality:</strong> Regex escaping and errors stay in the expression Module.</li>
+          </ul>
+          <div class="diagram-box mt-4 rounded-md p-3">
+            <pre class="mermaid">
+sequenceDiagram
+  participant Caller
+  participant Regex as ds.regex
+  participant Expr as Datastar expression
+  Caller->>Regex: pattern "a/b", flags "i"
+  Regex->>Regex: RegExp(pattern, flags)
+  Regex->>Expr: new RegExp("a/b", "i")
+            </pre>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-zinc-500">d1fa9c9</p>
+              <h2 class="mt-1 text-xl font-semibold">Worker Live Todo Locality</h2>
+            </div>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
+            <li><strong>Files:</strong> D1 Worker todos and Durable Object todos examples.</li>
+            <li>
+              <strong>Problem:</strong> Room lookup was repeated and single patch responses were
+              wrapped in streams.
+            </li>
+            <li>
+              <strong>Solution:</strong> Centralize room lookup locally and use `reply.patch(...)`
+              for single patches.
+            </li>
+            <li><strong>Leverage:</strong> Readers see room boundary and response intent.</li>
+            <li><strong>Locality:</strong> Room naming and patch semantics concentrate in one place.</li>
+          </ul>
+          <div class="diagram-box mt-4 rounded-md p-4">
+            <div class="grid grid-cols-[1fr_auto_1fr] gap-3 text-sm">
+              <div class="rounded border border-red-200 bg-red-50 p-3">
+                <p class="font-semibold">Before</p>
+                <p>getByName("todos") x 4</p>
+                <p>stream([event.patch(...)])</p>
+              </div>
+              <div class="self-center font-semibold text-zinc-500">to</div>
+              <div class="rounded border border-emerald-200 bg-emerald-50 p-3">
+                <p class="font-semibold">After</p>
+                <p>liveRoom(env)</p>
+                <p>reply.patch(...)</p>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-xs font-semibold text-zinc-500">98ae64c</p>
+              <h2 class="mt-1 text-xl font-semibold">Package Changelog Locality</h2>
+            </div>
+            <span class="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800"
+              >Worth exploring</span
+            >
+          </div>
+          <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
+            <li><strong>Files:</strong> `packages/datastar-kit/CHANGELOG.md`.</li>
+            <li>
+              <strong>Problem:</strong> Public SDK changes existed in docs and audit notes but not
+              the package changelog.
+            </li>
+            <li><strong>Solution:</strong> Add an Unreleased section for changed Interfaces.</li>
+            <li><strong>Leverage:</strong> Release readers get the API delta in one place.</li>
+            <li><strong>Locality:</strong> Release notes live with the package.</li>
+          </ul>
+          <svg class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50" viewBox="0 0 620 210" role="img">
+            <rect x="34" y="44" width="150" height="72" rx="8" fill="#e0f2fe" />
+            <text x="57" y="84" font-size="13">website docs</text>
+            <rect x="34" y="130" width="150" height="72" rx="8" fill="#e0f2fe" />
+            <text x="64" y="170" font-size="13">audit log</text>
+            <rect x="405" y="84" width="170" height="82" rx="8" fill="#dcfce7" />
+            <text x="438" y="127" font-size="13">package changelog</text>
+            <path d="M200 80 C280 80 300 106 390 118" stroke="#71717a" stroke-width="3" fill="none" marker-end="url(#arrow4)" />
+            <path d="M200 166 C280 166 300 144 390 130" stroke="#71717a" stroke-width="3" fill="none" marker-end="url(#arrow4)" />
+            <defs>
+              <marker id="arrow4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L9,3 z" fill="#71717a" />
+              </marker>
+            </defs>
+          </svg>
+        </article>
+      </section>
+
+      <section class="rounded-lg border border-zinc-300 bg-white p-5 shadow-sm">
+        <h2 class="text-2xl font-semibold">Top Changes</h2>
+        <ul class="mt-4 list-disc space-y-2 pl-5 text-sm text-zinc-800">
+          <li>
+            <strong>`ds.pluginAttr(...)`:</strong> highest leverage. It turns a real Datastar
+            extension seam into a small SDK Interface without inventing a new layer.
+          </li>
+          <li>
+            <strong>Signal refs in examples:</strong> highest locality. Signal and action mistakes
+            now concentrate at definitions instead of raw expression strings.
+          </li>
+          <li>
+            <strong>HTML name validation:</strong> strongest safety improvement. The renderer now
+            owns the complete serialization boundary for normal output.
+          </li>
+          <li>
+            <strong>Datastar Pro boundary:</strong> important scope control. Normal Datastar stays
+            clean, and Pro examples do not shape this SDK.
+          </li>
+          <li>
+            <strong>Durable Object row typing:</strong> best example correctness fix. SQL transport
+            shape no longer leaks into the public todo Interface.
+          </li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
