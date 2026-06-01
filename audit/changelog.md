@@ -7,3 +7,4 @@
 5. `fix: preserve URL fragments in queryUrl` - Fixed generated query parameters so they render before URL fragments.
 6. `fix: validate script event attribute names` - Reused the HTML renderer's attribute-name guard for script SSE events.
 7. `ref: remove redundant signal type args` - Cleaned redundant default `Signal` type arguments reported by type-aware lint.
+8. `audit: add summary report` - Added the self-contained HTML audit summary with change cards and diagrams.

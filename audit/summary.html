@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Datastar Kit SDK Audit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        mermaid.initialize({ startOnLoad: true, theme: "neutral", securityLevel: "loose" })
+      })
+    </script>
+    <style>
+      body {
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+      }
+      .mass-bar {
+        height: 0.75rem;
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body class="bg-zinc-50 text-zinc-950">
+    <main class="mx-auto max-w-6xl px-5 py-8">
+      <header class="mb-8 border-b border-zinc-200 pb-6">
+        <p class="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+          Datastar Kit SDK Audit
+        </p>
+        <h1 class="mt-2 text-3xl font-bold tracking-tight">SDK Interface Depth Improvements</h1>
+        <p class="mt-3 max-w-3xl text-zinc-700">
+          The examples exposed caller friction. The SDK absorbed the repeated behavior into
+          smaller Interfaces while keeping Datastar and Web Standards as the primary Seams.
+        </p>
+      </header>
+
+      <section class="grid gap-5">
+        <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-xl font-semibold">Signal Refs Initialize Signal Attributes</h2>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
+            <div>
+              <p class="font-medium">Files touched</p>
+              <p class="mt-1 text-sm text-zinc-700">
+                <code>src/ds/attributes.ts</code>, signal policy tests, misc attribute tests,
+                official examples, signals docs, API reference.
+              </p>
+              <p class="mt-4 font-medium">Problem</p>
+              <p class="text-sm text-zinc-700">
+                Standalone signal initialization forced callers to leak <code>signal.name</code>.
+              </p>
+              <p class="mt-4 font-medium">Solution</p>
+              <p class="text-sm text-zinc-700">
+                <code>ds.dataSignal(...)</code> and <code>ds.dataComputed(...)</code> now accept
+                signal refs directly.
+              </p>
+              <p class="mt-4 font-medium">Wins</p>
+              <p class="text-sm text-zinc-700">
+                Leverage: a signal ref carries the name into initialization. Locality: keyed
+                casing and fallback behavior stay in <code>attributes.ts</code>.
+              </p>
+            </div>
+            <div class="rounded-md bg-zinc-50 p-3">
+              <pre class="mermaid">
+flowchart TB
+  subgraph Before
+    A["Caller"] --> B["Signal.name"]
+    B --> C["dataSignal(name, value)"]
+  end
+  subgraph After
+    D["Caller"] --> E["dataSignal(signal, value)"]
+    E --> F["Signal path resolved inside Module"]
+  end
+              </pre>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-xl font-semibold">Signal Mutation Helpers</h2>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-[1fr_1fr]">
+            <div>
+              <p class="font-medium">Files touched</p>
+              <p class="mt-1 text-sm text-zinc-700">
+                <code>src/ds/actions.ts</code>, <code>src/ds/index.ts</code>, expression tests,
+                official examples, modal example, actions docs, signals docs, API reference.
+              </p>
+              <p class="mt-4 font-medium">Problem</p>
+              <p class="text-sm text-zinc-700">
+                Callers repeated inline JavaScript for assignment, sequencing, and guarded
+                requests.
+              </p>
+              <p class="mt-4 font-medium">Solution</p>
+              <p class="text-sm text-zinc-700">
+                Added <code>ds.set</code>, <code>ds.sequence</code>, and
+                <code>ds.when</code>.
+              </p>
+              <p class="mt-4 font-medium">Wins</p>
+              <p class="text-sm text-zinc-700">
+                Leverage: common Datastar expression behavior is one small Interface. Locality:
+                assignment and statement serialization bugs concentrate in one Module.
+              </p>
+            </div>
+            <div class="rounded-md border border-zinc-200 p-4">
+              <div class="mb-3 text-sm font-semibold text-zinc-600">Before</div>
+              <div class="space-y-2 text-sm">
+                <div class="mass-bar w-full bg-red-300"></div>
+                <code class="block rounded bg-red-50 p-2"
+                  >ds.expr`${signal} = false`</code
+                >
+                <code class="block rounded bg-red-50 p-2"
+                  >ds.expr`${post}; ${signal} = false`</code
+                >
+              </div>
+              <div class="mb-3 mt-5 text-sm font-semibold text-zinc-600">After</div>
+              <div class="space-y-2 text-sm">
+                <div class="mass-bar w-2/5 bg-emerald-400"></div>
+                <code class="block rounded bg-emerald-50 p-2">ds.set(signal, false)</code>
+                <code class="block rounded bg-emerald-50 p-2"
+                  >ds.sequence(post, ds.set(signal, false))</code
+                >
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-xl font-semibold">Stream Wrapper Removed</h2>
+            <span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-semibold text-blue-800"
+              >Worth exploring</span
+            >
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-[1fr_1fr]">
+            <div>
+              <p class="font-medium">Files touched</p>
+              <p class="mt-1 text-sm text-zinc-700">
+                <code>src/reply.ts</code>, platform response tests, export boundary tests,
+                changelog.
+              </p>
+              <p class="mt-4 font-medium">Problem</p>
+              <p class="text-sm text-zinc-700">
+                <code>reply.stream()</code> accepted an unused <code>{ content }</code> wrapper
+                that added an Interface shape without Depth.
+              </p>
+              <p class="mt-4 font-medium">Solution</p>
+              <p class="text-sm text-zinc-700">
+                Removed <code>SseChunk</code> and kept strings, bytes, iterables, async iterables,
+                and Web streams.
+              </p>
+              <p class="mt-4 font-medium">Wins</p>
+              <p class="text-sm text-zinc-700">
+                Leverage remains the same for real callers. Locality improves because stream
+                normalization has fewer paths.
+              </p>
+            </div>
+            <div class="rounded-md bg-zinc-50 p-3">
+              <pre class="mermaid">
+flowchart LR
+  subgraph Before
+    B1["string"] --> S["reply.stream"]
+    B2["Uint8Array"] --> S
+    B3["{ content }"] --> S
+    B4["ReadableStream"] --> S
+  end
+  subgraph After
+    A1["string"] --> T["reply.stream"]
+    A2["Uint8Array"] --> T
+    A3["ReadableStream"] --> T
+  end
+              </pre>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-xl font-semibold">Query URLs Preserve Fragments</h2>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-[1fr_1fr]">
+            <div>
+              <p class="font-medium">Files touched</p>
+              <p class="mt-1 text-sm text-zinc-700">
+                <code>src/ds/actions.ts</code>, URL tests, changelog.
+              </p>
+              <p class="mt-4 font-medium">Problem</p>
+              <p class="text-sm text-zinc-700">
+                <code>queryUrl("/search#results", params)</code> placed generated params inside
+                the hash.
+              </p>
+              <p class="mt-4 font-medium">Solution</p>
+              <p class="text-sm text-zinc-700">
+                Split the hash before query assembly, then reattach it after generated params.
+              </p>
+              <p class="mt-4 font-medium">Wins</p>
+              <p class="text-sm text-zinc-700">
+                Leverage: callers can pass normal path strings. Locality: separator and fragment
+                rules live in <code>queryUrl</code>.
+              </p>
+            </div>
+            <svg viewBox="0 0 520 220" class="h-full w-full rounded-md bg-zinc-50">
+              <rect x="24" y="28" width="472" height="54" rx="8" fill="#fee2e2" />
+              <text x="42" y="61" font-size="15" fill="#7f1d1d">
+                Before: /search#results?q=${encodeURIComponent($q)}
+              </text>
+              <path d="M260 92 L260 124" stroke="#71717a" stroke-width="3" />
+              <path d="M252 116 L260 128 L268 116" fill="none" stroke="#71717a" stroke-width="3" />
+              <rect x="24" y="140" width="472" height="54" rx="8" fill="#dcfce7" />
+              <text x="42" y="173" font-size="15" fill="#14532d">
+                After: /search?q=${encodeURIComponent($q)}#results
+              </text>
+            </svg>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-xl font-semibold">Script Event Attribute Validation</h2>
+            <span class="rounded-full bg-emerald-100 px-3 py-1 text-sm font-semibold text-emerald-800"
+              >Strong</span
+            >
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-[1fr_1fr]">
+            <div>
+              <p class="font-medium">Files touched</p>
+              <p class="mt-1 text-sm text-zinc-700">
+                <code>src/html.ts</code>, <code>src/sse.ts</code>, SSE tests, changelog.
+              </p>
+              <p class="mt-4 font-medium">Problem</p>
+              <p class="text-sm text-zinc-700">
+                Script SSE events escaped attribute values but did not validate attribute names.
+              </p>
+              <p class="mt-4 font-medium">Solution</p>
+              <p class="text-sm text-zinc-700">
+                Reused the HTML Module's attribute-name assertion in <code>executeScript</code>.
+              </p>
+              <p class="mt-4 font-medium">Wins</p>
+              <p class="text-sm text-zinc-700">
+                Leverage: every generated HTML path shares one invariant. Locality: future name
+                fixes land in the HTML Module.
+              </p>
+            </div>
+            <div class="rounded-md bg-zinc-50 p-3">
+              <pre class="mermaid">
+flowchart TB
+  A["HtmlNameError invariant"] --> B["renderToString props"]
+  A --> C["executeScript attributes"]
+  B --> D["Safe HTML output"]
+  C --> D
+              </pre>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h2 class="text-xl font-semibold">Redundant Signal Type Args Removed</h2>
+            <span class="rounded-full bg-zinc-200 px-3 py-1 text-sm font-semibold text-zinc-800"
+              >Speculative</span
+            >
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-[1fr_1fr]">
+            <div>
+              <p class="font-medium">Files touched</p>
+              <p class="mt-1 text-sm text-zinc-700">
+                <code>src/ds/actions.ts</code>, <code>src/ds/attributes.ts</code>.
+              </p>
+              <p class="mt-4 font-medium">Problem</p>
+              <p class="text-sm text-zinc-700">
+                Type-aware lint reported redundant default <code>Signal</code> type arguments.
+              </p>
+              <p class="mt-4 font-medium">Solution</p>
+              <p class="text-sm text-zinc-700">
+                Removed default type arguments from internal annotations.
+              </p>
+              <p class="mt-4 font-medium">Wins</p>
+              <p class="text-sm text-zinc-700">
+                Leverage is unchanged. Locality improves slightly because type annotations are
+                quieter and lint-clean.
+              </p>
+            </div>
+            <div class="rounded-md border border-zinc-200 p-4">
+              <div class="grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <div class="mb-2 font-semibold text-zinc-600">Before</div>
+                  <div class="rounded bg-zinc-100 p-3"><code>Signal&lt;T, string&gt;</code></div>
+                </div>
+                <div>
+                  <div class="mb-2 font-semibold text-zinc-600">After</div>
+                  <div class="rounded bg-zinc-100 p-3"><code>Signal&lt;T&gt;</code></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="mt-8 rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+        <h2 class="text-xl font-semibold">Top Changes</h2>
+        <ul class="mt-4 space-y-3 text-sm text-zinc-700">
+          <li>
+            <strong>Signal mutation helpers:</strong> highest Leverage. They remove repeated
+            inline JavaScript while keeping the Interface JavaScript-shaped.
+          </li>
+          <li>
+            <strong>Signal refs accepted by attribute helpers:</strong> best Interface cleanup.
+            The signal Module now carries its own path into initialization.
+          </li>
+          <li>
+            <strong>Script attribute validation:</strong> strongest Locality fix. One HTML name
+            invariant now covers renderer output and SSE script events.
+          </li>
+          <li>
+            <strong>Stream wrapper removal:</strong> clearest deletion-test pass. Removing the
+            wrapper erased complexity without pushing work to callers.
+          </li>
+        </ul>
+      </section>
+    </main>
+  </body>
+</html>
