@@ -117,9 +117,10 @@ const TodoMvc = () => {
                 ...ds.bind(state.$.input),
                 ...ds.on(
                   "keydown",
-                  ds.expr`evt.key === ${"Enter"} && ${state.$.input}.trim() && ${ds.patch(
-                    "/examples/todomvc/-1"
-                  )} && (${state.$.input} = ${""})`
+                  ds.when(
+                    ds.expr`evt.key === ${"Enter"} && ${state.$.input}.trim()`,
+                    ds.sequence(ds.patch("/examples/todomvc/-1"), ds.set(state.$.input, ""))
+                  )
                 )
               }
             : {})}

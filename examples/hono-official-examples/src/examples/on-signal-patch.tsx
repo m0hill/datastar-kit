@@ -24,17 +24,19 @@ example.get("/", () =>
           <button
             {...ds.on(
               "click",
-              ds.expr`${state.$.message} = ${"Updated: "} + performance.now().toFixed(2)`
+              ds.set(state.$.message, ds.expr`${"Updated: "} + performance.now().toFixed(2)`)
             )}
           >
             Update Message
           </button>
-          <button {...ds.on("click", ds.expr`${state.$.counter}++`)}>Increment Counter</button>
+          <button {...ds.on("click", ds.set(state.$.counter, ds.expr`${state.$.counter} + 1`))}>
+            Increment Counter
+          </button>
           <button
             class="error"
             {...ds.on(
               "click",
-              ds.expr`${state.$.allChanges}.length = 0; ${state.$.counterChanges}.length = 0`
+              ds.sequence(ds.set(state.$.allChanges, []), ds.set(state.$.counterChanges, []))
             )}
           >
             Clear All Changes

@@ -267,7 +267,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       <button
         type="button"
         class="btn h-8 w-8 p-0"
-        {...ds.on("click", ds.expr`${state.$.modalOpen} = false`)}
+        {...ds.on("click", ds.set(state.$.modalOpen, false))}
       >
         <svg
           width="14"
@@ -332,7 +332,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
     </div>
     <div class="flex justify-end gap-2 pt-4 border-t border-border">
-      <button type="button" class="btn" {...ds.on("click", ds.expr`${state.$.modalOpen} = false`)}>
+      <button type="button" class="btn" {...ds.on("click", ds.set(state.$.modalOpen, false))}>
         Cancel
       </button>
       <button type="submit" class="btn-primary">
@@ -349,8 +349,8 @@ const IssueModal = (props: { projects: Project[] }) => (
     {...ds.effect(
       ds.expr`${state.$.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`
     )}
-    {...ds.on("click", ds.expr`evt.target === el && (${state.$.modalOpen} = false)`)}
-    {...ds.on("close", ds.expr`${state.$.modalOpen} = false`)}
+    {...ds.on("click", ds.when(ds.expr`evt.target === el`, ds.set(state.$.modalOpen, false)))}
+    {...ds.on("close", ds.set(state.$.modalOpen, false))}
   >
     <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4">
       <div id="modal-content">
