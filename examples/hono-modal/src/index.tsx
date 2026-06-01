@@ -52,8 +52,8 @@ app.get("/modal", () =>
         {...ds.effect(
           ds.expr`${openModal} ? (!el.open && el.showModal()) : (el.open && el.close())`
         )}
-        {...ds.on("click", ds.expr`evt.target === el && (${openModal} = false)`)}
-        {...ds.on("close", ds.expr`${openModal} = false`)}
+        {...ds.on("click", ds.when(ds.expr`evt.target === el`, ds.set(openModal, false)))}
+        {...ds.on("close", ds.set(openModal, false))}
       >
         <section class="modal">
           <h2 id="confirm-modal-title">Confirm the action</h2>
@@ -65,7 +65,7 @@ app.get("/modal", () =>
             <button
               type="button"
               class="secondary"
-              {...ds.on("click", ds.expr`${openModal} = false`)}
+              {...ds.on("click", ds.set(openModal, false))}
             >
               Cancel
             </button>

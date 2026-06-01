@@ -23,3 +23,9 @@
 - Decision: Let `dataSignal` and `dataComputed` receive `Signal` refs as well as strings.
 - Reasoning: A `Signal` ref already owns the signal path. Requiring `.name` leaks implementation detail without adding control.
 - Rejected alternative: Add methods such as `signal.attrs(...)`. That would couple signal refs back to attribute rendering and create a larger Interface.
+
+## D-005: Keep expression helpers JavaScript-shaped
+
+- Decision: Add `set`, `sequence`, and `when` instead of higher-level UI verbs such as `closeModal`, `submitIfValid`, or `disableWhileFetching`.
+- Reasoning: The repeated problem is JavaScript formatting around Datastar expressions, not domain behavior.
+- Rejected alternative: Add one-off helpers for `disabled`, `confirm`, or modal actions. Those Modules would be shallow until more concrete variants justify them.

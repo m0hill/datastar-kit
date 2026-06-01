@@ -22,7 +22,7 @@ example.get("/", () =>
         </label>
         <span {...ds.dataSignal(reversed, "")} {...ds.text(reversed)}></span>
         <reverse-component
-          {...ds.on("reverse", ds.expr`${reversed} = evt.detail.value`)}
+          {...ds.on("reverse", ds.set(reversed, ds.expr`evt.detail.value`))}
           {...ds.dataAttr("name", state.$._name)}
         ></reverse-component>
       </div>

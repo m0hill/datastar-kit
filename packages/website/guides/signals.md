@@ -103,6 +103,14 @@ const count = ds.signal<number>("count")
 <button {...ds.dataAttr("disabled", ds.expr`${count} >= ${10}`)}>+</button>
 ```
 
+For common signal mutation in event handlers, use `ds.set(...)`:
+
+```tsx
+const open = ds.signal<boolean>("open")
+
+<button {...ds.on("click", ds.set(open, false))}>Close</button>
+```
+
 ## Read signal payloads
 
 Use `read.signals(request)` for Datastar action requests that carry JSON signal state:

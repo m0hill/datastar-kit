@@ -45,6 +45,9 @@ TSX consumers should also set:
 | `ds.delete(url, options?)`                            | Build `@delete(...)`.                                      |
 | `ds.queryUrl(path, params)`                           | Build a reactive URL expression with encoded query params. |
 | `ds.action(name, ...args)`                            | Call an app-defined Datastar browser action.               |
+| `ds.set(signal, value)`                               | Build a signal assignment expression.                      |
+| `ds.sequence(...expressions)`                         | Run Datastar expressions in order.                         |
+| `ds.when(condition, expression)`                       | Run an expression when a condition is truthy.               |
 | `ds.peek(...)`, `ds.setAll(...)`, `ds.toggleAll(...)` | Build Datastar built-in action expressions.                |
 
 Fetch action options include `headers`, `contentType`, `filterSignals`, `payload`, retry settings, request cancellation behavior, and direct-response overrides.

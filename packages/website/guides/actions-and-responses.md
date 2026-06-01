@@ -138,7 +138,7 @@ Inline Datastar expressions are fine for small behavior. When browser-only behav
 ```tsx
 const modalOpen = ds.signal<boolean>("modalOpen")
 
-<button {...ds.on("click", ds.action("setSignal", "modalOpen", true))}>Open</button>
+<button {...ds.on("click", ds.set(modalOpen, true))}>Open</button>
 <dialog {...ds.effect(ds.action("syncDialog", modalOpen))} />
 <button {...ds.pluginAttr("focus-when", modalOpen)}>Cancel</button>
 ```

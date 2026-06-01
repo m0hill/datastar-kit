@@ -13,7 +13,8 @@
 - Issue: Examples repeat assignment and sequencing expressions such as `${signal} = false`, `@put(...); ${signal} = false`, and guarded requests.
 - Module: `ds` expression/action authoring.
 - Interface cost: Callers hand-format JavaScript for common Datastar signal mutations.
-- Resolution: Pending.
+- Resolution: Added `ds.set(...)`, `ds.sequence(...)`, and `ds.when(...)`, then moved representative examples onto the new Interface.
+- Win: Leverage improves because common mutation and guard behavior sits behind a small helper surface. Locality improves because statement formatting and signal assignment syntax live in one Module.
 
 ## F-003: `reply.stream()` accepts an unused wrapper chunk
 

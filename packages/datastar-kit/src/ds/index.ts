@@ -8,8 +8,11 @@ export {
   post,
   put,
   queryUrl,
+  sequence,
+  set,
   setAll,
-  toggleAll
+  toggleAll,
+  when
 } from "./actions.js"
 export type { FetchActionOptions, FetchActionResponseOverrides, SignalFilter } from "./actions.js"
 

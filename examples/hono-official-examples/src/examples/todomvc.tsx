@@ -63,7 +63,10 @@ const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
       class={todo.completed ? "completed" : undefined}
       role="button"
       tabindex="0"
-      {...ds.on("dblclick", ds.expr`evt.target === el && ${ds.get(`/examples/todomvc/${index}`)}`)}
+      {...ds.on(
+        "dblclick",
+        ds.when(ds.expr`evt.target === el`, ds.get(`/examples/todomvc/${index}`))
+      )}
     >
       <input
         id={`todo-checkbox-${index}`}

@@ -72,7 +72,7 @@ example.get("/", () =>
             type="file"
             multiple
             {...ds.bind(state.$.files)}
-            {...ds.on("change", ds.expr`${state.$.errors.files} = ${""}`)}
+            {...ds.on("change", ds.set(state.$.errors.files, ""))}
           />
         </label>
         <small
@@ -86,7 +86,7 @@ example.get("/", () =>
           {...ds.dataAttr("disabled", ds.expr`!${state.$.files}.length`)}
           {...ds.on(
             "click",
-            ds.expr`${state.$.files}.length && ${ds.post("/examples/file_upload")}`
+            ds.when(ds.expr`${state.$.files}.length`, ds.post("/examples/file_upload"))
           )}
         >
           Submit

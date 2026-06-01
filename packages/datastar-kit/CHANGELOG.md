@@ -7,10 +7,12 @@
 - Added `ds.pluginAttr(name, value?)` for app-defined Datastar plugin attributes, including keyed plugin attributes.
 - Added `HtmlNameError` when rendered HTML tag or attribute names cannot be serialized safely.
 - Added `ds.RegexExpressionError` for invalid `ds.regex(...)` patterns or flags.
+- Added `ds.set(...)`, `ds.sequence(...)`, and `ds.when(...)` for common Datastar signal mutation and guarded-action expressions.
 
 ### Changed
 
 - `ds.regex(pattern, flags?)` now renders `new RegExp(...)` expressions instead of slash-delimited literals, so callers can pass ordinary `RegExp` constructor inputs without managing literal escaping.
+- `ds.dataSignal(...)` and `ds.dataComputed(...)` now accept signal refs directly as well as signal-name strings.
 
 ## 0.2.0 - 2026-05-27
 

@@ -23,7 +23,7 @@ example.get("/", () =>
         <div
           id="sortContainer"
           class="sortable-list"
-          {...ds.on("reordered", ds.expr`${orderInfo} = evt.detail.orderInfo`)}
+          {...ds.on("reordered", ds.set(orderInfo, ds.expr`evt.detail.orderInfo`))}
         >
           {Array.from({ length: 5 }, (_, index) => (
             <button type="button">Item {index + 1}</button>

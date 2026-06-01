@@ -73,7 +73,10 @@ example.get("/", () =>
           class="info wide"
           {...ds.indicator(fetching)}
           {...ds.dataAttr("aria-disabled", ds.expr`\`${fetching}\``)}
-          {...ds.on("click", ds.expr`!${fetching} && ${ds.get("/examples/click_to_load/more")}`)}
+          {...ds.on(
+            "click",
+            ds.when(ds.expr`!${fetching}`, ds.get("/examples/click_to_load/more"))
+          )}
         >
           Load More
         </button>

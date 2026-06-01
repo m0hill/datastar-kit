@@ -39,7 +39,10 @@ const DeleteRowTable = () => (
                   class="error"
                   {...ds.on(
                     "click",
-                    ds.expr`confirm(${"Are you sure?"}) && ${ds.delete(`/examples/delete_row/${index}`)}`
+                    ds.when(
+                      ds.expr`confirm(${"Are you sure?"})`,
+                      ds.delete(`/examples/delete_row/${index}`)
+                    )
                   )}
                   {...ds.indicator(fetching)}
                   {...ds.dataAttr("disabled", fetching)}

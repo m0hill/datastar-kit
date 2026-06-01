@@ -53,8 +53,11 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
           min="0"
           max="100"
           value={config.mutationRate}
-          {...ds.on("focus", ds.expr`${editing} = true`)}
-          {...ds.on("blur", ds.expr`${ds.put("/examples/dbmon/inputs")}; ${editing} = false`)}
+          {...ds.on("focus", ds.set(editing, true))}
+          {...ds.on(
+            "blur",
+            ds.sequence(ds.put("/examples/dbmon/inputs"), ds.set(editing, false))
+          )}
           {...ds.dataAttr("data-bind:mutation-rate", editing)}
           {...ds.dataAttr("data-bind:_mutation-rate", ds.expr`!${editing}`)}
         />
@@ -66,8 +69,11 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
           min="1"
           max="144"
           value={config.fps}
-          {...ds.on("focus", ds.expr`${editing} = true`)}
-          {...ds.on("blur", ds.expr`${ds.put("/examples/dbmon/inputs")}; ${editing} = false`)}
+          {...ds.on("focus", ds.set(editing, true))}
+          {...ds.on(
+            "blur",
+            ds.sequence(ds.put("/examples/dbmon/inputs"), ds.set(editing, false))
+          )}
           {...ds.dataAttr("data-bind:fps", editing)}
           {...ds.dataAttr("data-bind:_fps", ds.expr`!${editing}`)}
         />

@@ -1,6 +1,6 @@
 import type { PatchElementsMode, PatchElementsNamespace } from "../sse.js"
 import { raw, toJs, type DatastarFunction, type Expr, type ExprInput } from "./expression.js"
-import type { SignalStateInput } from "./signals.js"
+import type { Signal, SignalStateInput } from "./signals.js"
 
 /**
  * Datastar signal filter used by signal display, signal patch, and fetch action helpers.
@@ -148,6 +148,38 @@ const datastarAction = <T = unknown>(
   assertActionName(name)
   return raw(`@${name}(${args.map((arg) => toJs(arg)).join(", ")})`)
 }
+
+/**
+ * Builds a Datastar expression that assigns a browser signal.
+ *
+ * @param signal Signal ref to assign.
+ * @param value Literal or expression assigned to the signal.
+ * @returns A Datastar expression such as `$open = false`.
+ */
+export const set = <T>(signal: Signal<T, string>, value: ExprInput<T>): Expr<void> =>
+  raw(`${signal.toDatastarExpression()} = ${toJs(value)}`)
+
+/**
+ * Builds a Datastar expression that runs other expressions in order.
+ *
+ * @param expressions Expressions or literals to serialize as JavaScript statements.
+ * @returns A Datastar expression with statements separated by semicolons.
+ */
+export const sequence = (
+  ...expressions: ReadonlyArray<ExprInput<unknown>>
+): Expr<void> => raw(expressions.map((expression) => toJs(expression)).join("; "))
+
+/**
+ * Builds a Datastar expression that runs only when a condition is truthy.
+ *
+ * @param condition Literal or expression used as the JavaScript condition.
+ * @param expression Expression to run when the condition is truthy.
+ * @returns A Datastar expression using a small `if` statement.
+ */
+export const when = (
+  condition: ExprInput<unknown>,
+  expression: ExprInput<unknown>
+): Expr<void> => raw(`if (${toJs(condition)}) { ${toJs(expression)} }`)
 
 /**
  * Builds a Datastar expression for a URL with reactive query parameters.
