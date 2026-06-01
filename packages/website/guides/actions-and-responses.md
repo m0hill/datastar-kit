@@ -4,16 +4,16 @@ Datastar actions turn browser events into HTTP requests. Datastar Kit helps you 
 
 ## Author actions in TSX
 
-Use `ds.on(...)` with a fetch action such as `ds.get(...)` or `ds.post(...)`:
+Use native Datastar event attributes with a fetch action such as `ds.get(...)` or `ds.post(...)`:
 
 ```tsx
 import { ds } from "datastar-kit"
-;<button type="button" {...ds.on("click", ds.post("/todos/add"))}>
+;<button type="button" data-on:click={ds.post("/todos/add")}>
   Add todo
 </button>
 ```
 
-The helper renders Datastar attributes such as:
+The JSX runtime renders Datastar attributes such as:
 
 ```html
 <button data-on:click="@post('/todos/add')">Add todo</button>
@@ -26,9 +26,17 @@ const search = ds.state({ q: "" })
 
 <input
   type="search"
-  {...ds.bind(search.$.q)}
-  {...ds.on("input", ds.get(ds.queryUrl("/todos/search", { q: search.$.q })))}
+  data-bind={search.$.q}
+  data-on:input={ds.get(ds.queryUrl("/todos/search", { q: search.$.q }))}
 />
+```
+
+Use Datastar's native suffix syntax when an event needs modifiers:
+
+```tsx
+<form data-on:submit__prevent={ds.post("/signup")}>
+  ...
+</form>
 ```
 
 ## Command handlers
@@ -120,9 +128,7 @@ For Datastar's form transport, pass `contentType: "form"` in the fetch action op
 
 ```tsx
 <form
-  {...ds.on("submit", ds.post("/upload", { contentType: "form", selector: null }), {
-    prevent: true
-  })}
+  data-on:submit__prevent={ds.post("/upload", { contentType: "form", selector: null })}
 >
   <input type="file" name="avatar" />
   <button>Upload</button>
@@ -138,9 +144,9 @@ Inline Datastar expressions are fine for small behavior. When browser-only behav
 ```tsx
 const modalOpen = ds.signal<boolean>("modalOpen")
 
-<button {...ds.on("click", ds.set(modalOpen, true))}>Open</button>
-<dialog {...ds.effect(ds.action("syncDialog", modalOpen))} />
-<button {...ds.pluginAttr("focus-when", modalOpen)}>Cancel</button>
+<button data-on:click={ds.set(modalOpen, true)}>Open</button>
+<dialog data-effect={ds.action("syncDialog", modalOpen)} />
+<button data-focus-when={modalOpen}>Cancel</button>
 ```
 
 See `examples/hono-custom-actions` for a complete example.

@@ -33,23 +33,29 @@ Use those refs in Datastar attributes:
 
 ```tsx
 const SignupForm = () => (
-  <form {...signup.attrs()} {...ds.on("submit", ds.post("/signup"), { prevent: true })}>
+  <form
+    data-signals__ifmissing={signup.defaults}
+    data-on:submit__prevent={ds.post("/signup")}
+  >
     <label>
       Name
-      <input name="name" {...ds.bind(signup.$.name)} />
+      <input name="name" data-bind={signup.$.name} />
     </label>
 
     <label>
       Email
-      <input name="email" {...ds.bind(signup.$.email)} />
+      <input name="email" data-bind={signup.$.email} />
     </label>
 
-    <small {...ds.text(signup.$.errors.email)} />
+    <small data-text={signup.$.errors.email} />
   </form>
 )
 ```
 
-`state.attrs()` renders `data-signals` with `ifMissing: true` by default, so reconnects and partial page updates do not overwrite existing browser input unless you opt into that behavior.
+`state.attrs()` renders the same `data-signals` attributes as a prop fragment when spreading is more
+convenient. Use `data-signals__ifmissing={state.defaults}` when you want the native Datastar
+attribute visible in the markup. Missing-only initialization keeps reconnects and partial page
+updates from overwriting existing browser input unless you opt into that behavior.
 
 ## Patch signal state
 
@@ -74,7 +80,7 @@ Use `ds.signal(...)` when you only need one signal ref or when the signal name i
 ```tsx
 const query = ds.signal<string>("query")
 
-<input type="search" {...ds.bind(query)} />
+<input type="search" data-bind={query} />
 ```
 
 Use `ds.local(...)` for underscore-prefixed local/private signal refs:
@@ -82,13 +88,13 @@ Use `ds.local(...)` for underscore-prefixed local/private signal refs:
 ```tsx
 const saving = ds.local<boolean>("saving")
 
-<button {...ds.dataAttr("disabled", saving)}>Save</button>
+<button data-attr:disabled={saving}>Save</button>
 ```
 
 Standalone refs can initialize their own signal value:
 
 ```tsx
-<div {...ds.dataSignal(saving, false, { ifMissing: true })} />
+<div data-signals:_saving__ifmissing={false} />
 ```
 
 Private names are a convention, not a security boundary. The browser still controls browser state.
@@ -100,7 +106,7 @@ For anything beyond a bare signal ref, use `ds.expr` so signal refs and JavaScri
 ```tsx
 const count = ds.signal<number>("count")
 
-<button {...ds.dataAttr("disabled", ds.expr`${count} >= ${10}`)}>+</button>
+<button data-attr:disabled={ds.expr`${count} >= ${10}`}>+</button>
 ```
 
 For common signal mutation in event handlers, use `ds.set(...)`:
@@ -108,7 +114,7 @@ For common signal mutation in event handlers, use `ds.set(...)`:
 ```tsx
 const open = ds.signal<boolean>("open")
 
-<button {...ds.on("click", ds.set(open, false))}>Close</button>
+<button data-on:click={ds.set(open, false)}>Close</button>
 ```
 
 ## Read signal payloads
@@ -128,16 +134,16 @@ Datastar Kit decodes the transport and verifies that the payload is a JSON objec
 
 ## Signal names
 
-Pass Datastar signal names to helpers, not raw HTML attribute suffixes:
+Pass Datastar signal names or refs as attribute values, not raw HTML attribute suffixes:
 
 ```tsx
-<input {...ds.bind("projectName")} />
+<input data-bind="projectName" />
 ```
 
 Datastar Kit renders case-preserving forms where needed because HTML attribute names are case-insensitive. Grouped initialization is usually simplest:
 
 ```tsx
-<div {...ds.dataSignals({ projectName: "", projectKey: "" })} />
+<div data-signals={{ projectName: "", projectKey: "" }} />
 ```
 
 If you write raw keyed Datastar attributes by hand, use Datastar's DOM-safe keyed spelling:

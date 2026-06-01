@@ -1,5 +1,7 @@
 import type { HtmlChild, HtmlNode, HtmlProps, HtmlPropValue } from "./html.js"
 import { h } from "./html.js"
+import { isExpr, toJs, type Expr } from "./ds/expression.js"
+import { Signal } from "./ds/signals.js"
 
 /**
  * Internal JSX element result accepted by the automatic runtime.
@@ -13,7 +15,15 @@ export type JsxElement = HtmlNode | readonly HtmlChild[]
  *
  * @internal
  */
-export type JsxProps = Readonly<Record<string, HtmlPropValue | HtmlChild | readonly HtmlChild[]>>
+type DatastarJsxValue =
+  | HtmlPropValue
+  | Expr
+  | readonly DatastarJsxValue[]
+  | { readonly [key: string]: DatastarJsxValue }
+
+export type JsxProps = Readonly<
+  Record<string, HtmlPropValue | HtmlChild | readonly HtmlChild[] | DatastarJsxValue>
+>
 
 /**
  * Internal props passed to function components by the JSX runtime.
@@ -56,6 +66,64 @@ const isPropValue = (value: unknown): value is HtmlPropValue =>
   typeof value === "number" ||
   typeof value === "boolean"
 
+const isDatastarAttribute = (name: string): boolean => name.startsWith("data-")
+
+const datastarAttributeRoot = (name: string): string => name.split("__", 1)[0] ?? name
+
+const isDatastarExpressionAttribute = (name: string): boolean => {
+  const root = datastarAttributeRoot(name)
+  return (
+    root === "data-signals" ||
+    root.startsWith("data-signals:") ||
+    root === "data-computed" ||
+    root.startsWith("data-computed:") ||
+    root === "data-attr" ||
+    root.startsWith("data-attr:") ||
+    root === "data-class" ||
+    root.startsWith("data-class:") ||
+    root === "data-style" ||
+    root.startsWith("data-style:") ||
+    root === "data-init" ||
+    root === "data-effect" ||
+    root === "data-text" ||
+    root === "data-show" ||
+    root === "data-on-intersect" ||
+    root === "data-on-interval" ||
+    root === "data-on-signal-patch" ||
+    root.startsWith("data-on:")
+  )
+}
+
+const isDatastarSignalNameAttribute = (name: string): boolean =>
+  name === "data-bind" ||
+  name.startsWith("data-bind__") ||
+  name === "data-ref" ||
+  name.startsWith("data-ref__") ||
+  name === "data-indicator" ||
+  name.startsWith("data-indicator__")
+
+const isDatastarSerializableValue = (name: string, value: unknown): boolean =>
+  isExpr(value) ||
+  Array.isArray(value) ||
+  (typeof value === "object" && value !== null) ||
+  (isDatastarExpressionAttribute(name) &&
+    (typeof value === "number" || typeof value === "boolean" || value === null))
+
+const cleanDatastarProp = (
+  name: string,
+  value: unknown
+): { readonly name: string; readonly value: unknown } => {
+  if (!isDatastarAttribute(name) || !isDatastarSerializableValue(name, value)) {
+    return { name, value }
+  }
+
+  if (value instanceof Signal && isDatastarSignalNameAttribute(name)) {
+    return { name, value: value.name }
+  }
+
+  return { name, value: toJs(value as DatastarJsxValue) }
+}
+
 const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): HtmlProps => {
   const cleaned: Record<string, HtmlPropValue> = {}
 
@@ -65,15 +133,16 @@ const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): Htm
     }
 
     const propName = normalizePropName(key)
+    const prop = cleanDatastarProp(propName, value)
     if (key === "className" && cleaned.class !== undefined) {
       continue
     }
 
-    if (!isPropValue(value)) {
+    if (!isPropValue(prop.value)) {
       throw new TypeError(`Unsupported JSX prop value for ${JSON.stringify(key)}`)
     }
 
-    cleaned[propName] = value
+    cleaned[prop.name] = prop.value
   }
 
   return cleaned

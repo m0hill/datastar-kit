@@ -23,20 +23,20 @@ const app = new Hono()
 
 app.get("/", () =>
   reply.page(
-    <main {...signup.attrs()}>
+    <main data-signals__ifmissing={signup.defaults}>
       <h1>Signup</h1>
-      <form {...ds.on("submit", ds.post("/signup"), { prevent: true })}>
+      <form data-on:submit__prevent={ds.post("/signup")}>
         <p>
           <label>
             Name
             <br />
-            <input name="name" {...ds.bind(signup.$.name)} />
+            <input name="name" data-bind={signup.$.name} />
           </label>
           <br />
           <small
             style="display: none; color: crimson"
-            {...ds.show(signup.$.errors.name)}
-            {...ds.text(signup.$.errors.name)}
+            data-show={signup.$.errors.name}
+            data-text={signup.$.errors.name}
           ></small>
         </p>
 
@@ -44,13 +44,13 @@ app.get("/", () =>
           <label>
             Email
             <br />
-            <input name="email" {...ds.bind(signup.$.email)} />
+            <input name="email" data-bind={signup.$.email} />
           </label>
           <br />
           <small
             style="display: none; color: crimson"
-            {...ds.show(signup.$.errors.email)}
-            {...ds.text(signup.$.errors.email)}
+            data-show={signup.$.errors.email}
+            data-text={signup.$.errors.email}
           ></small>
         </p>
 
@@ -92,6 +92,7 @@ app.post("/signup", async (c) => {
   ])
 })
 
-serve({ fetch: app.fetch, port: 3000 }, () => {
-  console.log("Hono form validation listening on http://localhost:3000")
+const port = Number(process.env.PORT ?? "3000")
+serve({ fetch: app.fetch, port }, () => {
+  console.log(`Hono form validation listening on http://localhost:${port}`)
 })

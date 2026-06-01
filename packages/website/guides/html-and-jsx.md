@@ -23,7 +23,7 @@ Then write synchronous view functions:
 import { ds, renderToString } from "datastar-kit"
 
 const SaveButton = () => (
-  <button type="button" {...ds.on("click", ds.post("/settings/save"))}>
+  <button type="button" data-on:click={ds.post("/settings/save")}>
     Save
   </button>
 )
@@ -32,6 +32,33 @@ const html = renderToString(<SaveButton />)
 ```
 
 View functions receive data and return HTML. Load data in handlers or route loaders before rendering.
+
+## Datastar attributes
+
+TSX can use native Datastar attribute names directly. Datastar Kit's JSX runtime serializes signal
+refs, expressions, action helpers, and object-valued signal maps for `data-*` attributes:
+
+```tsx
+const login = ds.state({
+  password: "",
+  _validation: { password: "" }
+})
+
+const LoginForm = () => (
+  <form
+    data-signals__ifmissing={login.defaults}
+    data-on:submit__prevent={ds.post("/login")}
+  >
+    <input type="password" data-bind={login.$.password} />
+    <small data-show={login.$._validation.password} data-text={login.$._validation.password} />
+  </form>
+)
+```
+
+String values stay raw, so ordinary HTML and hand-written Datastar expressions still render exactly
+as written. Datastar modifiers use normal Datastar suffix syntax such as `__prevent` and
+`__ifmissing`. The `ds.*` attribute helpers remain available when returning prop fragments is more
+convenient.
 
 ## Pages
 

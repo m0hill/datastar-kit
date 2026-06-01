@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { bind, dataSignals, on, post, signal, text } from "../src/ds/index.js"
+import { bind, dataSignals, on, post, signal, state, text } from "../src/ds/index.js"
 import { mergeProps, renderToString, type HtmlChild } from "../src/html.js"
 import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
@@ -42,10 +42,72 @@ describe("automatic JSX runtime", () => {
     )
   })
 
-  it("rejects expression objects as JSX prop values", () => {
+  it("renders Datastar signal refs and actions directly on data attributes", () => {
+    const login = state({
+      password: "",
+      _validation: { password: "" }
+    })
+
+    const node = (
+      <form
+        data-signals__ifmissing={{ password: "", _validation: { password: "" } }}
+        data-on:submit__prevent={post("/login")}
+      >
+        <input type="password" data-bind={login.$.password} />
+        <small
+          data-show={login.$._validation.password}
+          data-text={login.$._validation.password}
+        ></small>
+      </form>
+    )
+
+    expect(renderToString(node)).toBe(
+      '<form data-signals__ifmissing="{&quot;password&quot;: &quot;&quot;, &quot;_validation&quot;: {&quot;password&quot;: &quot;&quot;}}" data-on:submit__prevent="@post(&quot;/login&quot;)"><input type="password" data-bind="password"><small data-show="$_validation.password" data-text="$_validation.password"></small></form>'
+    )
+  })
+
+  it("renders signal-name Datastar attributes without the expression prefix", () => {
+    const fetching = signal<boolean, "_fetching">("_fetching")
+    const panel = signal<HTMLElement, "panel">("panel")
+
+    const node = (
+      <button data-indicator={fetching} data-ref={panel}>
+        Save
+      </button>
+    )
+
+    expect(renderToString(node)).toBe(
+      '<button data-indicator="_fetching" data-ref="panel">Save</button>'
+    )
+  })
+
+  it("serializes primitive values for expression-valued Datastar attributes", () => {
+    const node = (
+      <div
+        data-signals:_saving__ifmissing={false}
+        data-attr:disabled={false}
+        data-show={false}
+        data-ignore
+      />
+    )
+
+    expect(renderToString(node)).toBe(
+      '<div data-signals:_saving__ifmissing="false" data-attr:disabled="false" data-show="false" data-ignore></div>'
+    )
+  })
+
+  it("keeps string Datastar attribute values raw", () => {
+    const node = <button data-on:click="@post('/save')" data-text="$message">Save</button>
+
+    expect(renderToString(node)).toBe(
+      '<button data-on:click="@post(&#39;/save&#39;)" data-text="$message">Save</button>'
+    )
+  })
+
+  it("still rejects expression objects on ordinary JSX props", () => {
     expect(() =>
-      runtimeJsx("output", { "data-text": signal<number>("count") } as unknown as JsxProps)
-    ).toThrow('Unsupported JSX prop value for "data-text"')
+      runtimeJsx("output", { id: signal<number>("count") } as unknown as JsxProps)
+    ).toThrow('Unsupported JSX prop value for "id"')
   })
 
   it("normalizes TSX className to HTML class", () => {
