@@ -14,6 +14,7 @@
 - `ds.regex(pattern, flags?)` now renders `new RegExp(...)` expressions instead of slash-delimited literals, so callers can pass ordinary `RegExp` constructor inputs without managing literal escaping.
 - `ds.dataSignal(...)` and `ds.dataComputed(...)` now accept signal refs directly as well as signal-name strings.
 - `ds.queryUrl(...)` now inserts generated query parameters before URL fragments and preserves open query separators.
+- `executeScript(...)` now validates generated script attribute names with the same HTML name guard used by the renderer.
 
 ### Removed
 

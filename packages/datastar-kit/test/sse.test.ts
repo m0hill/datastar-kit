@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { patchElements, patchSignals } from "../src/sse.js"
+import { HtmlNameError } from "../src/html.js"
+import { executeScript, patchElements, patchSignals } from "../src/sse.js"
 
 describe("Datastar SSE encoding", () => {
   it("encodes default element patches like the SDK fixture", () => {
@@ -59,5 +60,13 @@ describe("Datastar SSE encoding", () => {
     expect([patchElements("<div>One</div>"), patchElements("<div>Two</div>")].join("")).toBe(
       "event: datastar-patch-elements\ndata: elements <div>One</div>\n\nevent: datastar-patch-elements\ndata: elements <div>Two</div>\n\n"
     )
+  })
+
+  it("validates script event attribute names like the HTML renderer", () => {
+    expect(() =>
+      executeScript("console.log('hello')", {
+        attributes: { 'type" onclick="alert(1)': "module" }
+      })
+    ).toThrow(HtmlNameError)
   })
 })

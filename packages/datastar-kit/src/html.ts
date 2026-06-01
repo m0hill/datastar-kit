@@ -92,7 +92,7 @@ const assertTagName = (name: string): void => {
   }
 }
 
-const assertAttributeName = (name: string): void => {
+export const assertHtmlAttributeName = (name: string): void => {
   if (!attributeNamePattern.test(name)) {
     throw new HtmlNameError("attribute", name)
   }
@@ -106,7 +106,7 @@ const renderProps = (props: HtmlProps): string => {
       continue
     }
 
-    assertAttributeName(key)
+    assertHtmlAttributeName(key)
 
     if (value === true) {
       rendered.push(key)

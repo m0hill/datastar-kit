@@ -1,5 +1,5 @@
 import type { SignalState } from "./types.js"
-import { escapeHtmlAttribute } from "./html.js"
+import { assertHtmlAttributeName, escapeHtmlAttribute } from "./html.js"
 
 export type { SignalState, SignalValue } from "./types.js"
 
@@ -117,6 +117,7 @@ const scriptAttributes = (options: ExecuteScriptOptions): string => {
   }
 
   for (const [key, value] of Object.entries(options.attributes ?? {})) {
+    assertHtmlAttributeName(key)
     attrs.push(`${key}="${escapeHtmlAttribute(String(value))}"`)
   }
 

@@ -41,3 +41,9 @@
 - Decision: Fix fragment placement inside `queryUrl` without replacing it with a URL builder object.
 - Reasoning: Callers already have a small Interface: a path string and a params object. The bug was in serialization depth, not the caller shape.
 - Rejected alternative: Require `URL` instances or a route object. That would add ceremony and would not help reactive signal parameters.
+
+## D-008: Share the HTML name invariant
+
+- Decision: Move the attribute-name assertion into the HTML Module's internal export and reuse it from SSE script events.
+- Reasoning: Script events generate HTML outside the renderer but must obey the same safety invariant.
+- Rejected alternative: Duplicate the attribute-name regex in `sse.ts`. That would split Locality for the same bug class.

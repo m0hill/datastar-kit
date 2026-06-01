@@ -37,4 +37,5 @@
 - Issue: `executeScript(..., { attributes })` builds a raw `<script>` string and escapes values, but attribute names do not go through the HTML name guard used by normal rendering.
 - Module: `sse` script events.
 - Interface cost: One response path has different safety invariants than the HTML renderer.
-- Resolution: Pending.
+- Resolution: Exported the renderer's attribute-name assertion internally and applied it in `executeScript(...)`.
+- Win: Leverage improves because all generated HTML attribute names now share one safety rule. Locality improves because the invariant is enforced by the HTML Module instead of being reimplemented in `sse.ts`.
