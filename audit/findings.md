@@ -5,7 +5,8 @@
 - Issue: Examples initialize standalone signals with `ds.dataSignal(signal.name, value)`, so callers have to pull the name out of the signal ref.
 - Module: `ds` signal authoring.
 - Interface cost: Callers must know that a `Signal` stores a public `.name` and that `dataSignal` only accepts strings.
-- Resolution: Pending.
+- Resolution: `ds.dataSignal(...)` and `ds.dataComputed(...)` now accept `Signal` refs directly. The string form remains for dynamic names.
+- Win: Leverage improves because a signal ref now carries its own initialization name. Locality improves because case-preserving keyed attribute behavior stays inside `attributes.ts`.
 
 ## F-002: Common signal mutations require inline JavaScript strings
 

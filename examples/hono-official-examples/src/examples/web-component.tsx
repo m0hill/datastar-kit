@@ -20,7 +20,7 @@ example.get("/", () =>
           Reversed
           <input type="text" {...ds.bind(state.$._name)} />
         </label>
-        <span {...ds.dataSignal(reversed.name, "")} {...ds.text(reversed)}></span>
+        <span {...ds.dataSignal(reversed, "")} {...ds.text(reversed)}></span>
         <reverse-component
           {...ds.on("reverse", ds.expr`${reversed} = evt.detail.value`)}
           {...ds.dataAttr("name", state.$._name)}

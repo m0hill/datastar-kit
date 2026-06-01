@@ -13,7 +13,7 @@ let rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
 const fetching = ds.local<boolean>("fetching")
 
 const DeleteRowTable = () => (
-  <div id="demo" {...ds.dataSignal(fetching.name, false, { ifMissing: true })}>
+  <div id="demo" {...ds.dataSignal(fetching, false, { ifMissing: true })}>
     <table>
       <thead>
         <tr>

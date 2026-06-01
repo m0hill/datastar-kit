@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
+  dataSignal,
   jsonSignals,
   pluginAttr,
   PluginAttributeNameError,
@@ -14,6 +15,14 @@ describe("misc Datastar attribute helpers", () => {
   it("builds data-ref attributes from names and signals", () => {
     expect(ref("panel")).toEqual({ "data-ref": "panel" })
     expect(ref(signal<HTMLElement, "dialog">("dialog"))).toEqual({ "data-ref": "dialog" })
+  })
+
+  it("initializes standalone signal refs without exposing their names", () => {
+    const selected = signal<boolean, "selected">("selected")
+
+    expect(dataSignal(selected, false, { ifMissing: true })).toEqual({
+      "data-signals:selected__ifmissing": "false"
+    })
   })
 
   it("validates data-ref signal names", () => {

@@ -85,6 +85,12 @@ const saving = ds.local<boolean>("saving")
 <button {...ds.dataAttr("disabled", saving)}>Save</button>
 ```
 
+Standalone refs can initialize their own signal value:
+
+```tsx
+<div {...ds.dataSignal(saving, false, { ifMissing: true })} />
+```
+
 Private names are a convention, not a security boundary. The browser still controls browser state.
 
 ## Expressions

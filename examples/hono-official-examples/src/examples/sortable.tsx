@@ -17,7 +17,7 @@ example.get("/", () =>
       <div class="stack">
         <output
           class="event-output"
-          {...ds.dataSignal(orderInfo.name, "Initial order")}
+          {...ds.dataSignal(orderInfo, "Initial order")}
           {...ds.text(orderInfo)}
         ></output>
         <div

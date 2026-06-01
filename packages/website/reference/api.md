@@ -31,7 +31,7 @@ TSX consumers should also set:
 | `ds.signal(name)`                        | Create a standalone typed signal ref.                                                                        |
 | `ds.local(name)`                         | Create an underscore-prefixed local/private signal ref.                                                      |
 | `ds.dataSignals(values, options?)`       | Render object-valued `data-signals`.                                                                         |
-| `ds.dataSignal(name, value, modifiers?)` | Render one signal definition.                                                                                |
+| `ds.dataSignal(signalOrName, value, modifiers?)` | Render one signal definition.                                                                        |
 | `ds.jsonSignals(filter?, options?)`      | Render `data-json-signals`.                                                                                  |
 
 ### Actions

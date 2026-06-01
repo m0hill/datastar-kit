@@ -17,7 +17,7 @@ describe("signal policy helpers", () => {
 
     expect(menuOpen.toDatastarExpression()).toBe("$_menuOpen")
     expect(alreadyLocal.toDatastarExpression()).toBe("$_dialogOpen")
-    expect(ds.dataSignal("_menuOpen", false, { ifMissing: true })).toEqual({
+    expect(ds.dataSignal(menuOpen, false, { ifMissing: true })).toEqual({
       "data-signals:_menu-open__ifmissing": "false"
     })
   })
@@ -31,7 +31,7 @@ describe("signal policy helpers", () => {
     expect(ds.dataSignal("_validation.email", "Required")).toEqual({
       "data-signals:_validation.email": '"Required"'
     })
-    expect(ds.dataSignal("_loading.save", false)).toEqual({
+    expect(ds.dataSignal(saving, false)).toEqual({
       "data-signals:_loading.save": "false"
     })
     expect(ds.indicator(saving)).toEqual({ "data-indicator": "_loading.save" })
@@ -57,6 +57,11 @@ describe("signal policy helpers", () => {
     })
     expect(ds.dataComputed("projectName", ds.expr("$name.trim()"))).toEqual({
       "data-computed:project-name": "$name.trim()"
+    })
+    expect(
+      ds.dataComputed(ds.signal<string, "displayName">("displayName"), ds.expr("$name"))
+    ).toEqual({
+      "data-computed:display-name": "$name"
     })
   })
 
@@ -90,7 +95,7 @@ describe("signal policy helpers", () => {
     const open = ds.local<boolean, "menuOpen">("menuOpen")
     const node = h(
       "details",
-      ds.dataSignal("_menuOpen", false, { ifMissing: true }),
+      ds.dataSignal(open, false, { ifMissing: true }),
       h("summary", {}, "Menu"),
       h("div", ds.show(open), "Panel")
     )

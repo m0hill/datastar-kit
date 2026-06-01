@@ -40,7 +40,7 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
   <div
     id="demo"
     {...ds.init(ds.get("/examples/dbmon/updates"))}
-    {...ds.dataSignal(editing.name, false, { ifMissing: true })}
+    {...ds.dataSignal(editing, false, { ifMissing: true })}
   >
     <p>
       Average render time for entire page: {renderTime === 0 ? "0s" : `${renderTime.toFixed(3)}µs`}

@@ -318,20 +318,31 @@ export const dataClasses = (mapping: Readonly<Record<string, ExprInput<unknown>>
 })
 
 /** Creates a Datastar `data-computed` attribute. @see https://data-star.dev/reference/attributes#data-computed */
-export const dataComputed = <T>(
+export function dataComputed<T, Name extends string>(
+  name: Signal<T, Name>,
+  expression: ExprInput<T>,
+  modifiers?: CaseModifiers
+): HtmlProps
+export function dataComputed<T>(
   name: string,
   expression: ExprInput<T>,
+  modifiers?: CaseModifiers
+): HtmlProps
+export function dataComputed<T>(
+  name: string | Signal<T, string>,
+  expression: ExprInput<T>,
   modifiers: CaseModifiers = {}
-): HtmlProps => {
-  assertUnmodifiedSignalName(name, modifiers)
+): HtmlProps {
+  const signalName = signalKeyName(name)
+  assertUnmodifiedSignalName(signalName, modifiers)
   if (modifiers.case === undefined) {
-    const keyedName = toCamelKeyedAttributeName(name)
+    const keyedName = toCamelKeyedAttributeName(signalName)
     if (keyedName !== undefined) {
       return { [`data-computed:${keyedName}`]: toJs(expression) }
     }
-    return { "data-computed": toJs(computedValueObject(name, expression)) }
+    return { "data-computed": toJs(computedValueObject(signalName, expression)) }
   }
-  return { [`data-computed:${name}${caseModifierSuffix(modifiers)}`]: toJs(expression) }
+  return { [`data-computed:${signalName}${caseModifierSuffix(modifiers)}`]: toJs(expression) }
 }
 
 /** Creates an object-valued Datastar `data-computed` attribute. @see https://data-star.dev/reference/attributes#data-computed */
@@ -351,24 +362,35 @@ export const dataStyles = (mapping: Readonly<Record<string, ExprInput<unknown>>>
 })
 
 /** Creates a Datastar `data-signals` attribute. @see https://data-star.dev/reference/attributes#data-signals */
-export const dataSignal = (
+export function dataSignal<T extends SignalValueInput, Name extends string>(
+  name: Signal<T, Name>,
+  value: T,
+  modifiers?: DataSignalModifiers
+): HtmlProps
+export function dataSignal(
   name: string,
   value: SignalValueInput,
+  modifiers?: DataSignalModifiers
+): HtmlProps
+export function dataSignal(
+  name: string | Signal<unknown, string>,
+  value: SignalValueInput,
   modifiers: DataSignalModifiers = {}
-): HtmlProps => {
-  assertUnmodifiedSignalName(name, modifiers)
+): HtmlProps {
+  const signalName = signalKeyName(name)
+  assertUnmodifiedSignalName(signalName, modifiers)
   if (modifiers.case === undefined) {
-    const keyedName = toCamelKeyedAttributeName(name)
+    const keyedName = toCamelKeyedAttributeName(signalName)
     if (keyedName !== undefined) {
       return { [`data-signals:${keyedName}${dataSignalModifiers(modifiers)}`]: toJs(value) }
     }
     return {
       [modifiers.ifMissing === true ? "data-signals__ifmissing" : "data-signals"]: toJs(
-        signalValueObject(name, value)
+        signalValueObject(signalName, value)
       )
     }
   }
-  return { [`data-signals:${name}${dataSignalModifiers(modifiers)}`]: toJs(value) }
+  return { [`data-signals:${signalName}${dataSignalModifiers(modifiers)}`]: toJs(value) }
 }
 
 /** Creates an object-valued Datastar `data-signals` attribute. @see https://data-star.dev/reference/attributes#data-signals */

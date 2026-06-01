@@ -17,3 +17,9 @@
 - Decision: Add only small helpers for common Datastar expression shapes when examples show repeated caller formatting.
 - Reasoning: Assignment, sequencing, and guarded execution are recurring JavaScript shapes. A full expression builder would reinvent Datastar.
 - Rejected alternative: Build a typed JavaScript AST or reactive expression language. That would add an abstraction tower with poor Locality.
+
+## D-004: Accept signal refs where signal names are already required
+
+- Decision: Let `dataSignal` and `dataComputed` receive `Signal` refs as well as strings.
+- Reasoning: A `Signal` ref already owns the signal path. Requiring `.name` leaks implementation detail without adding control.
+- Rejected alternative: Add methods such as `signal.attrs(...)`. That would couple signal refs back to attribute rendering and create a larger Interface.
