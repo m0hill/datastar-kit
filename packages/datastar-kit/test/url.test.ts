@@ -18,6 +18,28 @@ describe("dynamic URL helpers", () => {
     )
   })
 
+  it("inserts generated query parameters before URL fragments", () => {
+    const q = signal<string, "q">("q")
+
+    expect(queryUrl("/search#results", { q }).toDatastarExpression()).toBe(
+      "`/search?q=${encodeURIComponent($q)}#results`"
+    )
+    expect(queryUrl("/search?sort=name#results", { q }).toDatastarExpression()).toBe(
+      "`/search?sort=name&q=${encodeURIComponent($q)}#results`"
+    )
+  })
+
+  it("does not add an extra separator after an open query string", () => {
+    const page = signal<number, "page">("page")
+
+    expect(queryUrl("/search?", { page }).toDatastarExpression()).toBe(
+      "`/search?page=${encodeURIComponent($page)}`"
+    )
+    expect(queryUrl("/search?sort=name&", { page }).toDatastarExpression()).toBe(
+      "`/search?sort=name&page=${encodeURIComponent($page)}`"
+    )
+  })
+
   it("supports static query values", () => {
     expect(queryUrl("/search", { q: "ada", page: 2 }).toDatastarExpression()).toBe(
       '`/search?q=${encodeURIComponent("ada")}&page=${encodeURIComponent(2)}`'

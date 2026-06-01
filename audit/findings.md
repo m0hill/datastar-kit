@@ -29,7 +29,8 @@
 - Issue: `queryUrl("/items#results", { q })` currently produces a query string after `#results`, which makes it part of the fragment instead of the URL query.
 - Module: `ds` action URL authoring.
 - Interface cost: Callers cannot safely pass normal URL strings with fragments.
-- Resolution: Pending.
+- Resolution: `queryUrl(...)` now splits the URL fragment before appending generated query parameters, then reattaches the fragment.
+- Win: Leverage improves because callers can pass ordinary path strings. Locality improves because query separator and hash handling live in `actions.ts`.
 
 ## F-005: Script-event attributes bypass HTML name validation
 

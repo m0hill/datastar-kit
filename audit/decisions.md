@@ -35,3 +35,9 @@
 - Decision: Remove `SseChunk` instead of preserving it as a future extension point.
 - Reasoning: No concrete caller needs a wrapper around a string. The existing string and byte chunk shapes cover current variants.
 - Rejected alternative: Keep the wrapper for possible metadata. That would be a speculative Seam with no second variant.
+
+## D-007: Keep `queryUrl` string-based
+
+- Decision: Fix fragment placement inside `queryUrl` without replacing it with a URL builder object.
+- Reasoning: Callers already have a small Interface: a path string and a params object. The bug was in serialization depth, not the caller shape.
+- Rejected alternative: Require `URL` instances or a route object. That would add ceremony and would not help reactive signal parameters.

@@ -115,6 +115,26 @@ const escapeTemplateText = (value: string): string =>
 const urlToJs = (url: ExprInput<string>): string =>
   typeof url === "string" ? JSON.stringify(url) : url.toDatastarExpression()
 
+const splitHash = (path: string): { readonly beforeHash: string; readonly hash: string } => {
+  const hashIndex = path.indexOf("#")
+  if (hashIndex === -1) {
+    return { beforeHash: path, hash: "" }
+  }
+
+  return {
+    beforeHash: path.slice(0, hashIndex),
+    hash: path.slice(hashIndex)
+  }
+}
+
+const querySeparator = (path: string): string => {
+  if (!path.includes("?")) {
+    return "?"
+  }
+
+  return path.endsWith("?") || path.endsWith("&") ? "" : "&"
+}
+
 const fetchAction = (
   method: "get" | "post" | "put" | "patch" | "delete",
   url: ExprInput<string>,
@@ -197,11 +217,12 @@ export const queryUrl = (
     return raw(JSON.stringify(path))
   }
 
-  const separator = path.includes("?") ? "&" : "?"
+  const { beforeHash, hash } = splitHash(path)
+  const separator = querySeparator(beforeHash)
   const query = entries
     .map(([key, value]) => `${encodeURIComponent(key)}=\${encodeURIComponent(${toJs(value)})}`)
     .join("&")
-  return raw(`\`${escapeTemplateText(path)}${separator}${query}\``)
+  return raw(`\`${escapeTemplateText(beforeHash)}${separator}${query}${escapeTemplateText(hash)}\``)
 }
 
 /** Creates a Datastar `@get()` action expression. @see https://data-star.dev/reference/actions#get */
