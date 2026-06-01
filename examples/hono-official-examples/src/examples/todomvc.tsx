@@ -40,19 +40,16 @@ const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
         <input
           id="edit-todo"
           type="text"
-          {...ds.bind(state.$.input)}
-          {...ds.init(ds.expr`el.focus()`)}
-          {...ds.on("blur", ds.put("/examples/todomvc/cancel"))}
-          {...ds.on(
-            "keydown",
-            ds.expr`
+          data-bind={state.$.input}
+          data-init={ds.expr`el.focus()`}
+          data-on:blur={ds.put("/examples/todomvc/cancel")}
+          data-on:keydown={ds.expr`
               if (evt.key === ${"Escape"}) {
                 el.blur()
               } else if (evt.key === ${"Enter"} && ${state.$.input}.trim()) {
                 ${ds.patch(`/examples/todomvc/${index}`)}
               }
-            `
-          )}
+            `}
         />
       </li>
     )
@@ -63,21 +60,18 @@ const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
       class={todo.completed ? "completed" : undefined}
       role="button"
       tabindex="0"
-      {...ds.on(
-        "dblclick",
-        ds.when(ds.expr`evt.target === el`, ds.get(`/examples/todomvc/${index}`))
-      )}
+      data-on:dblclick={ds.expr`if (evt.target === el) { ${ds.get(`/examples/todomvc/${index}`)} }`}
     >
       <input
         id={`todo-checkbox-${index}`}
         type="checkbox"
-        {...ds.init(ds.expr`el.checked = ${todo.completed}`)}
-        {...ds.on("click", ds.post(`/examples/todomvc/${index}/toggle`), { prevent: true })}
+        data-init={ds.expr`el.checked = ${todo.completed}`}
+        data-on:click__prevent={ds.post(`/examples/todomvc/${index}/toggle`)}
       />
       <label for={`todo-checkbox-${index}`}>
         <span>{todo.text}</span>
       </label>
-      <button class="error small" {...ds.on("click", ds.delete(`/examples/todomvc/${index}`))}>
+      <button class="error small" data-on:click={ds.delete(`/examples/todomvc/${index}`)}>
         ×
       </button>
     </li>
@@ -87,7 +81,7 @@ const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
 const ModeButton = ({ value, label }: { value: number; label: string }) => (
   <button
     class={mode === value ? "small info" : "small"}
-    {...ds.on("click", ds.put(`/examples/todomvc/mode/${value}`))}
+    data-on:click={ds.put(`/examples/todomvc/mode/${value}`)}
   >
     {label}
   </button>
@@ -99,13 +93,13 @@ const TodoMvc = () => {
   const allCompleted = todos.length > 0 && pending === 0
 
   return (
-    <section id="todomvc" class="todo-shell" {...ds.init(ds.get("/examples/todomvc/updates"))}>
+    <section id="todomvc" class="todo-shell" data-init={ds.get("/examples/todomvc/updates")}>
       <header id="todo-header" class="todo-header">
         <input
           type="checkbox"
           aria-label="Toggle all todos"
-          {...ds.init(ds.expr`el.checked = ${allCompleted}`)}
-          {...ds.on("click", ds.post("/examples/todomvc/-1/toggle"), { prevent: true })}
+          data-init={ds.expr`el.checked = ${allCompleted}`}
+          data-on:click__prevent={ds.post("/examples/todomvc/-1/toggle")}
         />
         <input
           id="new-todo"
@@ -113,15 +107,9 @@ const TodoMvc = () => {
           placeholder="What needs to be done?"
           {...(editingIndex === undefined
             ? {
-                ...state.attrs(),
-                ...ds.bind(state.$.input),
-                ...ds.on(
-                  "keydown",
-                  ds.when(
-                    ds.expr`evt.key === ${"Enter"} && ${state.$.input}.trim()`,
-                    ds.sequence(ds.patch("/examples/todomvc/-1"), ds.set(state.$.input, ""))
-                  )
-                )
+                "data-signals__ifmissing": state.defaults,
+                "data-bind": state.$.input,
+                "data-on:keydown": ds.expr`if (evt.key === ${"Enter"} && ${state.$.input}.trim()) { ${ds.patch("/examples/todomvc/-1")}; ${ds.set(state.$.input, "")} }`
               }
             : {})}
         />
@@ -141,11 +129,11 @@ const TodoMvc = () => {
         <button
           class="error small"
           disabled={completed === 0}
-          {...ds.on("click", ds.delete("/examples/todomvc/-1"))}
+          data-on:click={ds.delete("/examples/todomvc/-1")}
         >
           Delete
         </button>
-        <button class="warning small" {...ds.on("click", ds.put("/examples/todomvc/reset"))}>
+        <button class="warning small" data-on:click={ds.put("/examples/todomvc/reset")}>
           Reset
         </button>
       </div>

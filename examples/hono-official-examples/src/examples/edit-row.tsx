@@ -43,15 +43,15 @@ const DisplayRow = ({
     <td>{row.email}</td>
     <td>
       {disabled ? (
-        <button class="small info" {...ds.dataAttr("disabled", true)}>
+        <button class="small info" data-attr:disabled={true}>
           Edit
         </button>
       ) : (
         <button
           class="small info"
-          {...ds.on("click", ds.get(`/examples/edit_row/${index}`))}
-          {...ds.indicator(fetching)}
-          {...ds.dataAttr("disabled", fetching)}
+          data-on:click={ds.get(`/examples/edit_row/${index}`)}
+          data-indicator={fetching}
+          data-attr:disabled={fetching}
         >
           Edit
         </button>
@@ -63,47 +63,37 @@ const DisplayRow = ({
 const EditingRow = ({ index }: { index: number }) => (
   <tr>
     <td>
-      <input
-        type="text"
-        required
-        {...ds.bind(state.$.name)}
-        {...ds.dataAttr("disabled", fetching)}
-      />
+      <input type="text" required data-bind={state.$.name} data-attr:disabled={fetching} />
       <small
         class="field-error"
         style="display: none"
-        {...ds.show(state.$.errors.name)}
-        {...ds.text(state.$.errors.name)}
+        data-show={state.$.errors.name}
+        data-text={state.$.errors.name}
       ></small>
     </td>
     <td>
-      <input
-        type="email"
-        required
-        {...ds.bind(state.$.email)}
-        {...ds.dataAttr("disabled", fetching)}
-      />
+      <input type="email" required data-bind={state.$.email} data-attr:disabled={fetching} />
       <small
         class="field-error"
         style="display: none"
-        {...ds.show(state.$.errors.email)}
-        {...ds.text(state.$.errors.email)}
+        data-show={state.$.errors.email}
+        data-text={state.$.errors.email}
       ></small>
     </td>
     <td>
       <button
         class="small error"
-        {...ds.on("click", ds.get("/examples/edit_row/cancel"))}
-        {...ds.indicator(fetching)}
-        {...ds.dataAttr("disabled", fetching)}
+        data-on:click={ds.get("/examples/edit_row/cancel")}
+        data-indicator={fetching}
+        data-attr:disabled={fetching}
       >
         Cancel
       </button>{" "}
       <button
         class="small success"
-        {...ds.on("click", ds.patch(`/examples/edit_row/${index}`))}
-        {...ds.indicator(fetching)}
-        {...ds.dataAttr("disabled", fetching)}
+        data-on:click={ds.patch(`/examples/edit_row/${index}`)}
+        data-indicator={fetching}
+        data-attr:disabled={fetching}
       >
         Save
       </button>
@@ -112,7 +102,7 @@ const EditingRow = ({ index }: { index: number }) => (
 )
 
 const EditRowTable = ({ editingIndex }: { editingIndex?: number } = {}) => (
-  <div id="demo" {...ds.dataSignal(fetching, false, { ifMissing: true })}>
+  <div id="demo" data-signals__ifmissing={{ [fetching.name]: false }}>
     <table>
       <thead>
         <tr>
@@ -134,9 +124,9 @@ const EditRowTable = ({ editingIndex }: { editingIndex?: number } = {}) => (
     <div>
       <button
         class="warning"
-        {...ds.on("click", ds.put("/examples/edit_row/reset"))}
-        {...ds.indicator(fetching)}
-        {...ds.dataAttr("disabled", fetching)}
+        data-on:click={ds.put("/examples/edit_row/reset")}
+        data-indicator={fetching}
+        data-attr:disabled={fetching}
       >
         Reset
       </button>

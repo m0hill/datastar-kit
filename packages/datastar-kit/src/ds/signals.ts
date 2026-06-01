@@ -18,7 +18,8 @@ export type SignalValueInput =
   | { readonly [key: string]: SignalValueInput }
 
 /**
- * Authoring-time signal object accepted by `ds.dataSignals()` and fetch action payload overrides.
+ * Authoring-time signal object accepted by `data-signals` JSX attributes and fetch action payload
+ * overrides.
  */
 export type SignalStateInput = Readonly<Record<string, SignalValueInput>>
 

@@ -4,7 +4,7 @@ Datastar Kit is a small TypeScript SDK for building server-driven UI with [Datas
 
 It gives you the Datastar-shaped pieces of an application:
 
-- typed attributes, actions, expressions, modifiers, and signal refs through `ds`;
+- native Datastar attributes in TSX, with typed actions, expressions, and signal refs through `ds`;
 - server-rendered HTML and TSX without a browser component runtime;
 - `read.signals(request)` for Datastar action payloads;
 - native `Response` helpers for pages, patches, streams, navigation, and no-content commands.
@@ -64,7 +64,7 @@ let count = 0
 const Counter = () => (
   <main>
     <h1>Counter</h1>
-    <button type="button" {...ds.on("click", ds.post("/increment"))}>
+    <button type="button" data-on:click={ds.post("/increment")}>
       Increment
     </button>
     <output id="count">{count}</output>
@@ -98,7 +98,7 @@ That stable `id` is the patch contract.
 
 | Namespace | Use it for                                                                                               |
 | --------- | -------------------------------------------------------------------------------------------------------- |
-| `ds`      | Datastar attributes, actions, expressions, modifiers, signal refs, and typed signal-state helpers.       |
+| `ds`      | Datastar actions, expressions, signal refs, and typed signal-state helpers.                              |
 | `read`    | Decoding Datastar signal payloads from native `Request` values.                                          |
 | `reply`   | Native `Response` helpers for pages, patches, signal patches, streams, navigation, and `204` completion. |
 | `event`   | Individual SSE chunks for `reply.stream(...)`.                                                           |

@@ -43,7 +43,7 @@ const projects: Project[] = [
 ]
 
 const DashboardLayout = (props: { title: string; toolbar?: HtmlChild; children?: HtmlChild }) => (
-  <div class="shell" {...projectForm.attrs()}>
+  <div class="shell" data-signals__ifmissing={projectForm.defaults}>
     <aside class="sidebar">
       <strong>Datastar Kit</strong>
       <nav>
@@ -101,8 +101,8 @@ export const app = new Elysia()
       <DashboardLayout
         title="Projects"
         toolbar={
-          <form class="toolbar" {...ds.on("submit", ds.post("/projects"), { prevent: true })}>
-            <input placeholder="New project title" {...ds.bind(projectForm.$.title)} />
+          <form class="toolbar" data-on:submit__prevent={ds.post("/projects")}>
+            <input placeholder="New project title" data-bind={projectForm.$.title} />
             <button>Add project</button>
           </form>
         }

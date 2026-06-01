@@ -1,15 +1,12 @@
 import { describe, expect, it } from "vitest"
-import { dataSignals, SignalNameError, state } from "../src/ds/index.js"
+import { SignalNameError, state } from "../src/ds/index.js"
 import type { SignalState } from "../src/types.js"
 
 describe("state helpers", () => {
-  it("creates default data-signals attributes with missing-only initialization", () => {
+  it("keeps cloned signal defaults for direct data-signals attributes", () => {
     const form = state({ name: "", email: "", errors: { name: "", email: "" } })
 
-    expect(form.attrs()).toEqual({
-      "data-signals__ifmissing": '{"name": "", "email": "", "errors": {"name": "", "email": ""}}'
-    })
-    expect(form.attrs({ ifMissing: false })).toEqual(dataSignals(form.defaults))
+    expect(form.defaults).toEqual({ name: "", email: "", errors: { name: "", email: "" } })
   })
 
   it("creates nested signal refs from one defaults object", () => {

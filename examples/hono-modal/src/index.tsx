@@ -14,7 +14,7 @@ app.use("/static/*", serveStatic({ root: fileURLToPath(new URL("../", import.met
 
 app.get("/", () =>
   reply.page(
-    <main id="app" {...ds.dataSignals({ modalOpen: false }, { ifMissing: true })}>
+    <main id="app" data-signals__ifmissing={{ modalOpen: false }}>
       <h1>Datastar modal</h1>
       <p>
         This example patches a native <code>&lt;dialog&gt;</code> into a modal slot from a Hono
@@ -23,7 +23,7 @@ app.get("/", () =>
       </p>
 
       <div class="row">
-        <button type="button" class="primary" {...ds.on("click", ds.get("/modal"))}>
+        <button type="button" class="primary" data-on:click={ds.get("/modal")}>
           Open server-rendered modal
         </button>
       </div>
@@ -49,11 +49,9 @@ app.get("/modal", () =>
       <dialog
         id="confirm-modal"
         aria-labelledby="confirm-modal-title"
-        {...ds.effect(
-          ds.expr`${openModal} ? (!el.open && el.showModal()) : (el.open && el.close())`
-        )}
-        {...ds.on("click", ds.when(ds.expr`evt.target === el`, ds.set(openModal, false)))}
-        {...ds.on("close", ds.set(openModal, false))}
+        data-effect={ds.expr`${openModal} ? (!el.open && el.showModal()) : (el.open && el.close())`}
+        data-on:click={ds.expr`if (evt.target === el) { ${ds.set(openModal, false)} }`}
+        data-on:close={ds.set(openModal, false)}
       >
         <section class="modal">
           <h2 id="confirm-modal-title">Confirm the action</h2>
@@ -62,14 +60,10 @@ app.get("/modal", () =>
             Escape, backdrop clicks, and buttons all stay in sync.
           </p>
           <div class="modal-actions">
-            <button
-              type="button"
-              class="secondary"
-              {...ds.on("click", ds.set(openModal, false))}
-            >
+            <button type="button" class="secondary" data-on:click={ds.set(openModal, false)}>
               Cancel
             </button>
-            <button type="button" class="danger" {...ds.on("click", ds.post("/modal/confirm"))}>
+            <button type="button" class="danger" data-on:click={ds.post("/modal/confirm")}>
               Confirm
             </button>
           </div>

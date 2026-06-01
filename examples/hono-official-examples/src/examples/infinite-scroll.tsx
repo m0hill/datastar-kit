@@ -34,7 +34,7 @@ const Loader = () => (
   <div
     id="infinite-scroll-loader"
     class="loading-row"
-    {...ds.onIntersect(ds.get("/examples/infinite_scroll/more"))}
+    data-on-intersect={ds.get("/examples/infinite_scroll/more")}
   >
     Loading...
   </div>
@@ -68,14 +68,12 @@ example.get("/", () =>
       <div
         id="demo"
         class="stack"
-        {...state.attrs()}
-        {...ds.init(
-          ds.get("/examples/infinite_scroll/initial", {
-            payload: {
-              limit: ds.expr`Math.ceil(window.innerHeight / 44) + 4`
-            }
-          })
-        )}
+        data-signals__ifmissing={state.defaults}
+        data-init={ds.get("/examples/infinite_scroll/initial", {
+          payload: {
+            limit: ds.expr`Math.ceil(window.innerHeight / 44) + 4`
+          }
+        })}
       >
         <table>
           <caption>Agents</caption>

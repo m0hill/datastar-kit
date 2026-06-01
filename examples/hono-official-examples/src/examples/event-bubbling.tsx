@@ -29,19 +29,16 @@ example.get("/", () =>
       summary="Uses one delegated click listener to read button metadata from bubbled events."
       source="https://data-star.dev/examples/event_bubbling"
     >
-      <div id="demo" {...state.attrs()}>
+      <div id="demo" data-signals__ifmissing={state.defaults}>
         <p>
-          Key pressed: <span {...ds.text(state.$.key)}></span>
+          Key pressed: <span data-text={state.$.key}></span>
         </p>
         <div
           id="event-bubbling-container"
           class="keypad"
-          {...ds.on(
-            "click",
-            ds.set(
-              state.$.key,
-              ds.expr`evt.target.closest(${"button[data-id]"})?.dataset.id ?? ${state.$.key}`
-            )
+          data-on:click={ds.set(
+            state.$.key,
+            ds.expr`evt.target.closest(${"button[data-id]"})?.dataset.id ?? ${state.$.key}`
           )}
         >
           {keys.map((key) => (

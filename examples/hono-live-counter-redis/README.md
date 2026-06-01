@@ -8,7 +8,7 @@ This example starts from `examples/hono-live-counter` and replaces the in-memory
 
 - server-rendered TSX with `jsxImportSource: "datastar-kit"`;
 - Hono route handlers returning native `Response` objects from Datastar Kit;
-- `ds.init(ds.get("/live"))` to open a long-lived Datastar SSE stream;
+- `data-init={ds.get("/live")}` to open a long-lived Datastar SSE stream;
 - `reply.stream(...)` and `event.patch(...)` for current-state live updates;
 - a Redis pub/sub invalidation hub that wakes every connected tab after a count change;
 - a backend-owned `count` value shared by all clients connected to this server process.

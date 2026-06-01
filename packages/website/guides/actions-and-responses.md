@@ -34,9 +34,7 @@ const search = ds.state({ q: "" })
 Use Datastar's native suffix syntax when an event needs modifiers:
 
 ```tsx
-<form data-on:submit__prevent={ds.post("/signup")}>
-  ...
-</form>
+<form data-on:submit__prevent={ds.post("/signup")}>...</form>
 ```
 
 ## Command handlers
@@ -127,9 +125,7 @@ Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions us
 For Datastar's form transport, pass `contentType: "form"` in the fetch action options and read the request with your platform's form or multipart APIs:
 
 ```tsx
-<form
-  data-on:submit__prevent={ds.post("/upload", { contentType: "form", selector: null })}
->
+<form data-on:submit__prevent={ds.post("/upload", { contentType: "form", selector: null })}>
   <input type="file" name="avatar" />
   <button>Upload</button>
 </form>
@@ -139,7 +135,7 @@ For Datastar's form transport, pass `contentType: "form"` in the fetch action op
 
 ## Custom browser actions and plugins
 
-Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, register a Datastar action or plugin in a browser module and call it from TSX with `ds.action(...)` or `ds.pluginAttr(...)`:
+Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, register a Datastar action or plugin in a browser module and call it from TSX with `ds.action(...)` or the plugin's native `data-*` attribute:
 
 ```tsx
 const modalOpen = ds.signal<boolean>("modalOpen")

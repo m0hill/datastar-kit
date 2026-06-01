@@ -58,7 +58,10 @@ const routes: Route[] = [
     pattern: new URLPattern({ pathname: "/" }),
     handler: () =>
       reply.page(
-        <main class="min-h-screen bg-slate-100 px-6 py-12" {...listState.attrs()}>
+        <main
+          class="min-h-screen bg-slate-100 px-6 py-12"
+          data-signals__ifmissing={listState.defaults}
+        >
           <section class="mx-auto max-w-2xl">
             <div>
               <p class="text-sm font-medium uppercase tracking-wide text-blue-700">
@@ -74,18 +77,15 @@ const routes: Route[] = [
               <input
                 class="w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                 placeholder="Search items"
-                {...ds.bind(listState.$.query)}
-                {...ds.on("input", ds.get("/items/search"), { debounce: "200ms" })}
+                data-bind={listState.$.query}
+                {...{ "data-on:input__debounce.200ms": ds.get("/items/search") }}
               />
 
-              <form
-                class="mt-3 flex gap-2"
-                {...ds.on("submit", ds.post("/items"), { prevent: true })}
-              >
+              <form class="mt-3 flex gap-2" data-on:submit__prevent={ds.post("/items")}>
                 <input
                   class="min-w-0 flex-1 rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                   placeholder="New item"
-                  {...ds.bind(listState.$.name)}
+                  data-bind={listState.$.name}
                 />
                 <button
                   type="submit"

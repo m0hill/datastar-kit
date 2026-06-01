@@ -20,7 +20,7 @@ const LazyTabs = ({ active }: { active: number }) => (
         <button
           role="tab"
           aria-selected={index === active ? "true" : "false"}
-          {...ds.on("click", ds.get(`/examples/lazy_tabs/${index}`))}
+          data-on:click={ds.get(`/examples/lazy_tabs/${index}`)}
         >
           Tab {index}
         </button>

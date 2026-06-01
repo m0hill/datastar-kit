@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { bind, dataSignals, on, post, signal, state, text } from "../src/ds/index.js"
-import { mergeProps, renderToString, type HtmlChild } from "../src/html.js"
+import { post, signal, state } from "../src/ds/index.js"
+import { renderToString, type HtmlChild } from "../src/html.js"
 import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
@@ -13,33 +13,6 @@ describe("automatic JSX runtime", () => {
     )
 
     expect(renderToString(node)).toBe('<button type="button" disabled>Save</button>')
-  })
-
-  it("supports Datastar attr fragments in JSX", () => {
-    const count = signal<number>("count")
-    const node = (
-      <main {...mergeProps({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true }))}>
-        <button {...mergeProps({ type: "button" }, on("click", post("/increment")))}>+</button>
-        <output {...text(count)}>0</output>
-      </main>
-    )
-
-    expect(renderToString(node)).toBe(
-      '<main id="counter" data-signals__ifmissing="{&quot;count&quot;: 0}"><button type="button" data-on:click="@post(&quot;/increment&quot;)">+</button><output data-text="$count">0</output></main>'
-    )
-  })
-
-  it("supports spreading Datastar helper props directly in JSX", () => {
-    const node = (
-      <form>
-        <button {...on("click", post("/increment"))}>+</button>
-        <input {...bind("count")} />
-      </form>
-    )
-
-    expect(renderToString(node)).toBe(
-      '<form><button data-on:click="@post(&quot;/increment&quot;)">+</button><input data-bind="count"></form>'
-    )
   })
 
   it("renders Datastar signal refs and actions directly on data attributes", () => {
@@ -97,7 +70,11 @@ describe("automatic JSX runtime", () => {
   })
 
   it("keeps string Datastar attribute values raw", () => {
-    const node = <button data-on:click="@post('/save')" data-text="$message">Save</button>
+    const node = (
+      <button data-on:click="@post('/save')" data-text="$message">
+        Save
+      </button>
+    )
 
     expect(renderToString(node)).toBe(
       '<button data-on:click="@post(&#39;/save&#39;)" data-text="$message">Save</button>'

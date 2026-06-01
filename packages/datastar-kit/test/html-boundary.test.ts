@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest"
-import { dataSignals, signal, text } from "../src/ds/index.js"
 import { h, HtmlNameError, mergeProps, renderToString, unsafeHtml } from "../src/html.js"
 import { page } from "../src/reply.js"
 
@@ -34,10 +33,13 @@ describe("HTML rendering boundary", () => {
   })
 
   it("renders composed Datastar props in object insertion order", () => {
-    const count = signal<number, "count">("count")
     const node = h(
       "main",
-      mergeProps({ id: "counter" }, dataSignals({ count: 0 }, { ifMissing: true }), text(count)),
+      mergeProps(
+        { id: "counter" },
+        { "data-signals__ifmissing": '{"count": 0}' },
+        { "data-text": "$count" }
+      ),
       "0"
     )
 

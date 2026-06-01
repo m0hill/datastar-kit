@@ -19,8 +19,8 @@ Use Datastar Kit for:
 
 | Area                            | API                                                                                                 |
 | ------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Datastar attributes and actions | `ds.on(...)`, `ds.post(...)`, `ds.bind(...)`, `ds.expr`, `ds.state(...)`                            |
-| Server HTML                     | TSX, `h`, `renderToString`, `mergeProps`, `unsafeHtml`                                              |
+| Datastar attributes and actions | Native `data-*` TSX attributes, `ds.post(...)`, `ds.expr`, `ds.state(...)`                          |
+| Server HTML                     | TSX, `renderToString`, `unsafeHtml`                                                                 |
 | Signal request decoding         | `read.signals(request)`                                                                             |
 | Datastar responses              | `reply.page(...)`, `reply.patch(...)`, `reply.signals(...)`, `reply.stream(...)`, `reply.done(...)` |
 | Stream chunks                   | `event.patch(...)`, `event.signals(...)`, `event.navigate(...)`, `event.script(...)`                |

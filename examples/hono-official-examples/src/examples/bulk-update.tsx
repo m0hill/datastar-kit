@@ -32,7 +32,7 @@ let rows: BulkRow[] = initialRows.map((row) => ({
 }))
 
 const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) => (
-  <div id="demo" class="stack" {...state.attrs()}>
+  <div id="demo" class="stack" data-signals__ifmissing={state.defaults}>
     <table id="bulk-update">
       <thead>
         <tr>
@@ -40,12 +40,11 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
             <input
               type="checkbox"
               aria-label="Select all rows"
-              {...ds.on(
-                "change",
-                ds.setAll(ds.expr`el.checked`, { include: ds.regex("^selections") })
-              )}
-              {...ds.effect(ds.expr`el.checked = ${state.$.selections}.every(Boolean)`)}
-              {...ds.dataAttr("disabled", state.$._fetching)}
+              data-on:change={ds.action("setAll", ds.expr`el.checked`, {
+                include: ds.regex("^selections")
+              })}
+              data-effect={ds.expr`el.checked = ${state.$.selections}.every(Boolean)`}
+              data-attr:disabled={state.$._fetching}
             />
           </th>
           <th>Name</th>
@@ -60,8 +59,8 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
               <input
                 type="checkbox"
                 aria-label={`Select ${row.name}`}
-                {...ds.bind(state.$.selections)}
-                {...ds.dataAttr("disabled", state.$._fetching)}
+                data-bind={state.$.selections}
+                data-attr:disabled={state.$._fetching}
               />
             </td>
             <td>{row.name}</td>
@@ -86,17 +85,17 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
     <div role="group">
       <button
         class="success"
-        {...ds.indicator(state.$._fetching)}
-        {...ds.dataAttr("disabled", state.$._fetching)}
-        {...ds.on("click", ds.put("/examples/bulk_update/activate"))}
+        data-indicator={state.$._fetching}
+        data-attr:disabled={state.$._fetching}
+        data-on:click={ds.put("/examples/bulk_update/activate")}
       >
         Activate
       </button>
       <button
         class="error"
-        {...ds.indicator(state.$._fetching)}
-        {...ds.dataAttr("disabled", state.$._fetching)}
-        {...ds.on("click", ds.put("/examples/bulk_update/deactivate"))}
+        data-indicator={state.$._fetching}
+        data-attr:disabled={state.$._fetching}
+        data-on:click={ds.put("/examples/bulk_update/deactivate")}
       >
         Deactivate
       </button>

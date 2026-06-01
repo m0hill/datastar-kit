@@ -14,7 +14,7 @@ example.get("/", () =>
       summary="Streams patches to the document title and a visible timestamp."
       source="https://data-star.dev/examples/title_update"
     >
-      <p {...ds.init(ds.get("/examples/title_update/updates"))}>
+      <p data-init={ds.get("/examples/title_update/updates")}>
         Look at the title change in the browser tab!
       </p>
     </ExampleLayout>,

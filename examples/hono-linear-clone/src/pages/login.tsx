@@ -20,7 +20,10 @@ const loginState = ds.state({
 })
 
 const LoginPage = () => (
-  <main class="min-h-screen grid place-items-center p-4 bg-bg" {...loginState.attrs()}>
+  <main
+    class="min-h-screen grid place-items-center p-4 bg-bg"
+    data-signals__ifmissing={loginState.defaults}
+  >
     <section class="w-full max-w-96 bg-surface border border-border p-6 flex flex-col gap-5 shadow-[0_4px_20px_rgba(0,0,0,0.35)]">
       <div class="flex items-center gap-2 border-b border-border pb-4">
         <span class="text-xs text-fg-muted select-none">›</span>
@@ -28,18 +31,18 @@ const LoginPage = () => (
           Linear System / Login
         </h1>
       </div>
-      <form class="flex flex-col gap-4" {...ds.on("submit", ds.post("/login"), { prevent: true })}>
+      <form class="flex flex-col gap-4" data-on:submit__prevent={ds.post("/login")}>
         <label class="flex flex-col gap-1.5 section-label">
           Username
           <input
             class="field"
             autocomplete="username"
             placeholder="Enter username"
-            {...ds.bind(loginState.$.username)}
+            data-bind={loginState.$.username}
           />
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            {...ds.text(loginState.$._validation.username)}
+            data-text={loginState.$._validation.username}
           ></small>
         </label>
         <label class="flex flex-col gap-1.5 section-label">
@@ -49,16 +52,16 @@ const LoginPage = () => (
             type="password"
             autocomplete="current-password"
             placeholder="Enter password"
-            {...ds.bind(loginState.$.password)}
+            data-bind={loginState.$.password}
           />
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            {...ds.text(loginState.$._validation.password)}
+            data-text={loginState.$._validation.password}
           ></small>
         </label>
         <small
           class="text-danger text-[13px] font-medium min-h-4"
-          {...ds.text(loginState.$._validation.form)}
+          data-text={loginState.$._validation.form}
         ></small>
         <button type="submit" class="btn-primary mt-1 py-2.5">
           Proceed Securely

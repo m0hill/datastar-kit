@@ -2,7 +2,7 @@
 
 `datastar-kit` is a small TypeScript SDK for building server-driven UI with [Datastar](https://data-star.dev/).
 
-It provides typed helpers for Datastar attributes, actions, expressions, and signal refs; server-rendered HTML/TSX; signal payload reads from `Request`; and native `Response` helpers for Datastar pages, patches, streams, navigation, and command completion.
+It provides typed helpers for Datastar actions, expressions, and signal refs; native Datastar attributes in server-rendered TSX; signal payload reads from `Request`; and native `Response` helpers for Datastar pages, patches, streams, navigation, and command completion.
 
 It is not a framework. Bring your router, auth, database, validation, sessions, and runtime.
 
@@ -46,7 +46,7 @@ let count = 0
 
 const Counter = () => (
   <main>
-    <button type="button" {...ds.on("click", ds.post("/increment"))}>
+    <button type="button" data-on:click={ds.post("/increment")}>
       Increment
     </button>
     <output id="count">{count}</output>

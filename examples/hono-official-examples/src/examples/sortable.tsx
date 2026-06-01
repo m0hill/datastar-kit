@@ -17,13 +17,13 @@ example.get("/", () =>
       <div class="stack">
         <output
           class="event-output"
-          {...ds.dataSignal(orderInfo, "Initial order")}
-          {...ds.text(orderInfo)}
+          data-signals={{ [orderInfo.name]: "Initial order" }}
+          data-text={orderInfo}
         ></output>
         <div
           id="sortContainer"
           class="sortable-list"
-          {...ds.on("reordered", ds.set(orderInfo, ds.expr`evt.detail.orderInfo`))}
+          data-on:reordered={ds.set(orderInfo, ds.expr`evt.detail.orderInfo`)}
         >
           {Array.from({ length: 5 }, (_, index) => (
             <button type="button">Item {index + 1}</button>

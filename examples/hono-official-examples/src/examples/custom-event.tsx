@@ -18,9 +18,9 @@ example.get("/", () =>
         <p
           id="custom-event-target"
           class="event-output"
-          {...state.attrs()}
-          {...ds.on("myevent", ds.set(state.$._eventDetails, ds.expr`evt.detail`))}
-          {...ds.text(ds.expr`${"Last Event Details: "} + ${state.$._eventDetails}`)}
+          data-signals__ifmissing={state.defaults}
+          data-on:myevent={ds.set(state.$._eventDetails, ds.expr`evt.detail`)}
+          data-text={ds.expr`${"Last Event Details: "} + ${state.$._eventDetails}`}
         ></p>
       </div>
     </ExampleLayout>,

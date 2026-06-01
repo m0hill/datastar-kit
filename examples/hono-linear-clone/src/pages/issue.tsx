@@ -41,8 +41,8 @@ const issueState = ds.state({
 const IssuePage = (props: { detail: IssueDetail }) => (
   <main
     class="min-h-screen bg-bg text-fg"
-    {...issueState.attrs()}
-    {...ds.init(ds.get(`/issues/${props.detail.issue.id}/live`))}
+    data-signals__ifmissing={issueState.defaults}
+    data-init={ds.get(`/issues/${props.detail.issue.id}/live`)}
   >
     <header class="h-15 border-b border-border flex items-center justify-between px-5 lg:px-8 bg-surface/40 backdrop-blur-md">
       <a
@@ -77,7 +77,7 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
 
       <form
         class="flex flex-col gap-3 bg-surface border border-border p-4"
-        {...ds.on("submit", ds.post(`/issues/${issue.id}/comments`), { prevent: true })}
+        data-on:submit__prevent={ds.post(`/issues/${issue.id}/comments`)}
       >
         <label class="flex flex-col gap-1.5 section-label">
           Add a comment
@@ -85,11 +85,11 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
             class="field"
             rows={3}
             placeholder="Write a comment..."
-            {...ds.bind(issueState.$.commentBody)}
+            data-bind={issueState.$.commentBody}
           ></textarea>
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            {...ds.text(issueState.$._validation.commentBody)}
+            data-text={issueState.$._validation.commentBody}
           ></small>
         </label>
         <button type="submit" class="btn-primary self-start">
@@ -124,10 +124,10 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
     <h3 class="section-label mb-3">Properties</h3>
     <form
       class="flex flex-col bg-surface-inset border border-border rounded-xl px-3"
-      {...ds.on(
-        "change",
-        ds.patch(`/issues/${props.issue.id}`, { selector: null, contentType: "form" })
-      )}
+      data-on:change={ds.patch(`/issues/${props.issue.id}`, {
+        selector: null,
+        contentType: "form"
+      })}
     >
       <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2.5 border-b border-border-subtle">
         <label class="section-label">Status</label>

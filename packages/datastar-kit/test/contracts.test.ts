@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { z } from "zod"
-import { dataSignals, signal } from "../src/ds/index.js"
+import { signal } from "../src/ds/index.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
 
@@ -13,9 +13,6 @@ describe("Datastar signal boundary", () => {
     const count = signal<number, "count">("count")
 
     expect(count.toDatastarExpression()).toBe("$count")
-    expect(dataSignals({ count: 0 }, { ifMissing: true })).toEqual({
-      "data-signals__ifmissing": '{"count": 0}'
-    })
   })
 
   it("leaves app validation to the caller after decoding Datastar signals", async () => {

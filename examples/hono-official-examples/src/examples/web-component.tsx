@@ -15,15 +15,15 @@ example.get("/", () =>
       summary="Keeps a custom element attribute synchronized from a Datastar signal."
       source="https://data-star.dev/examples/web_component"
     >
-      <div class="stack" {...state.attrs()}>
+      <div class="stack" data-signals__ifmissing={state.defaults}>
         <label>
           Reversed
-          <input type="text" {...ds.bind(state.$._name)} />
+          <input type="text" data-bind={state.$._name} />
         </label>
-        <span {...ds.dataSignal(reversed, "")} {...ds.text(reversed)}></span>
+        <span data-signals={{ [reversed.name]: "" }} data-text={reversed}></span>
         <reverse-component
-          {...ds.on("reverse", ds.set(reversed, ds.expr`evt.detail.value`))}
-          {...ds.dataAttr("name", state.$._name)}
+          data-on:reverse={ds.set(reversed, ds.expr`evt.detail.value`)}
+          data-attr:name={state.$._name}
         ></reverse-component>
       </div>
     </ExampleLayout>,

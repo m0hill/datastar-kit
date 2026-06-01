@@ -1,6 +1,4 @@
-import type { HtmlProps } from "../html.js"
 import type { SignalState, SignalValue } from "../types.js"
-import { dataSignals, type DataSignalsOptions } from "./attributes.js"
 import { assertSignalName, Signal, SignalNameError } from "./signals.js"
 
 type SignalObject = Readonly<Record<string, SignalValue>>
@@ -50,9 +48,6 @@ export type StatePatch<T extends SignalObject> = {
   readonly [Key in keyof T & string]?: StatePatchValue<T[Key]>
 }
 
-/** Options for `state.attrs()`. */
-export interface StateAttrsOptions extends DataSignalsOptions {}
-
 /** A typed signal-state helper created by `ds.state(...)`. */
 export interface State<T extends SignalObject> {
   /** Initial signal values supplied to `ds.state(...)`. */
@@ -61,8 +56,6 @@ export interface State<T extends SignalObject> {
   readonly refs: StateSignalRefs<T>
   /** Short alias for `refs`, matching Datastar's `$signal` expression syntax. */
   readonly $: StateSignalRefs<T>
-  /** Creates `data-signals` attributes for the initial state. Defaults to `ifMissing: true`. */
-  attrs(options?: StateAttrsOptions): HtmlProps
   /** Returns a type-checked signal patch object for `event.signals(...)` or `reply.signals(...)`. */
   patch(values: StatePatch<T>): SignalState
   /** Returns the default state, optionally deep-merged with overrides. */
@@ -144,9 +137,6 @@ export const state = <T extends SignalObject>(defaults: T): State<WidenSignalObj
     defaults: clonedDefaults,
     refs,
     $: refs,
-    attrs(options = {}) {
-      return dataSignals(clonedDefaults, { ...options, ifMissing: options.ifMissing ?? true })
-    },
     patch(values) {
       return cloneSignalState(values as SignalObject)
     },

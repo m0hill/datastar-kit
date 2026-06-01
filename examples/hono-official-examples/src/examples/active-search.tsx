@@ -56,16 +56,14 @@ example.get("/", () =>
       summary="Filters a server-rendered result set as the user types."
       source="https://data-star.dev/examples/active_search"
     >
-      <div class="stack" {...state.attrs()}>
+      <div class="stack" data-signals__ifmissing={state.defaults}>
         <label>
           Search
           <input
             type="text"
             placeholder="Search..."
-            {...ds.bind(state.$.search)}
-            {...ds.on("input", ds.get("/examples/active_search/search"), {
-              debounce: "200ms"
-            })}
+            data-bind={state.$.search}
+            {...{ "data-on:input__debounce.200ms": ds.get("/examples/active_search/search") }}
           />
         </label>
         <table>

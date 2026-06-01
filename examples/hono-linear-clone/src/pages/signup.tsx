@@ -28,7 +28,10 @@ const signupState = ds.state({
 })
 
 const SignupPage = () => (
-  <main class="min-h-screen grid place-items-center p-4 bg-bg" {...signupState.attrs()}>
+  <main
+    class="min-h-screen grid place-items-center p-4 bg-bg"
+    data-signals__ifmissing={signupState.defaults}
+  >
     <section class="w-full max-w-96 bg-surface border border-border p-6 flex flex-col gap-5 shadow-[0_4px_20px_rgba(0,0,0,0.35)]">
       <div class="flex items-center gap-2 border-b border-border pb-4">
         <span class="text-xs text-fg-muted select-none">›</span>
@@ -36,18 +39,18 @@ const SignupPage = () => (
           Linear System / Register
         </h1>
       </div>
-      <form class="flex flex-col gap-4" {...ds.on("submit", ds.post("/signup"), { prevent: true })}>
+      <form class="flex flex-col gap-4" data-on:submit__prevent={ds.post("/signup")}>
         <label class="flex flex-col gap-1.5 section-label">
           Name
           <input
             class="field"
             autocomplete="name"
             placeholder="Your name"
-            {...ds.bind(signupState.$.name)}
+            data-bind={signupState.$.name}
           />
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            {...ds.text(signupState.$._validation.name)}
+            data-text={signupState.$._validation.name}
           ></small>
         </label>
         <label class="flex flex-col gap-1.5 section-label">
@@ -56,11 +59,11 @@ const SignupPage = () => (
             class="field"
             autocomplete="username"
             placeholder="Choose a username"
-            {...ds.bind(signupState.$.username)}
+            data-bind={signupState.$.username}
           />
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            {...ds.text(signupState.$._validation.username)}
+            data-text={signupState.$._validation.username}
           ></small>
         </label>
         <label class="flex flex-col gap-1.5 section-label">
@@ -70,16 +73,16 @@ const SignupPage = () => (
             type="password"
             autocomplete="new-password"
             placeholder="Create a password"
-            {...ds.bind(signupState.$.password)}
+            data-bind={signupState.$.password}
           />
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            {...ds.text(signupState.$._validation.password)}
+            data-text={signupState.$._validation.password}
           ></small>
         </label>
         <small
           class="text-danger text-[13px] font-medium min-h-4"
-          {...ds.text(signupState.$._validation.form)}
+          data-text={signupState.$._validation.form}
         ></small>
         <button type="submit" class="btn-primary mt-1 py-2.5">
           Initialize Instance

@@ -56,7 +56,7 @@ example.get("/", () =>
       summary="Requests the next slice of table rows and patches the body in place."
       source="https://data-star.dev/examples/click_to_load"
     >
-      <div id="demo" {...state.attrs()}>
+      <div id="demo" data-signals__ifmissing={state.defaults}>
         <table>
           <thead>
             <tr>
@@ -71,12 +71,9 @@ example.get("/", () =>
         </table>
         <button
           class="info wide"
-          {...ds.indicator(fetching)}
-          {...ds.dataAttr("aria-disabled", ds.expr`\`${fetching}\``)}
-          {...ds.on(
-            "click",
-            ds.when(ds.expr`!${fetching}`, ds.get("/examples/click_to_load/more"))
-          )}
+          data-indicator={fetching}
+          data-attr:aria-disabled={ds.expr`\`${fetching}\``}
+          data-on:click={ds.expr`if (!${fetching}) { ${ds.get("/examples/click_to_load/more")} }`}
         >
           Load More
         </button>

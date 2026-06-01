@@ -12,7 +12,7 @@ example.get("/", () =>
       summary="Loads expensive content after the shell is already interactive."
       source="https://data-star.dev/examples/lazy_load"
     >
-      <div id="lazy-load" class="loading-row" {...ds.init(ds.get("/examples/lazy_load/graph"))}>
+      <div id="lazy-load" class="loading-row" data-init={ds.get("/examples/lazy_load/graph")}>
         Loading...
       </div>
     </ExampleLayout>,

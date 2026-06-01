@@ -1,17 +1,7 @@
 import { describe, expect, it } from "vitest"
 import * as Root from "datastar-kit"
 import * as sse from "datastar-kit/sse"
-import {
-  ds,
-  event,
-  h,
-  HtmlNameError,
-  mergeProps,
-  read,
-  renderToString,
-  reply,
-  unsafeHtml
-} from "datastar-kit"
+import { ds, event, read, renderToString, reply, unsafeHtml } from "datastar-kit"
 
 describe("package root exports", () => {
   it("exports the tiny HTML surface and Web Standards SDK namespaces", () => {
@@ -26,7 +16,10 @@ describe("package root exports", () => {
     expect(ds.signal).toBeDefined()
     expect(ds.state).toBeDefined()
     expect(ds.action).toBeDefined()
-    expect(ds.pluginAttr).toBeDefined()
+    expect("on" in ds).toBe(false)
+    expect("bind" in ds).toBe(false)
+    expect("dataSignals" in ds).toBe(false)
+    expect("pluginAttr" in ds).toBe(false)
     expect(ds.delete).toBeDefined()
     expect(event.patch).toBeDefined()
     expect(event.signals).toBeDefined()
@@ -35,7 +28,6 @@ describe("package root exports", () => {
     expect("patchElements" in event).toBe(false)
     expect("patchSignals" in event).toBe(false)
     expect("executeScript" in event).toBe(false)
-    expect(h).toBeDefined()
     expect(renderToString).toBeDefined()
     expect("fragment" in Root).toBe(false)
     expect("page" in Root).toBe(false)
@@ -43,8 +35,9 @@ describe("package root exports", () => {
     expect("props" in Root).toBe(false)
     expect("raw" in Root).toBe(false)
     expect(unsafeHtml).toBeDefined()
-    expect(HtmlNameError).toBeDefined()
-    expect(mergeProps).toBeDefined()
+    expect("h" in Root).toBe(false)
+    expect("mergeProps" in Root).toBe(false)
+    expect("HtmlNameError" in Root).toBe(false)
     expect("Sse" in Root).toBe(false)
     expect("sse" in Root).toBe(false)
     expect("patchElements" in Root).toBe(false)

@@ -1,5 +1,5 @@
 import type { PatchElementsMode, PatchElementsNamespace } from "../sse.js"
-import { raw, toJs, type DatastarFunction, type Expr, type ExprInput } from "./expression.js"
+import { raw, toJs, type Expr, type ExprInput } from "./expression.js"
 import type { Signal, SignalStateInput } from "./signals.js"
 
 /**
@@ -180,28 +180,6 @@ export const set = <T>(signal: Signal<T>, value: ExprInput<T>): Expr<void> =>
   raw(`${signal.toDatastarExpression()} = ${toJs(value)}`)
 
 /**
- * Builds a Datastar expression that runs other expressions in order.
- *
- * @param expressions Expressions or literals to serialize as JavaScript statements.
- * @returns A Datastar expression with statements separated by semicolons.
- */
-export const sequence = (
-  ...expressions: ReadonlyArray<ExprInput<unknown>>
-): Expr<void> => raw(expressions.map((expression) => toJs(expression)).join("; "))
-
-/**
- * Builds a Datastar expression that runs only when a condition is truthy.
- *
- * @param condition Literal or expression used as the JavaScript condition.
- * @param expression Expression to run when the condition is truthy.
- * @returns A Datastar expression using a small `if` statement.
- */
-export const when = (
-  condition: ExprInput<unknown>,
-  expression: ExprInput<unknown>
-): Expr<void> => raw(`if (${toJs(condition)}) { ${toJs(expression)} }`)
-
-/**
  * Builds a Datastar expression for a URL with reactive query parameters.
  *
  * @param path Base path or URL.
@@ -255,19 +233,3 @@ export const action = <T = unknown>(
   name: string,
   ...args: ReadonlyArray<ExprInput<unknown>>
 ): Expr<T> => datastarAction<T>(name, ...args)
-
-/** Creates a Datastar `@peek()` action expression. @see https://data-star.dev/reference/actions#peek */
-export const peek = <T = unknown>(callback: Expr<DatastarFunction<T>>): Expr<T> =>
-  datastarAction<T>("peek", callback)
-
-/** Creates a Datastar `@setAll()` action expression. @see https://data-star.dev/reference/actions#setall */
-export const setAll = (value: ExprInput<unknown>, filter?: SignalFilter): Expr<void> =>
-  filter === undefined
-    ? datastarAction<void>("setAll", value)
-    : datastarAction<void>("setAll", value, filter)
-
-/** Creates a Datastar `@toggleAll()` action expression. @see https://data-star.dev/reference/actions#toggleall */
-export const toggleAll = (filter?: SignalFilter): Expr<void> =>
-  filter === undefined
-    ? datastarAction<void>("toggleAll")
-    : datastarAction<void>("toggleAll", filter)

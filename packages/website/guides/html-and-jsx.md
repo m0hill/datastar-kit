@@ -45,10 +45,7 @@ const login = ds.state({
 })
 
 const LoginForm = () => (
-  <form
-    data-signals__ifmissing={login.defaults}
-    data-on:submit__prevent={ds.post("/login")}
-  >
+  <form data-signals__ifmissing={login.defaults} data-on:submit__prevent={ds.post("/login")}>
     <input type="password" data-bind={login.$.password} />
     <small data-show={login.$._validation.password} data-text={login.$._validation.password} />
   </form>
@@ -57,8 +54,7 @@ const LoginForm = () => (
 
 String values stay raw, so ordinary HTML and hand-written Datastar expressions still render exactly
 as written. Datastar modifiers use normal Datastar suffix syntax such as `__prevent` and
-`__ifmissing`. The `ds.*` attribute helpers remain available when returning prop fragments is more
-convenient.
+`__ifmissing`.
 
 ## Pages
 
@@ -195,7 +191,7 @@ If a region is slow or live, render a shell and patch that region separately:
 ```tsx
 const DashboardShell = () => (
   <DashboardLayout title="Dashboard">
-    <section id="stats" {...ds.init(ds.get("/dashboard/stats"))}>
+    <section id="stats" data-init={ds.get("/dashboard/stats")}>
       Loading stats...
     </section>
   </DashboardLayout>
@@ -219,18 +215,18 @@ import { unsafeHtml } from "datastar-kit"
 const body = unsafeHtml(sanitizedHtml)
 ```
 
-## Low-level helpers
+## Rendering to a string
 
-The low-level HTML API mirrors the JSX runtime:
+Use `renderToString(...)` when you need serialized HTML outside a response helper:
 
-```ts
-import { ds, h, mergeProps, renderToString } from "datastar-kit"
+```tsx
+import { ds, renderToString } from "datastar-kit"
 
-const button = h("button", mergeProps({ type: "button" }, ds.on("click", ds.post("/save"))), "Save")
-
-const html = renderToString(button)
+const html = renderToString(
+  <button type="button" data-on:click={ds.post("/save")}>
+    Save
+  </button>
+)
 ```
-
-Use `h`, `mergeProps`, `renderToString`, and `unsafeHtml` when TSX is not the right tool for the file.
 
 Next: [Signals](signals.md).

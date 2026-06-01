@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { dataSignals, signal, SignalNameError } from "../src/ds/index.js"
+import { signal, SignalNameError } from "../src/ds/index.js"
 
 describe("Datastar signal name validation", () => {
   it("accepts normal, nested, and local signal names", () => {
@@ -23,12 +23,5 @@ describe("Datastar signal name validation", () => {
     const form = signal<{ email: string }, "form">("form")
 
     expect(() => form.path("bad-key" as never)).toThrow(SignalNameError)
-  })
-
-  it("validates keys passed to dataSignals", () => {
-    expect(dataSignals({ form: { email: "ada@example.com" } })).toEqual({
-      "data-signals": '{"form": {"email": "ada@example.com"}}'
-    })
-    expect(() => dataSignals({ "bad-key": true })).toThrow(SignalNameError)
   })
 })

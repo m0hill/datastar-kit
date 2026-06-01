@@ -14,7 +14,7 @@ app.get("/", () =>
   reply.page(
     <main id="counter">
       <h1>Worker Hono counter</h1>
-      <button type="button" {...ds.on("click", ds.post("/increment"))}>
+      <button type="button" data-on:click={ds.post("/increment")}>
         Increment
       </button>{" "}
       <Count />

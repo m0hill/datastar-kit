@@ -97,29 +97,26 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
 
       <div class="flex flex-col gap-2">
         <h2 class="section-label px-2">New Project</h2>
-        <form
-          class="flex flex-col gap-3 px-2"
-          {...ds.on("submit", ds.post("/projects"), { prevent: true })}
-        >
+        <form class="flex flex-col gap-3 px-2" data-on:submit__prevent={ds.post("/projects")}>
           <label class="flex flex-col gap-1.5 section-label">
             Name
-            <input class="field" placeholder="Engineering" {...ds.bind(state.$.projectName)} />
+            <input class="field" placeholder="Engineering" data-bind={state.$.projectName} />
             <small
               class="text-danger text-[13px] font-medium min-h-4"
-              {...ds.text(state.$._validation.projectName)}
+              data-text={state.$._validation.projectName}
             ></small>
           </label>
           <label class="flex flex-col gap-1.5 section-label">
             Key
-            <input class="field" placeholder="ENG" maxlength={8} {...ds.bind(state.$.projectKey)} />
+            <input class="field" placeholder="ENG" maxlength={8} data-bind={state.$.projectKey} />
             <small
               class="text-danger text-[13px] font-medium min-h-4"
-              {...ds.text(state.$._validation.projectKey)}
+              data-text={state.$._validation.projectKey}
             ></small>
           </label>
           <label class="flex flex-col gap-1.5 section-label">
             Description
-            <textarea class="field" rows={2} {...ds.bind(state.$.projectDescription)}></textarea>
+            <textarea class="field" rows={2} data-bind={state.$.projectDescription}></textarea>
           </label>
           <button type="submit" class="btn-primary">
             Create project
@@ -243,7 +240,7 @@ export const Board = (props: { issues: Issue[] }) => (
 )
 
 export const IssueProjectSelect = (props: { projects: Project[] }) => (
-  <select id="issue-project-select" class="field" {...ds.bind(state.$.projectId)}>
+  <select id="issue-project-select" class="field" data-bind={state.$.projectId}>
     <option value="">Select project</option>
     {props.projects.map((project) => (
       <option value={project.id}>
@@ -256,8 +253,8 @@ export const IssueProjectSelect = (props: { projects: Project[] }) => (
 const IssueModalForm = (props: { projects: Project[] }) => (
   <form
     class="bg-surface border border-border w-full max-w-130 flex flex-col gap-4 p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
-    {...ds.on("submit", ds.post("/issues"), { prevent: true })}
-    {...ds.on("click", ds.expr`evt.stopPropagation()`)}
+    data-on:submit__prevent={ds.post("/issues")}
+    data-on:click={ds.expr`evt.stopPropagation()`}
   >
     <div class="flex items-center justify-between border-b border-border pb-3 -mx-5 px-5 -mt-1">
       <div class="flex items-center gap-2">
@@ -267,7 +264,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       <button
         type="button"
         class="btn h-8 w-8 p-0"
-        {...ds.on("click", ds.set(state.$.modalOpen, false))}
+        data-on:click={ds.set(state.$.modalOpen, false)}
       >
         <svg
           width="14"
@@ -289,11 +286,11 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         class="field"
         autofocus
         placeholder="Fix keyboard focus after creating an issue"
-        {...ds.bind(state.$.issueTitle)}
+        data-bind={state.$.issueTitle}
       />
       <small
         class="text-danger text-[13px] font-medium min-h-4"
-        {...ds.text(state.$._validation.issueTitle)}
+        data-text={state.$._validation.issueTitle}
       ></small>
     </label>
     <label class="flex flex-col gap-1.5 section-label">
@@ -302,7 +299,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         class="field"
         rows={3}
         placeholder="Add a description..."
-        {...ds.bind(state.$.issueDescription)}
+        data-bind={state.$.issueDescription}
       ></textarea>
     </label>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -311,12 +308,12 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         <IssueProjectSelect projects={props.projects} />
         <small
           class="text-danger text-[13px] font-medium min-h-4"
-          {...ds.text(state.$._validation.form)}
+          data-text={state.$._validation.form}
         ></small>
       </label>
       <label class="flex flex-col gap-1.5 section-label">
         Status
-        <select class="field" {...ds.bind(state.$.issueStatus)}>
+        <select class="field" data-bind={state.$.issueStatus}>
           {issueStatuses.map((status) => (
             <option value={status.value}>{status.label}</option>
           ))}
@@ -324,7 +321,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
       <label class="flex flex-col gap-1.5 section-label">
         Priority
-        <select class="field" {...ds.bind(state.$.issuePriority)}>
+        <select class="field" data-bind={state.$.issuePriority}>
           {issuePriorities.map((priority) => (
             <option value={priority.value}>{priority.label}</option>
           ))}
@@ -332,7 +329,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
     </div>
     <div class="flex justify-end gap-2 pt-4 border-t border-border">
-      <button type="button" class="btn" {...ds.on("click", ds.set(state.$.modalOpen, false))}>
+      <button type="button" class="btn" data-on:click={ds.set(state.$.modalOpen, false)}>
         Cancel
       </button>
       <button type="submit" class="btn-primary">
@@ -346,11 +343,9 @@ const IssueModal = (props: { projects: Project[] }) => (
   <dialog
     id="issue-modal"
     class="bg-transparent p-0 m-0 max-w-none max-h-none w-full h-full border-0"
-    {...ds.effect(
-      ds.expr`${state.$.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`
-    )}
-    {...ds.on("click", ds.when(ds.expr`evt.target === el`, ds.set(state.$.modalOpen, false)))}
-    {...ds.on("close", ds.set(state.$.modalOpen, false))}
+    data-effect={ds.expr`${state.$.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`}
+    data-on:click={ds.expr`if (evt.target === el) { ${ds.set(state.$.modalOpen, false)} }`}
+    data-on:close={ds.set(state.$.modalOpen, false)}
   >
     <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4">
       <div id="modal-content">
@@ -363,8 +358,8 @@ const IssueModal = (props: { projects: Project[] }) => (
 const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
   <main
     class="h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg overflow-hidden"
-    {...state.attrs()}
-    {...ds.init(ds.get("/workspace/live"))}
+    data-signals__ifmissing={state.defaults}
+    data-init={ds.get("/workspace/live")}
   >
     <div class="hidden lg:flex">
       <Sidebar user={props.user} projects={props.projects} />
@@ -375,11 +370,7 @@ const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
           <span class="text-xs text-fg-muted select-none">›</span>
           <h2 class="text-[13px] font-semibold uppercase tracking-wide text-fg">Issues</h2>
         </div>
-        <button
-          type="button"
-          class="btn-primary"
-          {...ds.on("click", ds.get("/workspace/modal/issue"))}
-        >
+        <button type="button" class="btn-primary" data-on:click={ds.get("/workspace/modal/issue")}>
           + Create Issue
         </button>
       </header>

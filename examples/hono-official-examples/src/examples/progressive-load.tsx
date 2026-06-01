@@ -65,13 +65,13 @@ example.get("/", () =>
           <button
             id="load-button"
             class="info"
-            {...ds.indicator(progressiveLoad)}
-            {...ds.dataAttr("disabled", progressiveLoad)}
-            {...ds.on("click", ds.get("/examples/progressive_load/updates"))}
+            data-indicator={progressiveLoad}
+            data-attr:disabled={progressiveLoad}
+            data-on:click={ds.get("/examples/progressive_load/updates")}
           >
             Load
           </button>
-          <span class="muted" {...ds.show(progressiveLoad)}>
+          <span class="muted" data-show={progressiveLoad}>
             Loading sections...
           </span>
         </div>

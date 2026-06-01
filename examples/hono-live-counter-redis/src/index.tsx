@@ -17,10 +17,10 @@ const Count = () => (
 )
 
 const Counter = () => (
-  <main id="counter" {...ds.init(ds.get("/live"))}>
+  <main id="counter" data-init={ds.get("/live")}>
     <h1>Hono Redis live counter</h1>
     <p>Open this page in two tabs. Clicking increment in either tab updates both through Redis.</p>
-    <button type="button" {...ds.on("click", ds.post("/increment"))}>
+    <button type="button" data-on:click={ds.post("/increment")}>
       Increment
     </button>{" "}
     <Count />

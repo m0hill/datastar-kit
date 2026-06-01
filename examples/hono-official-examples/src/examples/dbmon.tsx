@@ -39,8 +39,8 @@ let databases: Database[] = Array.from({ length: 12 }, (_, index) => {
 const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
   <div
     id="demo"
-    {...ds.init(ds.get("/examples/dbmon/updates"))}
-    {...ds.dataSignal(editing, false, { ifMissing: true })}
+    data-init={ds.get("/examples/dbmon/updates")}
+    data-signals__ifmissing={{ [editing.name]: false }}
   >
     <p>
       Average render time for entire page: {renderTime === 0 ? "0s" : `${renderTime.toFixed(3)}µs`}
@@ -53,13 +53,10 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
           min="0"
           max="100"
           value={config.mutationRate}
-          {...ds.on("focus", ds.set(editing, true))}
-          {...ds.on(
-            "blur",
-            ds.sequence(ds.put("/examples/dbmon/inputs"), ds.set(editing, false))
-          )}
-          {...ds.dataAttr("data-bind:mutation-rate", editing)}
-          {...ds.dataAttr("data-bind:_mutation-rate", ds.expr`!${editing}`)}
+          data-on:focus={ds.set(editing, true)}
+          data-on:blur={ds.expr`${ds.put("/examples/dbmon/inputs")}; ${ds.set(editing, false)}`}
+          {...{ "data-attr:data-bind:mutation-rate": editing }}
+          {...{ "data-attr:data-bind:_mutation-rate": ds.expr`!${editing}` }}
         />
       </label>
       <label>
@@ -69,13 +66,10 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
           min="1"
           max="144"
           value={config.fps}
-          {...ds.on("focus", ds.set(editing, true))}
-          {...ds.on(
-            "blur",
-            ds.sequence(ds.put("/examples/dbmon/inputs"), ds.set(editing, false))
-          )}
-          {...ds.dataAttr("data-bind:fps", editing)}
-          {...ds.dataAttr("data-bind:_fps", ds.expr`!${editing}`)}
+          data-on:focus={ds.set(editing, true)}
+          data-on:blur={ds.expr`${ds.put("/examples/dbmon/inputs")}; ${ds.set(editing, false)}`}
+          {...{ "data-attr:data-bind:fps": editing }}
+          {...{ "data-attr:data-bind:_fps": ds.expr`!${editing}` }}
         />
       </label>
     </div>

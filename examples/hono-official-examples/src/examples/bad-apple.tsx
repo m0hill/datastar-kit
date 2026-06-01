@@ -21,9 +21,12 @@ const state = ds.state({
 
 const BadApplePanel = () => (
   <div class="bad-apple">
-    <label {...state.attrs()} {...ds.init(ds.get("/examples/bad_apple/updates"))}>
+    <label
+      data-signals__ifmissing={state.defaults}
+      data-init={ds.get("/examples/bad_apple/updates")}
+    >
       <span
-        {...ds.text(ds.expr`${"Percentage: "} + ${state.$._percentage}.toFixed(2) + ${"%"}`)}
+        data-text={ds.expr`${"Percentage: "} + ${state.$._percentage}.toFixed(2) + ${"%"}`}
       ></span>
       <input
         type="range"
@@ -32,10 +35,10 @@ const BadApplePanel = () => (
         step="0.01"
         disabled
         style="cursor: default"
-        {...ds.dataAttr("value", state.$._percentage)}
+        data-attr:value={state.$._percentage}
       />
     </label>
-    <pre style="line-height: 100%" aria-live="polite" {...ds.text(state.$._contents)}></pre>
+    <pre style="line-height: 100%" aria-live="polite" data-text={state.$._contents}></pre>
   </div>
 )
 

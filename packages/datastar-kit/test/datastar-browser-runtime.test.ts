@@ -3,7 +3,7 @@ import { createServer, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
-import { dataSignals, on, pluginAttr, post, signal, text } from "../src/ds/index.js"
+import { post, signal } from "../src/ds/index.js"
 import { h, mergeProps, renderToString, unsafeHtml } from "../src/html.js"
 
 const execFile = promisify(execFileCallback)
@@ -26,16 +26,24 @@ const runtimePage = (): string => {
         {},
         h(
           "main",
-          mergeProps({ id: "app" }, dataSignals({ count: 0 }, { ifMissing: true })),
-          h("output", mergeProps({ id: "count" }, text(count)), "0"),
+          mergeProps({ id: "app" }, { "data-signals__ifmissing": '{"count": 0}' }),
+          h("output", { id: "count", "data-text": count.toDatastarExpression() }, "0"),
           h(
             "button",
-            mergeProps({ id: "ignored", type: "button" }, on("click", post("/ignored"))),
+            {
+              id: "ignored",
+              type: "button",
+              "data-on:click": post("/ignored").toDatastarExpression()
+            },
             "ignored"
           ),
           h(
             "button",
-            mergeProps({ id: "increment", type: "button" }, on("click", post("/increment"))),
+            {
+              id: "increment",
+              type: "button",
+              "data-on:click": post("/increment").toDatastarExpression()
+            },
             "+"
           )
         )
@@ -77,7 +85,10 @@ const keyedPluginPage = (): string =>
         {},
         h(
           "output",
-          mergeProps({ id: "keyed-plugin" }, pluginAttr("keyed-check:item-name", "from suffix")),
+          {
+            id: "keyed-plugin",
+            "data-keyed-check:item-name": JSON.stringify("from suffix")
+          },
           "waiting"
         )
       )

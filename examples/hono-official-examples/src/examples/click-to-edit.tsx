@@ -39,17 +39,17 @@ const ContactView = () => (
     <div role="group">
       <button
         class="info"
-        {...ds.indicator(fetching)}
-        {...ds.dataAttr("disabled", fetching)}
-        {...ds.on("click", ds.get("/examples/click_to_edit/edit"))}
+        data-indicator={fetching}
+        data-attr:disabled={fetching}
+        data-on:click={ds.get("/examples/click_to_edit/edit")}
       >
         Edit
       </button>
       <button
         class="warning"
-        {...ds.indicator(fetching)}
-        {...ds.dataAttr("disabled", fetching)}
-        {...ds.on("click", ds.patch("/examples/click_to_edit/reset"))}
+        data-indicator={fetching}
+        data-attr:disabled={fetching}
+        data-on:click={ds.patch("/examples/click_to_edit/reset")}
       >
         Reset
       </button>
@@ -61,63 +61,48 @@ const ContactForm = () => (
   <div id="demo">
     <label>
       First Name
-      <input
-        type="text"
-        required
-        {...ds.bind(state.$.firstName)}
-        {...ds.dataAttr("disabled", fetching)}
-      />
+      <input type="text" required data-bind={state.$.firstName} data-attr:disabled={fetching} />
       <small
         class="field-error"
         style="display: none"
-        {...ds.show(state.$.errors.firstName)}
-        {...ds.text(state.$.errors.firstName)}
+        data-show={state.$.errors.firstName}
+        data-text={state.$.errors.firstName}
       ></small>
     </label>
     <label>
       Last Name
-      <input
-        type="text"
-        required
-        {...ds.bind(state.$.lastName)}
-        {...ds.dataAttr("disabled", fetching)}
-      />
+      <input type="text" required data-bind={state.$.lastName} data-attr:disabled={fetching} />
       <small
         class="field-error"
         style="display: none"
-        {...ds.show(state.$.errors.lastName)}
-        {...ds.text(state.$.errors.lastName)}
+        data-show={state.$.errors.lastName}
+        data-text={state.$.errors.lastName}
       ></small>
     </label>
     <label>
       Email
-      <input
-        type="email"
-        required
-        {...ds.bind(state.$.email)}
-        {...ds.dataAttr("disabled", fetching)}
-      />
+      <input type="email" required data-bind={state.$.email} data-attr:disabled={fetching} />
       <small
         class="field-error"
         style="display: none"
-        {...ds.show(state.$.errors.email)}
-        {...ds.text(state.$.errors.email)}
+        data-show={state.$.errors.email}
+        data-text={state.$.errors.email}
       ></small>
     </label>
     <div role="group">
       <button
         class="success"
-        {...ds.indicator(fetching)}
-        {...ds.dataAttr("disabled", fetching)}
-        {...ds.on("click", ds.put("/examples/click_to_edit"))}
+        data-indicator={fetching}
+        data-attr:disabled={fetching}
+        data-on:click={ds.put("/examples/click_to_edit")}
       >
         Save
       </button>
       <button
         class="error"
-        {...ds.indicator(fetching)}
-        {...ds.dataAttr("disabled", fetching)}
-        {...ds.on("click", ds.get("/examples/click_to_edit/cancel"))}
+        data-indicator={fetching}
+        data-attr:disabled={fetching}
+        data-on:click={ds.get("/examples/click_to_edit/cancel")}
       >
         Cancel
       </button>

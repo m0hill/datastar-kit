@@ -37,7 +37,7 @@ Choose room names by realtime/security boundaries: everyone subscribed to a room
 On page load:
 
 1. `GET /` reads D1 and returns the HTML page.
-2. `ds.init(ds.get("/live"))` opens a Datastar SSE stream.
+2. `data-init={ds.get("/live")}` opens a Datastar SSE stream.
 3. `GET /live` reads the current D1 snapshot and subscribes the tab to the `todos` Durable Object room.
 
 On mutation:

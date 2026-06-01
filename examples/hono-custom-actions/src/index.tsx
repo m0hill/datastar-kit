@@ -11,7 +11,7 @@ app.use("/static/*", serveStatic({ root: fileURLToPath(new URL("../", import.met
 
 app.get("/", () =>
   reply.page(
-    <main id="app" {...dialogState.attrs()}>
+    <main id="app" data-signals__ifmissing={dialogState.defaults}>
       <h1>Custom Datastar actions</h1>
       <p>
         This example shows custom browser actions from <code>static/datastar-actions.js</code>. The
@@ -29,7 +29,7 @@ app.get("/", () =>
           <button
             type="button"
             class="primary"
-            {...ds.on("click", ds.action("setSignal", dialogState.$.modalOpen.name, true))}
+            data-on:click={ds.action("setSignal", dialogState.$.modalOpen.name, true)}
           >
             Open custom-action dialog
           </button>
@@ -60,9 +60,9 @@ app.get("/", () =>
       <dialog
         id="confirm-dialog"
         aria-labelledby="confirm-dialog-title"
-        {...ds.effect(ds.action("syncDialog", dialogState.$.modalOpen))}
-        {...ds.on("click", ds.action("closeDialogOnBackdrop", dialogState.$.modalOpen.name))}
-        {...ds.on("close", ds.action("setSignal", dialogState.$.modalOpen.name, false))}
+        data-effect={ds.action("syncDialog", dialogState.$.modalOpen)}
+        data-on:click={ds.action("closeDialogOnBackdrop", dialogState.$.modalOpen.name)}
+        data-on:close={ds.action("setSignal", dialogState.$.modalOpen.name, false)}
       >
         <section class="dialog-body">
           <h2 id="confirm-dialog-title">Run a server action?</h2>
@@ -74,12 +74,12 @@ app.get("/", () =>
             <button
               type="button"
               class="secondary"
-              {...ds.pluginAttr("focus-when", dialogState.$.modalOpen)}
-              {...ds.on("click", ds.action("setSignal", dialogState.$.modalOpen.name, false))}
+              data-focus-when={dialogState.$.modalOpen}
+              data-on:click={ds.action("setSignal", dialogState.$.modalOpen.name, false)}
             >
               Cancel
             </button>
-            <button type="button" class="danger" {...ds.on("click", ds.post("/confirm"))}>
+            <button type="button" class="danger" data-on:click={ds.post("/confirm")}>
               Confirm on server
             </button>
           </div>

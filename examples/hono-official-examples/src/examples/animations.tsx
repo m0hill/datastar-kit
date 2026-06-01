@@ -33,10 +33,10 @@ const ViewTransitionButton = ({ restored }: { restored: boolean }) => {
     <button
       id="view-transition"
       class={restored ? "success" : "info"}
-      {...state.attrs()}
-      {...ds.indicator(fetching)}
-      {...ds.dataAttr("disabled", fetching)}
-      {...ds.on("click", ds.get("/examples/animations/view_transition"))}
+      data-signals__ifmissing={state.defaults}
+      data-indicator={fetching}
+      data-attr:disabled={fetching}
+      data-on:click={ds.get("/examples/animations/view_transition")}
     >
       {restored ? "Restored. Swap again." : "Swap It!"}
     </button>
@@ -51,9 +51,9 @@ const FadeOutButton = ({ fading = false }: { fading?: boolean }) => (
     class="warning"
     style={fading ? "transition: opacity 1s ease-out; opacity: 0" : undefined}
     disabled={fading}
-    {...ds.indicator(fadeOutFetching)}
-    {...ds.dataAttr("disabled", fadeOutFetching)}
-    {...ds.on("click", ds.delete("/examples/animations"))}
+    data-indicator={fadeOutFetching}
+    data-attr:disabled={fadeOutFetching}
+    data-on:click={ds.delete("/examples/animations")}
   >
     Fade out then delete on click
   </button>
@@ -67,9 +67,9 @@ const FadeInButton = ({ invisible = false }: { invisible?: boolean }) => (
     class="success"
     style={invisible ? "opacity: 0" : "transition: opacity 1s ease-out"}
     disabled={invisible}
-    {...ds.indicator(fadeInFetching)}
-    {...ds.dataAttr("disabled", fadeInFetching)}
-    {...ds.on("click", ds.get("/examples/animations/fade_me_in"))}
+    data-indicator={fadeInFetching}
+    data-attr:disabled={fadeInFetching}
+    data-on:click={ds.get("/examples/animations/fade_me_in")}
   >
     Fade me in on click
   </button>
@@ -88,7 +88,7 @@ example.get("/", () =>
       <div class="stack">
         <section class="subdemo">
           <h2>Color Throb</h2>
-          <div {...ds.init(ds.get("/examples/animations/throb"))}>
+          <div data-init={ds.get("/examples/animations/throb")}>
             <Throb index={1} />
           </div>
         </section>

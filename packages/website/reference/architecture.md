@@ -5,7 +5,7 @@ This page is for contributors and maintainers. It explains the source layout and
 ## Design constraints
 
 - Public APIs stay close to Web Standard primitives: `Request`, `Response`, `Headers`, `URL`, and `ReadableStream`.
-- Datastar remains the browser runtime and patch protocol. The SDK generates Datastar-compatible attributes, actions, SSE events, and direct responses.
+- Datastar remains the browser runtime and patch protocol. The SDK serializes typed values for native Datastar attributes and generates actions, SSE events, and direct responses.
 - Server-rendered HTML is the primary UI payload. TSX compiles to Datastar Kit's small HTML node model.
 - SSE patches are the default Datastar response style. Direct responses exist for integrations that need them.
 - Signals are browser-side input and feedback, not the durable state model for an application.
@@ -22,7 +22,7 @@ This page is for contributors and maintainers. It explains the source layout and
 
 ### HTML and JSX
 
-- `src/html.ts` defines `h`, `mergeProps`, `renderToString`, and `unsafeHtml`.
+- `src/html.ts` defines the internal HTML node model plus `renderToString` and `unsafeHtml`.
 - `src/jsx-runtime.ts` and `src/jsx-dev-runtime.ts` provide automatic JSX runtime entrypoints.
 - `src/jsx.ts` adapts JSX calls into the HTML node model.
 
@@ -30,9 +30,7 @@ This page is for contributors and maintainers. It explains the source layout and
 
 - `src/ds/index.ts` is the public `ds` barrel.
 - `src/ds/actions.ts` builds Datastar action expressions.
-- `src/ds/attributes.ts` builds Datastar attributes.
 - `src/ds/expression.ts` serializes Datastar expressions.
-- `src/ds/modifiers.ts` serializes attribute modifiers.
 - `src/ds/signals.ts` defines signal refs and name validation.
 - `src/ds/state.ts` builds typed helpers around grouped signal defaults.
 
@@ -49,7 +47,7 @@ Root exports:
 - `event`
 - `read`
 - `reply`
-- `h`, `mergeProps`, `renderToString`, `unsafeHtml`
+- `renderToString`, `unsafeHtml`
 
 Explicit subpaths:
 

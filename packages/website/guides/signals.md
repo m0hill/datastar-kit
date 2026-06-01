@@ -24,7 +24,7 @@ const signup = ds.state({
 
 | API                        | Use                                                      |
 | -------------------------- | -------------------------------------------------------- |
-| `signup.attrs()`           | Initial `data-signals` attributes for the page.          |
+| `signup.defaults`          | Initial signal values for `data-signals`.                |
 | `signup.$` / `signup.refs` | Typed nested signal refs for attributes and expressions. |
 | `signup.patch(...)`        | Type-checked partial signal patches.                     |
 | `signup.reset(...)`        | Defaults, optionally merged with overrides.              |
@@ -33,10 +33,7 @@ Use those refs in Datastar attributes:
 
 ```tsx
 const SignupForm = () => (
-  <form
-    data-signals__ifmissing={signup.defaults}
-    data-on:submit__prevent={ds.post("/signup")}
-  >
+  <form data-signals__ifmissing={signup.defaults} data-on:submit__prevent={ds.post("/signup")}>
     <label>
       Name
       <input name="name" data-bind={signup.$.name} />
@@ -52,10 +49,9 @@ const SignupForm = () => (
 )
 ```
 
-`state.attrs()` renders the same `data-signals` attributes as a prop fragment when spreading is more
-convenient. Use `data-signals__ifmissing={state.defaults}` when you want the native Datastar
-attribute visible in the markup. Missing-only initialization keeps reconnects and partial page
-updates from overwriting existing browser input unless you opt into that behavior.
+Use `data-signals__ifmissing={state.defaults}` for missing-only initialization. That keeps
+reconnects and partial page updates from overwriting existing browser input unless you opt into that
+behavior.
 
 ## Patch signal state
 

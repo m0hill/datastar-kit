@@ -41,13 +41,13 @@ example.get("/", () =>
           <div role="group">
             <button
               type="button"
-              {...ds.on("click", ds.get("/examples/form_data/data", { contentType: "form" }))}
+              data-on:click={ds.get("/examples/form_data/data", { contentType: "form" })}
             >
               Submit GET request
             </button>
             <button
               type="button"
-              {...ds.on("click", ds.post("/examples/form_data/data", { contentType: "form" }))}
+              data-on:click={ds.post("/examples/form_data/data", { contentType: "form" })}
             >
               Submit POST request
             </button>
@@ -55,13 +55,10 @@ example.get("/", () =>
         </form>
         <button
           type="button"
-          {...ds.on(
-            "click",
-            ds.get("/examples/form_data/data", {
-              contentType: "form",
-              selector: "#myform"
-            })
-          )}
+          data-on:click={ds.get("/examples/form_data/data", {
+            contentType: "form",
+            selector: "#myform"
+          })}
         >
           Submit GET request from outside the form
         </button>

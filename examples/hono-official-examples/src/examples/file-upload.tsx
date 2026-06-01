@@ -65,29 +65,26 @@ example.get("/", () =>
       summary="Binds file inputs into Datastar signals and posts the encoded file list."
       source="https://data-star.dev/examples/file_upload"
     >
-      <div class="stack" {...state.attrs()}>
+      <div class="stack" data-signals__ifmissing={state.defaults}>
         <label>
           <span>Pick anything less than 1 MiB</span>
           <input
             type="file"
             multiple
-            {...ds.bind(state.$.files)}
-            {...ds.on("change", ds.set(state.$.errors.files, ""))}
+            data-bind={state.$.files}
+            data-on:change={ds.set(state.$.errors.files, "")}
           />
         </label>
         <small
           class="field-error"
           style="display: none"
-          {...ds.show(state.$.errors.files)}
-          {...ds.text(state.$.errors.files)}
+          data-show={state.$.errors.files}
+          data-text={state.$.errors.files}
         ></small>
         <button
           class="warning"
-          {...ds.dataAttr("disabled", ds.expr`!${state.$.files}.length`)}
-          {...ds.on(
-            "click",
-            ds.when(ds.expr`${state.$.files}.length`, ds.post("/examples/file_upload"))
-          )}
+          data-attr:disabled={ds.expr`!${state.$.files}.length`}
+          data-on:click={ds.expr`if (${state.$.files}.length) { ${ds.post("/examples/file_upload")} }`}
         >
           Submit
         </button>

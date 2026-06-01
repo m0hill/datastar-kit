@@ -7,7 +7,7 @@ The page is still server-rendered with Datastar Kit. For behavior that is easier
 ## What it demonstrates
 
 - `ds.action(name, ...args)` for calling app-defined Datastar actions from server-rendered TSX.
-- `ds.pluginAttr(name, value?)` for rendering app-defined Datastar plugin attributes from TSX.
+- Native `data-*` TSX attributes for app-defined Datastar plugin attributes.
 - A custom `@setSignal(path, value)` action that patches Datastar signals from browser code.
 - A custom `@syncDialog(open)` action that calls `showModal()` / `close()` for a native dialog.
 - A custom `@closeDialogOnBackdrop(path)` action that uses Datastar's `evt` context.

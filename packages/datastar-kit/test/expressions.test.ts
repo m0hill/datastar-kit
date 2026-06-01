@@ -43,16 +43,10 @@ describe("expression escape hatches", () => {
     expect(() => ds.action("bad-action")).toThrow(ds.ActionNameError)
   })
 
-  it("builds common signal mutation expressions", () => {
+  it("builds typed signal mutation expressions", () => {
     const open = ds.signal<boolean>("open")
 
     expect(ds.set(open, false).toDatastarExpression()).toBe("$open = false")
-    expect(ds.sequence(ds.post("/save"), ds.set(open, false)).toDatastarExpression()).toBe(
-      '@post("/save"); $open = false'
-    )
-    expect(ds.when(ds.expr`!${open}`, ds.get("/open")).toDatastarExpression()).toBe(
-      'if (!$open) { @get("/open") }'
-    )
   })
 
   it("keeps signal mutation values typed to the target ref", () => {
@@ -64,17 +58,5 @@ describe("expression escape hatches", () => {
     }
 
     expect(ds.set(open, true).toDatastarExpression()).toBe("$open = true")
-  })
-
-  it("composes explicit expressions with Datastar attribute helpers", () => {
-    expect(ds.dataClass("enabled", ds.expr("($enabled) && (!$saving)"))).toEqual({
-      "data-class:enabled": "($enabled) && (!$saving)"
-    })
-    expect(ds.dataAttr("aria-disabled", ds.expr("!($enabled)"))).toEqual({
-      "data-attr:aria-disabled": "!($enabled)"
-    })
-    expect(ds.text(ds.expr('($enabled ? "On" : "Off")'))).toEqual({
-      "data-text": '($enabled ? "On" : "Off")'
-    })
   })
 })

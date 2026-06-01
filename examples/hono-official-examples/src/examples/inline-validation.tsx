@@ -32,17 +32,17 @@ example.get("/", () =>
       summary="Posts signal state for validation while the form is being edited."
       source="https://data-star.dev/examples/inline_validation"
     >
-      <div id="inline-validation-demo" class="stack" {...state.attrs()}>
+      <div id="inline-validation-demo" class="stack" data-signals__ifmissing={state.defaults}>
         <label>
           Email Address
           <input
             type="email"
             required
             aria-describedby="email-info"
-            {...ds.bind("email")}
-            {...ds.on("keydown", ds.post("/examples/inline_validation/validate"), {
-              debounce: "500ms"
-            })}
+            data-bind={"email"}
+            {...{
+              "data-on:keydown__debounce.500ms": ds.post("/examples/inline_validation/validate")
+            }}
           />
         </label>
         <p id="email-info" class="muted">
@@ -51,44 +51,44 @@ example.get("/", () =>
         <small
           class="field-error"
           style="display:none"
-          {...ds.show(state.$.errors.email)}
-          {...ds.text(state.$.errors.email)}
+          data-show={state.$.errors.email}
+          data-text={state.$.errors.email}
         ></small>
         <label>
           First Name
           <input
             type="text"
             required
-            {...ds.bind("firstName")}
-            {...ds.on("keydown", ds.post("/examples/inline_validation/validate"), {
-              debounce: "500ms"
-            })}
+            data-bind={"firstName"}
+            {...{
+              "data-on:keydown__debounce.500ms": ds.post("/examples/inline_validation/validate")
+            }}
           />
         </label>
         <small
           class="field-error"
           style="display:none"
-          {...ds.show(state.$.errors.firstName)}
-          {...ds.text(state.$.errors.firstName)}
+          data-show={state.$.errors.firstName}
+          data-text={state.$.errors.firstName}
         ></small>
         <label>
           Last Name
           <input
             type="text"
             required
-            {...ds.bind("lastName")}
-            {...ds.on("keydown", ds.post("/examples/inline_validation/validate"), {
-              debounce: "500ms"
-            })}
+            data-bind={"lastName"}
+            {...{
+              "data-on:keydown__debounce.500ms": ds.post("/examples/inline_validation/validate")
+            }}
           />
         </label>
         <small
           class="field-error"
           style="display:none"
-          {...ds.show(state.$.errors.lastName)}
-          {...ds.text(state.$.errors.lastName)}
+          data-show={state.$.errors.lastName}
+          data-text={state.$.errors.lastName}
         ></small>
-        <button class="success" {...ds.on("click", ds.post("/examples/inline_validation"))}>
+        <button class="success" data-on:click={ds.post("/examples/inline_validation")}>
           Sign Up
         </button>
         <output id="inline-validation-result"></output>
