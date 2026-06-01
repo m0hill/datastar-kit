@@ -14,6 +14,10 @@
 - `ds.regex(pattern, flags?)` now renders `new RegExp(...)` expressions instead of slash-delimited literals, so callers can pass ordinary `RegExp` constructor inputs without managing literal escaping.
 - `ds.dataSignal(...)` and `ds.dataComputed(...)` now accept signal refs directly as well as signal-name strings.
 
+### Removed
+
+- Removed the unused `reply.SseChunk` wrapper shape from `reply.stream(...)`; stream chunks are now strings or `Uint8Array` values.
+
 ## 0.2.0 - 2026-05-27
 
 ### Added

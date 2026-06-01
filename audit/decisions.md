@@ -29,3 +29,9 @@
 - Decision: Add `set`, `sequence`, and `when` instead of higher-level UI verbs such as `closeModal`, `submitIfValid`, or `disableWhileFetching`.
 - Reasoning: The repeated problem is JavaScript formatting around Datastar expressions, not domain behavior.
 - Rejected alternative: Add one-off helpers for `disabled`, `confirm`, or modal actions. Those Modules would be shallow until more concrete variants justify them.
+
+## D-006: Remove unused stream wrapper chunks
+
+- Decision: Remove `SseChunk` instead of preserving it as a future extension point.
+- Reasoning: No concrete caller needs a wrapper around a string. The existing string and byte chunk shapes cover current variants.
+- Rejected alternative: Keep the wrapper for possible metadata. That would be a speculative Seam with no second variant.

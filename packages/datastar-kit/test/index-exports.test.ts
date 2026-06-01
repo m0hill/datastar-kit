@@ -72,6 +72,7 @@ describe("package root exports", () => {
     expect(reply.patch).toBeDefined()
     expect(reply.navigate).toBeDefined()
     expect(reply.directHtml).toBeDefined()
+    expect("SseChunk" in reply).toBe(false)
     expect(sse.patchSignals).toBeDefined()
     expect("encodeJson" in sse).toBe(false)
     expect("eventStream" in sse).toBe(false)

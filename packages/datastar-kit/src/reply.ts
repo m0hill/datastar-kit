@@ -97,22 +97,13 @@ export interface DirectScriptOptions {
  */
 export interface NavigateOptions extends DirectScriptOptions, NavigationSafetyOptions {}
 
-/**
- * A framed SSE string chunk that can be written to an SSE stream.
- */
-export interface SseChunk {
-  /** Fully framed SSE event content. */
-  readonly content: string
-}
-
-type SseChunkInput = string | SseChunk | Uint8Array
+type SseChunkInput = string | Uint8Array
 
 /**
  * Input accepted by `reply.stream()` for Datastar SSE responses.
  */
 export type SseStreamInput =
   | string
-  | SseChunk
   | Iterable<SseChunkInput>
   | AsyncIterable<SseChunkInput>
   | ReadableStream<SseChunkInput>
@@ -168,17 +159,9 @@ const htmlDocument = (body: HtmlChild | readonly HtmlChild[], options: PageOptio
     )
   )}`
 
-const normalizeSseChunk = (chunk: SseChunkInput): string | Uint8Array =>
-  typeof chunk === "object" && !(chunk instanceof Uint8Array) ? chunk.content : chunk
-
 async function* toAsyncIterable(source: SseStreamInput): AsyncIterable<string | Uint8Array> {
   if (typeof source === "string") {
     yield source
-    return
-  }
-
-  if (typeof source === "object" && source !== null && "content" in source) {
-    yield source.content
     return
   }
 
@@ -188,7 +171,7 @@ async function* toAsyncIterable(source: SseStreamInput): AsyncIterable<string | 
       while (true) {
         const result = await reader.read()
         if (result.done) return
-        yield normalizeSseChunk(result.value)
+        yield result.value
       }
     } finally {
       reader.releaseLock()
@@ -198,13 +181,13 @@ async function* toAsyncIterable(source: SseStreamInput): AsyncIterable<string | 
 
   if (typeof source === "object" && source !== null && Symbol.asyncIterator in source) {
     for await (const chunk of source as AsyncIterable<SseChunkInput>) {
-      yield normalizeSseChunk(chunk)
+      yield chunk
     }
     return
   }
 
   for (const chunk of source) {
-    yield normalizeSseChunk(chunk)
+    yield chunk
   }
 }
 

@@ -21,7 +21,8 @@
 - Issue: `SseChunk` and `{ content }` inputs are only used by one test and no examples or docs.
 - Module: `reply` stream response.
 - Interface cost: The stream Interface has an extra shape callers can learn without gaining Depth.
-- Resolution: Pending.
+- Resolution: Removed the public wrapper shape and the branch that unpacked it. `reply.stream(...)` now accepts strings, bytes, iterables, async iterables, and Web streams of those chunks.
+- Win: Leverage is unchanged for real callers. Locality improves because stream normalization has fewer cases and tests cover observable stream output instead of an unused wrapper.
 
 ## F-004: `ds.queryUrl()` appends query parameters after URL hashes
 

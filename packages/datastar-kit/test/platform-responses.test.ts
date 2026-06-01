@@ -62,14 +62,13 @@ describe("reply SSE responses", () => {
     expect(await response.text()).toBe("event: first\n\nevent: second\n\n")
   })
 
-  it("normalizes mixed stream chunks", async () => {
+  it("streams string and byte chunks", async () => {
     const response = reply.stream([
       "event: first\n\n",
-      { content: "event: second\n\n" },
-      new TextEncoder().encode("event: third\n\n")
+      new TextEncoder().encode("event: second\n\n")
     ])
 
-    expect(await response.text()).toBe("event: first\n\nevent: second\n\nevent: third\n\n")
+    expect(await response.text()).toBe("event: first\n\nevent: second\n\n")
   })
 
   it("streams Web Stream responses with headers", async () => {

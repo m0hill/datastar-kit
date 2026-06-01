@@ -3,3 +3,4 @@
 1. `audit: initialize SDK audit` - Created the audit files and recorded initial SDK findings from source, docs, tests, and examples.
 2. `feat: accept signal refs for signal attributes` - Let standalone signal refs initialize `data-signals` and `data-computed` without leaking `.name`.
 3. `feat: add signal expression helpers` - Added `ds.set`, `ds.sequence`, and `ds.when` to absorb common inline JavaScript assignment and guard patterns.
+4. `ref: remove stream chunk wrapper` - Removed the unused `reply.SseChunk` wrapper shape from `reply.stream(...)`.
