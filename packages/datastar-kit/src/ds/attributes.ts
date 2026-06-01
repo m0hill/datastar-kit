@@ -75,7 +75,8 @@ const assertUnmodifiedSignalName = (name: string, modifiers: CaseModifiers): voi
   }
 }
 
-const pluginAttributeNamePattern = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/
+const pluginAttributeNamePattern =
+  /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*(?::[a-z][a-z0-9]*(?:-[a-z0-9]+)*)?$/
 
 const assertPluginAttributeName = (name: string): void => {
   if (!pluginAttributeNamePattern.test(name) || name.startsWith("data-")) {
@@ -286,10 +287,12 @@ export const dataAttrs = (mapping: Readonly<Record<string, ExprInput<unknown>>>)
 })
 
 /**
- * Creates an app-defined Datastar plugin attribute such as `data-alert`.
+ * Creates an app-defined Datastar plugin attribute such as `data-alert` or
+ * `data-keyed-plugin:item`.
  *
- * Pass the plugin name without the `data-` prefix. When a value is supplied, it is serialized as a
- * Datastar expression; omit the value for boolean/no-value attribute plugins.
+ * Pass the plugin attribute name without the `data-` prefix, including an optional keyed suffix.
+ * When a value is supplied, it is serialized as a Datastar expression; omit the value for
+ * boolean/no-value attribute plugins.
  *
  * @throws {@link PluginAttributeNameError} When the plugin attribute name is invalid.
  */

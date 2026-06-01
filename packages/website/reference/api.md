@@ -51,23 +51,23 @@ Fetch action options include `headers`, `contentType`, `filterSignals`, `payload
 
 ### Attributes
 
-| API                                                          | Use                                           |
-| ------------------------------------------------------------ | --------------------------------------------- |
-| `ds.on(event, expression, modifiers?)`                       | Render `data-on:*`.                           |
-| `ds.onIntersect(...)`, `ds.onInterval(...)`                  | Render lifecycle/event attributes.            |
-| `ds.onSignalPatch(...)`, `ds.onSignalPatchFilter(...)`       | React to signal patches.                      |
-| `ds.bind(signal, modifiers?)`                                | Render `data-bind`.                           |
-| `ds.text(expression)`                                        | Render `data-text`.                           |
-| `ds.show(expression)`                                        | Render `data-show`.                           |
-| `ds.effect(expression)`                                      | Render `data-effect`.                         |
-| `ds.init(expression, modifiers?)`                            | Render `data-init`.                           |
-| `ds.ref(...)`, `ds.indicator(...)`                           | Render Datastar ref and indicator attributes. |
-| `ds.dataAttr(...)`, `ds.dataAttrs(...)`                      | Render reactive DOM attributes.               |
-| `ds.pluginAttr(name, value?)`                                | Render app-defined plugin attributes.         |
-| `ds.dataClass(...)`, `ds.dataClasses(...)`                   | Render reactive class bindings.               |
-| `ds.dataStyle(...)`, `ds.dataStyles(...)`                    | Render reactive style bindings.               |
-| `ds.dataComputed(...)`, `ds.dataComputeds(...)`              | Render computed signal definitions.           |
-| `ds.ignore(...)`, `ds.ignoreMorph()`, `ds.preserveAttr(...)` | Control Datastar morphing behavior.           |
+| API                                                          | Use                                                                      |
+| ------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| `ds.on(event, expression, modifiers?)`                       | Render `data-on:*`.                                                      |
+| `ds.onIntersect(...)`, `ds.onInterval(...)`                  | Render lifecycle/event attributes.                                       |
+| `ds.onSignalPatch(...)`, `ds.onSignalPatchFilter(...)`       | React to signal patches.                                                 |
+| `ds.bind(signal, modifiers?)`                                | Render `data-bind`.                                                      |
+| `ds.text(expression)`                                        | Render `data-text`.                                                      |
+| `ds.show(expression)`                                        | Render `data-show`.                                                      |
+| `ds.effect(expression)`                                      | Render `data-effect`.                                                    |
+| `ds.init(expression, modifiers?)`                            | Render `data-init`.                                                      |
+| `ds.ref(...)`, `ds.indicator(...)`                           | Render Datastar ref and indicator attributes.                            |
+| `ds.dataAttr(...)`, `ds.dataAttrs(...)`                      | Render reactive DOM attributes.                                          |
+| `ds.pluginAttr(name, value?)`                                | Render app-defined plugin attributes, including keyed plugin attributes. |
+| `ds.dataClass(...)`, `ds.dataClasses(...)`                   | Render reactive class bindings.                                          |
+| `ds.dataStyle(...)`, `ds.dataStyles(...)`                    | Render reactive style bindings.                                          |
+| `ds.dataComputed(...)`, `ds.dataComputeds(...)`              | Render computed signal definitions.                                      |
+| `ds.ignore(...)`, `ds.ignoreMorph()`, `ds.preserveAttr(...)` | Control Datastar morphing behavior.                                      |
 
 ### Expressions
 
@@ -124,12 +124,12 @@ Use `event.*` when one response needs multiple events or a long-lived stream.
 
 ## HTML helpers
 
-| API                          | Use                                               |
-| ---------------------------- | ------------------------------------------------- |
-| `h(tag, props, ...children)` | Low-level HTML node factory.                      |
-| `mergeProps(...props)`       | Merge prop objects left-to-right.                 |
-| `renderToString(node)`       | Serialize Datastar Kit HTML nodes and TSX output. |
-| `unsafeHtml(html)`           | Mark trusted HTML as already safe.                |
+| API                          | Use                                                |
+| ---------------------------- | -------------------------------------------------- |
+| `h(tag, props, ...children)` | Low-level HTML node factory.                       |
+| `mergeProps(...props)`       | Merge prop objects left-to-right.                  |
+| `renderToString(node)`       | Serialize Datastar Kit HTML nodes and TSX output.  |
+| `unsafeHtml(html)`           | Mark trusted HTML as already safe.                 |
 | `HtmlNameError`              | Thrown for unsafe rendered tag or attribute names. |
 
 Types exported from the root include `HtmlChild`, `HtmlNode`, `HtmlProps`, `HtmlPropValue`, `SignalState`, and `SignalValue`.

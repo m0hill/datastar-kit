@@ -43,7 +43,8 @@
               <p class="text-xs font-semibold text-zinc-500">d46f524</p>
               <h2 class="mt-1 text-xl font-semibold">Plugin Attribute Interface</h2>
             </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+            <span
+              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
               >Strong</span
             >
           </div>
@@ -85,7 +86,8 @@ flowchart LR
               <p class="text-xs font-semibold text-zinc-500">6c1db10</p>
               <h2 class="mt-1 text-xl font-semibold">Browser Scripts Became Modules</h2>
             </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+            <span
+              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
               >Strong</span
             >
           </div>
@@ -110,7 +112,11 @@ flowchart LR
               <strong>Locality:</strong> Browser behavior changes stay in browser-owned files.
             </li>
           </ul>
-          <svg class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50" viewBox="0 0 620 210" role="img">
+          <svg
+            class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50"
+            viewBox="0 0 620 210"
+            role="img"
+          >
             <rect x="24" y="36" width="250" height="120" rx="8" fill="#fee2e2" />
             <text x="44" y="72" font-size="16" font-weight="700">Before</text>
             <text x="44" y="104" font-size="13">TSX view</text>
@@ -134,7 +140,8 @@ flowchart LR
               <p class="text-xs font-semibold text-zinc-500">0e58afa</p>
               <h2 class="mt-1 text-xl font-semibold">Signal Refs In Expressions</h2>
             </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+            <span
+              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
               >Strong</span
             >
           </div>
@@ -186,12 +193,16 @@ flowchart LR
               <p class="text-xs font-semibold text-zinc-500">6df4b18</p>
               <h2 class="mt-1 text-xl font-semibold">Normal Datastar Boundary</h2>
             </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+            <span
+              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
               >Strong</span
             >
           </div>
           <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
-            <li><strong>Files:</strong> SDK plugin attributes, docs, tests, official examples metadata.</li>
+            <li>
+              <strong>Files:</strong> SDK plugin attributes, docs, tests, official examples
+              metadata.
+            </li>
             <li>
               <strong>Problem:</strong> Keyed plugin attributes were added only because Match Media
               exists in Datastar Pro.
@@ -201,7 +212,9 @@ flowchart LR
               naming for the JSX port.
             </li>
             <li><strong>Leverage:</strong> Normal Datastar users get the helper they need.</li>
-            <li><strong>Locality:</strong> Pro catalog concerns stay out of the normal SDK Interface.</li>
+            <li>
+              <strong>Locality:</strong> Pro catalog concerns stay out of the normal SDK Interface.
+            </li>
           </ul>
           <div class="diagram-box mt-4 rounded-md p-3">
             <pre class="mermaid">
@@ -220,36 +233,57 @@ flowchart TB
               <p class="text-xs font-semibold text-zinc-500">2a7e304</p>
               <h2 class="mt-1 text-xl font-semibold">Counter Response Defaults</h2>
             </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+            <span
+              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
               >Strong</span
             >
           </div>
           <ul class="mt-4 list-disc space-y-1 pl-5 text-sm">
-            <li><strong>Files:</strong> `examples/hono-official-examples/src/examples/counters.tsx`.</li>
+            <li>
+              <strong>Files:</strong> `examples/hono-official-examples/src/examples/counters.tsx`.
+            </li>
             <li>
               <strong>Problem:</strong> The counter mixed raw `204` and `reply.directHtml(...)` into
               a normal Datastar response path.
             </li>
             <li>
-              <strong>Solution:</strong> Use `reply.done()` and `reply.patch(...)`; preserve the user
-              counter cookie.
+              <strong>Solution:</strong> Use `reply.done()` and `reply.patch(...)`; preserve the
+              user counter cookie.
             </li>
             <li><strong>Leverage:</strong> The example teaches default SDK responses.</li>
-            <li><strong>Locality:</strong> Direct responses remain reserved for direct-response cases.</li>
+            <li>
+              <strong>Locality:</strong> Direct responses remain reserved for direct-response cases.
+            </li>
           </ul>
-          <svg class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50" viewBox="0 0 620 210" role="img">
+          <svg
+            class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50"
+            viewBox="0 0 620 210"
+            role="img"
+          >
             <rect x="30" y="34" width="160" height="56" rx="6" fill="#fee2e2" />
             <text x="48" y="67" font-size="13">new Response(204)</text>
             <rect x="30" y="118" width="160" height="56" rx="6" fill="#fee2e2" />
             <text x="48" y="151" font-size="13">directHtml(...)</text>
             <path d="M215 62 L350 62" stroke="#71717a" stroke-width="3" marker-end="url(#arrow2)" />
-            <path d="M215 146 L350 146" stroke="#71717a" stroke-width="3" marker-end="url(#arrow2)" />
+            <path
+              d="M215 146 L350 146"
+              stroke="#71717a"
+              stroke-width="3"
+              marker-end="url(#arrow2)"
+            />
             <rect x="380" y="34" width="160" height="56" rx="6" fill="#dcfce7" />
             <text x="425" y="67" font-size="13">done()</text>
             <rect x="380" y="118" width="160" height="56" rx="6" fill="#dcfce7" />
             <text x="425" y="151" font-size="13">patch(...)</text>
             <defs>
-              <marker id="arrow2" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+              <marker
+                id="arrow2"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="3"
+                orient="auto"
+              >
                 <path d="M0,0 L0,6 L9,3 z" fill="#71717a" />
               </marker>
             </defs>
@@ -262,7 +296,8 @@ flowchart TB
               <p class="text-xs font-semibold text-zinc-500">b6f3247</p>
               <h2 class="mt-1 text-xl font-semibold">Durable Object Row Interface</h2>
             </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+            <span
+              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
               >Strong</span
             >
           </div>
@@ -298,7 +333,8 @@ flowchart LR
               <p class="text-xs font-semibold text-zinc-500">533622b</p>
               <h2 class="mt-1 text-xl font-semibold">HTML Name Validation</h2>
             </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+            <span
+              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
               >Strong</span
             >
           </div>
@@ -309,12 +345,19 @@ flowchart LR
               crossed the renderer boundary verbatim.
             </li>
             <li>
-              <strong>Solution:</strong> Add `HtmlNameError` and validate names before serialization.
+              <strong>Solution:</strong> Add `HtmlNameError` and validate names before
+              serialization.
             </li>
-            <li><strong>Leverage:</strong> The same renderer Interface owns a deeper safety boundary.</li>
+            <li>
+              <strong>Leverage:</strong> The same renderer Interface owns a deeper safety boundary.
+            </li>
             <li><strong>Locality:</strong> Name safety is one HTML Module concern.</li>
           </ul>
-          <svg class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50" viewBox="0 0 620 210" role="img">
+          <svg
+            class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50"
+            viewBox="0 0 620 210"
+            role="img"
+          >
             <rect x="24" y="34" width="250" height="128" rx="8" fill="#fef3c7" />
             <text x="44" y="67" font-size="15" font-weight="700">Before</text>
             <text x="44" y="100" font-size="13">escape text</text>
@@ -327,7 +370,14 @@ flowchart LR
             <text x="366" y="150" font-size="13">validate names</text>
             <path d="M286 98 L334 98" stroke="#71717a" stroke-width="3" marker-end="url(#arrow3)" />
             <defs>
-              <marker id="arrow3" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+              <marker
+                id="arrow3"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="3"
+                orient="auto"
+              >
                 <path d="M0,0 L0,6 L9,3 z" fill="#71717a" />
               </marker>
             </defs>
@@ -340,7 +390,8 @@ flowchart LR
               <p class="text-xs font-semibold text-zinc-500">3b8a741 + 732a35b</p>
               <h2 class="mt-1 text-xl font-semibold">Regex Expression Escaping</h2>
             </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+            <span
+              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
               >Strong</span
             >
           </div>
@@ -351,11 +402,13 @@ flowchart LR
               JavaScript regex.
             </li>
             <li>
-              <strong>Solution:</strong> Validate with `RegExp(...)` and render
-              `new RegExp(pattern, flags)`.
+              <strong>Solution:</strong> Validate with `RegExp(...)` and render `new RegExp(pattern,
+              flags)`.
             </li>
             <li><strong>Leverage:</strong> Callers pass ordinary constructor inputs.</li>
-            <li><strong>Locality:</strong> Regex escaping and errors stay in the expression Module.</li>
+            <li>
+              <strong>Locality:</strong> Regex escaping and errors stay in the expression Module.
+            </li>
           </ul>
           <div class="diagram-box mt-4 rounded-md p-3">
             <pre class="mermaid">
@@ -376,7 +429,8 @@ sequenceDiagram
               <p class="text-xs font-semibold text-zinc-500">d1fa9c9</p>
               <h2 class="mt-1 text-xl font-semibold">Worker Live Todo Locality</h2>
             </div>
-            <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
+            <span
+              class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800"
               >Strong</span
             >
           </div>
@@ -391,7 +445,9 @@ sequenceDiagram
               for single patches.
             </li>
             <li><strong>Leverage:</strong> Readers see room boundary and response intent.</li>
-            <li><strong>Locality:</strong> Room naming and patch semantics concentrate in one place.</li>
+            <li>
+              <strong>Locality:</strong> Room naming and patch semantics concentrate in one place.
+            </li>
           </ul>
           <div class="diagram-box mt-4 rounded-md p-4">
             <div class="grid grid-cols-[1fr_auto_1fr] gap-3 text-sm">
@@ -430,17 +486,40 @@ sequenceDiagram
             <li><strong>Leverage:</strong> Release readers get the API delta in one place.</li>
             <li><strong>Locality:</strong> Release notes live with the package.</li>
           </ul>
-          <svg class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50" viewBox="0 0 620 210" role="img">
+          <svg
+            class="mt-4 w-full rounded-md border border-zinc-200 bg-zinc-50"
+            viewBox="0 0 620 210"
+            role="img"
+          >
             <rect x="34" y="44" width="150" height="72" rx="8" fill="#e0f2fe" />
             <text x="57" y="84" font-size="13">website docs</text>
             <rect x="34" y="130" width="150" height="72" rx="8" fill="#e0f2fe" />
             <text x="64" y="170" font-size="13">audit log</text>
             <rect x="405" y="84" width="170" height="82" rx="8" fill="#dcfce7" />
             <text x="438" y="127" font-size="13">package changelog</text>
-            <path d="M200 80 C280 80 300 106 390 118" stroke="#71717a" stroke-width="3" fill="none" marker-end="url(#arrow4)" />
-            <path d="M200 166 C280 166 300 144 390 130" stroke="#71717a" stroke-width="3" fill="none" marker-end="url(#arrow4)" />
+            <path
+              d="M200 80 C280 80 300 106 390 118"
+              stroke="#71717a"
+              stroke-width="3"
+              fill="none"
+              marker-end="url(#arrow4)"
+            />
+            <path
+              d="M200 166 C280 166 300 144 390 130"
+              stroke="#71717a"
+              stroke-width="3"
+              fill="none"
+              marker-end="url(#arrow4)"
+            />
             <defs>
-              <marker id="arrow4" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+              <marker
+                id="arrow4"
+                markerWidth="10"
+                markerHeight="10"
+                refX="8"
+                refY="3"
+                orient="auto"
+              >
                 <path d="M0,0 L0,6 L9,3 z" fill="#71717a" />
               </marker>
             </defs>

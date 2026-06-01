@@ -4,7 +4,7 @@
 
 ### Added
 
-- Added `ds.pluginAttr(name, value?)` for app-defined Datastar plugin attributes.
+- Added `ds.pluginAttr(name, value?)` for app-defined Datastar plugin attributes, including keyed plugin attributes.
 - Added `HtmlNameError` when rendered HTML tag or attribute names cannot be serialized safely.
 - Added `ds.RegexExpressionError` for invalid `ds.regex(...)` patterns or flags.
 

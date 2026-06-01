@@ -3,8 +3,8 @@ import { createServer, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
-import { dataSignals, on, post, signal, text } from "../src/ds/index.js"
-import { h, mergeProps, renderToString } from "../src/html.js"
+import { dataSignals, on, pluginAttr, post, signal, text } from "../src/ds/index.js"
+import { h, mergeProps, renderToString, unsafeHtml } from "../src/html.js"
 
 const execFile = promisify(execFileCallback)
 const agentBrowserAvailable =
@@ -44,6 +44,46 @@ const runtimePage = (): string => {
   )}`
 }
 
+const keyedPluginPage = (): string =>
+  `<!doctype html>${renderToString(
+    h(
+      "html",
+      { lang: "en" },
+      h(
+        "head",
+        {},
+        h("script", { type: "module", src: DATASTAR_RUNTIME }),
+        h(
+          "script",
+          { type: "module" },
+          unsafeHtml(`
+          import { attribute } from "${DATASTAR_RUNTIME}"
+
+          attribute({
+            name: "keyed-check",
+            requirement: { key: "must", value: "must" },
+            returnsValue: true,
+            apply({ el, key, rx }) {
+              const value = rx()
+              el.textContent = key + ":" + value
+              window.__datastarKitKeyedPlugin = { key, value }
+            }
+          })
+        `)
+        )
+      ),
+      h(
+        "body",
+        {},
+        h(
+          "output",
+          mergeProps({ id: "keyed-plugin" }, pluginAttr("keyed-check:item-name", "from suffix")),
+          "waiting"
+        )
+      )
+    )
+  )}`
+
 const serveRuntimeFixture = async (): Promise<{
   readonly server: Server
   readonly url: string
@@ -63,6 +103,20 @@ const serveRuntimeFixture = async (): Promise<{
 
     response.writeHead(200, { "content-type": "text/html; charset=utf-8" })
     response.end(runtimePage())
+  })
+
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve))
+  const address = server.address() as AddressInfo
+  return { server, url: `http://127.0.0.1:${address.port}` }
+}
+
+const serveKeyedPluginFixture = async (): Promise<{
+  readonly server: Server
+  readonly url: string
+}> => {
+  const server = createServer((_request, response) => {
+    response.writeHead(200, { "content-type": "text/html; charset=utf-8" })
+    response.end(keyedPluginPage())
   })
 
   await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve))
@@ -95,6 +149,60 @@ const waitForSelector = async (
 }
 
 describe("Datastar browser runtime integration", () => {
+  browserIt(
+    "runs custom attribute plugins with keyed suffixes",
+    async () => {
+      const session = `datastar-kit-keyed-plugin-${process.pid}-${Date.now()}`
+      const { server, url } = await serveKeyedPluginFixture()
+      const browser = async (...args: ReadonlyArray<string>): Promise<string> => {
+        const { stdout } = await execFile("agent-browser", ["--session-name", session, ...args], {
+          timeout: 20_000
+        })
+        return stdout.trim()
+      }
+
+      try {
+        await browser("open", url)
+        await browser("wait", "--load", "networkidle")
+        await waitForSelector(browser, "#keyed-plugin")
+
+        const result = JSON.parse(
+          await browser(
+            "eval",
+            `(async () => {
+              const el = document.querySelector("#keyed-plugin")
+              const deadline = Date.now() + 2000
+              while (Date.now() < deadline && el?.textContent !== "item-name:from suffix") {
+                await new Promise((resolve) => setTimeout(resolve, 25))
+              }
+              return {
+                text: el?.textContent,
+                hasKeyedAttribute: el?.hasAttribute("data-keyed-check:item-name"),
+                seen: window.__datastarKitKeyedPlugin ?? null
+              }
+            })()`
+          )
+        ) as {
+          text: string
+          hasKeyedAttribute: boolean
+          seen: { key: string; value: string } | null
+        }
+
+        expect(result).toEqual({
+          text: "item-name:from suffix",
+          hasKeyedAttribute: true,
+          seen: { key: "item-name", value: "from suffix" }
+        })
+      } finally {
+        await execFile("agent-browser", ["--session-name", session, "close"], {
+          timeout: 20_000
+        }).catch(() => undefined)
+        await closeServer(server)
+      }
+    },
+    30_000
+  )
+
   browserIt(
     "applies 200 direct JSON signal responses and ignores non-200 action bodies",
     async () => {
