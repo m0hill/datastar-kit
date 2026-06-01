@@ -329,7 +329,7 @@ export function dataComputed<T>(
   modifiers?: CaseModifiers
 ): HtmlProps
 export function dataComputed<T>(
-  name: string | Signal<T, string>,
+  name: string | Signal<T>,
   expression: ExprInput<T>,
   modifiers: CaseModifiers = {}
 ): HtmlProps {
@@ -373,7 +373,7 @@ export function dataSignal(
   modifiers?: DataSignalModifiers
 ): HtmlProps
 export function dataSignal(
-  name: string | Signal<unknown, string>,
+  name: string | Signal<unknown>,
   value: SignalValueInput,
   modifiers: DataSignalModifiers = {}
 ): HtmlProps {

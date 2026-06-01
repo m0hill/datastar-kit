@@ -6,3 +6,4 @@
 4. `ref: remove stream chunk wrapper` - Removed the unused `reply.SseChunk` wrapper shape from `reply.stream(...)`.
 5. `fix: preserve URL fragments in queryUrl` - Fixed generated query parameters so they render before URL fragments.
 6. `fix: validate script event attribute names` - Reused the HTML renderer's attribute-name guard for script SSE events.
+7. `ref: remove redundant signal type args` - Cleaned redundant default `Signal` type arguments reported by type-aware lint.

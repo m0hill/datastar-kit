@@ -176,7 +176,7 @@ const datastarAction = <T = unknown>(
  * @param value Literal or expression assigned to the signal.
  * @returns A Datastar expression such as `$open = false`.
  */
-export const set = <T>(signal: Signal<T, string>, value: ExprInput<T>): Expr<void> =>
+export const set = <T>(signal: Signal<T>, value: ExprInput<T>): Expr<void> =>
   raw(`${signal.toDatastarExpression()} = ${toJs(value)}`)
 
 /**
