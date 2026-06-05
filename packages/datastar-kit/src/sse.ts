@@ -49,6 +49,8 @@ export interface PatchElementsOptions extends SseEventOptions {
   readonly namespace?: PatchElementsNamespace
   /** Whether Datastar should use the View Transition API when applying the patch. */
   readonly useViewTransition?: boolean
+  /** CSS selector for the element whose scoped View Transition API should apply the patch. */
+  readonly viewTransitionSelector?: string
 }
 
 /**
@@ -149,6 +151,10 @@ export const patchElements = (elements: string, options: PatchElementsOptions = 
 
   if (options.useViewTransition === true) {
     lines.push({ key: "useViewTransition", value: "true" })
+  }
+
+  if (options.viewTransitionSelector !== undefined) {
+    lines.push({ key: "viewTransitionSelector", value: options.viewTransitionSelector })
   }
 
   if (options.mode !== "remove") {

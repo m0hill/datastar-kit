@@ -23,6 +23,18 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
+  it("encodes scoped view transition selectors for Datastar v1.0.2", () => {
+    expect(
+      patchElements("<div>Merge</div>", {
+        selector: "#target",
+        useViewTransition: true,
+        viewTransitionSelector: "#transition-scope"
+      })
+    ).toBe(
+      "event: datastar-patch-elements\ndata: selector #target\ndata: useViewTransition true\ndata: viewTransitionSelector #transition-scope\ndata: elements <div>Merge</div>\n\n"
+    )
+  })
+
   it("splits multiline element payloads into repeated data lines", () => {
     expect(patchElements("<div>\n  Hello\n</div>")).toBe(
       "event: datastar-patch-elements\ndata: elements <div>\ndata: elements   Hello\ndata: elements </div>\n\n"
