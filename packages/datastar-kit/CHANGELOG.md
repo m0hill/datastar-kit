@@ -27,7 +27,6 @@
 - Removed public root exports for `h`, `mergeProps`, and `HtmlNameError`; TSX is the public HTML authoring path.
 - Removed the unused `reply.SseChunk` wrapper shape from `reply.stream(...)`; stream chunks are now strings or `Uint8Array` values.
 - Removed the awkward `delete` export alias for `del(...)`; use `del(...)` for Datastar `@delete(...)` actions.
-- Removed the redundant `reply.PatchOptions` and `reply.SignalsOptions` type aliases; use `PatchElementsOptions` and `PatchSignalsOptions` from `datastar-kit/sse` when naming these option shapes.
 - Removed the `state(...).$` alias; use the readable `state(...).refs` property for typed signal references.
 
 ## 0.2.0 - 2026-05-27
