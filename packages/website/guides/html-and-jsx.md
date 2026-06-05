@@ -61,6 +61,19 @@ String values stay raw, so ordinary HTML and hand-written Datastar expressions s
 as written. When a Datastar attribute needs modifiers, wrap the value with `mod(value, modifiers)`, such as
 `data-on:input={mod(get("/search"), { debounce: "200ms" })}`.
 
+Some Datastar attributes are plain string attributes rather than expression-valued attributes.
+For example, `data-preserve-attr` expects a space-separated list of HTML attribute names. Use
+`preserve(...)` to build that list without accidentally serializing an array expression:
+
+```tsx
+import { preserve } from "datastar-kit"
+
+;<details open data-preserve-attr={preserve("open", "class")}>
+  <summary>Filters</summary>
+  ...
+</details>
+```
+
 ## Pages
 
 `reply.page(...)` renders a full HTML document and returns a native `Response`:

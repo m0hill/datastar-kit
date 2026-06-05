@@ -1,4 +1,16 @@
-import { renderToString, get, js, local, mod, post, regex, set, signal, state } from "datastar-kit"
+import {
+  renderToString,
+  get,
+  js,
+  local,
+  mod,
+  post,
+  preserve,
+  regex,
+  set,
+  signal,
+  state
+} from "datastar-kit"
 
 const form = state({
   email: "",
@@ -137,7 +149,7 @@ export const DatastarSyntaxCheck = () => (
       Third-party widget root; descendants can still be processed.
     </div>
 
-    <details open data-preserve-attr="open class">
+    <details open data-preserve-attr={preserve("open", "class")}>
       <summary>Debug signals</summary>
       <DebugPanel />
     </details>

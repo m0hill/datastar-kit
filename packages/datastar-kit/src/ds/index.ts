@@ -12,6 +12,8 @@ export {
 } from "./actions.js"
 export type { FetchActionOptions, FetchActionResponseOverrides, SignalFilter } from "./actions.js"
 
+export { preserve } from "./attributes.js"
+
 export { js, regex, RegexExpressionError } from "./expression.js"
 export type { DatastarFunction, Expr, ExprInput } from "./expression.js"
 

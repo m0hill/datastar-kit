@@ -10,6 +10,7 @@ import {
   js,
   mod,
   post,
+  preserve,
   signal,
   state
 } from "datastar-kit"
@@ -30,6 +31,7 @@ describe("package root exports", () => {
     expect(Root.post).toBe(post)
     expect(Root.js).toBe(js)
     expect(Root.mod).toBe(mod)
+    expect(Root.preserve).toBe(preserve)
     expect("expr" in Root).toBe(false)
     expect("withMods" in Root).toBe(false)
     expect("withModifiers" in Root).toBe(false)

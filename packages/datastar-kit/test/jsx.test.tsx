@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { mod, post, signal, state } from "../src/ds/index.js"
+import { mod, post, preserve, signal, state } from "../src/ds/index.js"
 import { renderToString, type HtmlChild } from "../src/html.js"
 import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
@@ -248,6 +248,12 @@ describe("automatic JSX runtime", () => {
     const node = <label htmlFor="email">Email</label>
 
     expect(renderToString(node)).toBe('<label for="email">Email</label>')
+  })
+
+  it("renders data-preserve-attr helper output", () => {
+    const node = <details open data-preserve-attr={preserve("open", "class")}></details>
+
+    expect(renderToString(node)).toBe('<details open data-preserve-attr="open class"></details>')
   })
 
   it("renders fragments for sibling nodes", () => {

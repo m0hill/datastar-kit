@@ -33,16 +33,17 @@ The root package exports helpers for action expressions, signal refs, typed sign
 
 ### Actions
 
-| API                      | Use                                                        |
-| ------------------------ | ---------------------------------------------------------- |
-| `get(url, options?)`     | Build `@get(...)`.                                         |
-| `post(url, options?)`    | Build `@post(...)`.                                        |
-| `put(url, options?)`     | Build `@put(...)`.                                         |
-| `patch(url, options?)`   | Build `@patch(...)`.                                       |
-| `del(url, options?)`     | Build `@delete(...)`.                                      |
-| `queryUrl(path, params)` | Build a reactive URL expression with encoded query params. |
-| `action(name, ...args)`  | Call an app-defined or Datastar built-in browser action.   |
-| `set(signal, value)`     | Build a signal assignment expression.                      |
+| API                        | Use                                                               |
+| -------------------------- | ----------------------------------------------------------------- |
+| `get(url, options?)`       | Build `@get(...)`.                                                |
+| `post(url, options?)`      | Build `@post(...)`.                                               |
+| `put(url, options?)`       | Build `@put(...)`.                                                |
+| `patch(url, options?)`     | Build `@patch(...)`.                                              |
+| `del(url, options?)`       | Build `@delete(...)`.                                             |
+| `queryUrl(path, params)`   | Build a reactive URL expression with encoded query params.        |
+| `action(name, ...args)`    | Call an app-defined or Datastar built-in browser action.          |
+| `set(signal, value)`       | Build a signal assignment expression.                             |
+| `preserve(name, ...names)` | Build a `data-preserve-attr` space-separated attribute-name list. |
 
 Fetch action options include `headers`, `contentType`, `filterSignals`, `payload`, retry settings, request cancellation behavior, and direct-response overrides.
 
@@ -67,6 +68,9 @@ When a Datastar attribute needs modifiers, wrap the value with `mod(value, modif
 ```tsx
 <input data-on:input={mod(get("/search"), { debounce: "200ms" })} />
 ```
+
+Use helpers for Datastar attributes that are defined as space-separated strings. For example,
+`data-preserve-attr={preserve("open", "class")}` builds the correct `"open class"` value.
 
 ### Expressions
 
