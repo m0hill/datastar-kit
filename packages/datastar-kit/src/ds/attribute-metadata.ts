@@ -94,7 +94,7 @@ const expressionAttributes = {
 export const isDatastarExpressionAttribute = (name: string): boolean =>
   matches(datastarAttributeRoot(name), expressionAttributes)
 
-const signalNameAttributes = ["data-bind", "data-ref", "data-indicator"] as const
+const signalNameAttributes: readonly string[] = ["data-bind", "data-ref", "data-indicator"]
 
 export const isDatastarSignalNameAttribute = (name: string): boolean =>
-  signalNameAttributes.includes(datastarAttributeRoot(name) as (typeof signalNameAttributes)[number])
+  signalNameAttributes.includes(datastarAttributeRoot(name))

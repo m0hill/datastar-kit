@@ -12,10 +12,8 @@ import {
 
 export { NavigationUrlError } from "./navigation.js"
 
-/**
- * Options for a safe navigation event chunk.
- */
-export interface NavigateOptions extends ExecuteScriptOptions, NavigationSafetyOptions {}
+/** Options for a safe navigation event chunk. */
+export type NavigateOptions = ExecuteScriptOptions & NavigationSafetyOptions
 
 /** Renders HTML and encodes it as one Datastar patch-elements SSE event chunk. */
 export const patch = (elements: HtmlChild, options?: PatchElementsOptions): string =>

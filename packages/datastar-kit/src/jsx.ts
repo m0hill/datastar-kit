@@ -101,7 +101,10 @@ const durationModifier = (value: unknown): string => {
 const isModifierRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === "object" && value !== null && !Array.isArray(value) && !isExpr(value)
 
-const compatibleModifierTargets = {
+const compatibleModifierTargets: Record<
+  DatastarModifierKey,
+  readonly DatastarModifierTarget[]
+> = {
   capture: ["on"],
   case: ["bind", "case", "computed", "on", "signals"],
   debounce: ["on", "intersect", "signalPatch"],
@@ -126,7 +129,7 @@ const compatibleModifierTargets = {
   throttle: ["on", "intersect", "signalPatch"],
   viewTransition: ["on", "intersect", "init", "interval"],
   window: ["on"]
-} as const satisfies Record<DatastarModifierKey, readonly DatastarModifierTarget[]>
+}
 
 const isDatastarModifierKey = (key: string): key is DatastarModifierKey =>
   key in compatibleModifierTargets
@@ -134,8 +137,7 @@ const isDatastarModifierKey = (key: string): key is DatastarModifierKey =>
 const isCompatibleModifier = (
   target: DatastarModifierTarget,
   modifier: DatastarModifier
-): boolean =>
-  (compatibleModifierTargets[modifier.key] as readonly DatastarModifierTarget[]).includes(target)
+): boolean => compatibleModifierTargets[modifier.key].includes(target)
 
 const flagModifier = (
   key: DatastarModifierKey,

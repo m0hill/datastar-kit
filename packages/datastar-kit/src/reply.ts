@@ -44,15 +44,11 @@ export interface SseHeartbeatOptions {
   readonly comment?: string
 }
 
-/**
- * Element patch options for `reply.patch()`.
- */
-export interface PatchOptions extends PatchElementsOptions {}
+/** Element patch options for `reply.patch()`. */
+export type PatchOptions = PatchElementsOptions
 
-/**
- * Signal patch options for `reply.signals()`.
- */
-export interface SignalsOptions extends PatchSignalsOptions {}
+/** Signal patch options for `reply.signals()`. */
+export type SignalsOptions = PatchSignalsOptions
 
 /**
  * SSE stream options for `reply.stream()`.
@@ -92,10 +88,8 @@ export interface DirectScriptOptions {
   readonly attributes?: Readonly<Record<string, string | number | boolean>>
 }
 
-/**
- * Safe navigation response options.
- */
-export interface NavigateOptions extends DirectScriptOptions, NavigationSafetyOptions {}
+/** Safe navigation response options. */
+export type NavigateOptions = DirectScriptOptions & NavigationSafetyOptions
 
 type SseChunkInput = string | Uint8Array
 
