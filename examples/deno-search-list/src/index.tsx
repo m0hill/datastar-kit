@@ -47,7 +47,7 @@ const ItemList = (props: { items: Item[] }) => (
         No matching items.
       </li>
     ) : (
-      props.items.map((item) => <ItemRow item={item} />)
+      props.items.map((item) => <ItemRow key={item.id} item={item} />)
     )}
   </ul>
 )
@@ -102,8 +102,8 @@ const routes: Route[] = [
         {
           title: "Deno searchable list",
           head: [
-            <script type="module" src={DATASTAR_RUNTIME} />,
-            <script src="https://cdn.tailwindcss.com" />
+            <script key="datastar" type="module" src={DATASTAR_RUNTIME} />,
+            <script key="tailwind" src="https://cdn.tailwindcss.com" />
           ]
         }
       )

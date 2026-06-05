@@ -15,3 +15,4 @@
 - Removed the duplicate `SignalState`/`SignalValue` type re-export through `ds/signals`; the root package already exports those protocol types directly from `types.ts`, while signal authoring still exports `SignalStateInput`/`SignalValueInput`.
 - Removed the `state(...).$` alias because it duplicated `state(...).refs` while being less readable in TypeScript code; state helpers now expose one signal-ref property, `refs`.
 - Made Datastar modifier rendering exhaustiveness explicit so TypeScript and oxlint agree every modifier-key branch returns deliberately.
+- Added explicit `key` props to the Deno search-list example's JSX arrays so Deno lint no longer reports `jsx-key` diagnostics.
