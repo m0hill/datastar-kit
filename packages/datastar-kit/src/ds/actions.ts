@@ -56,7 +56,7 @@ const fetchOptionKeys = [
   "retryMaxWait",
   "retryMaxCount",
   "requestCancellation"
-] as const
+] as const satisfies readonly (keyof FetchActionOptions)[]
 
 const fetchOptionsToJs = (options: FetchActionOptions): string => {
   const entries: string[] = []

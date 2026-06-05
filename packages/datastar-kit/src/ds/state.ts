@@ -1,7 +1,7 @@
 import type { SignalState, SignalValue } from "../types.js"
 import { assertSignalName, Signal, SignalNameError } from "./signals.js"
 
-type SignalObject = Readonly<Record<string, SignalValue>>
+type SignalObject = SignalState
 
 type WidenSignalValue<Value extends SignalValue> = Value extends string
   ? string
