@@ -1,3 +1,5 @@
+import { isDatastarPresenceAttribute } from "./ds/attribute-metadata.js"
+
 /**
  * A primitive value that can be serialized as an HTML attribute value.
  */
@@ -144,40 +146,9 @@ const booleanAttributes = new Set([
 
 const overloadedBooleanAttributes = new Set(["capture", "download"])
 
-const datastarPresenceAttributeRoots = new Set([
-  "data-bind",
-  "data-ignore",
-  "data-ignore-morph",
-  "data-indicator",
-  "data-json-signals",
-  "data-persist",
-  "data-query-string",
-  "data-ref",
-  "data-scope-children",
-  "data-scroll-into-view"
-])
-
-const datastarPresenceKeyedAttributePrefixes = [
-  "data-bind:",
-  "data-indicator:",
-  "data-persist:",
-  "data-ref:",
-  "data-signals:"
-]
-
-const datastarAttributeRoot = (name: string): string => name.split("__", 1)[0] ?? name
-
 const isBooleanAttribute = (name: string): boolean => {
   const normalized = name.toLowerCase()
   return booleanAttributes.has(normalized) || overloadedBooleanAttributes.has(normalized)
-}
-
-const isDatastarPresenceAttribute = (name: string): boolean => {
-  const root = datastarAttributeRoot(name)
-  return (
-    datastarPresenceAttributeRoots.has(root) ||
-    datastarPresenceKeyedAttributePrefixes.some((prefix) => root.startsWith(prefix))
-  )
 }
 
 const isPresenceAttribute = (name: string): boolean =>

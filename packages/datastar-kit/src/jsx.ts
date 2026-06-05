@@ -1,8 +1,15 @@
-import type { HtmlChild, HtmlProps, HtmlPropValue } from "./html.js"
-import { h } from "./html.js"
+import {
+  datastarModifierTarget,
+  isDatastarAttribute,
+  isDatastarExpressionAttribute,
+  isDatastarSignalNameAttribute,
+  type DatastarModifierTarget
+} from "./ds/attribute-metadata.js"
 import { isExpr, toJs, type Expr } from "./ds/expression.js"
 import { isDatastarModifiedValue, type DatastarModifiedValue } from "./ds/modifiers.js"
 import { Signal } from "./ds/signals.js"
+import type { HtmlChild, HtmlProps, HtmlPropValue } from "./html.js"
+import { h } from "./html.js"
 
 /**
  * Internal JSX element result accepted by the automatic runtime.
@@ -22,19 +29,6 @@ type DatastarJsxValue =
   | DatastarModifiedValue
   | readonly DatastarJsxValue[]
   | { readonly [key: string]: DatastarJsxValue }
-
-type DatastarModifierTarget =
-  | "bind"
-  | "case"
-  | "computed"
-  | "ignore"
-  | "init"
-  | "intersect"
-  | "interval"
-  | "jsonSignals"
-  | "on"
-  | "signalPatch"
-  | "signals"
 
 interface DatastarModifier {
   readonly key: string
@@ -85,67 +79,6 @@ const isPropValue = (value: unknown): value is HtmlPropValue =>
   typeof value === "string" ||
   typeof value === "number" ||
   typeof value === "boolean"
-
-const isDatastarAttribute = (name: string): boolean => name.startsWith("data-")
-
-const datastarAttributeRoot = (name: string): string => name.split("__", 1)[0] ?? name
-
-const datastarModifierTarget = (name: string): DatastarModifierTarget | undefined => {
-  const root = datastarAttributeRoot(name)
-
-  if (root === "data-bind" || root.startsWith("data-bind:")) return "bind"
-  if (
-    root === "data-ref" ||
-    root.startsWith("data-ref:") ||
-    root === "data-indicator" ||
-    root.startsWith("data-indicator:") ||
-    root.startsWith("data-class:")
-  ) {
-    return "case"
-  }
-  if (root === "data-computed" || root.startsWith("data-computed:")) return "computed"
-  if (root === "data-ignore") return "ignore"
-  if (root === "data-init") return "init"
-  if (root === "data-on-intersect") return "intersect"
-  if (root === "data-on-interval") return "interval"
-  if (root === "data-json-signals") return "jsonSignals"
-  if (root === "data-on-signal-patch") return "signalPatch"
-  if (root.startsWith("data-on:")) return "on"
-  if (root === "data-signals" || root.startsWith("data-signals:")) return "signals"
-  return undefined
-}
-
-const isDatastarExpressionAttribute = (name: string): boolean => {
-  const root = datastarAttributeRoot(name)
-  return (
-    root === "data-signals" ||
-    root.startsWith("data-signals:") ||
-    root === "data-computed" ||
-    root.startsWith("data-computed:") ||
-    root === "data-attr" ||
-    root.startsWith("data-attr:") ||
-    root === "data-class" ||
-    root.startsWith("data-class:") ||
-    root === "data-style" ||
-    root.startsWith("data-style:") ||
-    root === "data-init" ||
-    root === "data-effect" ||
-    root === "data-text" ||
-    root === "data-show" ||
-    root === "data-on-intersect" ||
-    root === "data-on-interval" ||
-    root === "data-on-signal-patch" ||
-    root.startsWith("data-on:")
-  )
-}
-
-const isDatastarSignalNameAttribute = (name: string): boolean =>
-  name === "data-bind" ||
-  name.startsWith("data-bind__") ||
-  name === "data-ref" ||
-  name.startsWith("data-ref__") ||
-  name === "data-indicator" ||
-  name.startsWith("data-indicator__")
 
 const isDatastarSerializableValue = (name: string, value: unknown): boolean =>
   isExpr(value) ||
