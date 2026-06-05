@@ -1,4 +1,4 @@
-import type { HtmlChild, HtmlNode, HtmlProps, HtmlPropValue } from "./html.js"
+import type { HtmlChild, HtmlProps, HtmlPropValue } from "./html.js"
 import { h } from "./html.js"
 import { isExpr, toJs, type Expr } from "./ds/expression.js"
 import { isDatastarModifiedValue, type DatastarModifiedValue } from "./ds/modifiers.js"
@@ -9,7 +9,7 @@ import { Signal } from "./ds/signals.js"
  *
  * @internal
  */
-export type JsxElement = HtmlNode | readonly HtmlChild[]
+export type JsxElement = HtmlChild
 
 /**
  * Internal JSX props accepted by intrinsic HTML elements.
@@ -59,7 +59,7 @@ export type JsxComponentProps = Readonly<Record<string, unknown>> & {
  *
  * @internal
  */
-export type JsxComponent = (props: JsxComponentProps) => JsxElement
+export type JsxComponent = (props: JsxComponentProps) => HtmlChild
 
 const childrenProp = (
   children: readonly HtmlChild[]

@@ -267,6 +267,25 @@ describe("automatic JSX runtime", () => {
     expect(renderToString(nodes)).toBe("<span>A</span><span>B</span>")
   })
 
+  it("supports components returning any renderable child", () => {
+    const Maybe = (props: { readonly show: boolean }) => (props.show ? <span>Shown</span> : null)
+    const TextOnly = () => "Plain text"
+    const NumberOnly = () => 7
+    const Empty = () => false
+
+    const node = (
+      <>
+        <Maybe show />
+        <Maybe show={false} />
+        <TextOnly />
+        <NumberOnly />
+        <Empty />
+      </>
+    )
+
+    expect(renderToString(node)).toBe("<span>Shown</span>Plain text7")
+  })
+
   it("supports typed server components", () => {
     interface LinkProps {
       readonly href: string
