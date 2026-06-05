@@ -74,15 +74,7 @@ export const DatastarSyntaxCheck = () => (
         opacity: js`${saving} ? 0.6 : 1`,
         "pointer-events": js`${saving} ? ${"none"} : ${"auto"}`
       }}
-      data-on:submit={mod(
-        post("/signup", {
-          responseOverrides: {
-            selector: "#signup-result",
-            useViewTransition: true
-          }
-        }),
-        { prevent: true }
-      )}
+      data-on:submit={mod(post("/signup"), { prevent: true })}
     >
       <label htmlFor="email">Email</label>
       <input
