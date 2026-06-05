@@ -8,3 +8,4 @@
 - Replaced empty option-extension interfaces with direct type aliases and removed a couple of cleanup-time casts from internal metadata.
 - Moved Datastar modifier suffix rendering out of the JSX runtime so JSX prop cleaning only handles JSX/HTML concerns.
 - Tightened a couple of derived helper types (`fetchOptionKeys` and state signal objects) so future changes are checked against their source types.
+- Removed the `delete` export alias for the `del(...)` action helper because `delete` is a JavaScript keyword and consumers could only import it by aliasing it again (`import { delete as ... }`). `del(...)` remains the single readable helper for Datastar `@delete(...)` actions.

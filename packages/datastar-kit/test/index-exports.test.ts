@@ -45,7 +45,7 @@ describe("package root exports", () => {
     expect("bind" in Root).toBe(false)
     expect("dataSignals" in Root).toBe(false)
     expect("pluginAttr" in Root).toBe(false)
-    expect(Root.delete).toBeDefined()
+    expect("delete" in Root).toBe(false)
     expect(event.patch).toBeDefined()
     expect(event.signals).toBeDefined()
     expect(event.script).toBeDefined()

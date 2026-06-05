@@ -2,7 +2,6 @@ export {
   ActionNameError,
   action,
   del,
-  del as delete,
   get,
   patch,
   peek,
