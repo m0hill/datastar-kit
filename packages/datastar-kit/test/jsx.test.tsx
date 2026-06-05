@@ -165,6 +165,21 @@ describe("automatic JSX runtime", () => {
     )
   })
 
+  it("serializes keyed data-signals booleans as expression values", () => {
+    const node = (
+      <div>
+        <div data-signals:enabled={true}></div>
+        <div data-signals:enabled-shorthand></div>
+        <div data-signals:disabled={false}></div>
+        <div data-signals:empty=""></div>
+      </div>
+    )
+
+    expect(renderToString(node)).toBe(
+      '<div><div data-signals:enabled="true"></div><div data-signals:enabled-shorthand="true"></div><div data-signals:disabled="false"></div><div data-signals:empty=""></div></div>'
+    )
+  })
+
   it("rejects wrapped modifiers on incompatible Datastar attributes", () => {
     expect(() =>
       runtimeJsx("main", {
@@ -199,6 +214,28 @@ describe("automatic JSX runtime", () => {
     expect(() =>
       runtimeJsx("output", { id: signal<number>("count") } as unknown as JsxProps)
     ).toThrow('Unsupported JSX prop value for "id"')
+  })
+
+  it("renders boolean JSX props according to HTML attribute kind", () => {
+    const node = (
+      <div
+        aria-hidden={false}
+        aria-expanded
+        data-enabled={false}
+        data-active
+        draggable={false}
+        contenteditable={false}
+      >
+        <button type="button" disabled={false} autofocus>
+          Save
+        </button>
+        <div data-ignore={false} data-ref:panel></div>
+      </div>
+    )
+
+    expect(renderToString(node)).toBe(
+      '<div aria-hidden="false" aria-expanded="true" data-enabled="false" data-active="true" draggable="false" contenteditable="false"><button type="button" autofocus>Save</button><div data-ref:panel></div></div>'
+    )
   })
 
   it("normalizes TSX className to HTML class", () => {

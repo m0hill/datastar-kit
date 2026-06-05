@@ -19,9 +19,69 @@ describe("HTML rendering boundary", () => {
       HtmlNameError
     )
 
-    expect(renderToString(h("button", { 'data-x" onclick="alert(1)': false }))).toBe(
-      "<button></button>"
+    expect(() => renderToString(h("button", { 'data-x" onclick="alert(1)': false }))).toThrow(
+      HtmlNameError
     )
+  })
+
+  it("renders boolean attributes as presence-only attributes", () => {
+    expect(renderToString(h("button", { disabled: true }, "Save"))).toBe(
+      "<button disabled>Save</button>"
+    )
+    expect(renderToString(h("button", { disabled: false }, "Save"))).toBe("<button>Save</button>")
+    expect(renderToString(h("details", { open: true }))).toBe("<details open></details>")
+    expect(renderToString(h("details", { open: false }))).toBe("<details></details>")
+    expect(renderToString(h("a", { download: true }, "Download"))).toBe("<a download>Download</a>")
+    expect(renderToString(h("a", { download: "report.csv" }, "Download"))).toBe(
+      '<a download="report.csv">Download</a>'
+    )
+    expect(renderToString(h("input", { type: "file", capture: false }))).toBe('<input type="file">')
+    expect(
+      renderToString(h("video", { disablepictureinpicture: true, disableremoteplayback: false }))
+    ).toBe("<video disablepictureinpicture></video>")
+    expect(renderToString(h("iframe", { credentialless: true }))).toBe(
+      "<iframe credentialless></iframe>"
+    )
+    expect(renderToString(h("template", { shadowrootdelegatesfocus: true }))).toBe(
+      "<template shadowrootdelegatesfocus></template>"
+    )
+  })
+
+  it("renders boolean values on string-valued attributes", () => {
+    expect(renderToString(h("div", { "aria-hidden": false, "aria-expanded": true }))).toBe(
+      '<div aria-hidden="false" aria-expanded="true"></div>'
+    )
+    expect(renderToString(h("div", { draggable: false, contenteditable: true }))).toBe(
+      '<div draggable="false" contenteditable="true"></div>'
+    )
+    expect(renderToString(h("div", { "data-enabled": false, "data-active": true }))).toBe(
+      '<div data-enabled="false" data-active="true"></div>'
+    )
+  })
+
+  it("keeps known Datastar presence attributes presence-based", () => {
+    expect(
+      renderToString(
+        h("div", {
+          "data-ignore": true,
+          "data-ref:panel": true,
+          "data-signals:result": true,
+          "data-signals:cached__ifmissing": true
+        })
+      )
+    ).toBe(
+      "<div data-ignore data-ref:panel data-signals:result data-signals:cached__ifmissing></div>"
+    )
+    expect(
+      renderToString(
+        h("div", {
+          "data-ignore": false,
+          "data-ref:panel": false,
+          "data-signals:result": false,
+          "data-signals:cached__ifmissing": false
+        })
+      )
+    ).toBe("<div></div>")
   })
 
   it("composes props with later values overriding earlier values", () => {

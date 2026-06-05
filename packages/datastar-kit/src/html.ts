@@ -98,18 +98,110 @@ export const assertHtmlAttributeName = (name: string): void => {
   }
 }
 
+const booleanAttributes = new Set([
+  "allowfullscreen",
+  "allowpaymentrequest",
+  "async",
+  "autofocus",
+  "autoplay",
+  "checked",
+  "compact",
+  "controls",
+  "credentialless",
+  "declare",
+  "default",
+  "defer",
+  "disabled",
+  "disablepictureinpicture",
+  "disableremoteplayback",
+  "formnovalidate",
+  "hidden",
+  "inert",
+  "ismap",
+  "itemscope",
+  "loop",
+  "multiple",
+  "muted",
+  "nohref",
+  "nomodule",
+  "noresize",
+  "novalidate",
+  "nowrap",
+  "open",
+  "playsinline",
+  "readonly",
+  "required",
+  "reversed",
+  "scoped",
+  "selected",
+  "shadowrootclonable",
+  "shadowrootdelegatesfocus",
+  "shadowrootserializable",
+  "truespeed",
+  "typemustmatch",
+  "webkitdirectory"
+])
+
+const overloadedBooleanAttributes = new Set(["capture", "download"])
+
+const datastarPresenceAttributeRoots = new Set([
+  "data-bind",
+  "data-ignore",
+  "data-ignore-morph",
+  "data-indicator",
+  "data-json-signals",
+  "data-persist",
+  "data-query-string",
+  "data-ref",
+  "data-scope-children",
+  "data-scroll-into-view"
+])
+
+const datastarPresenceKeyedAttributePrefixes = [
+  "data-bind:",
+  "data-indicator:",
+  "data-persist:",
+  "data-ref:",
+  "data-signals:"
+]
+
+const datastarAttributeRoot = (name: string): string => name.split("__", 1)[0] ?? name
+
+const isBooleanAttribute = (name: string): boolean => {
+  const normalized = name.toLowerCase()
+  return booleanAttributes.has(normalized) || overloadedBooleanAttributes.has(normalized)
+}
+
+const isDatastarPresenceAttribute = (name: string): boolean => {
+  const root = datastarAttributeRoot(name)
+  return (
+    datastarPresenceAttributeRoots.has(root) ||
+    datastarPresenceKeyedAttributePrefixes.some((prefix) => root.startsWith(prefix))
+  )
+}
+
+const isPresenceAttribute = (name: string): boolean =>
+  isBooleanAttribute(name) || isDatastarPresenceAttribute(name)
+
 const renderProps = (props: HtmlProps): string => {
   const rendered: Array<string> = []
 
   for (const [key, value] of Object.entries(props)) {
-    if (value === false || value === null || value === undefined) {
+    if (value === null || value === undefined) {
       continue
     }
 
     assertHtmlAttributeName(key)
 
     if (value === true) {
-      rendered.push(key)
+      rendered.push(isPresenceAttribute(key) ? key : `${key}="true"`)
+      continue
+    }
+
+    if (value === false) {
+      if (!isPresenceAttribute(key)) {
+        rendered.push(`${key}="false"`)
+      }
       continue
     }
 
