@@ -3,11 +3,15 @@ import {
   action,
   ActionNameError,
   js,
+  peek,
   regex,
   RegexExpressionError,
   set,
-  signal
+  setAll,
+  signal,
+  toggleAll
 } from "../src/ds/index.js"
+import type { DatastarFunction } from "../src/ds/index.js"
 
 describe("expression escape hatches", () => {
   it("keeps simple signal refs typed", () => {
@@ -33,7 +37,20 @@ describe("expression escape hatches", () => {
 
   it("builds regular expressions without caller-managed literal escaping", () => {
     expect(regex("a/b", "i").toDatastarExpression()).toBe('new RegExp("a/b", "i")')
+    expect(js`${/a\/b/i}`.toDatastarExpression()).toBe('new RegExp("a\\\\/b", "i")')
     expect(() => regex("[")).toThrow(RegexExpressionError)
+  })
+
+  it("builds Datastar built-in action expressions", () => {
+    expect(peek(js<DatastarFunction<number>>("() => $count")).toDatastarExpression()).toBe(
+      "@peek(() => $count)"
+    )
+    expect(setAll(true, { include: /^foo$/, exclude: /_temp$/ }).toDatastarExpression()).toBe(
+      '@setAll(true, {"include": new RegExp("^foo$", ""), "exclude": new RegExp("_temp$", "")})'
+    )
+    expect(toggleAll({ include: /^is/ }).toDatastarExpression()).toBe(
+      '@toggleAll({"include": new RegExp("^is", "")})'
+    )
   })
 
   it("builds custom action expressions", () => {

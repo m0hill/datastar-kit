@@ -1,5 +1,4 @@
-import type { PatchElementsMode, PatchElementsNamespace } from "../sse.js"
-import { raw, toJs, type Expr, type ExprInput } from "./expression.js"
+import { raw, toJs, type DatastarFunction, type Expr, type ExprInput } from "./expression.js"
 import type { Signal, SignalStateInput } from "./signals.js"
 
 /**
@@ -7,25 +6,9 @@ import type { Signal, SignalStateInput } from "./signals.js"
  */
 export interface SignalFilter {
   /** Regular expression or expression selecting signal paths to include. */
-  readonly include?: Expr<RegExp> | string
+  readonly include?: Expr<RegExp> | RegExp | string
   /** Regular expression or expression selecting signal paths to exclude. */
-  readonly exclude?: Expr<RegExp> | string
-}
-
-/**
- * Overrides Datastar direct-response handling for a fetch action.
- */
-export interface FetchActionResponseOverrides {
-  /** CSS selector used when the response is handled as an element patch. */
-  readonly selector?: string
-  /** Patch mode used when merging elements into the DOM. */
-  readonly mode?: PatchElementsMode
-  /** Markup namespace used to parse returned markup. */
-  readonly namespace?: PatchElementsNamespace
-  /** Whether to wrap the DOM update in a native browser View Transition. */
-  readonly useViewTransition?: boolean
-  /** Whether missing signal keys only should be patched. */
-  readonly onlyIfMissing?: boolean
+  readonly exclude?: Expr<RegExp> | RegExp | string
 }
 
 /**
@@ -46,8 +29,6 @@ export interface FetchActionOptions {
   readonly openWhenHidden?: boolean
   /** Explicit JSON signal payload sent instead of Datastar's filtered signal state. */
   readonly payload?: SignalStateInput
-  /** Overrides direct-response headers observed by Datastar's fetch action. */
-  readonly responseOverrides?: FetchActionResponseOverrides
   /** Retry policy for failed requests. @defaultValue `"auto"` */
   readonly retry?: "auto" | "error" | "always" | "never"
   /** Initial retry interval in milliseconds. @defaultValue `1000` */
@@ -69,7 +50,6 @@ const fetchOptionKeys = [
   "filterSignals",
   "openWhenHidden",
   "payload",
-  "responseOverrides",
   "retry",
   "retryInterval",
   "retryScaler",
@@ -78,30 +58,10 @@ const fetchOptionKeys = [
   "requestCancellation"
 ] as const
 
-const fetchResponseOverridesToJs = (overrides: FetchActionResponseOverrides): string => {
-  const entries: string[] = []
-
-  if (overrides.selector !== undefined) entries.push(`selector: ${toJs(overrides.selector)}`)
-  if (overrides.mode !== undefined) entries.push(`mode: ${toJs(overrides.mode)}`)
-  if (overrides.namespace !== undefined) entries.push(`namespace: ${toJs(overrides.namespace)}`)
-  if (overrides.useViewTransition !== undefined)
-    entries.push(`useViewTransition: ${toJs(overrides.useViewTransition)}`)
-  if (overrides.onlyIfMissing !== undefined)
-    entries.push(`onlyIfMissing: ${toJs(overrides.onlyIfMissing)}`)
-
-  return `{${entries.join(", ")}}`
-}
-
 const fetchOptionsToJs = (options: FetchActionOptions): string => {
   const entries: string[] = []
 
   for (const key of fetchOptionKeys) {
-    if (key === "responseOverrides") {
-      const value = options.responseOverrides
-      if (value !== undefined) entries.push(`${key}: ${fetchResponseOverridesToJs(value)}`)
-      continue
-    }
-
     const value = options[key]
     if (value !== undefined) entries.push(`${key}: ${toJs(value)}`)
   }
@@ -222,6 +182,22 @@ export const patch = (url: ExprInput<string>, options?: FetchActionOptions): Exp
 /** Creates a Datastar `@delete()` action expression. @see https://data-star.dev/reference/actions#delete */
 export const del = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> =>
   fetchAction("delete", url, options)
+
+/**
+ * Creates a Datastar `@peek()` action expression.
+ *
+ * @see https://data-star.dev/reference/actions#peek
+ */
+export const peek = <T = unknown>(callable: Expr<DatastarFunction<T>>): Expr<T> =>
+  datastarAction<T>("peek", callable)
+
+/** Creates a Datastar `@setAll()` action expression. @see https://data-star.dev/reference/actions#setall */
+export const setAll = (value: ExprInput<unknown>, filter?: SignalFilter): Expr<void> =>
+  filter === undefined ? datastarAction("setAll", value) : datastarAction("setAll", value, filter)
+
+/** Creates a Datastar `@toggleAll()` action expression. @see https://data-star.dev/reference/actions#toggleall */
+export const toggleAll = (filter?: SignalFilter): Expr<void> =>
+  filter === undefined ? datastarAction("toggleAll") : datastarAction("toggleAll", filter)
 
 /**
  * Creates an expression for an app-defined Datastar action such as `@myAction(...)`.

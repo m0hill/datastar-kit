@@ -5,12 +5,15 @@ export {
   del as delete,
   get,
   patch,
+  peek,
   post,
   put,
   queryUrl,
-  set
+  set,
+  setAll,
+  toggleAll
 } from "./actions.js"
-export type { FetchActionOptions, FetchActionResponseOverrides, SignalFilter } from "./actions.js"
+export type { FetchActionOptions, SignalFilter } from "./actions.js"
 
 export { preserve } from "./attributes.js"
 

@@ -158,7 +158,7 @@ return reply.patch(<article id="featured-card">Featured card</article>, {
 })
 ```
 
-The same option is available on `reply.patch(...)`, `event.patch(...)`, `reply.directHtml(...)`, and fetch action `responseOverrides`. Patches should still work in browsers where view transitions are unavailable.
+The same option is available on `reply.patch(...)`, `event.patch(...)`, and `reply.directHtml(...)`. Patches should still work in browsers where view transitions are unavailable.
 
 ## Direct HTML responses
 

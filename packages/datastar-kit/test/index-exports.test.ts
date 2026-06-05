@@ -9,10 +9,13 @@ import {
   unsafeHtml,
   js,
   mod,
+  peek,
   post,
   preserve,
+  setAll,
   signal,
-  state
+  state,
+  toggleAll
 } from "datastar-kit"
 
 describe("package root exports", () => {
@@ -29,6 +32,9 @@ describe("package root exports", () => {
     expect(Root.signal).toBe(signal)
     expect(Root.state).toBe(state)
     expect(Root.post).toBe(post)
+    expect(Root.peek).toBe(peek)
+    expect(Root.setAll).toBe(setAll)
+    expect(Root.toggleAll).toBe(toggleAll)
     expect(Root.js).toBe(js)
     expect(Root.mod).toBe(mod)
     expect(Root.preserve).toBe(preserve)

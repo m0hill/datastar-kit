@@ -165,6 +165,14 @@ describe("automatic JSX runtime", () => {
     )
   })
 
+  it("serializes native regular expressions in Datastar filter objects", () => {
+    const node = <pre data-json-signals={{ include: /^counter$/, exclude: /_temp$/ }}></pre>
+
+    expect(renderToString(node)).toBe(
+      '<pre data-json-signals="{&quot;include&quot;: new RegExp(&quot;^counter$&quot;, &quot;&quot;), &quot;exclude&quot;: new RegExp(&quot;_temp$&quot;, &quot;&quot;)}"></pre>'
+    )
+  })
+
   it("serializes keyed data-signals booleans as expression values", () => {
     const node = (
       <div>

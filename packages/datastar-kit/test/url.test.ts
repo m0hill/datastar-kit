@@ -58,15 +58,9 @@ describe("dynamic URL helpers", () => {
     expect(
       get("/fragment", {
         selector: null,
-        responseOverrides: {
-          selector: "#slot",
-          mode: "append",
-          namespace: "svg",
-          useViewTransition: true
-        }
+        contentType: "form",
+        openWhenHidden: true
       }).toDatastarExpression()
-    ).toBe(
-      '@get("/fragment", {selector: null, responseOverrides: {selector: "#slot", mode: "append", namespace: "svg", useViewTransition: true}})'
-    )
+    ).toBe('@get("/fragment", {selector: null, contentType: "form", openWhenHidden: true})')
   })
 })

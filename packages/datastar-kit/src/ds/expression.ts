@@ -58,6 +58,10 @@ export const toJs = (value: ExprInput<unknown>): string => {
     return JSON.stringify(value)
   }
 
+  if (value instanceof RegExp) {
+    return `new RegExp(${JSON.stringify(value.source)}, ${JSON.stringify(value.flags)})`
+  }
+
   if (Array.isArray(value)) {
     return `[${value.map((item) => toJs(item)).join(", ")}]`
   }
