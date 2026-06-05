@@ -44,12 +44,6 @@ export interface SseHeartbeatOptions {
   readonly comment?: string
 }
 
-/** Element patch options for `reply.patch()`. */
-export type PatchOptions = PatchElementsOptions
-
-/** Signal patch options for `reply.signals()`. */
-export type SignalsOptions = PatchSignalsOptions
-
 /**
  * SSE stream options for `reply.stream()`.
  */
@@ -272,7 +266,7 @@ export const page = (
  */
 export const patch = (
   elements: HtmlChild,
-  options: PatchOptions = {},
+  options: PatchElementsOptions = {},
   init: StreamResponseInit = {}
 ): Response => response(eventPatch(elements, options), init, 200, sseHeaders)
 
@@ -286,7 +280,7 @@ export const patch = (
  */
 export const signals = (
   value: SignalState,
-  options: SignalsOptions = {},
+  options: PatchSignalsOptions = {},
   init: StreamResponseInit = {}
 ): Response => response(eventSignals(value, options), init, 200, sseHeaders)
 
