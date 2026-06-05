@@ -6,3 +6,4 @@
 - Centralized Datastar attribute metadata so HTML rendering and JSX prop cleaning no longer duplicate presence/expression/modifier-target rules.
 - Derived modifier casing and keys from the option type, and replaced the hand-written modifier compatibility branch chain with a table checked against `DatastarModifierOptions`.
 - Replaced empty option-extension interfaces with direct type aliases and removed a couple of cleanup-time casts from internal metadata.
+- Moved Datastar modifier suffix rendering out of the JSX runtime so JSX prop cleaning only handles JSX/HTML concerns.
