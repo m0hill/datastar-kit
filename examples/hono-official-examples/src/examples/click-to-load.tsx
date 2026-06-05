@@ -56,7 +56,7 @@ example.get("/", () =>
       summary="Requests the next slice of table rows and patches the body in place."
       source="https://data-star.dev/examples/click_to_load"
     >
-      <div id="demo" data-signals__ifmissing={state.defaults}>
+      <div id="demo" data-signals={[state.defaults, { ifMissing: true }]}>
         <table>
           <thead>
             <tr>

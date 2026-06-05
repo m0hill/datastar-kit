@@ -31,10 +31,10 @@ const search = ds.state({ q: "" })
 />
 ```
 
-Use Datastar's native suffix syntax when an event needs modifiers:
+When an attribute needs Datastar modifiers, pass `[value, modifiers]`:
 
 ```tsx
-<form data-on:submit__prevent={ds.post("/signup")}>...</form>
+<form data-on:submit={[ds.post("/signup"), { prevent: true }]}>...</form>
 ```
 
 ## Command handlers
@@ -125,7 +125,9 @@ Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions us
 For Datastar's form transport, pass `contentType: "form"` in the fetch action options and read the request with your platform's form or multipart APIs:
 
 ```tsx
-<form data-on:submit__prevent={ds.post("/upload", { contentType: "form", selector: null })}>
+<form
+  data-on:submit={[ds.post("/upload", { contentType: "form", selector: null }), { prevent: true }]}
+>
   <input type="file" name="avatar" />
   <button>Upload</button>
 </form>

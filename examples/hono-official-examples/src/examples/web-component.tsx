@@ -15,7 +15,7 @@ example.get("/", () =>
       summary="Keeps a custom element attribute synchronized from a Datastar signal."
       source="https://data-star.dev/examples/web_component"
     >
-      <div class="stack" data-signals__ifmissing={state.defaults}>
+      <div class="stack" data-signals={[state.defaults, { ifMissing: true }]}>
         <label>
           Reversed
           <input type="text" data-bind={state.$._name} />

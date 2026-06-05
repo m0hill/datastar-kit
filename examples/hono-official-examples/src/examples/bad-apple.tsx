@@ -22,7 +22,7 @@ const state = ds.state({
 const BadApplePanel = () => (
   <div class="bad-apple">
     <label
-      data-signals__ifmissing={state.defaults}
+      data-signals={[state.defaults, { ifMissing: true }]}
       data-init={ds.get("/examples/bad_apple/updates")}
     >
       <span

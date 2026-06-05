@@ -60,7 +60,7 @@ const routes: Route[] = [
       reply.page(
         <main
           class="min-h-screen bg-slate-100 px-6 py-12"
-          data-signals__ifmissing={listState.defaults}
+          data-signals={[listState.defaults, { ifMissing: true }]}
         >
           <section class="mx-auto max-w-2xl">
             <div>
@@ -78,10 +78,10 @@ const routes: Route[] = [
                 class="w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                 placeholder="Search items"
                 data-bind={listState.$.query}
-                {...{ "data-on:input__debounce.200ms": ds.get("/items/search") }}
+                data-on:input={[ds.get("/items/search"), { debounce: "200ms" }]}
               />
 
-              <form class="mt-3 flex gap-2" data-on:submit__prevent={ds.post("/items")}>
+              <form class="mt-3 flex gap-2" data-on:submit={[ds.post("/items"), { prevent: true }]}>
                 <input
                   class="min-w-0 flex-1 rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                   placeholder="New item"

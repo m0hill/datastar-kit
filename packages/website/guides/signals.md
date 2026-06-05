@@ -33,7 +33,10 @@ Use those refs in Datastar attributes:
 
 ```tsx
 const SignupForm = () => (
-  <form data-signals__ifmissing={signup.defaults} data-on:submit__prevent={ds.post("/signup")}>
+  <form
+    data-signals={[signup.defaults, { ifMissing: true }]}
+    data-on:submit={[ds.post("/signup"), { prevent: true }]}
+  >
     <label>
       Name
       <input name="name" data-bind={signup.$.name} />
@@ -49,7 +52,7 @@ const SignupForm = () => (
 )
 ```
 
-Use `data-signals__ifmissing={state.defaults}` for missing-only initialization. That keeps
+Use `data-signals={[state.defaults, { ifMissing: true }]}` for missing-only initialization. That keeps
 reconnects and partial page updates from overwriting existing browser input unless you opt into that
 behavior.
 
@@ -90,7 +93,7 @@ const saving = ds.local<boolean>("saving")
 Standalone refs can initialize their own signal value:
 
 ```tsx
-<div data-signals:_saving__ifmissing={false} />
+<div data-signals:_saving={[false, { ifMissing: true }]} />
 ```
 
 Private names are a convention, not a security boundary. The browser still controls browser state.

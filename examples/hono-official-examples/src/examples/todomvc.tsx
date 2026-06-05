@@ -66,7 +66,7 @@ const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
         id={`todo-checkbox-${index}`}
         type="checkbox"
         data-init={ds.expr`el.checked = ${todo.completed}`}
-        data-on:click__prevent={ds.post(`/examples/todomvc/${index}/toggle`)}
+        data-on:click={[ds.post(`/examples/todomvc/${index}/toggle`), { prevent: true }]}
       />
       <label for={`todo-checkbox-${index}`}>
         <span>{todo.text}</span>
@@ -99,7 +99,7 @@ const TodoMvc = () => {
           type="checkbox"
           aria-label="Toggle all todos"
           data-init={ds.expr`el.checked = ${allCompleted}`}
-          data-on:click__prevent={ds.post("/examples/todomvc/-1/toggle")}
+          data-on:click={[ds.post("/examples/todomvc/-1/toggle"), { prevent: true }]}
         />
         <input
           id="new-todo"
@@ -107,7 +107,7 @@ const TodoMvc = () => {
           placeholder="What needs to be done?"
           {...(editingIndex === undefined
             ? {
-                "data-signals__ifmissing": state.defaults,
+                "data-signals": [state.defaults, { ifMissing: true }],
                 "data-bind": state.$.input,
                 "data-on:keydown": ds.expr`if (evt.key === ${"Enter"} && ${state.$.input}.trim()) { ${ds.patch("/examples/todomvc/-1")}; ${ds.set(state.$.input, "")} }`
               }

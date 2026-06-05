@@ -65,7 +65,7 @@ example.get("/", () =>
       summary="Binds file inputs into Datastar signals and posts the encoded file list."
       source="https://data-star.dev/examples/file_upload"
     >
-      <div class="stack" data-signals__ifmissing={state.defaults}>
+      <div class="stack" data-signals={[state.defaults, { ifMissing: true }]}>
         <label>
           <span>Pick anything less than 1 MiB</span>
           <input

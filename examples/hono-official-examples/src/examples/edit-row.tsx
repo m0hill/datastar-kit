@@ -102,7 +102,7 @@ const EditingRow = ({ index }: { index: number }) => (
 )
 
 const EditRowTable = ({ editingIndex }: { editingIndex?: number } = {}) => (
-  <div id="demo" data-signals__ifmissing={{ [fetching.name]: false }}>
+  <div id="demo" data-signals={[{ [fetching.name]: false }, { ifMissing: true }]}>
     <table>
       <thead>
         <tr>

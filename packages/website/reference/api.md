@@ -51,16 +51,19 @@ Fetch action options include `headers`, `contentType`, `filterSignals`, `payload
 Use native Datastar attributes directly:
 
 ```tsx
-<form data-signals__ifmissing={form.defaults} data-on:submit__prevent={ds.post("/signup")}>
+<form
+  data-signals={[form.defaults, { ifMissing: true }]}
+  data-on:submit={[ds.post("/signup"), { prevent: true }]}
+>
   <input data-bind={form.$.email} />
   <small data-show={form.$.errors.email} data-text={form.$.errors.email} />
 </form>
 ```
 
-For Datastar attribute names that TSX cannot parse, such as suffixes containing dots, use a raw prop object:
+When a Datastar attribute needs modifiers, pass `[value, modifiers]`:
 
 ```tsx
-<input {...{ "data-on:input__debounce.200ms": ds.get("/search") }} />
+<input data-on:input={[ds.get("/search"), { debounce: "200ms" }]} />
 ```
 
 ### Expressions

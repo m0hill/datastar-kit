@@ -32,7 +32,11 @@ example.get("/", () =>
       summary="Posts signal state for validation while the form is being edited."
       source="https://data-star.dev/examples/inline_validation"
     >
-      <div id="inline-validation-demo" class="stack" data-signals__ifmissing={state.defaults}>
+      <div
+        id="inline-validation-demo"
+        class="stack"
+        data-signals={[state.defaults, { ifMissing: true }]}
+      >
         <label>
           Email Address
           <input
@@ -40,9 +44,10 @@ example.get("/", () =>
             required
             aria-describedby="email-info"
             data-bind={"email"}
-            {...{
-              "data-on:keydown__debounce.500ms": ds.post("/examples/inline_validation/validate")
-            }}
+            data-on:keydown={[
+              ds.post("/examples/inline_validation/validate"),
+              { debounce: "500ms" }
+            ]}
           />
         </label>
         <p id="email-info" class="muted">
@@ -60,9 +65,10 @@ example.get("/", () =>
             type="text"
             required
             data-bind={"firstName"}
-            {...{
-              "data-on:keydown__debounce.500ms": ds.post("/examples/inline_validation/validate")
-            }}
+            data-on:keydown={[
+              ds.post("/examples/inline_validation/validate"),
+              { debounce: "500ms" }
+            ]}
           />
         </label>
         <small
@@ -77,9 +83,10 @@ example.get("/", () =>
             type="text"
             required
             data-bind={"lastName"}
-            {...{
-              "data-on:keydown__debounce.500ms": ds.post("/examples/inline_validation/validate")
-            }}
+            data-on:keydown={[
+              ds.post("/examples/inline_validation/validate"),
+              { debounce: "500ms" }
+            ]}
           />
         </label>
         <small

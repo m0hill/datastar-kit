@@ -23,8 +23,8 @@ describe("automatic JSX runtime", () => {
 
     const node = (
       <form
-        data-signals__ifmissing={{ password: "", _validation: { password: "" } }}
-        data-on:submit__prevent={post("/login")}
+        data-signals={[{ password: "", _validation: { password: "" } }, { ifMissing: true }]}
+        data-on:submit={[post("/login"), { prevent: true }]}
       >
         <input type="password" data-bind={login.$.password} />
         <small
@@ -57,7 +57,7 @@ describe("automatic JSX runtime", () => {
   it("serializes primitive values for expression-valued Datastar attributes", () => {
     const node = (
       <div
-        data-signals:_saving__ifmissing={false}
+        data-signals:_saving={[false, { ifMissing: true }]}
         data-attr:disabled={false}
         data-show={false}
         data-ignore
@@ -66,6 +66,32 @@ describe("automatic JSX runtime", () => {
 
     expect(renderToString(node)).toBe(
       '<div data-signals:_saving__ifmissing="false" data-attr:disabled="false" data-show="false" data-ignore></div>'
+    )
+  })
+
+  it("renders tuple modifier values as Datastar attribute suffixes", () => {
+    const node = <input type="search" data-on:input={[post("/search"), { debounce: "200ms" }]} />
+
+    expect(renderToString(node)).toBe(
+      '<input type="search" data-on:input__debounce.200ms="@post(&quot;/search&quot;)">'
+    )
+  })
+
+  it("renders structured timing modifiers from tuple values", () => {
+    const node = (
+      <button
+        type="button"
+        data-on:click={[
+          post("/save"),
+          { window: true, debounce: { duration: "500ms", leading: true } }
+        ]}
+      >
+        Save
+      </button>
+    )
+
+    expect(renderToString(node)).toBe(
+      '<button type="button" data-on:click__window__debounce.500ms.leading="@post(&quot;/save&quot;)">Save</button>'
     )
   })
 
@@ -79,6 +105,30 @@ describe("automatic JSX runtime", () => {
     expect(renderToString(node)).toBe(
       '<button data-on:click="@post(&#39;/save&#39;)" data-text="$message">Save</button>'
     )
+  })
+
+  it("keeps tuple string Datastar values raw", () => {
+    const node = <button data-on:click={["@post('/save')", { prevent: true }]}>Save</button>
+
+    expect(renderToString(node)).toBe(
+      '<button data-on:click__prevent="@post(&#39;/save&#39;)">Save</button>'
+    )
+  })
+
+  it("rejects tuple modifiers on incompatible Datastar attributes", () => {
+    expect(() =>
+      runtimeJsx("main", {
+        "data-signals": [{ ready: false }, { prevent: true }]
+      } as unknown as JsxProps)
+    ).toThrow('Datastar modifier "prevent" is not valid on "data-signals"')
+  })
+
+  it("rejects unknown tuple modifier names", () => {
+    expect(() =>
+      runtimeJsx("button", {
+        "data-on:click": [post("/save"), { preevent: true }]
+      } as unknown as JsxProps)
+    ).toThrow('Unknown Datastar modifier "preevent"')
   })
 
   it("still rejects expression objects on ordinary JSX props", () => {

@@ -23,9 +23,9 @@ const app = new Hono()
 
 app.get("/", () =>
   reply.page(
-    <main data-signals__ifmissing={signup.defaults}>
+    <main data-signals={[signup.defaults, { ifMissing: true }]}>
       <h1>Signup</h1>
-      <form data-on:submit__prevent={ds.post("/signup")}>
+      <form data-on:submit={[ds.post("/signup"), { prevent: true }]}>
         <p>
           <label>
             Name

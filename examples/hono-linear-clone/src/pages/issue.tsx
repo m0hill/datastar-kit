@@ -41,7 +41,7 @@ const issueState = ds.state({
 const IssuePage = (props: { detail: IssueDetail }) => (
   <main
     class="min-h-screen bg-bg text-fg"
-    data-signals__ifmissing={issueState.defaults}
+    data-signals={[issueState.defaults, { ifMissing: true }]}
     data-init={ds.get(`/issues/${props.detail.issue.id}/live`)}
   >
     <header class="h-15 border-b border-border flex items-center justify-between px-5 lg:px-8 bg-surface/40 backdrop-blur-md">
@@ -77,7 +77,7 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
 
       <form
         class="flex flex-col gap-3 bg-surface border border-border p-4"
-        data-on:submit__prevent={ds.post(`/issues/${issue.id}/comments`)}
+        data-on:submit={[ds.post(`/issues/${issue.id}/comments`), { prevent: true }]}
       >
         <label class="flex flex-col gap-1.5 section-label">
           Add a comment

@@ -18,8 +18,62 @@ export type JsxElement = HtmlNode | readonly HtmlChild[]
 type DatastarJsxValue =
   | HtmlPropValue
   | Expr
+  | DatastarModifierTuple
   | readonly DatastarJsxValue[]
   | { readonly [key: string]: DatastarJsxValue }
+
+type DatastarModifierTarget =
+  | "bind"
+  | "case"
+  | "computed"
+  | "init"
+  | "intersect"
+  | "interval"
+  | "jsonSignals"
+  | "on"
+  | "signalPatch"
+  | "signals"
+
+type TimingModifierOptions = Readonly<{
+  duration: string | number
+  leading?: boolean
+  noTrailing?: boolean
+  noLeading?: boolean
+  trailing?: boolean
+}>
+
+type DatastarModifierOptions = Readonly<{
+  capture?: boolean
+  case?: boolean | string | number
+  debounce?: boolean | string | number | TimingModifierOptions
+  delay?: boolean | string | number
+  document?: boolean
+  duration?: boolean | string | number
+  events?: string | readonly string[]
+  exit?: boolean
+  full?: boolean
+  half?: boolean
+  ifMissing?: boolean
+  leading?: boolean
+  once?: boolean
+  outside?: boolean
+  passive?: boolean
+  prevent?: boolean
+  prop?: boolean | string | number
+  stop?: boolean
+  terse?: boolean
+  threshold?: boolean | string | number
+  throttle?: boolean | string | number | TimingModifierOptions
+  viewTransition?: boolean
+  window?: boolean
+}>
+
+type DatastarModifierTuple = readonly [DatastarJsxValue, DatastarModifierOptions]
+
+interface DatastarModifier {
+  readonly key: string
+  readonly suffix: string
+}
 
 export type JsxProps = Readonly<
   Record<string, HtmlPropValue | HtmlChild | readonly HtmlChild[] | DatastarJsxValue>
@@ -70,6 +124,30 @@ const isDatastarAttribute = (name: string): boolean => name.startsWith("data-")
 
 const datastarAttributeRoot = (name: string): string => name.split("__", 1)[0] ?? name
 
+const datastarModifierTarget = (name: string): DatastarModifierTarget | undefined => {
+  const root = datastarAttributeRoot(name)
+
+  if (root === "data-bind" || root.startsWith("data-bind:")) return "bind"
+  if (
+    root === "data-ref" ||
+    root.startsWith("data-ref:") ||
+    root === "data-indicator" ||
+    root.startsWith("data-indicator:") ||
+    root.startsWith("data-class:")
+  ) {
+    return "case"
+  }
+  if (root === "data-computed" || root.startsWith("data-computed:")) return "computed"
+  if (root === "data-init") return "init"
+  if (root === "data-on-intersect") return "intersect"
+  if (root === "data-on-interval") return "interval"
+  if (root === "data-json-signals") return "jsonSignals"
+  if (root === "data-on-signal-patch") return "signalPatch"
+  if (root.startsWith("data-on:")) return "on"
+  if (root === "data-signals" || root.startsWith("data-signals:")) return "signals"
+  return undefined
+}
+
 const isDatastarExpressionAttribute = (name: string): boolean => {
   const root = datastarAttributeRoot(name)
   return (
@@ -109,19 +187,213 @@ const isDatastarSerializableValue = (name: string, value: unknown): boolean =>
   (isDatastarExpressionAttribute(name) &&
     (typeof value === "number" || typeof value === "boolean" || value === null))
 
+const durationModifier = (value: unknown): string => {
+  if (typeof value === "number") return `${value}ms`
+  if (typeof value === "string") return /^\d+$/.test(value) ? `${value}ms` : value
+  throw new TypeError(`Unsupported Datastar duration modifier value: ${JSON.stringify(value)}`)
+}
+
+const isModifierRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
+  typeof value === "object" && value !== null && !Array.isArray(value) && !isExpr(value)
+
+const flagModifier = (
+  key: string,
+  value: unknown,
+  suffix: string
+): DatastarModifier | undefined => {
+  if (value === false || value === null || value === undefined) return undefined
+  if (value === true) return { key, suffix }
+  throw new TypeError(`Datastar modifier ${JSON.stringify(key)} expects a boolean value`)
+}
+
+const durationTaggedModifier = (
+  key: string,
+  value: unknown,
+  modifier: string
+): DatastarModifier | undefined => {
+  if (value === false || value === null || value === undefined) return undefined
+  if (value === true) return { key, suffix: modifier }
+  return { key, suffix: `${modifier}.${durationModifier(value)}` }
+}
+
+const timingTaggedModifier = (
+  key: string,
+  value: unknown,
+  modifier: "debounce" | "throttle"
+): DatastarModifier | undefined => {
+  if (value === false || value === null || value === undefined) return undefined
+  if (value === true) return { key, suffix: modifier }
+
+  if (!isModifierRecord(value)) {
+    return { key, suffix: `${modifier}.${durationModifier(value)}` }
+  }
+
+  const duration = value.duration
+  if (duration === undefined) {
+    throw new TypeError(`Datastar modifier ${JSON.stringify(key)} requires a duration`)
+  }
+
+  const parts = [durationModifier(duration)]
+  if (modifier === "debounce") {
+    if (value.leading === true) parts.push("leading")
+    if (value.noTrailing === true) parts.push("notrailing")
+  } else {
+    if (value.noLeading === true) parts.push("noleading")
+    if (value.trailing === true) parts.push("trailing")
+  }
+  return { key, suffix: `${modifier}.${parts.join(".")}` }
+}
+
+const valueTaggedModifier = (
+  key: string,
+  value: unknown,
+  modifier: string
+): DatastarModifier | undefined => {
+  if (value === false || value === null || value === undefined) return undefined
+  if (value === true) return { key, suffix: modifier }
+  if (typeof value === "string" || typeof value === "number") {
+    return { key, suffix: `${modifier}.${value}` }
+  }
+  throw new TypeError(`Datastar modifier ${JSON.stringify(key)} expects a string or number value`)
+}
+
+const eventsModifier = (value: unknown): string => {
+  const events = typeof value === "string" ? [value] : Array.isArray(value) ? value : undefined
+  if (events === undefined || events.some((event) => typeof event !== "string")) {
+    throw new TypeError('Datastar modifier "events" expects a string or string array')
+  }
+  return `event.${events.join(".")}`
+}
+
+const cleanDatastarModifier = (key: string, value: unknown): DatastarModifier | undefined => {
+  switch (key) {
+    case "capture":
+    case "document":
+    case "exit":
+    case "full":
+    case "half":
+    case "leading":
+    case "once":
+    case "outside":
+    case "passive":
+    case "prevent":
+    case "stop":
+    case "window":
+      return flagModifier(key, value, key)
+    case "ifMissing":
+      return flagModifier(key, value, "ifmissing")
+    case "terse":
+      return flagModifier(key, value, "terse")
+    case "viewTransition":
+      return flagModifier(key, value, "viewtransition")
+    case "delay":
+      return durationTaggedModifier(key, value, "delay")
+    case "duration":
+      return durationTaggedModifier(key, value, "duration")
+    case "debounce":
+      return timingTaggedModifier(key, value, "debounce")
+    case "throttle":
+      return timingTaggedModifier(key, value, "throttle")
+    case "case":
+    case "prop":
+    case "threshold":
+      return valueTaggedModifier(key, value, key)
+    case "events":
+      if (value === false || value === null || value === undefined) return undefined
+      return { key, suffix: eventsModifier(value) }
+    default:
+      throw new TypeError(`Unknown Datastar modifier ${JSON.stringify(key)}`)
+  }
+}
+
+const isCompatibleModifier = (
+  target: DatastarModifierTarget,
+  modifier: DatastarModifier
+): boolean => {
+  const key = modifier.key
+
+  if (key === "case")
+    return target === "bind" || target === "case" || target === "computed" || target === "signals"
+  if (key === "prop" || key === "events") return target === "bind"
+  if (key === "ifMissing") return target === "signals"
+  if (key === "terse") return target === "jsonSignals"
+  if (key === "duration" || key === "leading") return target === "interval"
+  if (key === "exit" || key === "half" || key === "full" || key === "threshold")
+    return target === "intersect"
+  if (key === "delay" || key === "debounce" || key === "throttle" || key === "viewTransition")
+    return (
+      target === "on" || target === "intersect" || target === "signalPatch" || target === "init"
+    )
+  if (key === "once") return target === "on" || target === "intersect"
+  if (
+    key === "capture" ||
+    key === "document" ||
+    key === "outside" ||
+    key === "passive" ||
+    key === "prevent" ||
+    key === "stop" ||
+    key === "window"
+  )
+    return target === "on"
+
+  return false
+}
+
+const isDatastarModifierTuple = (
+  name: string,
+  value: unknown
+): value is readonly [unknown, Readonly<Record<string, unknown>>] =>
+  isDatastarAttribute(name) &&
+  Array.isArray(value) &&
+  value.length === 2 &&
+  isModifierRecord(value[1])
+
+const cleanDatastarValue = (name: string, value: unknown): unknown => {
+  if (value instanceof Signal && isDatastarSignalNameAttribute(name)) {
+    return value.name
+  }
+
+  if (isDatastarSerializableValue(name, value)) {
+    return toJs(value)
+  }
+
+  return value
+}
+
 const cleanDatastarProp = (
   name: string,
   value: unknown
 ): { readonly name: string; readonly value: unknown } => {
-  if (!isDatastarAttribute(name) || !isDatastarSerializableValue(name, value)) {
+  if (!isDatastarAttribute(name)) {
     return { name, value }
   }
 
-  if (value instanceof Signal && isDatastarSignalNameAttribute(name)) {
-    return { name, value: value.name }
+  if (isDatastarModifierTuple(name, value)) {
+    const target = datastarModifierTarget(name)
+    if (target === undefined) {
+      throw new TypeError(`Datastar attribute ${JSON.stringify(name)} does not accept modifiers`)
+    }
+
+    const [attributeValue, modifiers] = value
+    const suffixes: string[] = []
+    for (const [key, modifierValue] of Object.entries(modifiers)) {
+      const modifier = cleanDatastarModifier(key, modifierValue)
+      if (modifier === undefined) continue
+      if (!isCompatibleModifier(target, modifier)) {
+        throw new TypeError(
+          `Datastar modifier ${JSON.stringify(key)} is not valid on ${JSON.stringify(name)}`
+        )
+      }
+      suffixes.push(modifier.suffix)
+    }
+
+    return {
+      name: suffixes.length === 0 ? name : `${name}__${suffixes.join("__")}`,
+      value: cleanDatastarValue(name, attributeValue)
+    }
   }
 
-  return { name, value: toJs(value as DatastarJsxValue) }
+  return { name, value: cleanDatastarValue(name, value) }
 }
 
 const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): HtmlProps => {

@@ -22,7 +22,7 @@ const loginState = ds.state({
 const LoginPage = () => (
   <main
     class="min-h-screen grid place-items-center p-4 bg-bg"
-    data-signals__ifmissing={loginState.defaults}
+    data-signals={[loginState.defaults, { ifMissing: true }]}
   >
     <section class="w-full max-w-96 bg-surface border border-border p-6 flex flex-col gap-5 shadow-[0_4px_20px_rgba(0,0,0,0.35)]">
       <div class="flex items-center gap-2 border-b border-border pb-4">
@@ -31,7 +31,7 @@ const LoginPage = () => (
           Linear System / Login
         </h1>
       </div>
-      <form class="flex flex-col gap-4" data-on:submit__prevent={ds.post("/login")}>
+      <form class="flex flex-col gap-4" data-on:submit={[ds.post("/login"), { prevent: true }]}>
         <label class="flex flex-col gap-1.5 section-label">
           Username
           <input

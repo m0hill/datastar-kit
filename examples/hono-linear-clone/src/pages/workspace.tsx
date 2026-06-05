@@ -97,7 +97,10 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
 
       <div class="flex flex-col gap-2">
         <h2 class="section-label px-2">New Project</h2>
-        <form class="flex flex-col gap-3 px-2" data-on:submit__prevent={ds.post("/projects")}>
+        <form
+          class="flex flex-col gap-3 px-2"
+          data-on:submit={[ds.post("/projects"), { prevent: true }]}
+        >
           <label class="flex flex-col gap-1.5 section-label">
             Name
             <input class="field" placeholder="Engineering" data-bind={state.$.projectName} />
@@ -253,7 +256,7 @@ export const IssueProjectSelect = (props: { projects: Project[] }) => (
 const IssueModalForm = (props: { projects: Project[] }) => (
   <form
     class="bg-surface border border-border w-full max-w-130 flex flex-col gap-4 p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
-    data-on:submit__prevent={ds.post("/issues")}
+    data-on:submit={[ds.post("/issues"), { prevent: true }]}
     data-on:click={ds.expr`evt.stopPropagation()`}
   >
     <div class="flex items-center justify-between border-b border-border pb-3 -mx-5 px-5 -mt-1">
@@ -358,7 +361,7 @@ const IssueModal = (props: { projects: Project[] }) => (
 const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
   <main
     class="h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg overflow-hidden"
-    data-signals__ifmissing={state.defaults}
+    data-signals={[state.defaults, { ifMissing: true }]}
     data-init={ds.get("/workspace/live")}
   >
     <div class="hidden lg:flex">

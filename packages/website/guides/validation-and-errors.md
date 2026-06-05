@@ -55,7 +55,10 @@ Bind fields to signal refs and render validation text from the same state helper
 
 ```tsx
 const ContactForm = () => (
-  <form data-signals__ifmissing={contact.defaults} data-on:submit__prevent={ds.post("/contact")}>
+  <form
+    data-signals={[contact.defaults, { ifMissing: true }]}
+    data-on:submit={[ds.post("/contact"), { prevent: true }]}
+  >
     <label>
       Name
       <input name="name" data-bind={contact.$.name} />

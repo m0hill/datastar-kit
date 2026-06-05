@@ -30,7 +30,7 @@ const signupState = ds.state({
 const SignupPage = () => (
   <main
     class="min-h-screen grid place-items-center p-4 bg-bg"
-    data-signals__ifmissing={signupState.defaults}
+    data-signals={[signupState.defaults, { ifMissing: true }]}
   >
     <section class="w-full max-w-96 bg-surface border border-border p-6 flex flex-col gap-5 shadow-[0_4px_20px_rgba(0,0,0,0.35)]">
       <div class="flex items-center gap-2 border-b border-border pb-4">
@@ -39,7 +39,7 @@ const SignupPage = () => (
           Linear System / Register
         </h1>
       </div>
-      <form class="flex flex-col gap-4" data-on:submit__prevent={ds.post("/signup")}>
+      <form class="flex flex-col gap-4" data-on:submit={[ds.post("/signup"), { prevent: true }]}>
         <label class="flex flex-col gap-1.5 section-label">
           Name
           <input

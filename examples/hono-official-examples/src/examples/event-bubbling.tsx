@@ -29,7 +29,7 @@ example.get("/", () =>
       summary="Uses one delegated click listener to read button metadata from bubbled events."
       source="https://data-star.dev/examples/event_bubbling"
     >
-      <div id="demo" data-signals__ifmissing={state.defaults}>
+      <div id="demo" data-signals={[state.defaults, { ifMissing: true }]}>
         <p>
           Key pressed: <span data-text={state.$.key}></span>
         </p>

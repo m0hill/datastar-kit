@@ -19,7 +19,7 @@ example.get("/", () =>
       summary="Records signal patches with Datastar's signal-patch event hooks."
       source="https://data-star.dev/examples/on_signal_patch"
     >
-      <div class="stack" data-signals__ifmissing={state.defaults}>
+      <div class="stack" data-signals={[state.defaults, { ifMissing: true }]}>
         <div class="actions">
           <button
             data-on:click={ds.set(

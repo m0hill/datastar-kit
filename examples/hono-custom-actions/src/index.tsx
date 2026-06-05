@@ -11,7 +11,7 @@ app.use("/static/*", serveStatic({ root: fileURLToPath(new URL("../", import.met
 
 app.get("/", () =>
   reply.page(
-    <main id="app" data-signals__ifmissing={dialogState.defaults}>
+    <main id="app" data-signals={[dialogState.defaults, { ifMissing: true }]}>
       <h1>Custom Datastar actions</h1>
       <p>
         This example shows custom browser actions from <code>static/datastar-actions.js</code>. The

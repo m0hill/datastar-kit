@@ -33,7 +33,7 @@ const ViewTransitionButton = ({ restored }: { restored: boolean }) => {
     <button
       id="view-transition"
       class={restored ? "success" : "info"}
-      data-signals__ifmissing={state.defaults}
+      data-signals={[state.defaults, { ifMissing: true }]}
       data-indicator={fetching}
       data-attr:disabled={fetching}
       data-on:click={ds.get("/examples/animations/view_transition")}

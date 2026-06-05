@@ -68,7 +68,7 @@ example.get("/", () =>
       <div
         id="demo"
         class="stack"
-        data-signals__ifmissing={state.defaults}
+        data-signals={[state.defaults, { ifMissing: true }]}
         data-init={ds.get("/examples/infinite_scroll/initial", {
           payload: {
             limit: ds.expr`Math.ceil(window.innerHeight / 44) + 4`

@@ -18,7 +18,7 @@ example.get("/", () =>
         <p
           id="custom-event-target"
           class="event-output"
-          data-signals__ifmissing={state.defaults}
+          data-signals={[state.defaults, { ifMissing: true }]}
           data-on:myevent={ds.set(state.$._eventDetails, ds.expr`evt.detail`)}
           data-text={ds.expr`${"Last Event Details: "} + ${state.$._eventDetails}`}
         ></p>

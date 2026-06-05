@@ -45,7 +45,10 @@ const login = ds.state({
 })
 
 const LoginForm = () => (
-  <form data-signals__ifmissing={login.defaults} data-on:submit__prevent={ds.post("/login")}>
+  <form
+    data-signals={[login.defaults, { ifMissing: true }]}
+    data-on:submit={[ds.post("/login"), { prevent: true }]}
+  >
     <input type="password" data-bind={login.$.password} />
     <small data-show={login.$._validation.password} data-text={login.$._validation.password} />
   </form>
@@ -53,8 +56,8 @@ const LoginForm = () => (
 ```
 
 String values stay raw, so ordinary HTML and hand-written Datastar expressions still render exactly
-as written. Datastar modifiers use normal Datastar suffix syntax such as `__prevent` and
-`__ifmissing`.
+as written. When a Datastar attribute needs modifiers, pass `[value, modifiers]`, such as
+`data-on:input={[ds.get("/search"), { debounce: "200ms" }]}`.
 
 ## Pages
 

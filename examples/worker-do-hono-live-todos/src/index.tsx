@@ -20,7 +20,7 @@ const todoState = ds.state({
 })
 
 const TodoForm = () => (
-  <form class="panel" data-on:submit__prevent={ds.post("/todos")}>
+  <form class="panel" data-on:submit={[ds.post("/todos"), { prevent: true }]}>
     <label for="todo-title">New todo</label>
     <div class="new-todo-row">
       <input
@@ -65,7 +65,7 @@ const TodoList = ({ todos }: { readonly todos: readonly Todo[] }) => (
 )
 
 const TodosPage = ({ todos }: { readonly todos: readonly Todo[] }) => (
-  <main data-signals__ifmissing={todoState.defaults} data-init={ds.get("/live")}>
+  <main data-signals={[todoState.defaults, { ifMissing: true }]} data-init={ds.get("/live")}>
     <header>
       <h1>Worker DO Hono live todos</h1>
       <p class="muted">

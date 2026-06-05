@@ -14,7 +14,7 @@ app.use("/static/*", serveStatic({ root: fileURLToPath(new URL("../", import.met
 
 app.get("/", () =>
   reply.page(
-    <main id="app" data-signals__ifmissing={{ modalOpen: false }}>
+    <main id="app" data-signals={[{ modalOpen: false }, { ifMissing: true }]}>
       <h1>Datastar modal</h1>
       <p>
         This example patches a native <code>&lt;dialog&gt;</code> into a modal slot from a Hono
