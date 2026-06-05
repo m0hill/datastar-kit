@@ -95,6 +95,40 @@ describe("automatic JSX runtime", () => {
     )
   })
 
+  it("renders bind event and prop modifiers", () => {
+    const node = <input data-bind={["accepted", { prop: "checked", event: ["input", "change"] }]} />
+
+    expect(renderToString(node)).toBe(
+      '<input data-bind__prop.checked__event.input.change="accepted">'
+    )
+  })
+
+  it("renders case modifiers for keyed event names", () => {
+    const node = <button data-on:widget-loaded={[post("/widgets"), { case: "camel" }]}>Sync</button>
+
+    expect(renderToString(node)).toBe(
+      '<button data-on:widget-loaded__case.camel="@post(&quot;/widgets&quot;)">Sync</button>'
+    )
+  })
+
+  it("renders ignore self modifiers", () => {
+    const node = <div data-ignore={[true, { self: true }]}></div>
+
+    expect(renderToString(node)).toBe("<div data-ignore__self></div>")
+  })
+
+  it("renders interval duration tags and view transition modifiers", () => {
+    const node = (
+      <div
+        data-on-interval={["$count++", { duration: "500ms", leading: true, viewTransition: true }]}
+      ></div>
+    )
+
+    expect(renderToString(node)).toBe(
+      '<div data-on-interval__duration.500ms.leading__viewtransition="$count++"></div>'
+    )
+  })
+
   it("keeps string Datastar attribute values raw", () => {
     const node = (
       <button data-on:click="@post('/save')" data-text="$message">
@@ -129,6 +163,20 @@ describe("automatic JSX runtime", () => {
         "data-on:click": [post("/save"), { preevent: true }]
       } as unknown as JsxProps)
     ).toThrow('Unknown Datastar modifier "preevent"')
+  })
+
+  it("rejects Datastar modifiers that are not listed for the attribute", () => {
+    expect(() =>
+      runtimeJsx("div", {
+        "data-init": ["$count = 1", { debounce: "500ms" }]
+      } as unknown as JsxProps)
+    ).toThrow('Datastar modifier "debounce" is not valid on "data-init"')
+
+    expect(() =>
+      runtimeJsx("div", {
+        "data-on-signal-patch": ["console.log(patch)", { viewTransition: true }]
+      } as unknown as JsxProps)
+    ).toThrow('Datastar modifier "viewTransition" is not valid on "data-on-signal-patch"')
   })
 
   it("still rejects expression objects on ordinary JSX props", () => {

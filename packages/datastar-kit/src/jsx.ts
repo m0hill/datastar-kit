@@ -26,6 +26,7 @@ type DatastarModifierTarget =
   | "bind"
   | "case"
   | "computed"
+  | "ignore"
   | "init"
   | "intersect"
   | "interval"
@@ -42,14 +43,16 @@ type TimingModifierOptions = Readonly<{
   trailing?: boolean
 }>
 
+type CaseModifier = "camel" | "kebab" | "snake" | "pascal"
+
 type DatastarModifierOptions = Readonly<{
   capture?: boolean
-  case?: boolean | string | number
+  case?: CaseModifier
   debounce?: boolean | string | number | TimingModifierOptions
   delay?: boolean | string | number
   document?: boolean
   duration?: boolean | string | number
-  events?: string | readonly string[]
+  event?: string | readonly string[]
   exit?: boolean
   full?: boolean
   half?: boolean
@@ -59,10 +62,11 @@ type DatastarModifierOptions = Readonly<{
   outside?: boolean
   passive?: boolean
   prevent?: boolean
-  prop?: boolean | string | number
+  prop?: string
+  self?: boolean
   stop?: boolean
   terse?: boolean
-  threshold?: boolean | string | number
+  threshold?: string | number
   throttle?: boolean | string | number | TimingModifierOptions
   viewTransition?: boolean
   window?: boolean
@@ -138,6 +142,7 @@ const datastarModifierTarget = (name: string): DatastarModifierTarget | undefine
     return "case"
   }
   if (root === "data-computed" || root.startsWith("data-computed:")) return "computed"
+  if (root === "data-ignore") return "ignore"
   if (root === "data-init") return "init"
   if (root === "data-on-intersect") return "intersect"
   if (root === "data-on-interval") return "interval"
@@ -247,23 +252,28 @@ const timingTaggedModifier = (
 const valueTaggedModifier = (
   key: string,
   value: unknown,
-  modifier: string
+  modifier: string,
+  allowed?: ReadonlySet<string>
 ): DatastarModifier | undefined => {
   if (value === false || value === null || value === undefined) return undefined
-  if (value === true) return { key, suffix: modifier }
   if (typeof value === "string" || typeof value === "number") {
+    if (allowed !== undefined && !allowed.has(String(value))) {
+      throw new TypeError(`Datastar modifier ${JSON.stringify(key)} received unsupported value`)
+    }
     return { key, suffix: `${modifier}.${value}` }
   }
   throw new TypeError(`Datastar modifier ${JSON.stringify(key)} expects a string or number value`)
 }
 
-const eventsModifier = (value: unknown): string => {
+const eventModifier = (value: unknown): string => {
   const events = typeof value === "string" ? [value] : Array.isArray(value) ? value : undefined
   if (events === undefined || events.some((event) => typeof event !== "string")) {
-    throw new TypeError('Datastar modifier "events" expects a string or string array')
+    throw new TypeError('Datastar modifier "event" expects a string or string array')
   }
   return `event.${events.join(".")}`
 }
+
+const caseModifiers = new Set(["camel", "kebab", "snake", "pascal"])
 
 const cleanDatastarModifier = (key: string, value: unknown): DatastarModifier | undefined => {
   switch (key) {
@@ -280,6 +290,8 @@ const cleanDatastarModifier = (key: string, value: unknown): DatastarModifier | 
     case "stop":
     case "window":
       return flagModifier(key, value, key)
+    case "self":
+      return flagModifier(key, value, "self")
     case "ifMissing":
       return flagModifier(key, value, "ifmissing")
     case "terse":
@@ -295,14 +307,43 @@ const cleanDatastarModifier = (key: string, value: unknown): DatastarModifier | 
     case "throttle":
       return timingTaggedModifier(key, value, "throttle")
     case "case":
+      return valueTaggedModifier(key, value, key, caseModifiers)
     case "prop":
     case "threshold":
       return valueTaggedModifier(key, value, key)
-    case "events":
+    case "event":
       if (value === false || value === null || value === undefined) return undefined
-      return { key, suffix: eventsModifier(value) }
+      return { key, suffix: eventModifier(value) }
     default:
       throw new TypeError(`Unknown Datastar modifier ${JSON.stringify(key)}`)
+  }
+}
+
+const intervalDurationModifier = (
+  duration: unknown,
+  leading: unknown,
+  hasDuration: boolean
+): DatastarModifier | undefined => {
+  const durationEnabled = duration !== false && duration !== null && duration !== undefined
+  const leadingEnabled = leading === true
+
+  if (leading !== false && leading !== null && leading !== undefined && leading !== true) {
+    throw new TypeError('Datastar modifier "leading" expects a boolean value')
+  }
+
+  if (!durationEnabled && !leadingEnabled) return undefined
+
+  const parts: string[] = []
+  if (hasDuration && duration !== true) {
+    parts.push(durationModifier(duration))
+  }
+  if (leadingEnabled) {
+    parts.push("leading")
+  }
+
+  return {
+    key: "duration",
+    suffix: parts.length === 0 ? "duration" : `duration.${parts.join(".")}`
   }
 }
 
@@ -313,17 +354,28 @@ const isCompatibleModifier = (
   const key = modifier.key
 
   if (key === "case")
-    return target === "bind" || target === "case" || target === "computed" || target === "signals"
-  if (key === "prop" || key === "events") return target === "bind"
+    return (
+      target === "bind" ||
+      target === "case" ||
+      target === "computed" ||
+      target === "on" ||
+      target === "signals"
+    )
+  if (key === "prop" || key === "event") return target === "bind"
+  if (key === "self") return target === "ignore"
   if (key === "ifMissing") return target === "signals"
   if (key === "terse") return target === "jsonSignals"
-  if (key === "duration" || key === "leading") return target === "interval"
+  if (key === "duration") return target === "interval"
   if (key === "exit" || key === "half" || key === "full" || key === "threshold")
     return target === "intersect"
-  if (key === "delay" || key === "debounce" || key === "throttle" || key === "viewTransition")
+  if (key === "delay")
     return (
       target === "on" || target === "intersect" || target === "signalPatch" || target === "init"
     )
+  if (key === "debounce" || key === "throttle")
+    return target === "on" || target === "intersect" || target === "signalPatch"
+  if (key === "viewTransition")
+    return target === "on" || target === "intersect" || target === "init" || target === "interval"
   if (key === "once") return target === "on" || target === "intersect"
   if (
     key === "capture" ||
@@ -337,6 +389,49 @@ const isCompatibleModifier = (
     return target === "on"
 
   return false
+}
+
+const cleanDatastarModifiers = (
+  target: DatastarModifierTarget,
+  name: string,
+  modifiers: Readonly<Record<string, unknown>>
+): string[] => {
+  const suffixes: string[] = []
+  let intervalDuration: unknown
+  let intervalLeading: unknown
+  let hasIntervalDuration = false
+
+  for (const [key, modifierValue] of Object.entries(modifiers)) {
+    if (target === "interval" && key === "duration") {
+      intervalDuration = modifierValue
+      hasIntervalDuration = true
+      continue
+    }
+    if (target === "interval" && key === "leading") {
+      intervalLeading = modifierValue
+      continue
+    }
+
+    const modifier = cleanDatastarModifier(key, modifierValue)
+    if (modifier === undefined) continue
+    if (!isCompatibleModifier(target, modifier)) {
+      throw new TypeError(
+        `Datastar modifier ${JSON.stringify(key)} is not valid on ${JSON.stringify(name)}`
+      )
+    }
+    suffixes.push(modifier.suffix)
+  }
+
+  if (target === "interval") {
+    const duration = intervalDurationModifier(
+      intervalDuration,
+      intervalLeading,
+      hasIntervalDuration
+    )
+    if (duration !== undefined) suffixes.unshift(duration.suffix)
+  }
+
+  return suffixes
 }
 
 const isDatastarModifierTuple = (
@@ -375,17 +470,7 @@ const cleanDatastarProp = (
     }
 
     const [attributeValue, modifiers] = value
-    const suffixes: string[] = []
-    for (const [key, modifierValue] of Object.entries(modifiers)) {
-      const modifier = cleanDatastarModifier(key, modifierValue)
-      if (modifier === undefined) continue
-      if (!isCompatibleModifier(target, modifier)) {
-        throw new TypeError(
-          `Datastar modifier ${JSON.stringify(key)} is not valid on ${JSON.stringify(name)}`
-        )
-      }
-      suffixes.push(modifier.suffix)
-    }
+    const suffixes = cleanDatastarModifiers(target, name, modifiers)
 
     return {
       name: suffixes.length === 0 ? name : `${name}__${suffixes.join("__")}`,
