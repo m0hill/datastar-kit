@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { event, reply, read, state as createState, get, js, mod } from "datastar-kit"
+import { event, reply, read, state, get, js, mod } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -17,7 +17,7 @@ const schema = z.object({
   limit: z.number().int().min(1).max(50).default(pageSize)
 })
 
-const state = createState({ offset: 0, limit: pageSize })
+const scrollState = state({ offset: 0, limit: pageSize })
 
 const agentRows = (start: number, end: number) =>
   agents.slice(start, end).map((agent) => (
@@ -68,7 +68,7 @@ example.get("/", () =>
       <div
         id="demo"
         class="stack"
-        data-signals={mod(state.defaults, { ifMissing: true })}
+        data-signals={mod(scrollState.defaults, { ifMissing: true })}
         data-init={get("/examples/infinite_scroll/initial", {
           payload: {
             limit: js`Math.ceil(window.innerHeight / 44) + 4`
@@ -103,7 +103,7 @@ example.get("/initial", async (c) => {
   const initialRows = Math.min(Math.max(limit, pageSize), maxInitialRows)
 
   return reply.stream([
-    event.signals(state.patch({ offset: initialRows, limit: pageSize })),
+    event.signals(scrollState.patch({ offset: initialRows, limit: pageSize })),
     event.patch(agentRows(0, initialRows), { selector: "#agents", mode: "inner" }),
     event.patch(<Loader />)
   ])
@@ -119,7 +119,7 @@ example.get("/more", async (c) => {
   const nextOffset = Math.min(offset + limit, agents.length)
 
   return reply.stream([
-    event.signals(state.patch({ offset: nextOffset, limit })),
+    event.signals(scrollState.patch({ offset: nextOffset, limit })),
     event.patch(agentRows(offset, nextOffset), { selector: "#agents", mode: "append" }),
     event.patch(<Loader />)
   ])

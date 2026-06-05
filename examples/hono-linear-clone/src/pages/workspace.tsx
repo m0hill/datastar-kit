@@ -1,5 +1,5 @@
 import { getCookie } from "hono/cookie"
-import { event, read, reply, state as createState, get, js, mod, post, set } from "datastar-kit"
+import { event, read, reply, state, get, js, mod, post, set } from "datastar-kit"
 import { z } from "zod"
 import { pageHead, type App } from "../app.js"
 import { deleteSessionCookie, deleteSession } from "../auth/session.js"
@@ -33,7 +33,7 @@ const createIssueSchema = z.object({
   issuePriority: z.enum(issuePriorityValues)
 })
 
-const state = createState({
+const workspaceState = state({
   projectId: "",
   projectName: "",
   projectKey: "",
@@ -103,23 +103,36 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
         >
           <label class="flex flex-col gap-1.5 section-label">
             Name
-            <input class="field" placeholder="Engineering" data-bind={state.$.projectName} />
+            <input
+              class="field"
+              placeholder="Engineering"
+              data-bind={workspaceState.$.projectName}
+            />
             <small
               class="text-danger text-[13px] font-medium min-h-4"
-              data-text={state.$._validation.projectName}
+              data-text={workspaceState.$._validation.projectName}
             ></small>
           </label>
           <label class="flex flex-col gap-1.5 section-label">
             Key
-            <input class="field" placeholder="ENG" maxlength={8} data-bind={state.$.projectKey} />
+            <input
+              class="field"
+              placeholder="ENG"
+              maxlength={8}
+              data-bind={workspaceState.$.projectKey}
+            />
             <small
               class="text-danger text-[13px] font-medium min-h-4"
-              data-text={state.$._validation.projectKey}
+              data-text={workspaceState.$._validation.projectKey}
             ></small>
           </label>
           <label class="flex flex-col gap-1.5 section-label">
             Description
-            <textarea class="field" rows={2} data-bind={state.$.projectDescription}></textarea>
+            <textarea
+              class="field"
+              rows={2}
+              data-bind={workspaceState.$.projectDescription}
+            ></textarea>
           </label>
           <button type="submit" class="btn-primary">
             Create project
@@ -243,7 +256,7 @@ export const Board = (props: { issues: Issue[] }) => (
 )
 
 export const IssueProjectSelect = (props: { projects: Project[] }) => (
-  <select id="issue-project-select" class="field" data-bind={state.$.projectId}>
+  <select id="issue-project-select" class="field" data-bind={workspaceState.$.projectId}>
     <option value="">Select project</option>
     {props.projects.map((project) => (
       <option value={project.id}>
@@ -264,7 +277,11 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         <span class="text-xs text-fg-muted select-none">›</span>
         <h3 class="text-xs font-bold tracking-wider uppercase text-fg">Create Workspace Issue</h3>
       </div>
-      <button type="button" class="btn h-8 w-8 p-0" data-on:click={set(state.$.modalOpen, false)}>
+      <button
+        type="button"
+        class="btn h-8 w-8 p-0"
+        data-on:click={set(workspaceState.$.modalOpen, false)}
+      >
         <svg
           width="14"
           height="14"
@@ -285,11 +302,11 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         class="field"
         autofocus
         placeholder="Fix keyboard focus after creating an issue"
-        data-bind={state.$.issueTitle}
+        data-bind={workspaceState.$.issueTitle}
       />
       <small
         class="text-danger text-[13px] font-medium min-h-4"
-        data-text={state.$._validation.issueTitle}
+        data-text={workspaceState.$._validation.issueTitle}
       ></small>
     </label>
     <label class="flex flex-col gap-1.5 section-label">
@@ -298,7 +315,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         class="field"
         rows={3}
         placeholder="Add a description..."
-        data-bind={state.$.issueDescription}
+        data-bind={workspaceState.$.issueDescription}
       ></textarea>
     </label>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -307,12 +324,12 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         <IssueProjectSelect projects={props.projects} />
         <small
           class="text-danger text-[13px] font-medium min-h-4"
-          data-text={state.$._validation.form}
+          data-text={workspaceState.$._validation.form}
         ></small>
       </label>
       <label class="flex flex-col gap-1.5 section-label">
         Status
-        <select class="field" data-bind={state.$.issueStatus}>
+        <select class="field" data-bind={workspaceState.$.issueStatus}>
           {issueStatuses.map((status) => (
             <option value={status.value}>{status.label}</option>
           ))}
@@ -320,7 +337,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
       <label class="flex flex-col gap-1.5 section-label">
         Priority
-        <select class="field" data-bind={state.$.issuePriority}>
+        <select class="field" data-bind={workspaceState.$.issuePriority}>
           {issuePriorities.map((priority) => (
             <option value={priority.value}>{priority.label}</option>
           ))}
@@ -328,7 +345,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
     </div>
     <div class="flex justify-end gap-2 pt-4 border-t border-border">
-      <button type="button" class="btn" data-on:click={set(state.$.modalOpen, false)}>
+      <button type="button" class="btn" data-on:click={set(workspaceState.$.modalOpen, false)}>
         Cancel
       </button>
       <button type="submit" class="btn-primary">
@@ -342,9 +359,9 @@ const IssueModal = (props: { projects: Project[] }) => (
   <dialog
     id="issue-modal"
     class="bg-transparent p-0 m-0 max-w-none max-h-none w-full h-full border-0"
-    data-effect={js`${state.$.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`}
-    data-on:click={js`if (evt.target === el) { ${set(state.$.modalOpen, false)} }`}
-    data-on:close={set(state.$.modalOpen, false)}
+    data-effect={js`${workspaceState.$.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`}
+    data-on:click={js`if (evt.target === el) { ${set(workspaceState.$.modalOpen, false)} }`}
+    data-on:close={set(workspaceState.$.modalOpen, false)}
   >
     <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4">
       <div id="modal-content">
@@ -357,7 +374,7 @@ const IssueModal = (props: { projects: Project[] }) => (
 const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
   <main
     class="h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg overflow-hidden"
-    data-signals={mod(state.defaults, { ifMissing: true })}
+    data-signals={mod(workspaceState.defaults, { ifMissing: true })}
     data-init={get("/workspace/live")}
   >
     <div class="hidden lg:flex">
@@ -420,7 +437,7 @@ export const registerWorkspacePage = (app: App) => {
     const projects = await readProjects()
     return reply.stream([
       event.patch(<IssueProjectSelect projects={projects} />),
-      event.signals(state.patch({ modalOpen: true }))
+      event.signals(workspaceState.patch({ modalOpen: true }))
     ])
   })
 
@@ -429,9 +446,9 @@ export const registerWorkspacePage = (app: App) => {
     if (!parsedProject.success) {
       const { fieldErrors } = z.flattenError(parsedProject.error)
       return reply.signals(
-        state.patch({
+        workspaceState.patch({
           _validation: {
-            ...state.defaults._validation,
+            ...workspaceState.defaults._validation,
             projectName: fieldErrors.projectName?.[0] ?? "",
             projectKey: fieldErrors.projectKey?.[0] ?? ""
           }
@@ -442,9 +459,9 @@ export const registerWorkspacePage = (app: App) => {
     const project = await createProject(c.get("user"), parsedProject.data)
     if (project === null) {
       return reply.signals(
-        state.patch({
+        workspaceState.patch({
           _validation: {
-            ...state.defaults._validation,
+            ...workspaceState.defaults._validation,
             projectKey: "Project keys must be unique"
           }
         })
@@ -455,7 +472,7 @@ export const registerWorkspacePage = (app: App) => {
     const user = c.get("user")
     const projects = await readProjects()
     return reply.stream([
-      event.signals(state.reset()),
+      event.signals(workspaceState.reset()),
       event.patch(<Sidebar user={user} projects={projects} />),
       event.patch(<IssueProjectSelect projects={projects} />)
     ])
@@ -466,9 +483,9 @@ export const registerWorkspacePage = (app: App) => {
     if (!parsedIssue.success) {
       const { fieldErrors } = z.flattenError(parsedIssue.error)
       return reply.signals(
-        state.patch({
+        workspaceState.patch({
           _validation: {
-            ...state.defaults._validation,
+            ...workspaceState.defaults._validation,
             form: fieldErrors.projectId?.[0] ?? "",
             issueTitle: fieldErrors.issueTitle?.[0] ?? ""
           }
@@ -478,7 +495,10 @@ export const registerWorkspacePage = (app: App) => {
 
     const issue = await createIssue(c.get("user"), parsedIssue.data)
     invalidations.publish()
-    return reply.stream([event.signals(state.reset()), event.navigate(`/issues/${issue.id}`)])
+    return reply.stream([
+      event.signals(workspaceState.reset()),
+      event.navigate(`/issues/${issue.id}`)
+    ])
   })
 
   app.post("/logout", async (c) => {

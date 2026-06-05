@@ -1,24 +1,11 @@
 import { Hono } from "hono"
-import {
-  event,
-  reply,
-  read,
-  state as createState,
-  del,
-  get,
-  js,
-  mod,
-  patch,
-  post,
-  put,
-  set
-} from "datastar-kit"
+import { event, reply, read, state, del, get, js, mod, patch, post, put, set } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const schema = z.object({ input: z.string().default("") })
 
-const state = createState({ input: "" })
+const todoInputState = state({ input: "" })
 
 interface Todo {
   text: string
@@ -53,13 +40,13 @@ const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
         <input
           id="edit-todo"
           type="text"
-          data-bind={state.$.input}
+          data-bind={todoInputState.$.input}
           data-init={js`el.focus()`}
           data-on:blur={put("/examples/todomvc/cancel")}
           data-on:keydown={js`
               if (evt.key === ${"Escape"}) {
                 el.blur()
-              } else if (evt.key === ${"Enter"} && ${state.$.input}.trim()) {
+              } else if (evt.key === ${"Enter"} && ${todoInputState.$.input}.trim()) {
                 ${patch(`/examples/todomvc/${index}`)}
               }
             `}
@@ -120,9 +107,9 @@ const TodoMvc = () => {
           placeholder="What needs to be done?"
           {...(editingIndex === undefined
             ? {
-                "data-signals": mod(state.defaults, { ifMissing: true }),
-                "data-bind": state.$.input,
-                "data-on:keydown": js`if (evt.key === ${"Enter"} && ${state.$.input}.trim()) { ${patch("/examples/todomvc/-1")}; ${set(state.$.input, "")} }`
+                "data-signals": mod(todoInputState.defaults, { ifMissing: true }),
+                "data-bind": todoInputState.$.input,
+                "data-on:keydown": js`if (evt.key === ${"Enter"} && ${todoInputState.$.input}.trim()) { ${patch("/examples/todomvc/-1")}; ${set(todoInputState.$.input, "")} }`
               }
             : {})}
         />
@@ -184,7 +171,7 @@ example.patch("/-1", async (c) => {
     todos = [...todos, { text, completed: false }]
   }
   editingIndex = undefined
-  return reply.stream([event.signals(state.reset()), event.patch(<TodoMvc />)])
+  return reply.stream([event.signals(todoInputState.reset()), event.patch(<TodoMvc />)])
 })
 
 example.post("/-1/toggle", () => {
@@ -212,7 +199,7 @@ example.get("/:id", (c) => {
   if (todo !== undefined) {
     editingIndex = index
     return reply.stream([
-      event.signals(state.reset({ input: todo.text })),
+      event.signals(todoInputState.reset({ input: todo.text })),
       event.patch(<TodoMvc />)
     ])
   }
@@ -228,12 +215,12 @@ example.patch("/:id", async (c) => {
     todo.text = text
   }
   editingIndex = undefined
-  return reply.stream([event.signals(state.reset()), event.patch(<TodoMvc />)])
+  return reply.stream([event.signals(todoInputState.reset()), event.patch(<TodoMvc />)])
 })
 
 example.put("/cancel", () => {
   editingIndex = undefined
-  return reply.stream([event.signals(state.reset()), event.patch(<TodoMvc />)])
+  return reply.stream([event.signals(todoInputState.reset()), event.patch(<TodoMvc />)])
 })
 
 example.put("/mode/:mode", (c) => {
@@ -259,5 +246,5 @@ example.put("/reset", () => {
   todos = initialTodos.map(cloneTodo)
   mode = 0
   editingIndex = undefined
-  return reply.stream([event.signals(state.reset()), event.patch(<TodoMvc />)])
+  return reply.stream([event.signals(todoInputState.reset()), event.patch(<TodoMvc />)])
 })

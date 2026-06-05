@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { event, reply, read, state as createState, del, get, local, mod } from "datastar-kit"
+import { event, reply, read, state, del, get, local, mod } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -26,14 +26,14 @@ const Throb = ({ index }: { index: number }) => {
 }
 
 const ViewTransitionButton = ({ restored }: { restored: boolean }) => {
-  const state = createState({ shouldRestore: restored })
+  const animationState = state({ shouldRestore: restored })
   const fetching = local<boolean>("vtFetching")
 
   return (
     <button
       id="view-transition"
       class={restored ? "success" : "info"}
-      data-signals={mod(state.defaults, { ifMissing: true })}
+      data-signals={mod(animationState.defaults, { ifMissing: true })}
       data-indicator={fetching}
       data-attr:disabled={fetching}
       data-on:click={get("/examples/animations/view_transition")}

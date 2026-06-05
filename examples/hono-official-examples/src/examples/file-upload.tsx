@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { event, reply, read, state as createState, js, mod, post, set } from "datastar-kit"
+import { event, reply, read, state, js, mod, post, set } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -31,7 +31,7 @@ const schema = z.object({
 
 type UploadedFile = z.infer<typeof UploadedFile>
 
-const state = createState({
+const uploadState = state({
   files: [],
   errors: {
     files: ""
@@ -65,26 +65,26 @@ example.get("/", () =>
       summary="Binds file inputs into Datastar signals and posts the encoded file list."
       source="https://data-star.dev/examples/file_upload"
     >
-      <div class="stack" data-signals={mod(state.defaults, { ifMissing: true })}>
+      <div class="stack" data-signals={mod(uploadState.defaults, { ifMissing: true })}>
         <label>
           <span>Pick anything less than 1 MiB</span>
           <input
             type="file"
             multiple
-            data-bind={state.$.files}
-            data-on:change={set(state.$.errors.files, "")}
+            data-bind={uploadState.$.files}
+            data-on:change={set(uploadState.$.errors.files, "")}
           />
         </label>
         <small
           class="field-error"
           style="display: none"
-          data-show={state.$.errors.files}
-          data-text={state.$.errors.files}
+          data-show={uploadState.$.errors.files}
+          data-text={uploadState.$.errors.files}
         ></small>
         <button
           class="warning"
-          data-attr:disabled={js`!${state.$.files}.length`}
-          data-on:click={js`if (${state.$.files}.length) { ${post("/examples/file_upload")} }`}
+          data-attr:disabled={js`!${uploadState.$.files}.length`}
+          data-on:click={js`if (${uploadState.$.files}.length) { ${post("/examples/file_upload")} }`}
         >
           Submit
         </button>
@@ -104,12 +104,14 @@ example.post("/", async (c) => {
   if (!result.success) {
     const { fieldErrors } = z.flattenError(result.error)
     return reply.signals(
-      state.patch({ errors: { files: fieldErrors.files?.[0] ?? "Choose at least one file." } })
+      uploadState.patch({
+        errors: { files: fieldErrors.files?.[0] ?? "Choose at least one file." }
+      })
     )
   }
 
   return reply.stream([
-    event.signals(state.patch({ errors: { files: "" } })),
+    event.signals(uploadState.patch({ errors: { files: "" } })),
     event.patch(<UploadResult files={result.data.files} />)
   ])
 })

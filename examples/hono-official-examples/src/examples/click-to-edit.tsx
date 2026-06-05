@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { event, reply, read, state as createState, get, local, patch, put } from "datastar-kit"
+import { event, reply, read, state, get, local, patch, put } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -11,7 +11,7 @@ const schema = z.object({
 
 type Contact = z.infer<typeof schema>
 
-const state = createState({
+const editFormState = state({
   firstName: "",
   lastName: "",
   email: "",
@@ -61,32 +61,47 @@ const ContactForm = () => (
   <div id="demo">
     <label>
       First Name
-      <input type="text" required data-bind={state.$.firstName} data-attr:disabled={fetching} />
+      <input
+        type="text"
+        required
+        data-bind={editFormState.$.firstName}
+        data-attr:disabled={fetching}
+      />
       <small
         class="field-error"
         style="display: none"
-        data-show={state.$.errors.firstName}
-        data-text={state.$.errors.firstName}
+        data-show={editFormState.$.errors.firstName}
+        data-text={editFormState.$.errors.firstName}
       ></small>
     </label>
     <label>
       Last Name
-      <input type="text" required data-bind={state.$.lastName} data-attr:disabled={fetching} />
+      <input
+        type="text"
+        required
+        data-bind={editFormState.$.lastName}
+        data-attr:disabled={fetching}
+      />
       <small
         class="field-error"
         style="display: none"
-        data-show={state.$.errors.lastName}
-        data-text={state.$.errors.lastName}
+        data-show={editFormState.$.errors.lastName}
+        data-text={editFormState.$.errors.lastName}
       ></small>
     </label>
     <label>
       Email
-      <input type="email" required data-bind={state.$.email} data-attr:disabled={fetching} />
+      <input
+        type="email"
+        required
+        data-bind={editFormState.$.email}
+        data-attr:disabled={fetching}
+      />
       <small
         class="field-error"
         style="display: none"
-        data-show={state.$.errors.email}
-        data-text={state.$.errors.email}
+        data-show={editFormState.$.errors.email}
+        data-text={editFormState.$.errors.email}
       ></small>
     </label>
     <div role="group">
@@ -130,16 +145,16 @@ example.get("/", () =>
 )
 
 example.get("/edit", () =>
-  reply.stream([event.signals(state.reset(contact)), event.patch(<ContactForm />)])
+  reply.stream([event.signals(editFormState.reset(contact)), event.patch(<ContactForm />)])
 )
 
 example.get("/cancel", () =>
-  reply.stream([event.signals(state.reset(contact)), event.patch(<ContactView />)])
+  reply.stream([event.signals(editFormState.reset(contact)), event.patch(<ContactView />)])
 )
 
 example.patch("/reset", () => {
   contact = { ...originalContact }
-  return reply.stream([event.signals(state.reset(contact)), event.patch(<ContactView />)])
+  return reply.stream([event.signals(editFormState.reset(contact)), event.patch(<ContactView />)])
 })
 
 example.put("/", async (c) => {
@@ -149,7 +164,7 @@ example.put("/", async (c) => {
     const { fieldErrors } = z.flattenError(result.error)
 
     return reply.signals(
-      state.patch({
+      editFormState.patch({
         errors: {
           firstName: fieldErrors.firstName?.[0] ?? "",
           lastName: fieldErrors.lastName?.[0] ?? "",
@@ -160,5 +175,5 @@ example.put("/", async (c) => {
   }
 
   contact = result.data
-  return reply.stream([event.signals(state.reset(contact)), event.patch(<ContactView />)])
+  return reply.stream([event.signals(editFormState.reset(contact)), event.patch(<ContactView />)])
 })

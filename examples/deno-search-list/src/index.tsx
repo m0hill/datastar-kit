@@ -1,5 +1,5 @@
 import { route, type Route } from "@std/http/unstable-route"
-import { event, read, reply, state as createState, get, mod, post } from "datastar-kit"
+import { event, read, reply, state, get, mod, post } from "datastar-kit"
 import { z } from "zod"
 
 const DATASTAR_RUNTIME =
@@ -21,7 +21,7 @@ const items: Item[] = [
   { id: 6, name: "Release checklist" }
 ]
 
-const listState = createState({ query: "", name: "" })
+const listState = state({ query: "", name: "" })
 
 const ListSignals = z.object({
   query: z.string().optional().default(""),

@@ -1,12 +1,12 @@
 import { staticPlugin } from "@elysia/static"
 import { Elysia } from "elysia"
-import { event, read, reply, type HtmlChild, state as createState, mod, post } from "datastar-kit"
+import { event, read, reply, type HtmlChild, state, mod, post } from "datastar-kit"
 import { z } from "zod"
 
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
-const projectForm = createState({ title: "" })
+const projectForm = state({ title: "" })
 
 interface Project {
   id: number

@@ -1,12 +1,12 @@
 import { serve } from "@hono/node-server"
 import { Hono } from "hono"
 import { z } from "zod"
-import { event, read, reply, state as createState, mod, post } from "datastar-kit"
+import { event, read, reply, state, mod, post } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
-const signup = createState({
+const signup = state({
   name: "",
   email: "",
   errors: {

@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { z } from "zod"
-import { event, read, reply, state as createState, del, get, mod, patch, post } from "datastar-kit"
+import { event, read, reply, state, del, get, mod, patch, post } from "datastar-kit"
 import { database } from "./db/index.js"
 import { createTodo, deleteTodo, readTodos, toggleTodo } from "./db/todo.js"
 import type { Todo } from "./db/schema.js"
@@ -14,7 +14,7 @@ const CreateTodoSignals = z.object({
   title: z.string().trim().min(1, "Enter a todo title.")
 })
 
-const todoState = createState({
+const todoState = state({
   title: "",
   _validation: {
     title: ""

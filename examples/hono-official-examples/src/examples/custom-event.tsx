@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import { reply, state as createState, js, mod, set } from "datastar-kit"
+import { reply, state, js, mod, set } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
-const state = createState({ _eventDetails: "Waiting for event..." })
+const eventState = state({ _eventDetails: "Waiting for event..." })
 
 export const example = new Hono()
 
@@ -18,9 +18,9 @@ example.get("/", () =>
         <p
           id="custom-event-target"
           class="event-output"
-          data-signals={mod(state.defaults, { ifMissing: true })}
-          data-on:myevent={set(state.$._eventDetails, js`evt.detail`)}
-          data-text={js`${"Last Event Details: "} + ${state.$._eventDetails}`}
+          data-signals={mod(eventState.defaults, { ifMissing: true })}
+          data-on:myevent={set(eventState.$._eventDetails, js`evt.detail`)}
+          data-text={js`${"Last Event Details: "} + ${eventState.$._eventDetails}`}
         ></p>
       </div>
     </ExampleLayout>,

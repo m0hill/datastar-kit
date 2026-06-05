@@ -1,4 +1,4 @@
-import { read, reply, state as createState, mod, post } from "datastar-kit"
+import { read, reply, state, mod, post } from "datastar-kit"
 import { z } from "zod"
 import { pageHead, type App } from "../app.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
@@ -9,7 +9,7 @@ const loginSchema = z.object({
   password: z.string().min(1, "Enter your password")
 })
 
-const loginState = createState({
+const loginState = state({
   username: "",
   password: "",
   _validation: {

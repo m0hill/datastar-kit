@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { event, reply, read, state as createState, mod, post } from "datastar-kit"
+import { event, reply, read, state, mod, post } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -11,7 +11,7 @@ const schema = z.object({
   lastName: z.string().trim().min(1, "Last name is required.")
 })
 
-const state = createState({
+const validationState = state({
   email: "",
   firstName: "",
   lastName: "",
@@ -35,7 +35,7 @@ example.get("/", () =>
       <div
         id="inline-validation-demo"
         class="stack"
-        data-signals={mod(state.defaults, { ifMissing: true })}
+        data-signals={mod(validationState.defaults, { ifMissing: true })}
       >
         <label>
           Email Address
@@ -55,8 +55,8 @@ example.get("/", () =>
         <small
           class="field-error"
           style="display:none"
-          data-show={state.$.errors.email}
-          data-text={state.$.errors.email}
+          data-show={validationState.$.errors.email}
+          data-text={validationState.$.errors.email}
         ></small>
         <label>
           First Name
@@ -72,8 +72,8 @@ example.get("/", () =>
         <small
           class="field-error"
           style="display:none"
-          data-show={state.$.errors.firstName}
-          data-text={state.$.errors.firstName}
+          data-show={validationState.$.errors.firstName}
+          data-text={validationState.$.errors.firstName}
         ></small>
         <label>
           Last Name
@@ -89,8 +89,8 @@ example.get("/", () =>
         <small
           class="field-error"
           style="display:none"
-          data-show={state.$.errors.lastName}
-          data-text={state.$.errors.lastName}
+          data-show={validationState.$.errors.lastName}
+          data-text={validationState.$.errors.lastName}
         ></small>
         <button class="success" data-on:click={post("/examples/inline_validation")}>
           Sign Up
@@ -109,12 +109,12 @@ example.post("/validate", async (c) => {
   const result = schema.safeParse(await read.signals(c.req.raw))
 
   if (result.success) {
-    return reply.signals(state.reset(result.data))
+    return reply.signals(validationState.reset(result.data))
   }
 
   const { fieldErrors } = z.flattenError(result.error)
   return reply.signals(
-    state.patch({
+    validationState.patch({
       errors: {
         email: fieldErrors.email?.[0] ?? "",
         firstName: fieldErrors.firstName?.[0] ?? "",
@@ -131,7 +131,7 @@ example.post("/", async (c) => {
     const { fieldErrors } = z.flattenError(result.error)
     return reply.stream([
       event.signals(
-        state.patch({
+        validationState.patch({
           errors: {
             email: fieldErrors.email?.[0] ?? "",
             firstName: fieldErrors.firstName?.[0] ?? "",
@@ -148,7 +148,7 @@ example.post("/", async (c) => {
   }
 
   return reply.stream([
-    event.signals(state.reset()),
+    event.signals(validationState.reset()),
     event.patch(
       <output id="inline-validation-result" class="success-text">
         Signed up successfully.

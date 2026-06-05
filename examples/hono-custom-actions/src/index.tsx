@@ -2,10 +2,10 @@ import { serve } from "@hono/node-server"
 import { serveStatic } from "@hono/node-server/serve-static"
 import { fileURLToPath } from "node:url"
 import { Hono } from "hono"
-import { event, reply, action, state as createState, mod, post } from "datastar-kit"
+import { event, reply, action, state, mod, post } from "datastar-kit"
 
 const app = new Hono()
-const dialogState = createState({ modalOpen: false })
+const dialogState = state({ modalOpen: false })
 
 app.use("/static/*", serveStatic({ root: fileURLToPath(new URL("../", import.meta.url)) }))
 

@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { event, reply, read, state as createState, get, local, mod, patch, put } from "datastar-kit"
+import { event, reply, read, state, get, local, mod, patch, put } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -10,7 +10,7 @@ const schema = z.object({
 
 type EditableRow = z.infer<typeof schema>
 
-const state = createState({
+const editFormState = state({
   name: "",
   email: "",
   errors: {
@@ -63,21 +63,26 @@ const DisplayRow = ({
 const EditingRow = ({ index }: { index: number }) => (
   <tr>
     <td>
-      <input type="text" required data-bind={state.$.name} data-attr:disabled={fetching} />
+      <input type="text" required data-bind={editFormState.$.name} data-attr:disabled={fetching} />
       <small
         class="field-error"
         style="display: none"
-        data-show={state.$.errors.name}
-        data-text={state.$.errors.name}
+        data-show={editFormState.$.errors.name}
+        data-text={editFormState.$.errors.name}
       ></small>
     </td>
     <td>
-      <input type="email" required data-bind={state.$.email} data-attr:disabled={fetching} />
+      <input
+        type="email"
+        required
+        data-bind={editFormState.$.email}
+        data-attr:disabled={fetching}
+      />
       <small
         class="field-error"
         style="display: none"
-        data-show={state.$.errors.email}
-        data-text={state.$.errors.email}
+        data-show={editFormState.$.errors.email}
+        data-text={editFormState.$.errors.email}
       ></small>
     </td>
     <td>
@@ -154,7 +159,7 @@ example.get("/", () =>
 )
 
 example.get("/cancel", () =>
-  reply.stream([event.signals(state.reset()), event.patch(<EditRowTable />)])
+  reply.stream([event.signals(editFormState.reset()), event.patch(<EditRowTable />)])
 )
 
 example.get("/:index", (c) => {
@@ -166,14 +171,14 @@ example.get("/:index", (c) => {
   }
 
   return reply.stream([
-    event.signals(state.reset(row)),
+    event.signals(editFormState.reset(row)),
     event.patch(<EditRowTable editingIndex={index} />)
   ])
 })
 
 example.put("/reset", () => {
   rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
-  return reply.stream([event.signals(state.reset()), event.patch(<EditRowTable />)])
+  return reply.stream([event.signals(editFormState.reset()), event.patch(<EditRowTable />)])
 })
 
 example.patch("/:index", async (c) => {
@@ -189,7 +194,7 @@ example.patch("/:index", async (c) => {
     const { fieldErrors } = z.flattenError(result.error)
 
     return reply.signals(
-      state.patch({
+      editFormState.patch({
         errors: {
           name: fieldErrors.name?.[0] ?? "",
           email: fieldErrors.email?.[0] ?? ""
@@ -199,5 +204,5 @@ example.patch("/:index", async (c) => {
   }
 
   rows[index] = result.data
-  return reply.stream([event.signals(state.reset()), event.patch(<EditRowTable />)])
+  return reply.stream([event.signals(editFormState.reset()), event.patch(<EditRowTable />)])
 })

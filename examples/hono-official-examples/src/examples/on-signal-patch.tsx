@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import { reply, state as createState, js, mod, regex, set } from "datastar-kit"
+import { reply, state, js, mod, regex, set } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
-const state = createState({
+const patchState = state({
   counter: 0,
   message: "Hello World",
   allChanges: [],
@@ -19,19 +19,22 @@ example.get("/", () =>
       summary="Records signal patches with Datastar's signal-patch event hooks."
       source="https://data-star.dev/examples/on_signal_patch"
     >
-      <div class="stack" data-signals={mod(state.defaults, { ifMissing: true })}>
+      <div class="stack" data-signals={mod(patchState.defaults, { ifMissing: true })}>
         <div class="actions">
           <button
-            data-on:click={set(state.$.message, js`${"Updated: "} + performance.now().toFixed(2)`)}
+            data-on:click={set(
+              patchState.$.message,
+              js`${"Updated: "} + performance.now().toFixed(2)`
+            )}
           >
             Update Message
           </button>
-          <button data-on:click={set(state.$.counter, js`${state.$.counter} + 1`)}>
+          <button data-on:click={set(patchState.$.counter, js`${patchState.$.counter} + 1`)}>
             Increment Counter
           </button>
           <button
             class="error"
-            data-on:click={js`${set(state.$.allChanges, [])}; ${set(state.$.counterChanges, [])}`}
+            data-on:click={js`${set(patchState.$.allChanges, [])}; ${set(patchState.$.counterChanges, [])}`}
           >
             Clear All Changes
           </button>
@@ -40,26 +43,26 @@ example.get("/", () =>
           <section class="subdemo">
             <h2>Current Values</h2>
             <p>
-              Counter: <span data-text={state.$.counter}></span>
+              Counter: <span data-text={patchState.$.counter}></span>
             </p>
             <p>
-              Message: <span data-text={state.$.message}></span>
+              Message: <span data-text={patchState.$.message}></span>
             </p>
           </section>
           <section
             class="subdemo"
-            data-on-signal-patch={js`${state.$.counterChanges}.push(patch)`}
+            data-on-signal-patch={js`${patchState.$.counterChanges}.push(patch)`}
             data-on-signal-patch-filter={{ include: regex("^counter$") }}
           >
             <h2>Counter Changes Only</h2>
             <pre
               class="signal-log"
-              data-text={js`JSON.stringify({ counterChanges: ${state.$.counterChanges} })`}
+              data-text={js`JSON.stringify({ counterChanges: ${patchState.$.counterChanges} })`}
             ></pre>
           </section>
           <section
             class="subdemo"
-            data-on-signal-patch={js`${state.$.allChanges}.push(patch)`}
+            data-on-signal-patch={js`${patchState.$.allChanges}.push(patch)`}
             data-on-signal-patch-filter={{
               exclude: regex("(^|\\.)_|allChanges|counterChanges")
             }}
@@ -67,7 +70,7 @@ example.get("/", () =>
             <h2>All Signal Changes</h2>
             <pre
               class="signal-log"
-              data-text={js`JSON.stringify({ allChanges: ${state.$.allChanges} })`}
+              data-text={js`JSON.stringify({ allChanges: ${patchState.$.allChanges} })`}
             ></pre>
           </section>
         </div>

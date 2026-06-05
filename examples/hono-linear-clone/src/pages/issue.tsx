@@ -1,5 +1,5 @@
 import { HTTPException } from "hono/http-exception"
-import { event, read, reply, state as createState, get, mod, patch, post } from "datastar-kit"
+import { event, read, reply, state, get, mod, patch, post } from "datastar-kit"
 import { z } from "zod"
 import { pageHead, type App } from "../app.js"
 import {
@@ -31,7 +31,7 @@ const commentSchema = z.object({
     .max(1200, "Keep it under 1200 characters")
 })
 
-const issueState = createState({
+const issueState = state({
   commentBody: "",
   _validation: {
     commentBody: ""

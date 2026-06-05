@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 import { gunzip } from "node:zlib"
 import { Hono } from "hono"
-import { event, reply, state as createState, get, js, mod } from "datastar-kit"
+import { event, reply, state, get, js, mod } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const gunzipAsync = promisify(gunzip)
@@ -14,7 +14,7 @@ const frames = readFile(framesPath)
   .then(gunzipAsync)
   .then((buffer) => buffer.toString("utf8").split("\f"))
 
-const state = createState({
+const playbackState = state({
   _percentage: 0,
   _contents: "bad apple frames go here"
 })
@@ -22,10 +22,12 @@ const state = createState({
 const BadApplePanel = () => (
   <div class="bad-apple">
     <label
-      data-signals={mod(state.defaults, { ifMissing: true })}
+      data-signals={mod(playbackState.defaults, { ifMissing: true })}
       data-init={get("/examples/bad_apple/updates")}
     >
-      <span data-text={js`${"Percentage: "} + ${state.$._percentage}.toFixed(2) + ${"%"}`}></span>
+      <span
+        data-text={js`${"Percentage: "} + ${playbackState.$._percentage}.toFixed(2) + ${"%"}`}
+      ></span>
       <input
         type="range"
         min="0"
@@ -33,10 +35,10 @@ const BadApplePanel = () => (
         step="0.01"
         disabled
         style="cursor: default"
-        data-attr:value={state.$._percentage}
+        data-attr:value={playbackState.$._percentage}
       />
     </label>
-    <pre style="line-height: 100%" aria-live="polite" data-text={state.$._contents}></pre>
+    <pre style="line-height: 100%" aria-live="polite" data-text={playbackState.$._contents}></pre>
   </div>
 )
 

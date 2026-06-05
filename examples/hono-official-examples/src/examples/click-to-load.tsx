@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { event, reply, read, state as createState, get, js, local, mod } from "datastar-kit"
+import { event, reply, read, state, get, js, local, mod } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -10,7 +10,7 @@ const schema = z.object({
   limit: z.number().default(pageSize)
 })
 
-const state = createState({ offset: 0, limit: pageSize })
+const loadState = state({ offset: 0, limit: pageSize })
 const fetching = local<boolean>("fetching")
 
 const agents = Array.from({ length: 50 }, (_, index) => ({
@@ -56,7 +56,7 @@ example.get("/", () =>
       summary="Requests the next slice of table rows and patches the body in place."
       source="https://data-star.dev/examples/click_to_load"
     >
-      <div id="demo" data-signals={mod(state.defaults, { ifMissing: true })}>
+      <div id="demo" data-signals={mod(loadState.defaults, { ifMissing: true })}>
         <table>
           <thead>
             <tr>
@@ -95,7 +95,7 @@ example.get("/more", async (c) => {
   }
 
   return reply.stream([
-    event.signals(state.patch({ offset: nextOffset, limit })),
+    event.signals(loadState.patch({ offset: nextOffset, limit })),
     event.patch(<AgentRows offset={nextOffset} limit={limit} />, {
       selector: "#agents",
       mode: "append"

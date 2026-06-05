@@ -1,11 +1,11 @@
 import { Hono } from "hono"
-import { event, reply, read, action, state as createState, js, mod, put, regex } from "datastar-kit"
+import { event, reply, read, action, state, js, mod, put, regex } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const schema = z.object({ selections: z.array(z.boolean()).default([]) })
 
-const state = createState<{ _fetching: boolean; selections: boolean[] }>({
+const bulkUpdateState = state<{ _fetching: boolean; selections: boolean[] }>({
   _fetching: false,
   selections: []
 })
@@ -32,7 +32,7 @@ let rows: BulkRow[] = initialRows.map((row) => ({
 }))
 
 const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) => (
-  <div id="demo" class="stack" data-signals={mod(state.defaults, { ifMissing: true })}>
+  <div id="demo" class="stack" data-signals={mod(bulkUpdateState.defaults, { ifMissing: true })}>
     <table id="bulk-update">
       <thead>
         <tr>
@@ -43,8 +43,8 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
               data-on:change={action("setAll", js`el.checked`, {
                 include: regex("^selections")
               })}
-              data-effect={js`el.checked = ${state.$.selections}.every(Boolean)`}
-              data-attr:disabled={state.$._fetching}
+              data-effect={js`el.checked = ${bulkUpdateState.$.selections}.every(Boolean)`}
+              data-attr:disabled={bulkUpdateState.$._fetching}
             />
           </th>
           <th>Name</th>
@@ -59,8 +59,8 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
               <input
                 type="checkbox"
                 aria-label={`Select ${row.name}`}
-                data-bind={state.$.selections}
-                data-attr:disabled={state.$._fetching}
+                data-bind={bulkUpdateState.$.selections}
+                data-attr:disabled={bulkUpdateState.$._fetching}
               />
             </td>
             <td>{row.name}</td>
@@ -85,16 +85,16 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
     <div role="group">
       <button
         class="success"
-        data-indicator={state.$._fetching}
-        data-attr:disabled={state.$._fetching}
+        data-indicator={bulkUpdateState.$._fetching}
+        data-attr:disabled={bulkUpdateState.$._fetching}
         data-on:click={put("/examples/bulk_update/activate")}
       >
         Activate
       </button>
       <button
         class="error"
-        data-indicator={state.$._fetching}
-        data-attr:disabled={state.$._fetching}
+        data-indicator={bulkUpdateState.$._fetching}
+        data-attr:disabled={bulkUpdateState.$._fetching}
         data-on:click={put("/examples/bulk_update/deactivate")}
       >
         Deactivate
