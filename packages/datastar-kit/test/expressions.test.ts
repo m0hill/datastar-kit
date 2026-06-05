@@ -6,7 +6,6 @@ import {
   peek,
   regex,
   RegexExpressionError,
-  set,
   setAll,
   signal,
   toggleAll
@@ -33,6 +32,7 @@ describe("expression escape hatches", () => {
 
     expect(js`${count} >= ${10}`.toDatastarExpression()).toBe("$count >= 10")
     expect(js`${count} === ${"done"}`.toDatastarExpression()).toBe('$count === "done"')
+    expect(js`${count} = ${0}`.toDatastarExpression()).toBe("$count = 0")
   })
 
   it("builds regular expressions without caller-managed literal escaping", () => {
@@ -64,22 +64,5 @@ describe("expression escape hatches", () => {
 
   it("rejects custom action names Datastar cannot call", () => {
     expect(() => action("bad-action")).toThrow(ActionNameError)
-  })
-
-  it("builds typed signal mutation expressions", () => {
-    const open = signal<boolean>("open")
-
-    expect(set(open, false).toDatastarExpression()).toBe("$open = false")
-  })
-
-  it("keeps signal mutation values typed to the target ref", () => {
-    const open = signal<boolean>("open")
-
-    if (false) {
-      // @ts-expect-error Boolean signals cannot be assigned string literals.
-      set(open, "yes")
-    }
-
-    expect(set(open, true).toDatastarExpression()).toBe("$open = true")
   })
 })

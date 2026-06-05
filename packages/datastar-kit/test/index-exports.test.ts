@@ -33,6 +33,7 @@ describe("package root exports", () => {
     expect(Root.state).toBe(state)
     expect(Root.post).toBe(post)
     expect(Root.peek).toBe(peek)
+    expect("set" in Root).toBe(false)
     expect(Root.setAll).toBe(setAll)
     expect(Root.toggleAll).toBe(toggleAll)
     expect(Root.js).toBe(js)

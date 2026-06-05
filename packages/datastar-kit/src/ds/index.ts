@@ -8,7 +8,6 @@ export {
   post,
   put,
   queryUrl,
-  set,
   setAll,
   toggleAll
 } from "./actions.js"

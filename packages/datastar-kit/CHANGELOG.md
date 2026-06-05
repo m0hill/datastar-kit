@@ -8,7 +8,6 @@
 - Added `mod(value, modifiers)` for native Datastar attribute modifiers, such as `data-on:submit={mod(post("/signup"), { prevent: true })}`.
 - Added concise named Datastar authoring imports from the root package.
 - Added `RegexExpressionError` for invalid `regex(...)` patterns or flags.
-- Added `set(...)` for typed Datastar signal assignment expressions.
 
 ### Changed
 
@@ -28,6 +27,7 @@
 - Removed the unused `reply.SseChunk` wrapper shape from `reply.stream(...)`; stream chunks are now strings or `Uint8Array` values.
 - Removed the awkward `delete` export alias for `del(...)`; use `del(...)` for Datastar `@delete(...)` actions.
 - Removed the `state(...).$` alias; use the readable `state(...).refs` property for typed signal references.
+- Removed `set(signal, value)`; write assignments with `js\`${signal} = ${value}\`` instead.
 
 ## 0.2.0 - 2026-05-27
 

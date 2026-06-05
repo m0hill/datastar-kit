@@ -1,5 +1,5 @@
 import { raw, toJs, type DatastarFunction, type Expr, type ExprInput } from "./expression.js"
-import type { Signal, SignalStateInput } from "./signals.js"
+import type { SignalStateInput } from "./signals.js"
 
 /**
  * Datastar signal filter used by signal display, signal patch, and fetch action helpers.
@@ -128,16 +128,6 @@ const datastarAction = <T = unknown>(
   assertActionName(name)
   return raw(`@${name}(${args.map((arg) => toJs(arg)).join(", ")})`)
 }
-
-/**
- * Builds a Datastar expression that assigns a browser signal.
- *
- * @param signal Signal ref to assign.
- * @param value Literal or expression assigned to the signal.
- * @returns A Datastar expression such as `$open = false`.
- */
-export const set = <T>(signal: Signal<T>, value: ExprInput<T>): Expr<void> =>
-  raw(`${signal.toDatastarExpression()} = ${toJs(value)}`)
 
 /**
  * Builds a Datastar expression for a URL with reactive query parameters.
