@@ -9,21 +9,27 @@ export type TimingModifierOptions = Readonly<{
   trailing?: boolean
 }>
 
+/** @internal Supported Datastar key casing conversions used by the JSX modifier cleaner. */
+export const datastarCaseModifiers = ["camel", "kebab", "snake", "pascal"] as const
+
 /** Supported Datastar key casing conversions. */
-export type CaseModifier = "camel" | "kebab" | "snake" | "pascal"
+export type CaseModifier = (typeof datastarCaseModifiers)[number]
 
 /**
  * Modifier bag accepted by Datastar Kit's explicit modifier wrapper.
  *
  * The JSX runtime turns these options into Datastar's `__modifier` attribute-name suffixes.
  */
+type DurationModifier = boolean | string | number
+type TimingModifier = DurationModifier | TimingModifierOptions
+
 export type DatastarModifierOptions = Readonly<{
   capture?: boolean
   case?: CaseModifier
-  debounce?: boolean | string | number | TimingModifierOptions
-  delay?: boolean | string | number
+  debounce?: TimingModifier
+  delay?: DurationModifier
   document?: boolean
-  duration?: boolean | string | number
+  duration?: DurationModifier
   event?: string | readonly string[]
   exit?: boolean
   full?: boolean
@@ -39,10 +45,13 @@ export type DatastarModifierOptions = Readonly<{
   stop?: boolean
   terse?: boolean
   threshold?: string | number
-  throttle?: boolean | string | number | TimingModifierOptions
+  throttle?: TimingModifier
   viewTransition?: boolean
   window?: boolean
 }>
+
+/** @internal */
+export type DatastarModifierKey = keyof DatastarModifierOptions
 
 const datastarModifiedValueBrand: unique symbol = Symbol("datastar-kit.modified-value")
 

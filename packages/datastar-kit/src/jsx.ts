@@ -6,7 +6,12 @@ import {
   type DatastarModifierTarget
 } from "./ds/attribute-metadata.js"
 import { isExpr, toJs, type Expr } from "./ds/expression.js"
-import { isDatastarModifiedValue, type DatastarModifiedValue } from "./ds/modifiers.js"
+import {
+  datastarCaseModifiers,
+  isDatastarModifiedValue,
+  type DatastarModifiedValue,
+  type DatastarModifierKey
+} from "./ds/modifiers.js"
 import { Signal } from "./ds/signals.js"
 import type { HtmlChild, HtmlProps, HtmlPropValue } from "./html.js"
 import { h } from "./html.js"
@@ -31,7 +36,7 @@ type DatastarJsxValue =
   | { readonly [key: string]: DatastarJsxValue }
 
 interface DatastarModifier {
-  readonly key: string
+  readonly key: DatastarModifierKey
   readonly suffix: string
 }
 
@@ -96,8 +101,44 @@ const durationModifier = (value: unknown): string => {
 const isModifierRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === "object" && value !== null && !Array.isArray(value) && !isExpr(value)
 
+const compatibleModifierTargets = {
+  capture: ["on"],
+  case: ["bind", "case", "computed", "on", "signals"],
+  debounce: ["on", "intersect", "signalPatch"],
+  delay: ["on", "intersect", "signalPatch", "init"],
+  document: ["on"],
+  duration: ["interval"],
+  event: ["bind"],
+  exit: ["intersect"],
+  full: ["intersect"],
+  half: ["intersect"],
+  ifMissing: ["signals"],
+  leading: [],
+  once: ["on", "intersect"],
+  outside: ["on"],
+  passive: ["on"],
+  prevent: ["on"],
+  prop: ["bind"],
+  self: ["ignore"],
+  stop: ["on"],
+  terse: ["jsonSignals"],
+  threshold: ["intersect"],
+  throttle: ["on", "intersect", "signalPatch"],
+  viewTransition: ["on", "intersect", "init", "interval"],
+  window: ["on"]
+} as const satisfies Record<DatastarModifierKey, readonly DatastarModifierTarget[]>
+
+const isDatastarModifierKey = (key: string): key is DatastarModifierKey =>
+  key in compatibleModifierTargets
+
+const isCompatibleModifier = (
+  target: DatastarModifierTarget,
+  modifier: DatastarModifier
+): boolean =>
+  (compatibleModifierTargets[modifier.key] as readonly DatastarModifierTarget[]).includes(target)
+
 const flagModifier = (
-  key: string,
+  key: DatastarModifierKey,
   value: unknown,
   suffix: string
 ): DatastarModifier | undefined => {
@@ -107,7 +148,7 @@ const flagModifier = (
 }
 
 const durationTaggedModifier = (
-  key: string,
+  key: DatastarModifierKey,
   value: unknown,
   modifier: string
 ): DatastarModifier | undefined => {
@@ -117,7 +158,7 @@ const durationTaggedModifier = (
 }
 
 const timingTaggedModifier = (
-  key: string,
+  key: DatastarModifierKey,
   value: unknown,
   modifier: "debounce" | "throttle"
 ): DatastarModifier | undefined => {
@@ -145,7 +186,7 @@ const timingTaggedModifier = (
 }
 
 const valueTaggedModifier = (
-  key: string,
+  key: DatastarModifierKey,
   value: unknown,
   modifier: string,
   allowed?: ReadonlySet<string>
@@ -168,9 +209,13 @@ const eventModifier = (value: unknown): string => {
   return `event.${events.join(".")}`
 }
 
-const caseModifiers = new Set(["camel", "kebab", "snake", "pascal"])
+const caseModifiers = new Set<string>(datastarCaseModifiers)
 
 const cleanDatastarModifier = (key: string, value: unknown): DatastarModifier | undefined => {
+  if (!isDatastarModifierKey(key)) {
+    throw new TypeError(`Unknown Datastar modifier ${JSON.stringify(key)}`)
+  }
+
   switch (key) {
     case "capture":
     case "document":
@@ -209,8 +254,6 @@ const cleanDatastarModifier = (key: string, value: unknown): DatastarModifier | 
     case "event":
       if (value === false || value === null || value === undefined) return undefined
       return { key, suffix: eventModifier(value) }
-    default:
-      throw new TypeError(`Unknown Datastar modifier ${JSON.stringify(key)}`)
   }
 }
 
@@ -240,50 +283,6 @@ const intervalDurationModifier = (
     key: "duration",
     suffix: parts.length === 0 ? "duration" : `duration.${parts.join(".")}`
   }
-}
-
-const isCompatibleModifier = (
-  target: DatastarModifierTarget,
-  modifier: DatastarModifier
-): boolean => {
-  const key = modifier.key
-
-  if (key === "case")
-    return (
-      target === "bind" ||
-      target === "case" ||
-      target === "computed" ||
-      target === "on" ||
-      target === "signals"
-    )
-  if (key === "prop" || key === "event") return target === "bind"
-  if (key === "self") return target === "ignore"
-  if (key === "ifMissing") return target === "signals"
-  if (key === "terse") return target === "jsonSignals"
-  if (key === "duration") return target === "interval"
-  if (key === "exit" || key === "half" || key === "full" || key === "threshold")
-    return target === "intersect"
-  if (key === "delay")
-    return (
-      target === "on" || target === "intersect" || target === "signalPatch" || target === "init"
-    )
-  if (key === "debounce" || key === "throttle")
-    return target === "on" || target === "intersect" || target === "signalPatch"
-  if (key === "viewTransition")
-    return target === "on" || target === "intersect" || target === "init" || target === "interval"
-  if (key === "once") return target === "on" || target === "intersect"
-  if (
-    key === "capture" ||
-    key === "document" ||
-    key === "outside" ||
-    key === "passive" ||
-    key === "prevent" ||
-    key === "stop" ||
-    key === "window"
-  )
-    return target === "on"
-
-  return false
 }
 
 const cleanDatastarModifiers = (
