@@ -1,4 +1,4 @@
-import type { SignalState, SignalValue } from "./types.js"
+import type { SignalState } from "./types.js"
 
 /**
  * Error thrown when a Datastar signal payload cannot be parsed as JSON.
@@ -42,33 +42,11 @@ const rawSignals = async (request: Request): Promise<string> => {
 }
 
 /**
- * Checks the JSON-compatible signal value shape returned by Datastar's default transport.
- */
-const isSignalValue = (value: unknown): value is SignalValue => {
-  if (value === null) {
-    return true
-  }
-
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return true
-  }
-
-  if (Array.isArray(value)) {
-    return value.every(isSignalValue)
-  }
-
-  if (typeof value === "object") {
-    return Object.values(value).every(isSignalValue)
-  }
-
-  return false
-}
-
-/**
- * Datastar signal state is always a top-level JSON object.
+ * Datastar signal state is JSON parsed at this boundary, so only the protocol's top-level object
+ * shape needs checking here. Application schemas own any domain validation after this point.
  */
 const isSignalState = (value: unknown): value is SignalState =>
-  typeof value === "object" && value !== null && !Array.isArray(value) && isSignalValue(value)
+  typeof value === "object" && value !== null && !Array.isArray(value)
 
 /**
  * Parses Datastar signals from a request.
