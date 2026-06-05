@@ -175,6 +175,9 @@ const renderDatastarModifier = (
       if (value === false || value === null || value === undefined) return undefined
       return { key, suffix: eventModifier(value) }
   }
+
+  const exhaustive: never = key
+  return exhaustive
 }
 
 const intervalDurationModifier = (
