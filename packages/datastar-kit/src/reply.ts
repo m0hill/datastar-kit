@@ -1,4 +1,4 @@
-import { patch as eventPatch, signals as eventSignals } from "./event.js"
+import * as event from "./event.js"
 import { h, renderToString, type HtmlChild } from "./html.js"
 import { navigationScript, type NavigationSafetyOptions } from "./navigation.js"
 import {
@@ -268,7 +268,7 @@ export const patch = (
   elements: HtmlChild,
   options: PatchElementsOptions = {},
   init: StreamResponseInit = {}
-): Response => response(eventPatch(elements, options), init, 200, sseHeaders)
+): Response => response(event.patch(elements, options), init, 200, sseHeaders)
 
 /**
  * Creates a Datastar SSE signal patch response.
@@ -282,7 +282,7 @@ export const signals = (
   value: SignalState,
   options: PatchSignalsOptions = {},
   init: StreamResponseInit = {}
-): Response => response(eventSignals(value, options), init, 200, sseHeaders)
+): Response => response(event.signals(value, options), init, 200, sseHeaders)
 
 /**
  * Creates a Datastar SSE stream response from event chunks.
