@@ -1,11 +1,5 @@
 import type { HtmlChild } from "./html.js"
-import {
-  createJsxElement,
-  Fragment as FragmentComponent,
-  type JsxElement,
-  type JsxProps,
-  type JsxTag
-} from "./jsx.js"
+import { createJsxElement, type JsxProps, type JsxTag } from "./jsx.js"
 
 const toChildren = (value: HtmlChild | readonly HtmlChild[] | undefined): readonly HtmlChild[] => {
   if (value === undefined) return []
@@ -30,7 +24,7 @@ const withoutRuntimeProps = (
  *
  * @internal
  */
-export { FragmentComponent as Fragment }
+export { Fragment } from "./jsx.js"
 
 /**
  * Compiler-only entrypoint for TypeScript's automatic JSX runtime.
@@ -47,7 +41,7 @@ export const jsx = (
     | (Readonly<Record<string, unknown>> & { readonly children?: HtmlChild | readonly HtmlChild[] })
     | null,
   _key?: string | number
-): JsxElement => createJsxElement(tag, withoutRuntimeProps(input), toChildren(input?.children))
+): HtmlChild => createJsxElement(tag, withoutRuntimeProps(input), toChildren(input?.children))
 
 /**
  * Compiler-only entrypoint for JSX calls with static children.
@@ -63,7 +57,7 @@ export const jsxs = jsx
  */
 export namespace JSX {
   /** Renderable JSX element type. */
-  export type Element = JsxElement
+  export type Element = HtmlChild
   /** Tells TypeScript that JSX children are passed through a `children` prop. */
   export interface ElementChildrenAttribute {
     children: {}

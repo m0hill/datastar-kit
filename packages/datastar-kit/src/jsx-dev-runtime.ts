@@ -1,6 +1,6 @@
 import type { HtmlChild } from "./html.js"
 import { Fragment, jsx } from "./jsx-runtime.js"
-import type { JsxElement, JsxProps, JsxTag } from "./jsx.js"
+import type { JsxProps, JsxTag } from "./jsx.js"
 
 /**
  * Compiler-only JSX fragment export for the automatic development JSX runtime.
@@ -30,7 +30,7 @@ export const jsxDEV = (
   _isStaticChildren?: boolean,
   _source?: unknown,
   _self?: unknown
-): JsxElement => jsx(tag, input, key)
+): HtmlChild => jsx(tag, input, key)
 
 /**
  * TypeScript JSX namespace for `jsxImportSource: "datastar-kit"` in development builds.
@@ -39,7 +39,7 @@ export const jsxDEV = (
  */
 export namespace JSX {
   /** Renderable JSX element type. */
-  export type Element = JsxElement
+  export type Element = HtmlChild
   /** Tells TypeScript that JSX children are passed through a `children` prop. */
   export interface ElementChildrenAttribute {
     children: {}

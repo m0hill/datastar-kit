@@ -12,13 +12,6 @@ import type { HtmlChild, HtmlProps, HtmlPropValue } from "./html.js"
 import { h } from "./html.js"
 
 /**
- * Internal JSX element result accepted by the automatic runtime.
- *
- * @internal
- */
-export type JsxElement = HtmlChild
-
-/**
  * Internal JSX props accepted by intrinsic HTML elements.
  *
  * @internal
@@ -201,7 +194,7 @@ export const createJsxElement = (
   tag: JsxTag,
   input: Readonly<Record<string, unknown>> | null,
   children: readonly HtmlChild[]
-): JsxElement => {
+): HtmlChild => {
   if (tag === Fragment) {
     return children
   }

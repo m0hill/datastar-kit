@@ -10,3 +10,4 @@
 - Tightened a couple of derived helper types (`fetchOptionKeys` and state signal objects) so future changes are checked against their source types.
 - Removed the `delete` export alias for the `del(...)` action helper because `delete` is a JavaScript keyword and consumers could only import it by aliasing it again (`import { delete as ... }`). `del(...)` remains the single readable helper for Datastar `@delete(...)` actions.
 - Removed `reply.PatchOptions` and `reply.SignalsOptions` aliases because they only renamed `PatchElementsOptions` and `PatchSignalsOptions` without changing behavior; `reply.patch(...)` and `reply.signals(...)` now use the SSE option types directly.
+- Removed the internal `JsxElement = HtmlChild` alias and a fragment re-export alias; the JSX runtimes now name the actual renderable type (`HtmlChild`) and re-export `Fragment` directly.
