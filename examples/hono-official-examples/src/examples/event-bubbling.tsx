@@ -31,14 +31,14 @@ example.get("/", () =>
     >
       <div id="demo" data-signals={mod(keyState.defaults, { ifMissing: true })}>
         <p>
-          Key pressed: <span data-text={keyState.$.key}></span>
+          Key pressed: <span data-text={keyState.refs.key}></span>
         </p>
         <div
           id="event-bubbling-container"
           class="keypad"
           data-on:click={set(
-            keyState.$.key,
-            js`evt.target.closest(${"button[data-id]"})?.dataset.id ?? ${keyState.$.key}`
+            keyState.refs.key,
+            js`evt.target.closest(${"button[data-id]"})?.dataset.id ?? ${keyState.refs.key}`
           )}
         >
           {keys.map((key) => (

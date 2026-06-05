@@ -71,20 +71,20 @@ example.get("/", () =>
           <input
             type="file"
             multiple
-            data-bind={uploadState.$.files}
-            data-on:change={set(uploadState.$.errors.files, "")}
+            data-bind={uploadState.refs.files}
+            data-on:change={set(uploadState.refs.errors.files, "")}
           />
         </label>
         <small
           class="field-error"
           style="display: none"
-          data-show={uploadState.$.errors.files}
-          data-text={uploadState.$.errors.files}
+          data-show={uploadState.refs.errors.files}
+          data-text={uploadState.refs.errors.files}
         ></small>
         <button
           class="warning"
-          data-attr:disabled={js`!${uploadState.$.files}.length`}
-          data-on:click={js`if (${uploadState.$.files}.length) { ${post("/examples/file_upload")} }`}
+          data-attr:disabled={js`!${uploadState.refs.files}.length`}
+          data-on:click={js`if (${uploadState.refs.files}.length) { ${post("/examples/file_upload")} }`}
         >
           Submit
         </button>

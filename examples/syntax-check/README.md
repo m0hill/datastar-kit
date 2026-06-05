@@ -11,7 +11,7 @@ data-on:submit={mod(post("/signup"), { prevent: true })}
 data-on:input={mod(get("/search"), { debounce: "200ms" })}
 data-signals={mod(form.defaults, { ifMissing: true })}
 data-ignore={mod({ self: true })}
-data-text={js`${"Search: "} + ${form.$.search}`}
+data-text={js`${"Search: "} + ${form.refs.search}`}
 ```
 
 Use one-argument `mod({ ... })` only for presence attributes with no explicit value, such as `data-ignore__self`. Use `mod(value, { ... })` for value-bearing attributes.

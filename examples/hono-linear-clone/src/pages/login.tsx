@@ -38,11 +38,11 @@ const LoginPage = () => (
             class="field"
             autocomplete="username"
             placeholder="Enter username"
-            data-bind={loginState.$.username}
+            data-bind={loginState.refs.username}
           />
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            data-text={loginState.$._validation.username}
+            data-text={loginState.refs._validation.username}
           ></small>
         </label>
         <label class="flex flex-col gap-1.5 section-label">
@@ -52,16 +52,16 @@ const LoginPage = () => (
             type="password"
             autocomplete="current-password"
             placeholder="Enter password"
-            data-bind={loginState.$.password}
+            data-bind={loginState.refs.password}
           />
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            data-text={loginState.$._validation.password}
+            data-text={loginState.refs._validation.password}
           ></small>
         </label>
         <small
           class="text-danger text-[13px] font-medium min-h-4"
-          data-text={loginState.$._validation.form}
+          data-text={loginState.refs._validation.form}
         ></small>
         <button type="submit" class="btn-primary mt-1 py-2.5">
           Proceed Securely

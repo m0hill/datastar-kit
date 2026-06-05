@@ -25,7 +25,7 @@ const signup = state({
 | API                        | Use                                                      |
 | -------------------------- | -------------------------------------------------------- |
 | `signup.defaults`          | Initial signal values for `data-signals`.                |
-| `signup.$` / `signup.refs` | Typed nested signal refs for attributes and expressions. |
+| `signup.refs`              | Typed nested signal refs for attributes and expressions. |
 | `signup.patch(...)`        | Type-checked partial signal patches.                     |
 | `signup.reset(...)`        | Defaults, optionally merged with overrides.              |
 
@@ -41,15 +41,15 @@ const SignupForm = () => (
   >
     <label>
       Name
-      <input name="name" data-bind={signup.$.name} />
+      <input name="name" data-bind={signup.refs.name} />
     </label>
 
     <label>
       Email
-      <input name="email" data-bind={signup.$.email} />
+      <input name="email" data-bind={signup.refs.email} />
     </label>
 
-    <small data-text={signup.$.errors.email} />
+    <small data-text={signup.refs.errors.email} />
   </form>
 )
 ```

@@ -63,26 +63,26 @@ const DisplayRow = ({
 const EditingRow = ({ index }: { index: number }) => (
   <tr>
     <td>
-      <input type="text" required data-bind={editFormState.$.name} data-attr:disabled={fetching} />
+      <input type="text" required data-bind={editFormState.refs.name} data-attr:disabled={fetching} />
       <small
         class="field-error"
         style="display: none"
-        data-show={editFormState.$.errors.name}
-        data-text={editFormState.$.errors.name}
+        data-show={editFormState.refs.errors.name}
+        data-text={editFormState.refs.errors.name}
       ></small>
     </td>
     <td>
       <input
         type="email"
         required
-        data-bind={editFormState.$.email}
+        data-bind={editFormState.refs.email}
         data-attr:disabled={fetching}
       />
       <small
         class="field-error"
         style="display: none"
-        data-show={editFormState.$.errors.email}
-        data-text={editFormState.$.errors.email}
+        data-show={editFormState.refs.errors.email}
+        data-text={editFormState.refs.errors.email}
       ></small>
     </td>
     <td>

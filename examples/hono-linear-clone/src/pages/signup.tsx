@@ -46,11 +46,11 @@ const SignupPage = () => (
             class="field"
             autocomplete="name"
             placeholder="Your name"
-            data-bind={signupState.$.name}
+            data-bind={signupState.refs.name}
           />
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            data-text={signupState.$._validation.name}
+            data-text={signupState.refs._validation.name}
           ></small>
         </label>
         <label class="flex flex-col gap-1.5 section-label">
@@ -59,11 +59,11 @@ const SignupPage = () => (
             class="field"
             autocomplete="username"
             placeholder="Choose a username"
-            data-bind={signupState.$.username}
+            data-bind={signupState.refs.username}
           />
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            data-text={signupState.$._validation.username}
+            data-text={signupState.refs._validation.username}
           ></small>
         </label>
         <label class="flex flex-col gap-1.5 section-label">
@@ -73,16 +73,16 @@ const SignupPage = () => (
             type="password"
             autocomplete="new-password"
             placeholder="Create a password"
-            data-bind={signupState.$.password}
+            data-bind={signupState.refs.password}
           />
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            data-text={signupState.$._validation.password}
+            data-text={signupState.refs._validation.password}
           ></small>
         </label>
         <small
           class="text-danger text-[13px] font-medium min-h-4"
-          data-text={signupState.$._validation.form}
+          data-text={signupState.refs._validation.form}
         ></small>
         <button type="submit" class="btn-primary mt-1 py-2.5">
           Initialize Instance

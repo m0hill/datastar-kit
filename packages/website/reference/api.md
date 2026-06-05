@@ -61,8 +61,8 @@ Use native Datastar attributes directly:
   data-signals={mod(form.defaults, { ifMissing: true })}
   data-on:submit={mod(post("/signup"), { prevent: true })}
 >
-  <input data-bind={form.$.email} />
-  <small data-show={form.$.errors.email} data-text={form.$.errors.email} />
+  <input data-bind={form.refs.email} />
+  <small data-show={form.refs.errors.email} data-text={form.refs.errors.email} />
 </form>
 ```
 

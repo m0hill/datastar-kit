@@ -64,14 +64,14 @@ const ContactForm = () => (
       <input
         type="text"
         required
-        data-bind={editFormState.$.firstName}
+        data-bind={editFormState.refs.firstName}
         data-attr:disabled={fetching}
       />
       <small
         class="field-error"
         style="display: none"
-        data-show={editFormState.$.errors.firstName}
-        data-text={editFormState.$.errors.firstName}
+        data-show={editFormState.refs.errors.firstName}
+        data-text={editFormState.refs.errors.firstName}
       ></small>
     </label>
     <label>
@@ -79,14 +79,14 @@ const ContactForm = () => (
       <input
         type="text"
         required
-        data-bind={editFormState.$.lastName}
+        data-bind={editFormState.refs.lastName}
         data-attr:disabled={fetching}
       />
       <small
         class="field-error"
         style="display: none"
-        data-show={editFormState.$.errors.lastName}
-        data-text={editFormState.$.errors.lastName}
+        data-show={editFormState.refs.errors.lastName}
+        data-text={editFormState.refs.errors.lastName}
       ></small>
     </label>
     <label>
@@ -94,14 +94,14 @@ const ContactForm = () => (
       <input
         type="email"
         required
-        data-bind={editFormState.$.email}
+        data-bind={editFormState.refs.email}
         data-attr:disabled={fetching}
       />
       <small
         class="field-error"
         style="display: none"
-        data-show={editFormState.$.errors.email}
-        data-text={editFormState.$.errors.email}
+        data-show={editFormState.refs.errors.email}
+        data-text={editFormState.refs.errors.email}
       ></small>
     </label>
     <div role="group">

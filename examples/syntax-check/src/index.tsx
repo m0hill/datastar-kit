@@ -52,7 +52,7 @@ export const DatastarSyntaxCheck = () => (
       { id: "ordinary-array", label: "This array is a signal value, not modifiers" },
       { id: "second-object", label: "The second array item can be an object safely" }
     ]}
-    data-computed:can-submit={mod(js`${form.$.email}.includes(${"@"}) && !${saving}`, {
+    data-computed:can-submit={mod(js`${form.refs.email}.includes(${"@"}) && !${saving}`, {
       case: "camel"
     })}
     data-on-signal-patch={mod(js`console.log(${"patch"}, patch)`, {
@@ -69,7 +69,7 @@ export const DatastarSyntaxCheck = () => (
         "aria-busy": saving,
         "data-state": js`${saving} ? ${"saving"} : ${"idle"}`
       }}
-      data-class={{ loading: saving, "has-errors": form.$.errors.email }}
+      data-class={{ loading: saving, "has-errors": form.refs.errors.email }}
       data-style={{
         opacity: js`${saving} ? 0.6 : 1`,
         "pointer-events": js`${saving} ? ${"none"} : ${"auto"}`
@@ -90,20 +90,20 @@ export const DatastarSyntaxCheck = () => (
         name="email"
         type="email"
         autocomplete="email"
-        data-bind={form.$.email}
-        data-attr:aria-invalid={js`Boolean(${form.$.errors.email})`}
+        data-bind={form.refs.email}
+        data-attr:aria-invalid={js`Boolean(${form.refs.errors.email})`}
         data-on:input={mod(get("/validate/email", { contentType: "form" }), {
           debounce: { duration: "300ms", leading: true }
         })}
       />
-      <small data-show={form.$.errors.email} data-text={form.$.errors.email}></small>
+      <small data-show={form.refs.errors.email} data-text={form.refs.errors.email}></small>
 
       <label htmlFor="search">Search</label>
       <input
         id="search"
         name="search"
         type="search"
-        data-bind={form.$.search}
+        data-bind={form.refs.search}
         data-on:input={mod(get("/search"), { throttle: "500ms" })}
       />
 
@@ -131,18 +131,18 @@ export const DatastarSyntaxCheck = () => (
     <section
       id="live-search"
       data-on-intersect={mod(get("/search/visible"), { once: true, half: true })}
-      data-on-interval={mod(js`${form.$.counter}++`, {
+      data-on-interval={mod(js`${form.refs.counter}++`, {
         duration: "1s",
         leading: true,
         viewTransition: true
       })}
     >
-      <output data-text={js`${"Search: "} + ${form.$.search}`}></output>
+      <output data-text={js`${"Search: "} + ${form.refs.search}`}></output>
     </section>
 
     <my-widget
       data-on:widget-loaded={mod(set(widgetReady, true), { case: "camel" })}
-      data-attr:user-email={form.$.email}
+      data-attr:user-email={form.refs.email}
     ></my-widget>
 
     <div data-ignore={mod({ self: true })}>

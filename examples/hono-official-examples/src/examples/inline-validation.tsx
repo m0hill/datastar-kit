@@ -55,8 +55,8 @@ example.get("/", () =>
         <small
           class="field-error"
           style="display:none"
-          data-show={validationState.$.errors.email}
-          data-text={validationState.$.errors.email}
+          data-show={validationState.refs.errors.email}
+          data-text={validationState.refs.errors.email}
         ></small>
         <label>
           First Name
@@ -72,8 +72,8 @@ example.get("/", () =>
         <small
           class="field-error"
           style="display:none"
-          data-show={validationState.$.errors.firstName}
-          data-text={validationState.$.errors.firstName}
+          data-show={validationState.refs.errors.firstName}
+          data-text={validationState.refs.errors.firstName}
         ></small>
         <label>
           Last Name
@@ -89,8 +89,8 @@ example.get("/", () =>
         <small
           class="field-error"
           style="display:none"
-          data-show={validationState.$.errors.lastName}
-          data-text={validationState.$.errors.lastName}
+          data-show={validationState.refs.errors.lastName}
+          data-text={validationState.refs.errors.lastName}
         ></small>
         <button class="success" data-on:click={post("/examples/inline_validation")}>
           Sign Up

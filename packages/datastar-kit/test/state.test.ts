@@ -13,7 +13,7 @@ describe("state helpers", () => {
     const form = state({ name: "", errors: { name: "" } })
 
     expect(form.refs.name.toDatastarExpression()).toBe("$name")
-    expect(form.$.errors.name.toDatastarExpression()).toBe("$errors.name")
+    expect(form.refs.errors.name.toDatastarExpression()).toBe("$errors.name")
   })
 
   it("returns type-checked signal patch objects", () => {
@@ -41,7 +41,7 @@ describe("state helpers", () => {
       // @ts-expect-error Reset overrides are checked like signal patches.
       form.reset({ errors: { email: false } })
       // @ts-expect-error Nested object refs are not signal refs themselves.
-      form.$.errors.toDatastarExpression()
+      form.refs.errors.toDatastarExpression()
     }
 
     expect(form.patch({ subscribed: true })).toEqual({ subscribed: true })

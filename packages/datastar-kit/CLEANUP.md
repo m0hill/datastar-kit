@@ -13,3 +13,4 @@
 - Removed the internal `JsxElement = HtmlChild` alias and a fragment re-export alias; the JSX runtimes now name the actual renderable type (`HtmlChild`) and re-export `Fragment` directly.
 - Removed unnecessary local import aliases in event/reply helpers; event helpers call the SSE encoders by their real names, and reply helpers use the `event` namespace where exported names would otherwise collide.
 - Removed the duplicate `SignalState`/`SignalValue` type re-export through `ds/signals`; the root package already exports those protocol types directly from `types.ts`, while signal authoring still exports `SignalStateInput`/`SignalValueInput`.
+- Removed the `state(...).$` alias because it duplicated `state(...).refs` while being less readable in TypeScript code; state helpers now expose one signal-ref property, `refs`.

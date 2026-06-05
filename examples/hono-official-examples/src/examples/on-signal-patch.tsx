@@ -23,18 +23,18 @@ example.get("/", () =>
         <div class="actions">
           <button
             data-on:click={set(
-              patchState.$.message,
+              patchState.refs.message,
               js`${"Updated: "} + performance.now().toFixed(2)`
             )}
           >
             Update Message
           </button>
-          <button data-on:click={set(patchState.$.counter, js`${patchState.$.counter} + 1`)}>
+          <button data-on:click={set(patchState.refs.counter, js`${patchState.refs.counter} + 1`)}>
             Increment Counter
           </button>
           <button
             class="error"
-            data-on:click={js`${set(patchState.$.allChanges, [])}; ${set(patchState.$.counterChanges, [])}`}
+            data-on:click={js`${set(patchState.refs.allChanges, [])}; ${set(patchState.refs.counterChanges, [])}`}
           >
             Clear All Changes
           </button>
@@ -43,26 +43,26 @@ example.get("/", () =>
           <section class="subdemo">
             <h2>Current Values</h2>
             <p>
-              Counter: <span data-text={patchState.$.counter}></span>
+              Counter: <span data-text={patchState.refs.counter}></span>
             </p>
             <p>
-              Message: <span data-text={patchState.$.message}></span>
+              Message: <span data-text={patchState.refs.message}></span>
             </p>
           </section>
           <section
             class="subdemo"
-            data-on-signal-patch={js`${patchState.$.counterChanges}.push(patch)`}
+            data-on-signal-patch={js`${patchState.refs.counterChanges}.push(patch)`}
             data-on-signal-patch-filter={{ include: regex("^counter$") }}
           >
             <h2>Counter Changes Only</h2>
             <pre
               class="signal-log"
-              data-text={js`JSON.stringify({ counterChanges: ${patchState.$.counterChanges} })`}
+              data-text={js`JSON.stringify({ counterChanges: ${patchState.refs.counterChanges} })`}
             ></pre>
           </section>
           <section
             class="subdemo"
-            data-on-signal-patch={js`${patchState.$.allChanges}.push(patch)`}
+            data-on-signal-patch={js`${patchState.refs.allChanges}.push(patch)`}
             data-on-signal-patch-filter={{
               exclude: regex("(^|\\.)_|allChanges|counterChanges")
             }}
@@ -70,7 +70,7 @@ example.get("/", () =>
             <h2>All Signal Changes</h2>
             <pre
               class="signal-log"
-              data-text={js`JSON.stringify({ allChanges: ${patchState.$.allChanges} })`}
+              data-text={js`JSON.stringify({ allChanges: ${patchState.refs.allChanges} })`}
             ></pre>
           </section>
         </div>

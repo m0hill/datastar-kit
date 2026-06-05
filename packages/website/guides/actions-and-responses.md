@@ -28,8 +28,8 @@ const search = state({ q: "" })
 
 <input
   type="search"
-  data-bind={search.$.q}
-  data-on:input={get(queryUrl("/todos/search", { q: search.$.q }))}
+  data-bind={search.refs.q}
+  data-on:input={get(queryUrl("/todos/search", { q: search.refs.q }))}
 />
 ```
 

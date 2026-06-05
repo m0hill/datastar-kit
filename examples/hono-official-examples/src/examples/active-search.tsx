@@ -62,7 +62,7 @@ example.get("/", () =>
           <input
             type="text"
             placeholder="Search..."
-            data-bind={searchState.$.search}
+            data-bind={searchState.refs.search}
             data-on:input={mod(get("/examples/active_search/search"), { debounce: "200ms" })}
           />
         </label>

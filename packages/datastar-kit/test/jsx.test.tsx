@@ -26,10 +26,10 @@ describe("automatic JSX runtime", () => {
         data-signals={mod({ password: "", _validation: { password: "" } }, { ifMissing: true })}
         data-on:submit={mod(post("/login"), { prevent: true })}
       >
-        <input type="password" data-bind={login.$.password} />
+        <input type="password" data-bind={login.refs.password} />
         <small
-          data-show={login.$._validation.password}
-          data-text={login.$._validation.password}
+          data-show={login.refs._validation.password}
+          data-text={login.refs._validation.password}
         ></small>
       </form>
     )

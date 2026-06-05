@@ -43,8 +43,8 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
               data-on:change={action("setAll", js`el.checked`, {
                 include: regex("^selections")
               })}
-              data-effect={js`el.checked = ${bulkUpdateState.$.selections}.every(Boolean)`}
-              data-attr:disabled={bulkUpdateState.$._fetching}
+              data-effect={js`el.checked = ${bulkUpdateState.refs.selections}.every(Boolean)`}
+              data-attr:disabled={bulkUpdateState.refs._fetching}
             />
           </th>
           <th>Name</th>
@@ -59,8 +59,8 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
               <input
                 type="checkbox"
                 aria-label={`Select ${row.name}`}
-                data-bind={bulkUpdateState.$.selections}
-                data-attr:disabled={bulkUpdateState.$._fetching}
+                data-bind={bulkUpdateState.refs.selections}
+                data-attr:disabled={bulkUpdateState.refs._fetching}
               />
             </td>
             <td>{row.name}</td>
@@ -85,16 +85,16 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
     <div role="group">
       <button
         class="success"
-        data-indicator={bulkUpdateState.$._fetching}
-        data-attr:disabled={bulkUpdateState.$._fetching}
+        data-indicator={bulkUpdateState.refs._fetching}
+        data-attr:disabled={bulkUpdateState.refs._fetching}
         data-on:click={put("/examples/bulk_update/activate")}
       >
         Activate
       </button>
       <button
         class="error"
-        data-indicator={bulkUpdateState.$._fetching}
-        data-attr:disabled={bulkUpdateState.$._fetching}
+        data-indicator={bulkUpdateState.refs._fetching}
+        data-attr:disabled={bulkUpdateState.refs._fetching}
         data-on:click={put("/examples/bulk_update/deactivate")}
       >
         Deactivate

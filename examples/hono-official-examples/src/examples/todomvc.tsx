@@ -40,13 +40,13 @@ const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
         <input
           id="edit-todo"
           type="text"
-          data-bind={todoInputState.$.input}
+          data-bind={todoInputState.refs.input}
           data-init={js`el.focus()`}
           data-on:blur={put("/examples/todomvc/cancel")}
           data-on:keydown={js`
               if (evt.key === ${"Escape"}) {
                 el.blur()
-              } else if (evt.key === ${"Enter"} && ${todoInputState.$.input}.trim()) {
+              } else if (evt.key === ${"Enter"} && ${todoInputState.refs.input}.trim()) {
                 ${patch(`/examples/todomvc/${index}`)}
               }
             `}
@@ -108,8 +108,8 @@ const TodoMvc = () => {
           {...(editingIndex === undefined
             ? {
                 "data-signals": mod(todoInputState.defaults, { ifMissing: true }),
-                "data-bind": todoInputState.$.input,
-                "data-on:keydown": js`if (evt.key === ${"Enter"} && ${todoInputState.$.input}.trim()) { ${patch("/examples/todomvc/-1")}; ${set(todoInputState.$.input, "")} }`
+                "data-bind": todoInputState.refs.input,
+                "data-on:keydown": js`if (evt.key === ${"Enter"} && ${todoInputState.refs.input}.trim()) { ${patch("/examples/todomvc/-1")}; ${set(todoInputState.refs.input, "")} }`
               }
             : {})}
         />

@@ -19,8 +19,8 @@ example.get("/", () =>
           id="custom-event-target"
           class="event-output"
           data-signals={mod(eventState.defaults, { ifMissing: true })}
-          data-on:myevent={set(eventState.$._eventDetails, js`evt.detail`)}
-          data-text={js`${"Last Event Details: "} + ${eventState.$._eventDetails}`}
+          data-on:myevent={set(eventState.refs._eventDetails, js`evt.detail`)}
+          data-text={js`${"Last Event Details: "} + ${eventState.refs._eventDetails}`}
         ></p>
       </div>
     </ExampleLayout>,

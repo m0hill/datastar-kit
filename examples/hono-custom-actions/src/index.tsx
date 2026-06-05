@@ -29,7 +29,7 @@ app.get("/", () =>
           <button
             type="button"
             class="primary"
-            data-on:click={action("setSignal", dialogState.$.modalOpen.name, true)}
+            data-on:click={action("setSignal", dialogState.refs.modalOpen.name, true)}
           >
             Open custom-action dialog
           </button>
@@ -60,9 +60,9 @@ app.get("/", () =>
       <dialog
         id="confirm-dialog"
         aria-labelledby="confirm-dialog-title"
-        data-effect={action("syncDialog", dialogState.$.modalOpen)}
-        data-on:click={action("closeDialogOnBackdrop", dialogState.$.modalOpen.name)}
-        data-on:close={action("setSignal", dialogState.$.modalOpen.name, false)}
+        data-effect={action("syncDialog", dialogState.refs.modalOpen)}
+        data-on:click={action("closeDialogOnBackdrop", dialogState.refs.modalOpen.name)}
+        data-on:close={action("setSignal", dialogState.refs.modalOpen.name, false)}
       >
         <section class="dialog-body">
           <h2 id="confirm-dialog-title">Run a server action?</h2>
@@ -74,8 +74,8 @@ app.get("/", () =>
             <button
               type="button"
               class="secondary"
-              data-focus-when={dialogState.$.modalOpen}
-              data-on:click={action("setSignal", dialogState.$.modalOpen.name, false)}
+              data-focus-when={dialogState.refs.modalOpen}
+              data-on:click={action("setSignal", dialogState.refs.modalOpen.name, false)}
             >
               Cancel
             </button>

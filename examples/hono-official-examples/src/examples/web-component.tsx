@@ -18,12 +18,12 @@ example.get("/", () =>
       <div class="stack" data-signals={mod(componentState.defaults, { ifMissing: true })}>
         <label>
           Reversed
-          <input type="text" data-bind={componentState.$._name} />
+          <input type="text" data-bind={componentState.refs._name} />
         </label>
         <span data-signals={{ [reversed.name]: "" }} data-text={reversed}></span>
         <reverse-component
           data-on:reverse={set(reversed, js`evt.detail.value`)}
-          data-attr:name={componentState.$._name}
+          data-attr:name={componentState.refs._name}
         ></reverse-component>
       </div>
     </ExampleLayout>,

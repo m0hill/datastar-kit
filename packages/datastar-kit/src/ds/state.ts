@@ -54,8 +54,6 @@ export interface State<T extends SignalObject> {
   readonly defaults: T
   /** Nested typed signal refs. */
   readonly refs: StateSignalRefs<T>
-  /** Short alias for `refs`, matching Datastar's `$signal` expression syntax. */
-  readonly $: StateSignalRefs<T>
   /** Returns a type-checked signal patch object for `event.signals(...)` or `reply.signals(...)`. */
   patch(values: StatePatch<T>): SignalState
   /** Returns the default state, optionally deep-merged with overrides. */
@@ -136,7 +134,6 @@ export const state = <T extends SignalObject>(defaults: T): State<WidenSignalObj
   return {
     defaults: clonedDefaults,
     refs,
-    $: refs,
     patch(values) {
       return cloneSignalState(values as SignalObject)
     },

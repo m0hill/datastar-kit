@@ -30,13 +30,13 @@ app.get("/", () =>
           <label>
             Name
             <br />
-            <input name="name" data-bind={signup.$.name} />
+            <input name="name" data-bind={signup.refs.name} />
           </label>
           <br />
           <small
             style="display: none; color: crimson"
-            data-show={signup.$.errors.name}
-            data-text={signup.$.errors.name}
+            data-show={signup.refs.errors.name}
+            data-text={signup.refs.errors.name}
           ></small>
         </p>
 
@@ -44,13 +44,13 @@ app.get("/", () =>
           <label>
             Email
             <br />
-            <input name="email" data-bind={signup.$.email} />
+            <input name="email" data-bind={signup.refs.email} />
           </label>
           <br />
           <small
             style="display: none; color: crimson"
-            data-show={signup.$.errors.email}
-            data-text={signup.$.errors.email}
+            data-show={signup.refs.errors.email}
+            data-text={signup.refs.errors.email}
           ></small>
         </p>
 

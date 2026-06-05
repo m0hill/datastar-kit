@@ -106,11 +106,11 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
             <input
               class="field"
               placeholder="Engineering"
-              data-bind={workspaceState.$.projectName}
+              data-bind={workspaceState.refs.projectName}
             />
             <small
               class="text-danger text-[13px] font-medium min-h-4"
-              data-text={workspaceState.$._validation.projectName}
+              data-text={workspaceState.refs._validation.projectName}
             ></small>
           </label>
           <label class="flex flex-col gap-1.5 section-label">
@@ -119,11 +119,11 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
               class="field"
               placeholder="ENG"
               maxlength={8}
-              data-bind={workspaceState.$.projectKey}
+              data-bind={workspaceState.refs.projectKey}
             />
             <small
               class="text-danger text-[13px] font-medium min-h-4"
-              data-text={workspaceState.$._validation.projectKey}
+              data-text={workspaceState.refs._validation.projectKey}
             ></small>
           </label>
           <label class="flex flex-col gap-1.5 section-label">
@@ -131,7 +131,7 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
             <textarea
               class="field"
               rows={2}
-              data-bind={workspaceState.$.projectDescription}
+              data-bind={workspaceState.refs.projectDescription}
             ></textarea>
           </label>
           <button type="submit" class="btn-primary">
@@ -256,7 +256,7 @@ export const Board = (props: { issues: Issue[] }) => (
 )
 
 export const IssueProjectSelect = (props: { projects: Project[] }) => (
-  <select id="issue-project-select" class="field" data-bind={workspaceState.$.projectId}>
+  <select id="issue-project-select" class="field" data-bind={workspaceState.refs.projectId}>
     <option value="">Select project</option>
     {props.projects.map((project) => (
       <option value={project.id}>
@@ -280,7 +280,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       <button
         type="button"
         class="btn h-8 w-8 p-0"
-        data-on:click={set(workspaceState.$.modalOpen, false)}
+        data-on:click={set(workspaceState.refs.modalOpen, false)}
       >
         <svg
           width="14"
@@ -302,11 +302,11 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         class="field"
         autofocus
         placeholder="Fix keyboard focus after creating an issue"
-        data-bind={workspaceState.$.issueTitle}
+        data-bind={workspaceState.refs.issueTitle}
       />
       <small
         class="text-danger text-[13px] font-medium min-h-4"
-        data-text={workspaceState.$._validation.issueTitle}
+        data-text={workspaceState.refs._validation.issueTitle}
       ></small>
     </label>
     <label class="flex flex-col gap-1.5 section-label">
@@ -315,7 +315,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         class="field"
         rows={3}
         placeholder="Add a description..."
-        data-bind={workspaceState.$.issueDescription}
+        data-bind={workspaceState.refs.issueDescription}
       ></textarea>
     </label>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -324,12 +324,12 @@ const IssueModalForm = (props: { projects: Project[] }) => (
         <IssueProjectSelect projects={props.projects} />
         <small
           class="text-danger text-[13px] font-medium min-h-4"
-          data-text={workspaceState.$._validation.form}
+          data-text={workspaceState.refs._validation.form}
         ></small>
       </label>
       <label class="flex flex-col gap-1.5 section-label">
         Status
-        <select class="field" data-bind={workspaceState.$.issueStatus}>
+        <select class="field" data-bind={workspaceState.refs.issueStatus}>
           {issueStatuses.map((status) => (
             <option value={status.value}>{status.label}</option>
           ))}
@@ -337,7 +337,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
       <label class="flex flex-col gap-1.5 section-label">
         Priority
-        <select class="field" data-bind={workspaceState.$.issuePriority}>
+        <select class="field" data-bind={workspaceState.refs.issuePriority}>
           {issuePriorities.map((priority) => (
             <option value={priority.value}>{priority.label}</option>
           ))}
@@ -345,7 +345,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
     </div>
     <div class="flex justify-end gap-2 pt-4 border-t border-border">
-      <button type="button" class="btn" data-on:click={set(workspaceState.$.modalOpen, false)}>
+      <button type="button" class="btn" data-on:click={set(workspaceState.refs.modalOpen, false)}>
         Cancel
       </button>
       <button type="submit" class="btn-primary">
@@ -359,9 +359,9 @@ const IssueModal = (props: { projects: Project[] }) => (
   <dialog
     id="issue-modal"
     class="bg-transparent p-0 m-0 max-w-none max-h-none w-full h-full border-0"
-    data-effect={js`${workspaceState.$.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`}
-    data-on:click={js`if (evt.target === el) { ${set(workspaceState.$.modalOpen, false)} }`}
-    data-on:close={set(workspaceState.$.modalOpen, false)}
+    data-effect={js`${workspaceState.refs.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`}
+    data-on:click={js`if (evt.target === el) { ${set(workspaceState.refs.modalOpen, false)} }`}
+    data-on:close={set(workspaceState.refs.modalOpen, false)}
   >
     <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4">
       <div id="modal-content">

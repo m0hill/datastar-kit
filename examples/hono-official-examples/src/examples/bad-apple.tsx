@@ -26,7 +26,7 @@ const BadApplePanel = () => (
       data-init={get("/examples/bad_apple/updates")}
     >
       <span
-        data-text={js`${"Percentage: "} + ${playbackState.$._percentage}.toFixed(2) + ${"%"}`}
+        data-text={js`${"Percentage: "} + ${playbackState.refs._percentage}.toFixed(2) + ${"%"}`}
       ></span>
       <input
         type="range"
@@ -35,10 +35,10 @@ const BadApplePanel = () => (
         step="0.01"
         disabled
         style="cursor: default"
-        data-attr:value={playbackState.$._percentage}
+        data-attr:value={playbackState.refs._percentage}
       />
     </label>
-    <pre style="line-height: 100%" aria-live="polite" data-text={playbackState.$._contents}></pre>
+    <pre style="line-height: 100%" aria-live="polite" data-text={playbackState.refs._contents}></pre>
   </div>
 )
 

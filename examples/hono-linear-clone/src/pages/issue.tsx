@@ -85,11 +85,11 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
             class="field"
             rows={3}
             placeholder="Write a comment..."
-            data-bind={issueState.$.commentBody}
+            data-bind={issueState.refs.commentBody}
           ></textarea>
           <small
             class="text-danger text-[13px] font-medium min-h-4"
-            data-text={issueState.$._validation.commentBody}
+            data-text={issueState.refs._validation.commentBody}
           ></small>
         </label>
         <button type="submit" class="btn-primary self-start">

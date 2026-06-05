@@ -77,7 +77,7 @@ const routes: Route[] = [
               <input
                 class="w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                 placeholder="Search items"
-                data-bind={listState.$.query}
+                data-bind={listState.refs.query}
                 data-on:input={mod(get("/items/search"), { debounce: "200ms" })}
               />
 
@@ -85,7 +85,7 @@ const routes: Route[] = [
                 <input
                   class="min-w-0 flex-1 rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                   placeholder="New item"
-                  data-bind={listState.$.name}
+                  data-bind={listState.refs.name}
                 />
                 <button
                   type="submit"

@@ -27,14 +27,14 @@ const TodoForm = () => (
         id="todo-title"
         type="text"
         placeholder="Ship the Datastar example"
-        data-bind={todoState.$.title}
+        data-bind={todoState.refs.title}
       />
       <button type="submit">Add</button>
     </div>
     <p
       class="error"
-      data-show={todoState.$._validation.title}
-      data-text={todoState.$._validation.title}
+      data-show={todoState.refs._validation.title}
+      data-text={todoState.refs._validation.title}
     ></p>
   </form>
 )

@@ -102,7 +102,7 @@ export const app = new Elysia()
         title="Projects"
         toolbar={
           <form class="toolbar" data-on:submit={mod(post("/projects"), { prevent: true })}>
-            <input placeholder="New project title" data-bind={projectForm.$.title} />
+            <input placeholder="New project title" data-bind={projectForm.refs.title} />
             <button>Add project</button>
           </form>
         }
