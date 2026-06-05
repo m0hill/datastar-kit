@@ -1,7 +1,18 @@
 import { describe, expect, it } from "vitest"
 import * as Root from "datastar-kit"
 import * as sse from "datastar-kit/sse"
-import { ds, event, read, renderToString, reply, unsafeHtml } from "datastar-kit"
+import {
+  event,
+  read,
+  renderToString,
+  reply,
+  unsafeHtml,
+  js,
+  mod,
+  post,
+  signal,
+  state
+} from "datastar-kit"
 
 describe("package root exports", () => {
   it("exports the tiny HTML surface and Web Standards SDK namespaces", () => {
@@ -13,14 +24,20 @@ describe("package root exports", () => {
     expect("datastarPageResponse" in Root).toBe(false)
     expect("contract" in Root).toBe(false)
     expect("live" in Root).toBe(false)
-    expect(ds.signal).toBeDefined()
-    expect(ds.state).toBeDefined()
-    expect(ds.action).toBeDefined()
-    expect("on" in ds).toBe(false)
-    expect("bind" in ds).toBe(false)
-    expect("dataSignals" in ds).toBe(false)
-    expect("pluginAttr" in ds).toBe(false)
-    expect(ds.delete).toBeDefined()
+    expect("ds" in Root).toBe(false)
+    expect(Root.signal).toBe(signal)
+    expect(Root.state).toBe(state)
+    expect(Root.post).toBe(post)
+    expect(Root.js).toBe(js)
+    expect(Root.mod).toBe(mod)
+    expect("expr" in Root).toBe(false)
+    expect("withMods" in Root).toBe(false)
+    expect("withModifiers" in Root).toBe(false)
+    expect("on" in Root).toBe(false)
+    expect("bind" in Root).toBe(false)
+    expect("dataSignals" in Root).toBe(false)
+    expect("pluginAttr" in Root).toBe(false)
+    expect(Root.delete).toBeDefined()
     expect(event.patch).toBeDefined()
     expect(event.signals).toBeDefined()
     expect(event.script).toBeDefined()

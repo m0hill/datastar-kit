@@ -20,10 +20,10 @@ Configure TypeScript's automatic JSX runtime:
 Then write synchronous view functions:
 
 ```tsx
-import { ds, renderToString } from "datastar-kit"
+import { renderToString, post } from "datastar-kit"
 
 const SaveButton = () => (
-  <button type="button" data-on:click={ds.post("/settings/save")}>
+  <button type="button" data-on:click={post("/settings/save")}>
     Save
   </button>
 )
@@ -39,15 +39,17 @@ TSX can use native Datastar attribute names directly. Datastar Kit's JSX runtime
 refs, expressions, action helpers, and object-valued signal maps for `data-*` attributes:
 
 ```tsx
-const login = ds.state({
+import { mod, post, state } from "datastar-kit"
+
+const login = state({
   password: "",
   _validation: { password: "" }
 })
 
 const LoginForm = () => (
   <form
-    data-signals={[login.defaults, { ifMissing: true }]}
-    data-on:submit={[ds.post("/login"), { prevent: true }]}
+    data-signals={mod(login.defaults, { ifMissing: true })}
+    data-on:submit={mod(post("/login"), { prevent: true })}
   >
     <input type="password" data-bind={login.$.password} />
     <small data-show={login.$._validation.password} data-text={login.$._validation.password} />
@@ -56,8 +58,8 @@ const LoginForm = () => (
 ```
 
 String values stay raw, so ordinary HTML and hand-written Datastar expressions still render exactly
-as written. When a Datastar attribute needs modifiers, pass `[value, modifiers]`, such as
-`data-on:input={[ds.get("/search"), { debounce: "200ms" }]}`.
+as written. When a Datastar attribute needs modifiers, wrap the value with `mod(value, modifiers)`, such as
+`data-on:input={mod(get("/search"), { debounce: "200ms" })}`.
 
 ## Pages
 
@@ -67,7 +69,7 @@ as written. When a Datastar attribute needs modifiers, pass `[value, modifiers]`
 import { reply } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
 const ProjectsPage = (props: { projects: Project[] }) => (
   <main id="page">
@@ -194,7 +196,7 @@ If a region is slow or live, render a shell and patch that region separately:
 ```tsx
 const DashboardShell = () => (
   <DashboardLayout title="Dashboard">
-    <section id="stats" data-init={ds.get("/dashboard/stats")}>
+    <section id="stats" data-init={get("/dashboard/stats")}>
       Loading stats...
     </section>
   </DashboardLayout>
@@ -223,10 +225,10 @@ const body = unsafeHtml(sanitizedHtml)
 Use `renderToString(...)` when you need serialized HTML outside a response helper:
 
 ```tsx
-import { ds, renderToString } from "datastar-kit"
+import { renderToString, post } from "datastar-kit"
 
 const html = renderToString(
-  <button type="button" data-on:click={ds.post("/save")}>
+  <button type="button" data-on:click={post("/save")}>
     Save
   </button>
 )

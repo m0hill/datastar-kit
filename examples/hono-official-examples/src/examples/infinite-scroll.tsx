@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply, read } from "datastar-kit"
+import { event, reply, read, state as createState, get, js, mod } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -17,7 +17,7 @@ const schema = z.object({
   limit: z.number().int().min(1).max(50).default(pageSize)
 })
 
-const state = ds.state({ offset: 0, limit: pageSize })
+const state = createState({ offset: 0, limit: pageSize })
 
 const agentRows = (start: number, end: number) =>
   agents.slice(start, end).map((agent) => (
@@ -34,7 +34,7 @@ const Loader = () => (
   <div
     id="infinite-scroll-loader"
     class="loading-row"
-    data-on-intersect={ds.get("/examples/infinite_scroll/more")}
+    data-on-intersect={get("/examples/infinite_scroll/more")}
   >
     Loading...
   </div>
@@ -68,10 +68,10 @@ example.get("/", () =>
       <div
         id="demo"
         class="stack"
-        data-signals={[state.defaults, { ifMissing: true }]}
-        data-init={ds.get("/examples/infinite_scroll/initial", {
+        data-signals={mod(state.defaults, { ifMissing: true })}
+        data-init={get("/examples/infinite_scroll/initial", {
           payload: {
-            limit: ds.expr`Math.ceil(window.innerHeight / 44) + 4`
+            limit: js`Math.ceil(window.innerHeight / 44) + 4`
           }
         })}
       >

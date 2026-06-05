@@ -5,7 +5,7 @@ A small Bun/Elysia app showing how Datastar Kit JSX handles ordinary application
 - an app shell with sidebar and topbar regions;
 - named layout slots via normal JSX props (`sidebar`, `toolbar`, `children`);
 - route-level data loading before rendering;
-- a Datastar form action that patches only the stable `#project-list` region and clears the typed `ds.state(...)` input signal.
+- a Datastar form action that patches only the stable `#project-list` region and clears the typed `state(...)` input signal.
 
 This example uses Datastar Kit's JSX runtime and `reply.*` helpers directly. It does not use `@elysia/html` because `reply.page(...)`, `reply.patch(...)`, and `reply.stream(...)` already return native `Response` objects with the correct Datastar/HTML headers.
 

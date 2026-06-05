@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { z } from "zod"
-import { ds, event, read, reply } from "datastar-kit"
+import { event, read, reply, state as createState, del, get, mod, patch, post } from "datastar-kit"
 import { database } from "./db/index.js"
 import { createTodo, deleteTodo, readTodos, toggleTodo } from "./db/todo.js"
 import type { Todo } from "./db/schema.js"
@@ -14,7 +14,7 @@ const CreateTodoSignals = z.object({
   title: z.string().trim().min(1, "Enter a todo title.")
 })
 
-const todoState = ds.state({
+const todoState = createState({
   title: "",
   _validation: {
     title: ""
@@ -22,7 +22,7 @@ const todoState = ds.state({
 })
 
 const TodoForm = () => (
-  <form class="panel" data-on:submit={[ds.post("/todos"), { prevent: true }]}>
+  <form class="panel" data-on:submit={mod(post("/todos"), { prevent: true })}>
     <label for="todo-title">New todo</label>
     <div class="new-todo-row">
       <input
@@ -53,10 +53,10 @@ const TodoList = ({ todos }: { readonly todos: readonly Todo[] }) => (
             <input
               type="checkbox"
               checked={todo.completed}
-              data-on:change={ds.patch(`/todos/${todo.id}/toggle`)}
+              data-on:change={patch(`/todos/${todo.id}/toggle`)}
             />
             <span class="todo-title">{todo.title}</span>
-            <button type="button" class="secondary" data-on:click={ds.delete(`/todos/${todo.id}`)}>
+            <button type="button" class="secondary" data-on:click={del(`/todos/${todo.id}`)}>
               Delete
             </button>
           </li>
@@ -67,7 +67,7 @@ const TodoList = ({ todos }: { readonly todos: readonly Todo[] }) => (
 )
 
 const TodosPage = ({ todos }: { readonly todos: readonly Todo[] }) => (
-  <main data-signals={[todoState.defaults, { ifMissing: true }]} data-init={ds.get("/live")}>
+  <main data-signals={mod(todoState.defaults, { ifMissing: true })} data-init={get("/live")}>
     <header>
       <h1>Worker Hono live todos</h1>
       <p class="muted">
@@ -91,7 +91,7 @@ app.get("/", async (c) => {
       <link href="/styles.css" rel="stylesheet" />,
       <script
         type="module"
-        src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+        src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
       />
     ]
   })

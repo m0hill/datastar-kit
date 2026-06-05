@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, reply } from "datastar-kit"
+import { reply, get } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 export const example = new Hono()
@@ -12,7 +12,7 @@ example.get("/", () =>
       summary="Loads expensive content after the shell is already interactive."
       source="https://data-star.dev/examples/lazy_load"
     >
-      <div id="lazy-load" class="loading-row" data-init={ds.get("/examples/lazy_load/graph")}>
+      <div id="lazy-load" class="loading-row" data-init={get("/examples/lazy_load/graph")}>
         Loading...
       </div>
     </ExampleLayout>,

@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply, read } from "datastar-kit"
+import { event, reply, read, state as createState, mod, post } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -11,7 +11,7 @@ const schema = z.object({
   lastName: z.string().trim().min(1, "Last name is required.")
 })
 
-const state = ds.state({
+const state = createState({
   email: "",
   firstName: "",
   lastName: "",
@@ -35,7 +35,7 @@ example.get("/", () =>
       <div
         id="inline-validation-demo"
         class="stack"
-        data-signals={[state.defaults, { ifMissing: true }]}
+        data-signals={mod(state.defaults, { ifMissing: true })}
       >
         <label>
           Email Address
@@ -44,10 +44,9 @@ example.get("/", () =>
             required
             aria-describedby="email-info"
             data-bind={"email"}
-            data-on:keydown={[
-              ds.post("/examples/inline_validation/validate"),
-              { debounce: "500ms" }
-            ]}
+            data-on:keydown={mod(post("/examples/inline_validation/validate"), {
+              debounce: "500ms"
+            })}
           />
         </label>
         <p id="email-info" class="muted">
@@ -65,10 +64,9 @@ example.get("/", () =>
             type="text"
             required
             data-bind={"firstName"}
-            data-on:keydown={[
-              ds.post("/examples/inline_validation/validate"),
-              { debounce: "500ms" }
-            ]}
+            data-on:keydown={mod(post("/examples/inline_validation/validate"), {
+              debounce: "500ms"
+            })}
           />
         </label>
         <small
@@ -83,10 +81,9 @@ example.get("/", () =>
             type="text"
             required
             data-bind={"lastName"}
-            data-on:keydown={[
-              ds.post("/examples/inline_validation/validate"),
-              { debounce: "500ms" }
-            ]}
+            data-on:keydown={mod(post("/examples/inline_validation/validate"), {
+              debounce: "500ms"
+            })}
           />
         </label>
         <small
@@ -95,7 +92,7 @@ example.get("/", () =>
           data-show={state.$.errors.lastName}
           data-text={state.$.errors.lastName}
         ></small>
-        <button class="success" data-on:click={ds.post("/examples/inline_validation")}>
+        <button class="success" data-on:click={post("/examples/inline_validation")}>
           Sign Up
         </button>
         <output id="inline-validation-result"></output>

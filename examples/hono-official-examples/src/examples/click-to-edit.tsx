@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply, read } from "datastar-kit"
+import { event, reply, read, state as createState, get, local, patch, put } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -11,7 +11,7 @@ const schema = z.object({
 
 type Contact = z.infer<typeof schema>
 
-const state = ds.state({
+const state = createState({
   firstName: "",
   lastName: "",
   email: "",
@@ -21,7 +21,7 @@ const state = ds.state({
     email: ""
   }
 })
-const fetching = ds.local<boolean>("fetching")
+const fetching = local<boolean>("fetching")
 
 const originalContact: Contact = {
   firstName: "John",
@@ -41,7 +41,7 @@ const ContactView = () => (
         class="info"
         data-indicator={fetching}
         data-attr:disabled={fetching}
-        data-on:click={ds.get("/examples/click_to_edit/edit")}
+        data-on:click={get("/examples/click_to_edit/edit")}
       >
         Edit
       </button>
@@ -49,7 +49,7 @@ const ContactView = () => (
         class="warning"
         data-indicator={fetching}
         data-attr:disabled={fetching}
-        data-on:click={ds.patch("/examples/click_to_edit/reset")}
+        data-on:click={patch("/examples/click_to_edit/reset")}
       >
         Reset
       </button>
@@ -94,7 +94,7 @@ const ContactForm = () => (
         class="success"
         data-indicator={fetching}
         data-attr:disabled={fetching}
-        data-on:click={ds.put("/examples/click_to_edit")}
+        data-on:click={put("/examples/click_to_edit")}
       >
         Save
       </button>
@@ -102,7 +102,7 @@ const ContactForm = () => (
         class="error"
         data-indicator={fetching}
         data-attr:disabled={fetching}
-        data-on:click={ds.get("/examples/click_to_edit/cancel")}
+        data-on:click={get("/examples/click_to_edit/cancel")}
       >
         Cancel
       </button>

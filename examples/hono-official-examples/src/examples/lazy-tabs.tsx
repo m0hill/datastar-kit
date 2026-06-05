@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, reply } from "datastar-kit"
+import { reply, get } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const tabText = [
@@ -20,7 +20,7 @@ const LazyTabs = ({ active }: { active: number }) => (
         <button
           role="tab"
           aria-selected={index === active ? "true" : "false"}
-          data-on:click={ds.get(`/examples/lazy_tabs/${index}`)}
+          data-on:click={get(`/examples/lazy_tabs/${index}`)}
         >
           Tab {index}
         </button>

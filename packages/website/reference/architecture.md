@@ -28,7 +28,7 @@ This page is for contributors and maintainers. It explains the source layout and
 
 ### Datastar authoring
 
-- `src/ds/index.ts` is the public `ds` barrel.
+- `src/ds/index.ts` is the internal barrel re-exported by the root package.
 - `src/ds/actions.ts` builds Datastar action expressions.
 - `src/ds/expression.ts` serializes Datastar expressions.
 - `src/ds/signals.ts` defines signal refs and name validation.
@@ -43,7 +43,7 @@ This page is for contributors and maintainers. It explains the source layout and
 
 Root exports:
 
-- `ds`
+- Datastar authoring helpers such as `get`, `post`, `js`, `mod`, `signal`, and `state`
 - `event`
 - `read`
 - `reply`

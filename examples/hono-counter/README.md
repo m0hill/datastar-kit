@@ -8,7 +8,7 @@ The example uses TSX views, Hono routes, and `reply.*` response helpers. It keep
 
 - server-rendered TSX with `jsxImportSource: "datastar-kit"`;
 - Hono route handlers returning native `Response` objects from Datastar Kit;
-- Native Datastar action attributes with typed `ds.post(...)` expressions;
+- Native Datastar action attributes with typed `post(...)` expressions;
 - a backend-owned `count` value;
 - `reply.page(...)` for the initial document;
 - `reply.patch(...)` for a focused element update.

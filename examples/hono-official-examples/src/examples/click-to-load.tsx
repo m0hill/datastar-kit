@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply, read } from "datastar-kit"
+import { event, reply, read, state as createState, get, js, local, mod } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -10,8 +10,8 @@ const schema = z.object({
   limit: z.number().default(pageSize)
 })
 
-const state = ds.state({ offset: 0, limit: pageSize })
-const fetching = ds.local<boolean>("fetching")
+const state = createState({ offset: 0, limit: pageSize })
+const fetching = local<boolean>("fetching")
 
 const agents = Array.from({ length: 50 }, (_, index) => ({
   name: `Agent Smith ${index}`,
@@ -56,7 +56,7 @@ example.get("/", () =>
       summary="Requests the next slice of table rows and patches the body in place."
       source="https://data-star.dev/examples/click_to_load"
     >
-      <div id="demo" data-signals={[state.defaults, { ifMissing: true }]}>
+      <div id="demo" data-signals={mod(state.defaults, { ifMissing: true })}>
         <table>
           <thead>
             <tr>
@@ -72,8 +72,8 @@ example.get("/", () =>
         <button
           class="info wide"
           data-indicator={fetching}
-          data-attr:aria-disabled={ds.expr`\`${fetching}\``}
-          data-on:click={ds.expr`if (!${fetching}) { ${ds.get("/examples/click_to_load/more")} }`}
+          data-attr:aria-disabled={js`\`${fetching}\``}
+          data-on:click={js`if (!${fetching}) { ${get("/examples/click_to_load/more")} }`}
         >
           Load More
         </button>

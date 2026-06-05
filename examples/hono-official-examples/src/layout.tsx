@@ -36,7 +36,7 @@ export const pageHead = (extra?: HtmlChild | HtmlChild[]): HtmlChild[] => [
   <link rel="stylesheet" href="/public/styles.css" />,
   <script
     type="module"
-    src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+    src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
   />,
   ...(extra === undefined ? [] : Array.isArray(extra) ? extra : [extra])
 ]

@@ -82,7 +82,7 @@ export const toJs = (value: ExprInput<unknown>): string => {
  * @param code Datastar expression source.
  * @returns A typed Datastar expression.
  */
-export function expr<T = unknown>(code: string): Expr<T>
+export function js<T = unknown>(code: string): Expr<T>
 
 /**
  * Builds Datastar expression source from a template with safely serialized interpolations.
@@ -92,12 +92,12 @@ export function expr<T = unknown>(code: string): Expr<T>
  * @param values Values interpolated as Datastar expression source or JavaScript literals.
  * @returns A typed Datastar expression.
  */
-export function expr<T = unknown>(
+export function js<T = unknown>(
   parts: TemplateStringsArray,
   ...values: ReadonlyArray<ExprInput<unknown>>
 ): Expr<T>
 
-export function expr<T = unknown>(
+export function js<T = unknown>(
   codeOrParts: string | TemplateStringsArray,
   ...values: ReadonlyArray<ExprInput<unknown>>
 ): Expr<T> {
@@ -113,7 +113,7 @@ export function expr<T = unknown>(
 }
 
 /**
- * Error thrown when `ds.regex(...)` receives a pattern or flags pair that cannot create a `RegExp`.
+ * Error thrown when `regex(...)` receives a pattern or flags pair that cannot create a `RegExp`.
  */
 export class RegexExpressionError extends Error {
   constructor(

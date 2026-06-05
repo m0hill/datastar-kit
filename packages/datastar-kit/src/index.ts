@@ -1,5 +1,5 @@
-/** Datastar attribute, action, signal, and expression helpers. */
-export * as ds from "./ds/index.js"
+/** Datastar action, signal, expression, and modifier helpers. */
+export * from "./ds/index.js"
 /** SSE event chunk helpers for `reply.stream()`. */
 export * as event from "./event.js"
 /** Request-boundary Datastar signal readers. */

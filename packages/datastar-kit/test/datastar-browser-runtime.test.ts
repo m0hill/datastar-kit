@@ -11,7 +11,7 @@ const agentBrowserAvailable =
   spawnSync("agent-browser", ["--version"], { stdio: "ignore" }).status === 0
 const browserIt = agentBrowserAvailable ? it : it.skip
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
 const runtimePage = (): string => {
   const count = signal<number, "count">("count")

@@ -1,12 +1,12 @@
 import { staticPlugin } from "@elysia/static"
 import { Elysia } from "elysia"
-import { ds, event, read, reply, type HtmlChild } from "datastar-kit"
+import { event, read, reply, type HtmlChild, state as createState, mod, post } from "datastar-kit"
 import { z } from "zod"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
-const projectForm = ds.state({ title: "" })
+const projectForm = createState({ title: "" })
 
 interface Project {
   id: number
@@ -43,7 +43,7 @@ const projects: Project[] = [
 ]
 
 const DashboardLayout = (props: { title: string; toolbar?: HtmlChild; children?: HtmlChild }) => (
-  <div class="shell" data-signals={[projectForm.defaults, { ifMissing: true }]}>
+  <div class="shell" data-signals={mod(projectForm.defaults, { ifMissing: true })}>
     <aside class="sidebar">
       <strong>Datastar Kit</strong>
       <nav>
@@ -101,7 +101,7 @@ export const app = new Elysia()
       <DashboardLayout
         title="Projects"
         toolbar={
-          <form class="toolbar" data-on:submit={[ds.post("/projects"), { prevent: true }]}>
+          <form class="toolbar" data-on:submit={mod(post("/projects"), { prevent: true })}>
             <input placeholder="New project title" data-bind={projectForm.$.title} />
             <button>Add project</button>
           </form>

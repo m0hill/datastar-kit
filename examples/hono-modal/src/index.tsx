@@ -2,19 +2,19 @@ import { serve } from "@hono/node-server"
 import { serveStatic } from "@hono/node-server/serve-static"
 import { fileURLToPath } from "node:url"
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { event, reply, get, js, mod, post, set, signal } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
-const openModal = ds.signal<boolean, "modalOpen">("modalOpen")
+const openModal = signal<boolean, "modalOpen">("modalOpen")
 const app = new Hono()
 
 app.use("/static/*", serveStatic({ root: fileURLToPath(new URL("../", import.meta.url)) }))
 
 app.get("/", () =>
   reply.page(
-    <main id="app" data-signals={[{ modalOpen: false }, { ifMissing: true }]}>
+    <main id="app" data-signals={mod({ modalOpen: false }, { ifMissing: true })}>
       <h1>Datastar modal</h1>
       <p>
         This example patches a native <code>&lt;dialog&gt;</code> into a modal slot from a Hono
@@ -23,7 +23,7 @@ app.get("/", () =>
       </p>
 
       <div class="row">
-        <button type="button" class="primary" data-on:click={ds.get("/modal")}>
+        <button type="button" class="primary" data-on:click={get("/modal")}>
           Open server-rendered modal
         </button>
       </div>
@@ -49,9 +49,9 @@ app.get("/modal", () =>
       <dialog
         id="confirm-modal"
         aria-labelledby="confirm-modal-title"
-        data-effect={ds.expr`${openModal} ? (!el.open && el.showModal()) : (el.open && el.close())`}
-        data-on:click={ds.expr`if (evt.target === el) { ${ds.set(openModal, false)} }`}
-        data-on:close={ds.set(openModal, false)}
+        data-effect={js`${openModal} ? (!el.open && el.showModal()) : (el.open && el.close())`}
+        data-on:click={js`if (evt.target === el) { ${set(openModal, false)} }`}
+        data-on:close={set(openModal, false)}
       >
         <section class="modal">
           <h2 id="confirm-modal-title">Confirm the action</h2>
@@ -60,10 +60,10 @@ app.get("/modal", () =>
             Escape, backdrop clicks, and buttons all stay in sync.
           </p>
           <div class="modal-actions">
-            <button type="button" class="secondary" data-on:click={ds.set(openModal, false)}>
+            <button type="button" class="secondary" data-on:click={set(openModal, false)}>
               Cancel
             </button>
-            <button type="button" class="danger" data-on:click={ds.post("/modal/confirm")}>
+            <button type="button" class="danger" data-on:click={post("/modal/confirm")}>
               Confirm
             </button>
           </div>

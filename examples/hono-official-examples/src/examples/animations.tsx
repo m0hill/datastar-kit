@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply, read } from "datastar-kit"
+import { event, reply, read, state as createState, del, get, local, mod } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -26,24 +26,24 @@ const Throb = ({ index }: { index: number }) => {
 }
 
 const ViewTransitionButton = ({ restored }: { restored: boolean }) => {
-  const state = ds.state({ shouldRestore: restored })
-  const fetching = ds.local<boolean>("vtFetching")
+  const state = createState({ shouldRestore: restored })
+  const fetching = local<boolean>("vtFetching")
 
   return (
     <button
       id="view-transition"
       class={restored ? "success" : "info"}
-      data-signals={[state.defaults, { ifMissing: true }]}
+      data-signals={mod(state.defaults, { ifMissing: true })}
       data-indicator={fetching}
       data-attr:disabled={fetching}
-      data-on:click={ds.get("/examples/animations/view_transition")}
+      data-on:click={get("/examples/animations/view_transition")}
     >
       {restored ? "Restored. Swap again." : "Swap It!"}
     </button>
   )
 }
 
-const fadeOutFetching = ds.local<boolean>("fadeOutFetching")
+const fadeOutFetching = local<boolean>("fadeOutFetching")
 
 const FadeOutButton = ({ fading = false }: { fading?: boolean }) => (
   <button
@@ -53,13 +53,13 @@ const FadeOutButton = ({ fading = false }: { fading?: boolean }) => (
     disabled={fading}
     data-indicator={fadeOutFetching}
     data-attr:disabled={fadeOutFetching}
-    data-on:click={ds.delete("/examples/animations")}
+    data-on:click={del("/examples/animations")}
   >
     Fade out then delete on click
   </button>
 )
 
-const fadeInFetching = ds.local<boolean>("fadeInFetching")
+const fadeInFetching = local<boolean>("fadeInFetching")
 
 const FadeInButton = ({ invisible = false }: { invisible?: boolean }) => (
   <button
@@ -69,7 +69,7 @@ const FadeInButton = ({ invisible = false }: { invisible?: boolean }) => (
     disabled={invisible}
     data-indicator={fadeInFetching}
     data-attr:disabled={fadeInFetching}
-    data-on:click={ds.get("/examples/animations/fade_me_in")}
+    data-on:click={get("/examples/animations/fade_me_in")}
   >
     Fade me in on click
   </button>
@@ -88,7 +88,7 @@ example.get("/", () =>
       <div class="stack">
         <section class="subdemo">
           <h2>Color Throb</h2>
-          <div data-init={ds.get("/examples/animations/throb")}>
+          <div data-init={get("/examples/animations/throb")}>
             <Throb index={1} />
           </div>
         </section>

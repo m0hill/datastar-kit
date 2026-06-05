@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, reply } from "datastar-kit"
+import { reply, del, js, local, mod, put } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const initialRows = [
@@ -10,10 +10,10 @@ const initialRows = [
 ]
 
 let rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
-const fetching = ds.local<boolean>("fetching")
+const fetching = local<boolean>("fetching")
 
 const DeleteRowTable = () => (
-  <div id="demo" data-signals={[{ [fetching.name]: false }, { ifMissing: true }]}>
+  <div id="demo" data-signals={mod({ [fetching.name]: false }, { ifMissing: true })}>
     <table>
       <thead>
         <tr>
@@ -37,7 +37,7 @@ const DeleteRowTable = () => (
               <td>
                 <button
                   class="error"
-                  data-on:click={ds.expr`if (confirm(${"Are you sure?"})) { ${ds.delete(`/examples/delete_row/${index}`)} }`}
+                  data-on:click={js`if (confirm(${"Are you sure?"})) { ${del(`/examples/delete_row/${index}`)} }`}
                   data-indicator={fetching}
                   data-attr:disabled={fetching}
                 >
@@ -51,7 +51,7 @@ const DeleteRowTable = () => (
     </table>
     <button
       class="warning"
-      data-on:click={ds.put("/examples/delete_row/reset")}
+      data-on:click={put("/examples/delete_row/reset")}
       data-indicator={fetching}
     >
       Reset

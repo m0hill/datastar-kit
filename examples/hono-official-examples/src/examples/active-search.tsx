@@ -1,11 +1,11 @@
 import { Hono } from "hono"
-import { ds, reply, read } from "datastar-kit"
+import { reply, read, state as createState, get, mod } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const schema = z.object({ search: z.string().default("") })
 
-const state = ds.state({ search: "" })
+const state = createState({ search: "" })
 
 const people = [
   ["Elda", "Reynolds"],
@@ -56,14 +56,14 @@ example.get("/", () =>
       summary="Filters a server-rendered result set as the user types."
       source="https://data-star.dev/examples/active_search"
     >
-      <div class="stack" data-signals={[state.defaults, { ifMissing: true }]}>
+      <div class="stack" data-signals={mod(state.defaults, { ifMissing: true })}>
         <label>
           Search
           <input
             type="text"
             placeholder="Search..."
             data-bind={state.$.search}
-            data-on:input={[ds.get("/examples/active_search/search"), { debounce: "200ms" }]}
+            data-on:input={mod(get("/examples/active_search/search"), { debounce: "200ms" })}
           />
         </label>
         <table>

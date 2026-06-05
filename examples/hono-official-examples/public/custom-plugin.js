@@ -1,4 +1,4 @@
-import { action, attribute } from "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+import { action, attribute } from "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
 const report = (message) => {
   const output = document.getElementById("custom-plugin-output")

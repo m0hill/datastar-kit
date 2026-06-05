@@ -53,7 +53,7 @@ env.TODO_ROOMS.get(env.TODO_ROOMS.idFromName(`user:${userId}:inbox`))
 On page load:
 
 1. `GET /` calls `room.getTodos()` and returns the HTML page.
-2. `data-init={ds.get("/live")}` opens a Datastar SSE stream.
+2. `data-init={get("/live")}` opens a Datastar SSE stream.
 3. `GET /live` calls `room.getTodos()` for the initial patch, then subscribes the tab to the same Durable Object.
 
 On mutation:

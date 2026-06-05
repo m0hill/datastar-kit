@@ -2,20 +2,20 @@ import { serve } from "@hono/node-server"
 import { serveStatic } from "@hono/node-server/serve-static"
 import { fileURLToPath } from "node:url"
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { event, reply, action, state as createState, mod, post } from "datastar-kit"
 
 const app = new Hono()
-const dialogState = ds.state({ modalOpen: false })
+const dialogState = createState({ modalOpen: false })
 
 app.use("/static/*", serveStatic({ root: fileURLToPath(new URL("../", import.meta.url)) }))
 
 app.get("/", () =>
   reply.page(
-    <main id="app" data-signals={[dialogState.defaults, { ifMissing: true }]}>
+    <main id="app" data-signals={mod(dialogState.defaults, { ifMissing: true })}>
       <h1>Custom Datastar actions</h1>
       <p>
         This example shows custom browser actions from <code>static/datastar-actions.js</code>. The
-        server-rendered TSX can call those actions with <code>ds.action(...)</code>.
+        server-rendered TSX can call those actions with <code>action(...)</code>.
       </p>
 
       <section class="card">
@@ -29,7 +29,7 @@ app.get("/", () =>
           <button
             type="button"
             class="primary"
-            data-on:click={ds.action("setSignal", dialogState.$.modalOpen.name, true)}
+            data-on:click={action("setSignal", dialogState.$.modalOpen.name, true)}
           >
             Open custom-action dialog
           </button>
@@ -60,9 +60,9 @@ app.get("/", () =>
       <dialog
         id="confirm-dialog"
         aria-labelledby="confirm-dialog-title"
-        data-effect={ds.action("syncDialog", dialogState.$.modalOpen)}
-        data-on:click={ds.action("closeDialogOnBackdrop", dialogState.$.modalOpen.name)}
-        data-on:close={ds.action("setSignal", dialogState.$.modalOpen.name, false)}
+        data-effect={action("syncDialog", dialogState.$.modalOpen)}
+        data-on:click={action("closeDialogOnBackdrop", dialogState.$.modalOpen.name)}
+        data-on:close={action("setSignal", dialogState.$.modalOpen.name, false)}
       >
         <section class="dialog-body">
           <h2 id="confirm-dialog-title">Run a server action?</h2>
@@ -75,11 +75,11 @@ app.get("/", () =>
               type="button"
               class="secondary"
               data-focus-when={dialogState.$.modalOpen}
-              data-on:click={ds.action("setSignal", dialogState.$.modalOpen.name, false)}
+              data-on:click={action("setSignal", dialogState.$.modalOpen.name, false)}
             >
               Cancel
             </button>
-            <button type="button" class="danger" data-on:click={ds.post("/confirm")}>
+            <button type="button" class="danger" data-on:click={post("/confirm")}>
               Confirm on server
             </button>
           </div>

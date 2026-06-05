@@ -1,10 +1,10 @@
 import { serve } from "@hono/node-server"
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { event, reply, get, post } from "datastar-kit"
 import { invalidations } from "./realtime/hub.js"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
 let count = 0
 
@@ -17,10 +17,10 @@ const Count = () => (
 )
 
 const Counter = () => (
-  <main id="counter" data-init={ds.get("/live")}>
+  <main id="counter" data-init={get("/live")}>
     <h1>Hono live counter</h1>
     <p>Open this page in two tabs. Clicking increment in either tab updates both.</p>
-    <button type="button" data-on:click={ds.post("/increment")}>
+    <button type="button" data-on:click={post("/increment")}>
       Increment
     </button>{" "}
     <Count />

@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { event, reply, get, local } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const colors = [
@@ -78,7 +78,7 @@ const AnimatedSvg = ({ radius = 20, fill = "green" }: { radius?: number; fill?: 
   </svg>
 )
 
-const fetching = ds.local<boolean>("fetching")
+const fetching = local<boolean>("fetching")
 
 const SvgMorphingDemo = () => (
   <div class="grid morph-grid">
@@ -88,7 +88,7 @@ const SvgMorphingDemo = () => (
         class="info"
         data-indicator={fetching}
         data-attr:disabled={fetching}
-        data-on:click={ds.get("/examples/svg_morphing/circle_color")}
+        data-on:click={get("/examples/svg_morphing/circle_color")}
       >
         Change Color
       </button>
@@ -99,7 +99,7 @@ const SvgMorphingDemo = () => (
         class="info"
         data-indicator={fetching}
         data-attr:disabled={fetching}
-        data-on:click={ds.get("/examples/svg_morphing/circle_size")}
+        data-on:click={get("/examples/svg_morphing/circle_size")}
       >
         Change Radius
       </button>
@@ -110,7 +110,7 @@ const SvgMorphingDemo = () => (
         class="info"
         data-indicator={fetching}
         data-attr:disabled={fetching}
-        data-on:click={ds.get("/examples/svg_morphing/shape_transform")}
+        data-on:click={get("/examples/svg_morphing/shape_transform")}
       >
         Random Shape
       </button>
@@ -121,7 +121,7 @@ const SvgMorphingDemo = () => (
         class="info"
         data-indicator={fetching}
         data-attr:disabled={fetching}
-        data-on:click={ds.get("/examples/svg_morphing/multiple_elements")}
+        data-on:click={get("/examples/svg_morphing/multiple_elements")}
       >
         Randomize All Circles
       </button>
@@ -132,7 +132,7 @@ const SvgMorphingDemo = () => (
         class="success"
         data-indicator={fetching}
         data-attr:disabled={fetching}
-        data-on:click={ds.get("/examples/svg_morphing/animated_morph")}
+        data-on:click={get("/examples/svg_morphing/animated_morph")}
       >
         Start Animation Sequence
       </button>

@@ -4,7 +4,7 @@ import type { Expr } from "./expression.js"
 export type { SignalState, SignalValue } from "../types.js"
 
 /**
- * Authoring-time signal value accepted by `ds.*` helpers.
+ * Authoring-time signal value accepted by Datastar authoring helpers.
  *
  * @remarks
  * This type can contain `Expr` values because it is rendered into Datastar client-side expression

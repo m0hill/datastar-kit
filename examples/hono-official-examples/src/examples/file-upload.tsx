@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply, read } from "datastar-kit"
+import { event, reply, read, state as createState, js, mod, post, set } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -31,7 +31,7 @@ const schema = z.object({
 
 type UploadedFile = z.infer<typeof UploadedFile>
 
-const state = ds.state({
+const state = createState({
   files: [],
   errors: {
     files: ""
@@ -65,14 +65,14 @@ example.get("/", () =>
       summary="Binds file inputs into Datastar signals and posts the encoded file list."
       source="https://data-star.dev/examples/file_upload"
     >
-      <div class="stack" data-signals={[state.defaults, { ifMissing: true }]}>
+      <div class="stack" data-signals={mod(state.defaults, { ifMissing: true })}>
         <label>
           <span>Pick anything less than 1 MiB</span>
           <input
             type="file"
             multiple
             data-bind={state.$.files}
-            data-on:change={ds.set(state.$.errors.files, "")}
+            data-on:change={set(state.$.errors.files, "")}
           />
         </label>
         <small
@@ -83,8 +83,8 @@ example.get("/", () =>
         ></small>
         <button
           class="warning"
-          data-attr:disabled={ds.expr`!${state.$.files}.length`}
-          data-on:click={ds.expr`if (${state.$.files}.length) { ${ds.post("/examples/file_upload")} }`}
+          data-attr:disabled={js`!${state.$.files}.length`}
+          data-on:click={js`if (${state.$.files}.length) { ${post("/examples/file_upload")} }`}
         >
           Submit
         </button>

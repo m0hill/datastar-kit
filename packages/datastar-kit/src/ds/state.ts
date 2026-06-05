@@ -35,7 +35,7 @@ type StatePatchValue<Value extends SignalValue> = [Value] extends [readonly Sign
     ? StatePatch<Value>
     : Value
 
-/** Nested typed Datastar signal references for a `ds.state(...)` object. */
+/** Nested typed Datastar signal references for a `state(...)` object. */
 export type StateSignalRefs<T extends SignalObject, Prefix extends string = ""> = {
   readonly [Key in keyof T & string]: SignalRefFor<
     T[Key],
@@ -43,14 +43,14 @@ export type StateSignalRefs<T extends SignalObject, Prefix extends string = ""> 
   >
 }
 
-/** Type-checked partial signal patch accepted by a `ds.state(...)` helper. */
+/** Type-checked partial signal patch accepted by a `state(...)` helper. */
 export type StatePatch<T extends SignalObject> = {
   readonly [Key in keyof T & string]?: StatePatchValue<T[Key]>
 }
 
-/** A typed signal-state helper created by `ds.state(...)`. */
+/** A typed signal-state helper created by `state(...)`. */
 export interface State<T extends SignalObject> {
-  /** Initial signal values supplied to `ds.state(...)`. */
+  /** Initial signal values supplied to `state(...)`. */
   readonly defaults: T
   /** Nested typed signal refs. */
   readonly refs: StateSignalRefs<T>
@@ -126,7 +126,7 @@ const buildRefs = (value: SignalObject, prefix = ""): Record<string, unknown> =>
 /**
  * Creates a small typed helper around Datastar signal defaults.
  *
- * `ds.state(...)` keeps initial values, signal refs, reset payloads, and partial signal patches
+ * `state(...)` keeps initial values, signal refs, reset payloads, and partial signal patches
  * derived from one object. It does not read requests or perform schema validation.
  */
 export const state = <T extends SignalObject>(defaults: T): State<WidenSignalObject<T>> => {

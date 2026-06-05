@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import { ds, reply } from "datastar-kit"
+import { reply, state as createState, js, mod, set } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
-const state = ds.state({ key: "" })
+const state = createState({ key: "" })
 
 const keys = [
   "KEY ELSE",
@@ -29,16 +29,16 @@ example.get("/", () =>
       summary="Uses one delegated click listener to read button metadata from bubbled events."
       source="https://data-star.dev/examples/event_bubbling"
     >
-      <div id="demo" data-signals={[state.defaults, { ifMissing: true }]}>
+      <div id="demo" data-signals={mod(state.defaults, { ifMissing: true })}>
         <p>
           Key pressed: <span data-text={state.$.key}></span>
         </p>
         <div
           id="event-bubbling-container"
           class="keypad"
-          data-on:click={ds.set(
+          data-on:click={set(
             state.$.key,
-            ds.expr`evt.target.closest(${"button[data-id]"})?.dataset.id ?? ${state.$.key}`
+            js`evt.target.closest(${"button[data-id]"})?.dataset.id ?? ${state.$.key}`
           )}
         >
           {keys.map((key) => (

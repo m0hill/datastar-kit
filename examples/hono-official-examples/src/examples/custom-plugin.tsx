@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, reply } from "datastar-kit"
+import { reply, action, js } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 export const example = new Hono()
@@ -17,11 +17,11 @@ example.get("/", () =>
           <button
             class="info"
             type="button"
-            data-on:click={ds.action("alert", "Hello from an action")}
+            data-on:click={action("alert", "Hello from an action")}
           >
             Alert using an action
           </button>
-          <button class="warning" type="button" data-alert={ds.expr`${"Hello from an attribute"}`}>
+          <button class="warning" type="button" data-alert={js`${"Hello from an attribute"}`}>
             Alert using an attribute
           </button>
         </div>

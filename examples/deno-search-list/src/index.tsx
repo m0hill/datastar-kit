@@ -1,9 +1,9 @@
 import { route, type Route } from "@std/http/unstable-route"
-import { ds, event, read, reply } from "datastar-kit"
+import { event, read, reply, state as createState, get, mod, post } from "datastar-kit"
 import { z } from "zod"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
 interface Item {
   id: number
@@ -21,7 +21,7 @@ const items: Item[] = [
   { id: 6, name: "Release checklist" }
 ]
 
-const listState = ds.state({ query: "", name: "" })
+const listState = createState({ query: "", name: "" })
 
 const ListSignals = z.object({
   query: z.string().optional().default(""),
@@ -60,7 +60,7 @@ const routes: Route[] = [
       reply.page(
         <main
           class="min-h-screen bg-slate-100 px-6 py-12"
-          data-signals={[listState.defaults, { ifMissing: true }]}
+          data-signals={mod(listState.defaults, { ifMissing: true })}
         >
           <section class="mx-auto max-w-2xl">
             <div>
@@ -78,10 +78,10 @@ const routes: Route[] = [
                 class="w-full rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                 placeholder="Search items"
                 data-bind={listState.$.query}
-                data-on:input={[ds.get("/items/search"), { debounce: "200ms" }]}
+                data-on:input={mod(get("/items/search"), { debounce: "200ms" })}
               />
 
-              <form class="mt-3 flex gap-2" data-on:submit={[ds.post("/items"), { prevent: true }]}>
+              <form class="mt-3 flex gap-2" data-on:submit={mod(post("/items"), { prevent: true })}>
                 <input
                   class="min-w-0 flex-1 rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                   placeholder="New item"

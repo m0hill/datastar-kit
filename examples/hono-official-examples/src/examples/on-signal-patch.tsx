@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import { ds, reply } from "datastar-kit"
+import { reply, state as createState, js, mod, regex, set } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
-const state = ds.state({
+const state = createState({
   counter: 0,
   message: "Hello World",
   allChanges: [],
@@ -19,22 +19,19 @@ example.get("/", () =>
       summary="Records signal patches with Datastar's signal-patch event hooks."
       source="https://data-star.dev/examples/on_signal_patch"
     >
-      <div class="stack" data-signals={[state.defaults, { ifMissing: true }]}>
+      <div class="stack" data-signals={mod(state.defaults, { ifMissing: true })}>
         <div class="actions">
           <button
-            data-on:click={ds.set(
-              state.$.message,
-              ds.expr`${"Updated: "} + performance.now().toFixed(2)`
-            )}
+            data-on:click={set(state.$.message, js`${"Updated: "} + performance.now().toFixed(2)`)}
           >
             Update Message
           </button>
-          <button data-on:click={ds.set(state.$.counter, ds.expr`${state.$.counter} + 1`)}>
+          <button data-on:click={set(state.$.counter, js`${state.$.counter} + 1`)}>
             Increment Counter
           </button>
           <button
             class="error"
-            data-on:click={ds.expr`${ds.set(state.$.allChanges, [])}; ${ds.set(state.$.counterChanges, [])}`}
+            data-on:click={js`${set(state.$.allChanges, [])}; ${set(state.$.counterChanges, [])}`}
           >
             Clear All Changes
           </button>
@@ -51,26 +48,26 @@ example.get("/", () =>
           </section>
           <section
             class="subdemo"
-            data-on-signal-patch={ds.expr`${state.$.counterChanges}.push(patch)`}
-            data-on-signal-patch-filter={{ include: ds.regex("^counter$") }}
+            data-on-signal-patch={js`${state.$.counterChanges}.push(patch)`}
+            data-on-signal-patch-filter={{ include: regex("^counter$") }}
           >
             <h2>Counter Changes Only</h2>
             <pre
               class="signal-log"
-              data-text={ds.expr`JSON.stringify({ counterChanges: ${state.$.counterChanges} })`}
+              data-text={js`JSON.stringify({ counterChanges: ${state.$.counterChanges} })`}
             ></pre>
           </section>
           <section
             class="subdemo"
-            data-on-signal-patch={ds.expr`${state.$.allChanges}.push(patch)`}
+            data-on-signal-patch={js`${state.$.allChanges}.push(patch)`}
             data-on-signal-patch-filter={{
-              exclude: ds.regex("(^|\\.)_|allChanges|counterChanges")
+              exclude: regex("(^|\\.)_|allChanges|counterChanges")
             }}
           >
             <h2>All Signal Changes</h2>
             <pre
               class="signal-log"
-              data-text={ds.expr`JSON.stringify({ allChanges: ${state.$.allChanges} })`}
+              data-text={js`JSON.stringify({ allChanges: ${state.$.allChanges} })`}
             ></pre>
           </section>
         </div>

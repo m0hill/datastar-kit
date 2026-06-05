@@ -1,5 +1,5 @@
 import { getCookie } from "hono/cookie"
-import { ds, event, read, reply } from "datastar-kit"
+import { event, read, reply, state as createState, get, js, mod, post, set } from "datastar-kit"
 import { z } from "zod"
 import { pageHead, type App } from "../app.js"
 import { deleteSessionCookie, deleteSession } from "../auth/session.js"
@@ -33,7 +33,7 @@ const createIssueSchema = z.object({
   issuePriority: z.enum(issuePriorityValues)
 })
 
-const state = ds.state({
+const state = createState({
   projectId: "",
   projectName: "",
   projectKey: "",
@@ -99,7 +99,7 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
         <h2 class="section-label px-2">New Project</h2>
         <form
           class="flex flex-col gap-3 px-2"
-          data-on:submit={[ds.post("/projects"), { prevent: true }]}
+          data-on:submit={mod(post("/projects"), { prevent: true })}
         >
           <label class="flex flex-col gap-1.5 section-label">
             Name
@@ -256,19 +256,15 @@ export const IssueProjectSelect = (props: { projects: Project[] }) => (
 const IssueModalForm = (props: { projects: Project[] }) => (
   <form
     class="bg-surface border border-border w-full max-w-130 flex flex-col gap-4 p-5 shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
-    data-on:submit={[ds.post("/issues"), { prevent: true }]}
-    data-on:click={ds.expr`evt.stopPropagation()`}
+    data-on:submit={mod(post("/issues"), { prevent: true })}
+    data-on:click={js`evt.stopPropagation()`}
   >
     <div class="flex items-center justify-between border-b border-border pb-3 -mx-5 px-5 -mt-1">
       <div class="flex items-center gap-2">
         <span class="text-xs text-fg-muted select-none">›</span>
         <h3 class="text-xs font-bold tracking-wider uppercase text-fg">Create Workspace Issue</h3>
       </div>
-      <button
-        type="button"
-        class="btn h-8 w-8 p-0"
-        data-on:click={ds.set(state.$.modalOpen, false)}
-      >
+      <button type="button" class="btn h-8 w-8 p-0" data-on:click={set(state.$.modalOpen, false)}>
         <svg
           width="14"
           height="14"
@@ -332,7 +328,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
     </div>
     <div class="flex justify-end gap-2 pt-4 border-t border-border">
-      <button type="button" class="btn" data-on:click={ds.set(state.$.modalOpen, false)}>
+      <button type="button" class="btn" data-on:click={set(state.$.modalOpen, false)}>
         Cancel
       </button>
       <button type="submit" class="btn-primary">
@@ -346,9 +342,9 @@ const IssueModal = (props: { projects: Project[] }) => (
   <dialog
     id="issue-modal"
     class="bg-transparent p-0 m-0 max-w-none max-h-none w-full h-full border-0"
-    data-effect={ds.expr`${state.$.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`}
-    data-on:click={ds.expr`if (evt.target === el) { ${ds.set(state.$.modalOpen, false)} }`}
-    data-on:close={ds.set(state.$.modalOpen, false)}
+    data-effect={js`${state.$.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`}
+    data-on:click={js`if (evt.target === el) { ${set(state.$.modalOpen, false)} }`}
+    data-on:close={set(state.$.modalOpen, false)}
   >
     <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4">
       <div id="modal-content">
@@ -361,8 +357,8 @@ const IssueModal = (props: { projects: Project[] }) => (
 const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
   <main
     class="h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr] bg-bg overflow-hidden"
-    data-signals={[state.defaults, { ifMissing: true }]}
-    data-init={ds.get("/workspace/live")}
+    data-signals={mod(state.defaults, { ifMissing: true })}
+    data-init={get("/workspace/live")}
   >
     <div class="hidden lg:flex">
       <Sidebar user={props.user} projects={props.projects} />
@@ -373,7 +369,7 @@ const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
           <span class="text-xs text-fg-muted select-none">›</span>
           <h2 class="text-[13px] font-semibold uppercase tracking-wide text-fg">Issues</h2>
         </div>
-        <button type="button" class="btn-primary" data-on:click={ds.get("/workspace/modal/issue")}>
+        <button type="button" class="btn-primary" data-on:click={get("/workspace/modal/issue")}>
           + Create Issue
         </button>
       </header>

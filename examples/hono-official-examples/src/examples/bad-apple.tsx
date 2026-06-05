@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
 import { gunzip } from "node:zlib"
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { event, reply, state as createState, get, js, mod } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const gunzipAsync = promisify(gunzip)
@@ -14,7 +14,7 @@ const frames = readFile(framesPath)
   .then(gunzipAsync)
   .then((buffer) => buffer.toString("utf8").split("\f"))
 
-const state = ds.state({
+const state = createState({
   _percentage: 0,
   _contents: "bad apple frames go here"
 })
@@ -22,12 +22,10 @@ const state = ds.state({
 const BadApplePanel = () => (
   <div class="bad-apple">
     <label
-      data-signals={[state.defaults, { ifMissing: true }]}
-      data-init={ds.get("/examples/bad_apple/updates")}
+      data-signals={mod(state.defaults, { ifMissing: true })}
+      data-init={get("/examples/bad_apple/updates")}
     >
-      <span
-        data-text={ds.expr`${"Percentage: "} + ${state.$._percentage}.toFixed(2) + ${"%"}`}
-      ></span>
+      <span data-text={js`${"Percentage: "} + ${state.$._percentage}.toFixed(2) + ${"%"}`}></span>
       <input
         type="range"
         min="0"

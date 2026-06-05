@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply, read } from "datastar-kit"
+import { event, reply, read, state as createState, get, local, mod, patch, put } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -10,7 +10,7 @@ const schema = z.object({
 
 type EditableRow = z.infer<typeof schema>
 
-const state = ds.state({
+const state = createState({
   name: "",
   email: "",
   errors: {
@@ -27,7 +27,7 @@ const initialRows: EditableRow[] = [
 ]
 
 let rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
-const fetching = ds.local<boolean>("fetching")
+const fetching = local<boolean>("fetching")
 
 const DisplayRow = ({
   row,
@@ -49,7 +49,7 @@ const DisplayRow = ({
       ) : (
         <button
           class="small info"
-          data-on:click={ds.get(`/examples/edit_row/${index}`)}
+          data-on:click={get(`/examples/edit_row/${index}`)}
           data-indicator={fetching}
           data-attr:disabled={fetching}
         >
@@ -83,7 +83,7 @@ const EditingRow = ({ index }: { index: number }) => (
     <td>
       <button
         class="small error"
-        data-on:click={ds.get("/examples/edit_row/cancel")}
+        data-on:click={get("/examples/edit_row/cancel")}
         data-indicator={fetching}
         data-attr:disabled={fetching}
       >
@@ -91,7 +91,7 @@ const EditingRow = ({ index }: { index: number }) => (
       </button>{" "}
       <button
         class="small success"
-        data-on:click={ds.patch(`/examples/edit_row/${index}`)}
+        data-on:click={patch(`/examples/edit_row/${index}`)}
         data-indicator={fetching}
         data-attr:disabled={fetching}
       >
@@ -102,7 +102,7 @@ const EditingRow = ({ index }: { index: number }) => (
 )
 
 const EditRowTable = ({ editingIndex }: { editingIndex?: number } = {}) => (
-  <div id="demo" data-signals={[{ [fetching.name]: false }, { ifMissing: true }]}>
+  <div id="demo" data-signals={mod({ [fetching.name]: false }, { ifMissing: true })}>
     <table>
       <thead>
         <tr>
@@ -124,7 +124,7 @@ const EditRowTable = ({ editingIndex }: { editingIndex?: number } = {}) => (
     <div>
       <button
         class="warning"
-        data-on:click={ds.put("/examples/edit_row/reset")}
+        data-on:click={put("/examples/edit_row/reset")}
         data-indicator={fetching}
         data-attr:disabled={fetching}
       >

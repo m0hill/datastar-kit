@@ -8,7 +8,7 @@ This example starts from `examples/hono-counter` and adds the in-memory invalida
 
 - server-rendered TSX with `jsxImportSource: "datastar-kit"`;
 - Hono route handlers returning native `Response` objects from Datastar Kit;
-- `data-init={ds.get("/live")}` to open a long-lived Datastar SSE stream;
+- `data-init={get("/live")}` to open a long-lived Datastar SSE stream;
 - `reply.stream(...)` and `event.patch(...)` for current-state live updates;
 - an in-memory invalidation hub that wakes every connected tab after a count change;
 - a backend-owned `count` value shared by all clients.

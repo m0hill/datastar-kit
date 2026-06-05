@@ -10,14 +10,14 @@ Use `read.signals(request)` at the Datastar boundary, then call the schema libra
 
 ```tsx
 import { z } from "zod"
-import { ds, read, reply } from "datastar-kit"
+import { read, reply, state } from "datastar-kit"
 
 const ContactInput = z.object({
   name: z.string().trim().min(2, "Enter your name"),
   email: z.string().trim().email("Enter a valid email")
 })
 
-const contact = ds.state({
+const contact = state({
   name: "",
   email: "",
   errors: {
@@ -54,10 +54,12 @@ async function submitContact(request: Request): Promise<Response> {
 Bind fields to signal refs and render validation text from the same state helper:
 
 ```tsx
+import { mod, post } from "datastar-kit"
+
 const ContactForm = () => (
   <form
-    data-signals={[contact.defaults, { ifMissing: true }]}
-    data-on:submit={[ds.post("/contact"), { prevent: true }]}
+    data-signals={mod(contact.defaults, { ifMissing: true })}
+    data-on:submit={mod(post("/contact"), { prevent: true })}
   >
     <label>
       Name

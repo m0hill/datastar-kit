@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { event, reply, get } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const circumference = 565.48
@@ -12,7 +12,7 @@ const ProgressBar = ({ progress }: { progress: number }) => {
     <div
       id="progress-bar"
       class="progress-demo"
-      data-init={ds.get("/examples/progress_bar/updates", { openWhenHidden: true })}
+      data-init={get("/examples/progress_bar/updates", { openWhenHidden: true })}
     >
       <svg width="220" height="220" viewBox="-25 -25 250 250" class="progress-ring">
         <circle
@@ -40,7 +40,7 @@ const ProgressBar = ({ progress }: { progress: number }) => {
           {Math.round(progress)}%
         </text>
       </svg>
-      <div data-on:click={ds.get("/examples/progress_bar/updates", { openWhenHidden: true })}>
+      <div data-on:click={get("/examples/progress_bar/updates", { openWhenHidden: true })}>
         {done ? <button class="success">Completed! Try again?</button> : null}
       </div>
     </div>

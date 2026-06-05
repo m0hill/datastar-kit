@@ -1,5 +1,5 @@
 import { HTTPException } from "hono/http-exception"
-import { ds, event, read, reply } from "datastar-kit"
+import { event, read, reply, state as createState, get, mod, patch, post } from "datastar-kit"
 import { z } from "zod"
 import { pageHead, type App } from "../app.js"
 import {
@@ -31,7 +31,7 @@ const commentSchema = z.object({
     .max(1200, "Keep it under 1200 characters")
 })
 
-const issueState = ds.state({
+const issueState = createState({
   commentBody: "",
   _validation: {
     commentBody: ""
@@ -41,8 +41,8 @@ const issueState = ds.state({
 const IssuePage = (props: { detail: IssueDetail }) => (
   <main
     class="min-h-screen bg-bg text-fg"
-    data-signals={[issueState.defaults, { ifMissing: true }]}
-    data-init={ds.get(`/issues/${props.detail.issue.id}/live`)}
+    data-signals={mod(issueState.defaults, { ifMissing: true })}
+    data-init={get(`/issues/${props.detail.issue.id}/live`)}
   >
     <header class="h-15 border-b border-border flex items-center justify-between px-5 lg:px-8 bg-surface/40 backdrop-blur-md">
       <a
@@ -77,7 +77,7 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
 
       <form
         class="flex flex-col gap-3 bg-surface border border-border p-4"
-        data-on:submit={[ds.post(`/issues/${issue.id}/comments`), { prevent: true }]}
+        data-on:submit={mod(post(`/issues/${issue.id}/comments`), { prevent: true })}
       >
         <label class="flex flex-col gap-1.5 section-label">
           Add a comment
@@ -124,7 +124,7 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
     <h3 class="section-label mb-3">Properties</h3>
     <form
       class="flex flex-col bg-surface-inset border border-border rounded-xl px-3"
-      data-on:change={ds.patch(`/issues/${props.issue.id}`, {
+      data-on:change={patch(`/issues/${props.issue.id}`, {
         selector: null,
         contentType: "form"
       })}

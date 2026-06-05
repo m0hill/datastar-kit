@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { event, reply, get, signal } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const LoadShell = () => (
@@ -48,7 +48,7 @@ const Comment = ({ id, name }: { id: number; name: string }) => (
 )
 
 const Footer = () => <div id="footer">Hope you like it.</div>
-const progressiveLoad = ds.signal<boolean>("progressiveLoad")
+const progressiveLoad = signal<boolean>("progressiveLoad")
 
 export const example = new Hono()
 
@@ -67,7 +67,7 @@ example.get("/", () =>
             class="info"
             data-indicator={progressiveLoad}
             data-attr:disabled={progressiveLoad}
-            data-on:click={ds.get("/examples/progressive_load/updates")}
+            data-on:click={get("/examples/progressive_load/updates")}
           >
             Load
           </button>

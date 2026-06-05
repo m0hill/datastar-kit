@@ -12,7 +12,7 @@ export type AppBindings = {
 export type App = Hono<AppBindings>
 
 export const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
 export const pageHead = [
   <meta name="viewport" content="width=device-width, initial-scale=1" />,

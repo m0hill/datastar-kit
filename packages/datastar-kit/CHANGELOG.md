@@ -5,22 +5,25 @@
 ### Added
 
 - Added typed serialization for native Datastar `data-*` attributes in TSX.
-- Added tuple modifier values for native Datastar attributes, such as `data-on:submit={[ds.post("/signup"), { prevent: true }]}`.
-- Added `ds.RegexExpressionError` for invalid `ds.regex(...)` patterns or flags.
-- Added `ds.set(...)` for typed Datastar signal assignment expressions.
+- Added `mod(value, modifiers)` for native Datastar attribute modifiers, such as `data-on:submit={mod(post("/signup"), { prevent: true })}`.
+- Added concise named Datastar authoring imports from the root package.
+- Added `RegexExpressionError` for invalid `regex(...)` patterns or flags.
+- Added `set(...)` for typed Datastar signal assignment expressions.
 
 ### Changed
 
-- `ds.regex(pattern, flags?)` now renders `new RegExp(...)` expressions instead of slash-delimited literals, so callers can pass ordinary `RegExp` constructor inputs without managing literal escaping.
-- `ds.state(...)` now exposes `defaults` for direct `data-signals={[state.defaults, { ifMissing: true }]}` usage instead of returning attribute prop fragments.
-- `ds.queryUrl(...)` now inserts generated query parameters before URL fragments and preserves open query separators.
+- `regex(pattern, flags?)` now renders `new RegExp(...)` expressions instead of slash-delimited literals, so callers can pass ordinary `RegExp` constructor inputs without managing literal escaping.
+- `state(...)` now exposes `defaults` for direct `data-signals={mod(state.defaults, { ifMissing: true })}` usage instead of returning attribute prop fragments.
+- `queryUrl(...)` now inserts generated query parameters before URL fragments and preserves open query separators.
 - `executeScript(...)` now validates generated script attribute names with the same HTML name guard used by the renderer.
 
 ### Removed
 
+- Removed the root `ds` namespace export; import Datastar authoring helpers directly from `datastar-kit`.
+- Removed the `expr(...)` public alias; use `js(...)` / `js\`...\``.
 - Removed the Datastar attribute prop-fragment DSL: write native `data-*` Datastar attributes in TSX instead.
-- Removed `state.attrs()`; use `data-signals={[state.defaults, { ifMissing: true }]}`.
-- Removed shallow expression aliases `ds.sequence(...)`, `ds.when(...)`, `ds.peek(...)`, `ds.setAll(...)`, and `ds.toggleAll(...)`; use `ds.expr(...)` or `ds.action(...)`.
+- Removed `state.attrs()`; use `data-signals={mod(state.defaults, { ifMissing: true })}`.
+- Removed shallow expression aliases `sequence(...)`, `when(...)`, `peek(...)`, `setAll(...)`, and `toggleAll(...)`; use `js(...)` / `js\`...\``or`action(...)`.
 - Removed public root exports for `h`, `mergeProps`, and `HtmlNameError`; TSX is the public HTML authoring path.
 - Removed the unused `reply.SseChunk` wrapper shape from `reply.stream(...)`; stream chunks are now strings or `Uint8Array` values.
 

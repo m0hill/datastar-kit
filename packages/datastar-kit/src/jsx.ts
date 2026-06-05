@@ -1,6 +1,7 @@
 import type { HtmlChild, HtmlNode, HtmlProps, HtmlPropValue } from "./html.js"
 import { h } from "./html.js"
 import { isExpr, toJs, type Expr } from "./ds/expression.js"
+import { isDatastarModifiedValue, type DatastarModifiedValue } from "./ds/modifiers.js"
 import { Signal } from "./ds/signals.js"
 
 /**
@@ -18,7 +19,7 @@ export type JsxElement = HtmlNode | readonly HtmlChild[]
 type DatastarJsxValue =
   | HtmlPropValue
   | Expr
-  | DatastarModifierTuple
+  | DatastarModifiedValue
   | readonly DatastarJsxValue[]
   | { readonly [key: string]: DatastarJsxValue }
 
@@ -34,45 +35,6 @@ type DatastarModifierTarget =
   | "on"
   | "signalPatch"
   | "signals"
-
-type TimingModifierOptions = Readonly<{
-  duration: string | number
-  leading?: boolean
-  noTrailing?: boolean
-  noLeading?: boolean
-  trailing?: boolean
-}>
-
-type CaseModifier = "camel" | "kebab" | "snake" | "pascal"
-
-type DatastarModifierOptions = Readonly<{
-  capture?: boolean
-  case?: CaseModifier
-  debounce?: boolean | string | number | TimingModifierOptions
-  delay?: boolean | string | number
-  document?: boolean
-  duration?: boolean | string | number
-  event?: string | readonly string[]
-  exit?: boolean
-  full?: boolean
-  half?: boolean
-  ifMissing?: boolean
-  leading?: boolean
-  once?: boolean
-  outside?: boolean
-  passive?: boolean
-  prevent?: boolean
-  prop?: string
-  self?: boolean
-  stop?: boolean
-  terse?: boolean
-  threshold?: string | number
-  throttle?: boolean | string | number | TimingModifierOptions
-  viewTransition?: boolean
-  window?: boolean
-}>
-
-type DatastarModifierTuple = readonly [DatastarJsxValue, DatastarModifierOptions]
 
 interface DatastarModifier {
   readonly key: string
@@ -434,15 +396,6 @@ const cleanDatastarModifiers = (
   return suffixes
 }
 
-const isDatastarModifierTuple = (
-  name: string,
-  value: unknown
-): value is readonly [unknown, Readonly<Record<string, unknown>>] =>
-  isDatastarAttribute(name) &&
-  Array.isArray(value) &&
-  value.length === 2 &&
-  isModifierRecord(value[1])
-
 const cleanDatastarValue = (name: string, value: unknown): unknown => {
   if (value instanceof Signal && isDatastarSignalNameAttribute(name)) {
     return value.name
@@ -463,18 +416,17 @@ const cleanDatastarProp = (
     return { name, value }
   }
 
-  if (isDatastarModifierTuple(name, value)) {
+  if (isDatastarModifiedValue(value)) {
     const target = datastarModifierTarget(name)
     if (target === undefined) {
       throw new TypeError(`Datastar attribute ${JSON.stringify(name)} does not accept modifiers`)
     }
 
-    const [attributeValue, modifiers] = value
-    const suffixes = cleanDatastarModifiers(target, name, modifiers)
+    const suffixes = cleanDatastarModifiers(target, name, value.modifiers)
 
     return {
       name: suffixes.length === 0 ? name : `${name}__${suffixes.join("__")}`,
-      value: cleanDatastarValue(name, attributeValue)
+      value: cleanDatastarValue(name, value.value)
     }
   }
 

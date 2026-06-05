@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { post, signal, state } from "../src/ds/index.js"
+import { mod, post, signal, state } from "../src/ds/index.js"
 import { renderToString, type HtmlChild } from "../src/html.js"
 import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
@@ -23,8 +23,8 @@ describe("automatic JSX runtime", () => {
 
     const node = (
       <form
-        data-signals={[{ password: "", _validation: { password: "" } }, { ifMissing: true }]}
-        data-on:submit={[post("/login"), { prevent: true }]}
+        data-signals={mod({ password: "", _validation: { password: "" } }, { ifMissing: true })}
+        data-on:submit={mod(post("/login"), { prevent: true })}
       >
         <input type="password" data-bind={login.$.password} />
         <small
@@ -57,7 +57,7 @@ describe("automatic JSX runtime", () => {
   it("serializes primitive values for expression-valued Datastar attributes", () => {
     const node = (
       <div
-        data-signals:_saving={[false, { ifMissing: true }]}
+        data-signals:_saving={mod(false, { ifMissing: true })}
         data-attr:disabled={false}
         data-show={false}
         data-ignore
@@ -69,22 +69,22 @@ describe("automatic JSX runtime", () => {
     )
   })
 
-  it("renders tuple modifier values as Datastar attribute suffixes", () => {
-    const node = <input type="search" data-on:input={[post("/search"), { debounce: "200ms" }]} />
+  it("renders explicit modifier wrappers as Datastar attribute suffixes", () => {
+    const node = <input type="search" data-on:input={mod(post("/search"), { debounce: "200ms" })} />
 
     expect(renderToString(node)).toBe(
       '<input type="search" data-on:input__debounce.200ms="@post(&quot;/search&quot;)">'
     )
   })
 
-  it("renders structured timing modifiers from tuple values", () => {
+  it("renders structured timing modifiers from explicit modifier wrappers", () => {
     const node = (
       <button
         type="button"
-        data-on:click={[
-          post("/save"),
-          { window: true, debounce: { duration: "500ms", leading: true } }
-        ]}
+        data-on:click={mod(post("/save"), {
+          window: true,
+          debounce: { duration: "500ms", leading: true }
+        })}
       >
         Save
       </button>
@@ -96,7 +96,9 @@ describe("automatic JSX runtime", () => {
   })
 
   it("renders bind event and prop modifiers", () => {
-    const node = <input data-bind={["accepted", { prop: "checked", event: ["input", "change"] }]} />
+    const node = (
+      <input data-bind={mod("accepted", { prop: "checked", event: ["input", "change"] })} />
+    )
 
     expect(renderToString(node)).toBe(
       '<input data-bind__prop.checked__event.input.change="accepted">'
@@ -104,7 +106,9 @@ describe("automatic JSX runtime", () => {
   })
 
   it("renders case modifiers for keyed event names", () => {
-    const node = <button data-on:widget-loaded={[post("/widgets"), { case: "camel" }]}>Sync</button>
+    const node = (
+      <button data-on:widget-loaded={mod(post("/widgets"), { case: "camel" })}>Sync</button>
+    )
 
     expect(renderToString(node)).toBe(
       '<button data-on:widget-loaded__case.camel="@post(&quot;/widgets&quot;)">Sync</button>'
@@ -112,7 +116,7 @@ describe("automatic JSX runtime", () => {
   })
 
   it("renders ignore self modifiers", () => {
-    const node = <div data-ignore={[true, { self: true }]}></div>
+    const node = <div data-ignore={mod({ self: true })}></div>
 
     expect(renderToString(node)).toBe("<div data-ignore__self></div>")
   })
@@ -120,7 +124,11 @@ describe("automatic JSX runtime", () => {
   it("renders interval duration tags and view transition modifiers", () => {
     const node = (
       <div
-        data-on-interval={["$count++", { duration: "500ms", leading: true, viewTransition: true }]}
+        data-on-interval={mod("$count++", {
+          duration: "500ms",
+          leading: true,
+          viewTransition: true
+        })}
       ></div>
     )
 
@@ -141,26 +149,34 @@ describe("automatic JSX runtime", () => {
     )
   })
 
-  it("keeps tuple string Datastar values raw", () => {
-    const node = <button data-on:click={["@post('/save')", { prevent: true }]}>Save</button>
+  it("keeps wrapped string Datastar values raw", () => {
+    const node = <button data-on:click={mod("@post('/save')", { prevent: true })}>Save</button>
 
     expect(renderToString(node)).toBe(
       '<button data-on:click__prevent="@post(&#39;/save&#39;)">Save</button>'
     )
   })
 
-  it("rejects tuple modifiers on incompatible Datastar attributes", () => {
+  it("keeps ordinary arrays as Datastar values", () => {
+    const node = <div data-signals:items={["a", { id: 1 }]}></div>
+
+    expect(renderToString(node)).toBe(
+      '<div data-signals:items="[&quot;a&quot;, {&quot;id&quot;: 1}]"></div>'
+    )
+  })
+
+  it("rejects wrapped modifiers on incompatible Datastar attributes", () => {
     expect(() =>
       runtimeJsx("main", {
-        "data-signals": [{ ready: false }, { prevent: true }]
+        "data-signals": mod({ ready: false }, { prevent: true })
       } as unknown as JsxProps)
     ).toThrow('Datastar modifier "prevent" is not valid on "data-signals"')
   })
 
-  it("rejects unknown tuple modifier names", () => {
+  it("rejects unknown wrapped modifier names", () => {
     expect(() =>
       runtimeJsx("button", {
-        "data-on:click": [post("/save"), { preevent: true }]
+        "data-on:click": mod(post("/save"), { preevent: true } as never)
       } as unknown as JsxProps)
     ).toThrow('Unknown Datastar modifier "preevent"')
   })
@@ -168,13 +184,13 @@ describe("automatic JSX runtime", () => {
   it("rejects Datastar modifiers that are not listed for the attribute", () => {
     expect(() =>
       runtimeJsx("div", {
-        "data-init": ["$count = 1", { debounce: "500ms" }]
+        "data-init": mod("$count = 1", { debounce: "500ms" })
       } as unknown as JsxProps)
     ).toThrow('Datastar modifier "debounce" is not valid on "data-init"')
 
     expect(() =>
       runtimeJsx("div", {
-        "data-on-signal-patch": ["console.log(patch)", { viewTransition: true }]
+        "data-on-signal-patch": mod("console.log(patch)", { viewTransition: true })
       } as unknown as JsxProps)
     ).toThrow('Datastar modifier "viewTransition" is not valid on "data-on-signal-patch"')
   })

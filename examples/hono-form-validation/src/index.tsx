@@ -1,12 +1,12 @@
 import { serve } from "@hono/node-server"
 import { Hono } from "hono"
 import { z } from "zod"
-import { ds, event, read, reply } from "datastar-kit"
+import { event, read, reply, state as createState, mod, post } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
-const signup = ds.state({
+const signup = createState({
   name: "",
   email: "",
   errors: {
@@ -23,9 +23,9 @@ const app = new Hono()
 
 app.get("/", () =>
   reply.page(
-    <main data-signals={[signup.defaults, { ifMissing: true }]}>
+    <main data-signals={mod(signup.defaults, { ifMissing: true })}>
       <h1>Signup</h1>
-      <form data-on:submit={[ds.post("/signup"), { prevent: true }]}>
+      <form data-on:submit={mod(post("/signup"), { prevent: true })}>
         <p>
           <label>
             Name

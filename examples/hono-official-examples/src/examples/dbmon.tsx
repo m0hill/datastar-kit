@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply, read } from "datastar-kit"
+import { event, reply, read, get, js, local, mod, put, set } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -20,7 +20,7 @@ interface Database {
 const queryTexts = ["SELECT blah from something", "<IDLE> in transaction", "vacuum"] as const
 
 let config = { mutationRate: 20, fps: 60 }
-const editing = ds.local<boolean>("editing")
+const editing = local<boolean>("editing")
 
 const randomDatabase = (name: string): Database => ({
   name,
@@ -39,8 +39,8 @@ let databases: Database[] = Array.from({ length: 12 }, (_, index) => {
 const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
   <div
     id="demo"
-    data-init={ds.get("/examples/dbmon/updates")}
-    data-signals={[{ [editing.name]: false }, { ifMissing: true }]}
+    data-init={get("/examples/dbmon/updates")}
+    data-signals={mod({ [editing.name]: false }, { ifMissing: true })}
   >
     <p>
       Average render time for entire page: {renderTime === 0 ? "0s" : `${renderTime.toFixed(3)}µs`}
@@ -53,10 +53,10 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
           min="0"
           max="100"
           value={config.mutationRate}
-          data-on:focus={ds.set(editing, true)}
-          data-on:blur={ds.expr`${ds.put("/examples/dbmon/inputs")}; ${ds.set(editing, false)}`}
+          data-on:focus={set(editing, true)}
+          data-on:blur={js`${put("/examples/dbmon/inputs")}; ${set(editing, false)}`}
           {...{ "data-attr:data-bind:mutation-rate": editing }}
-          {...{ "data-attr:data-bind:_mutation-rate": ds.expr`!${editing}` }}
+          {...{ "data-attr:data-bind:_mutation-rate": js`!${editing}` }}
         />
       </label>
       <label>
@@ -66,10 +66,10 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
           min="1"
           max="144"
           value={config.fps}
-          data-on:focus={ds.set(editing, true)}
-          data-on:blur={ds.expr`${ds.put("/examples/dbmon/inputs")}; ${ds.set(editing, false)}`}
+          data-on:focus={set(editing, true)}
+          data-on:blur={js`${put("/examples/dbmon/inputs")}; ${set(editing, false)}`}
           {...{ "data-attr:data-bind:fps": editing }}
-          {...{ "data-attr:data-bind:_fps": ds.expr`!${editing}` }}
+          {...{ "data-attr:data-bind:_fps": js`!${editing}` }}
         />
       </label>
     </div>

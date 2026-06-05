@@ -1,10 +1,10 @@
 import { Hono } from "hono"
-import { ds, reply } from "datastar-kit"
+import { reply, post } from "datastar-kit"
 
 const app = new Hono()
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
 let count = 0
 
@@ -14,7 +14,7 @@ app.get("/", () =>
   reply.page(
     <main id="counter">
       <h1>Worker Hono counter</h1>
-      <button type="button" data-on:click={ds.post("/increment")}>
+      <button type="button" data-on:click={post("/increment")}>
         Increment
       </button>{" "}
       <Count />

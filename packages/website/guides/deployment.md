@@ -20,11 +20,11 @@ Core helpers use Web Standard primitives such as `Request`, `Response`, `Headers
 
 ## Datastar runtime asset
 
-Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; include a pinned CDN URL or serve a compatible self-hosted copy.
+Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.2`; include a pinned CDN URL or serve a compatible self-hosted copy.
 
 ```tsx
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
 return reply.page(appShell, {
   head: <script type="module" src={DATASTAR_RUNTIME} />

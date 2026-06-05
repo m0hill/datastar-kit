@@ -1,8 +1,8 @@
 import { Hono } from "hono"
-import { ds, reply } from "datastar-kit"
+import { reply, js, set, signal } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
-const orderInfo = ds.signal<string>("orderInfo")
+const orderInfo = signal<string>("orderInfo")
 
 export const example = new Hono()
 
@@ -23,7 +23,7 @@ example.get("/", () =>
         <div
           id="sortContainer"
           class="sortable-list"
-          data-on:reordered={ds.set(orderInfo, ds.expr`evt.detail.orderInfo`)}
+          data-on:reordered={set(orderInfo, js`evt.detail.orderInfo`)}
         >
           {Array.from({ length: 5 }, (_, index) => (
             <button type="button">Item {index + 1}</button>

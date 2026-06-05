@@ -237,6 +237,16 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  examples/syntax-check:
+    dependencies:
+      datastar-kit:
+        specifier: workspace:*
+        version: link:../../packages/datastar-kit
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   examples/worker-do-hono-live-todos:
     dependencies:
       datastar-kit:

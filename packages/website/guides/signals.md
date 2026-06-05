@@ -4,14 +4,14 @@ Datastar signals are browser-side values. Use them for sparse input and local UI
 
 Do not treat signals as durable application state. Decode and validate them at the request boundary, then read trusted data from backend resources when authority matters.
 
-## Start with `ds.state`
+## Start with `state`
 
 For a related group of signals, define the defaults once:
 
 ```tsx
-import { ds } from "datastar-kit"
+import { state } from "datastar-kit"
 
-const signup = ds.state({
+const signup = state({
   name: "",
   email: "",
   errors: {
@@ -20,7 +20,7 @@ const signup = ds.state({
 })
 ```
 
-`ds.state(...)` gives you four useful things:
+`state(...)` gives you four useful things:
 
 | API                        | Use                                                      |
 | -------------------------- | -------------------------------------------------------- |
@@ -32,10 +32,12 @@ const signup = ds.state({
 Use those refs in Datastar attributes:
 
 ```tsx
+import { mod, post } from "datastar-kit"
+
 const SignupForm = () => (
   <form
-    data-signals={[signup.defaults, { ifMissing: true }]}
-    data-on:submit={[ds.post("/signup"), { prevent: true }]}
+    data-signals={mod(signup.defaults, { ifMissing: true })}
+    data-on:submit={mod(post("/signup"), { prevent: true })}
   >
     <label>
       Name
@@ -52,9 +54,13 @@ const SignupForm = () => (
 )
 ```
 
-Use `data-signals={[state.defaults, { ifMissing: true }]}` for missing-only initialization. That keeps
+Use `data-signals={mod(state.defaults, { ifMissing: true })}` for missing-only initialization. That keeps
 reconnects and partial page updates from overwriting existing browser input unless you opt into that
 behavior.
+
+The one-argument `mod({ ... })` form is only for valueless presence attributes, such as
+`data-ignore={mod({ self: true })}`. Signal initialization is value-bearing, so keep using
+`mod(state.defaults, { ifMissing: true })` or `mod(false, { ifMissing: true })` for `data-signals`.
 
 ## Patch signal state
 
@@ -74,18 +80,22 @@ Signal patches are best for messages, validation, toggles, and UI flags. If visi
 
 ## Standalone signals
 
-Use `ds.signal(...)` when you only need one signal ref or when the signal name is not part of a grouped state helper:
+Use `signal(...)` when you only need one signal ref or when the signal name is not part of a grouped state helper:
 
 ```tsx
-const query = ds.signal<string>("query")
+import { signal } from "datastar-kit"
+
+const query = signal<string>("query")
 
 <input type="search" data-bind={query} />
 ```
 
-Use `ds.local(...)` for underscore-prefixed local/private signal refs:
+Use `local(...)` for underscore-prefixed local/private signal refs:
 
 ```tsx
-const saving = ds.local<boolean>("saving")
+import { local } from "datastar-kit"
+
+const saving = local<boolean>("saving")
 
 <button data-attr:disabled={saving}>Save</button>
 ```
@@ -93,27 +103,32 @@ const saving = ds.local<boolean>("saving")
 Standalone refs can initialize their own signal value:
 
 ```tsx
-<div data-signals:_saving={[false, { ifMissing: true }]} />
+import { mod } from "datastar-kit"
+;<div data-signals:_saving={mod(false, { ifMissing: true })} />
 ```
 
 Private names are a convention, not a security boundary. The browser still controls browser state.
 
 ## Expressions
 
-For anything beyond a bare signal ref, use `ds.expr` so signal refs and JavaScript literals are serialized consistently:
+For anything beyond a bare signal ref, use `js` so signal refs and JavaScript literals are serialized consistently:
 
 ```tsx
-const count = ds.signal<number>("count")
+import { js, signal } from "datastar-kit"
 
-<button data-attr:disabled={ds.expr`${count} >= ${10}`}>+</button>
+const count = signal<number>("count")
+
+<button data-attr:disabled={js`${count} >= ${10}`}>+</button>
 ```
 
-For common signal mutation in event handlers, use `ds.set(...)`:
+For common signal mutation in event handlers, use `set(...)`:
 
 ```tsx
-const open = ds.signal<boolean>("open")
+import { set, signal } from "datastar-kit"
 
-<button data-on:click={ds.set(open, false)}>Close</button>
+const open = signal<boolean>("open")
+
+<button data-on:click={set(open, false)}>Close</button>
 ```
 
 ## Read signal payloads

@@ -2,10 +2,10 @@
 
 Datastar Kit exposes a small root API plus explicit subpaths for low-level protocol and JSX runtime integration.
 
-Most application code imports contextual namespaces:
+Most application code imports response namespaces and Datastar authoring helpers from the root package:
 
 ```tsx
-import { ds, event, read, reply } from "datastar-kit"
+import { event, get, js, mod, post, read, reply, state } from "datastar-kit"
 ```
 
 TSX consumers should also set:
@@ -19,32 +19,34 @@ TSX consumers should also set:
 }
 ```
 
-## `ds`
+## Datastar authoring helpers
 
-`ds` contains helpers for action expressions, signal refs, typed signal state, and expression serialization. Write Datastar attributes directly in TSX with native `data-*` names.
+The root package exports helpers for action expressions, signal refs, typed signal state, and expression serialization. Write Datastar attributes directly in TSX with native `data-*` names.
 
 ### State and signals
 
-| API                  | Use                                                                                      |
-| -------------------- | ---------------------------------------------------------------------------------------- |
-| `ds.state(defaults)` | Create typed signal refs, defaults, partial patches, and reset payloads from one object. |
-| `ds.signal(name)`    | Create a standalone typed signal ref.                                                    |
-| `ds.local(name)`     | Create an underscore-prefixed local/private signal ref.                                  |
+| API               | Use                                                                                      |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `state(defaults)` | Create typed signal refs, defaults, partial patches, and reset payloads from one object. |
+| `signal(name)`    | Create a standalone typed signal ref.                                                    |
+| `local(name)`     | Create an underscore-prefixed local/private signal ref.                                  |
 
 ### Actions
 
-| API                         | Use                                                        |
-| --------------------------- | ---------------------------------------------------------- |
-| `ds.get(url, options?)`     | Build `@get(...)`.                                         |
-| `ds.post(url, options?)`    | Build `@post(...)`.                                        |
-| `ds.put(url, options?)`     | Build `@put(...)`.                                         |
-| `ds.patch(url, options?)`   | Build `@patch(...)`.                                       |
-| `ds.delete(url, options?)`  | Build `@delete(...)`.                                      |
-| `ds.queryUrl(path, params)` | Build a reactive URL expression with encoded query params. |
-| `ds.action(name, ...args)`  | Call an app-defined or Datastar built-in browser action.   |
-| `ds.set(signal, value)`     | Build a signal assignment expression.                      |
+| API                      | Use                                                        |
+| ------------------------ | ---------------------------------------------------------- |
+| `get(url, options?)`     | Build `@get(...)`.                                         |
+| `post(url, options?)`    | Build `@post(...)`.                                        |
+| `put(url, options?)`     | Build `@put(...)`.                                         |
+| `patch(url, options?)`   | Build `@patch(...)`.                                       |
+| `del(url, options?)`     | Build `@delete(...)`.                                      |
+| `queryUrl(path, params)` | Build a reactive URL expression with encoded query params. |
+| `action(name, ...args)`  | Call an app-defined or Datastar built-in browser action.   |
+| `set(signal, value)`     | Build a signal assignment expression.                      |
 
 Fetch action options include `headers`, `contentType`, `filterSignals`, `payload`, retry settings, request cancellation behavior, and direct-response overrides.
+
+Use `mod(value, modifiers)` when a value-bearing Datastar attribute needs `__modifier` suffixes. For valueless presence attributes, such as `data-ignore__self`, use the one-argument form: `data-ignore={mod({ self: true })}`.
 
 ### Datastar attributes in TSX
 
@@ -52,27 +54,27 @@ Use native Datastar attributes directly:
 
 ```tsx
 <form
-  data-signals={[form.defaults, { ifMissing: true }]}
-  data-on:submit={[ds.post("/signup"), { prevent: true }]}
+  data-signals={mod(form.defaults, { ifMissing: true })}
+  data-on:submit={mod(post("/signup"), { prevent: true })}
 >
   <input data-bind={form.$.email} />
   <small data-show={form.$.errors.email} data-text={form.$.errors.email} />
 </form>
 ```
 
-When a Datastar attribute needs modifiers, pass `[value, modifiers]`:
+When a Datastar attribute needs modifiers, wrap the value with `mod(value, modifiers)`:
 
 ```tsx
-<input data-on:input={[ds.get("/search"), { debounce: "200ms" }]} />
+<input data-on:input={mod(get("/search"), { debounce: "200ms" })} />
 ```
 
 ### Expressions
 
-| API                       | Use                                                                                    |
-| ------------------------- | -------------------------------------------------------------------------------------- |
-| `ds.expr`                 | Tagged template for Datastar expressions with safe serialization of refs and literals. |
-| `ds.regex(...)`           | Build a regular expression expression value.                                           |
-| `ds.RegexExpressionError` | Thrown when regex pattern or flags cannot create a `RegExp`.                           |
+| API                    | Use                                                                                    |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| `js`                   | Tagged template for Datastar expressions with safe serialization of refs and literals. |
+| `regex(...)`           | Build a regular expression expression value.                                           |
+| `RegexExpressionError` | Thrown when regex pattern or flags cannot create a `RegExp`.                           |
 
 ## `read`
 

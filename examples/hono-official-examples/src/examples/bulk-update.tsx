@@ -1,11 +1,11 @@
 import { Hono } from "hono"
-import { ds, event, reply, read } from "datastar-kit"
+import { event, reply, read, action, state as createState, js, mod, put, regex } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const schema = z.object({ selections: z.array(z.boolean()).default([]) })
 
-const state = ds.state<{ _fetching: boolean; selections: boolean[] }>({
+const state = createState<{ _fetching: boolean; selections: boolean[] }>({
   _fetching: false,
   selections: []
 })
@@ -32,7 +32,7 @@ let rows: BulkRow[] = initialRows.map((row) => ({
 }))
 
 const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) => (
-  <div id="demo" class="stack" data-signals={[state.defaults, { ifMissing: true }]}>
+  <div id="demo" class="stack" data-signals={mod(state.defaults, { ifMissing: true })}>
     <table id="bulk-update">
       <thead>
         <tr>
@@ -40,10 +40,10 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
             <input
               type="checkbox"
               aria-label="Select all rows"
-              data-on:change={ds.action("setAll", ds.expr`el.checked`, {
-                include: ds.regex("^selections")
+              data-on:change={action("setAll", js`el.checked`, {
+                include: regex("^selections")
               })}
-              data-effect={ds.expr`el.checked = ${state.$.selections}.every(Boolean)`}
+              data-effect={js`el.checked = ${state.$.selections}.every(Boolean)`}
               data-attr:disabled={state.$._fetching}
             />
           </th>
@@ -87,7 +87,7 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
         class="success"
         data-indicator={state.$._fetching}
         data-attr:disabled={state.$._fetching}
-        data-on:click={ds.put("/examples/bulk_update/activate")}
+        data-on:click={put("/examples/bulk_update/activate")}
       >
         Activate
       </button>
@@ -95,7 +95,7 @@ const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) 
         class="error"
         data-indicator={state.$._fetching}
         data-attr:disabled={state.$._fetching}
-        data-on:click={ds.put("/examples/bulk_update/deactivate")}
+        data-on:click={put("/examples/bulk_update/deactivate")}
       >
         Deactivate
       </button>

@@ -4,11 +4,11 @@ Datastar actions turn browser events into HTTP requests. Datastar Kit helps you 
 
 ## Author actions in TSX
 
-Use native Datastar event attributes with a fetch action such as `ds.get(...)` or `ds.post(...)`:
+Use native Datastar event attributes with a fetch action such as `get(...)` or `post(...)`:
 
 ```tsx
-import { ds } from "datastar-kit"
-;<button type="button" data-on:click={ds.post("/todos/add")}>
+import { post } from "datastar-kit"
+;<button type="button" data-on:click={post("/todos/add")}>
   Add todo
 </button>
 ```
@@ -19,22 +19,25 @@ The JSX runtime renders Datastar attributes such as:
 <button data-on:click="@post('/todos/add')">Add todo</button>
 ```
 
-Build reactive URLs with `ds.queryUrl(...)`:
+Build reactive URLs with `queryUrl(...)`:
 
 ```tsx
-const search = ds.state({ q: "" })
+import { get, queryUrl, state } from "datastar-kit"
+
+const search = state({ q: "" })
 
 <input
   type="search"
   data-bind={search.$.q}
-  data-on:input={ds.get(ds.queryUrl("/todos/search", { q: search.$.q }))}
+  data-on:input={get(queryUrl("/todos/search", { q: search.$.q }))}
 />
 ```
 
-When an attribute needs Datastar modifiers, pass `[value, modifiers]`:
+When an attribute needs Datastar modifiers, wrap the value with `mod(value, modifiers)`:
 
 ```tsx
-<form data-on:submit={[ds.post("/signup"), { prevent: true }]}>...</form>
+import { mod, post } from "datastar-kit"
+;<form data-on:submit={mod(post("/signup"), { prevent: true })}>...</form>
 ```
 
 ## Command handlers
@@ -120,13 +123,14 @@ Prefer the SSE helpers unless an integration specifically requires direct-respon
 
 ## Forms and request bodies
 
-Structured `ds.get`, `ds.post`, `ds.put`, `ds.patch`, and `ds.delete` actions use Datastar's default JSON signal transport.
+Structured `get`, `post`, `put`, `patch`, and `del` actions use Datastar's default JSON signal transport.
 
 For Datastar's form transport, pass `contentType: "form"` in the fetch action options and read the request with your platform's form or multipart APIs:
 
 ```tsx
-<form
-  data-on:submit={[ds.post("/upload", { contentType: "form", selector: null }), { prevent: true }]}
+import { mod, post } from "datastar-kit"
+;<form
+  data-on:submit={mod(post("/upload", { contentType: "form", selector: null }), { prevent: true })}
 >
   <input type="file" name="avatar" />
   <button>Upload</button>
@@ -137,13 +141,15 @@ For Datastar's form transport, pass `contentType: "form"` in the fetch action op
 
 ## Custom browser actions and plugins
 
-Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, register a Datastar action or plugin in a browser module and call it from TSX with `ds.action(...)` or the plugin's native `data-*` attribute:
+Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, register a Datastar action or plugin in a browser module and call it from TSX with `action(...)` or the plugin's native `data-*` attribute:
 
 ```tsx
-const modalOpen = ds.signal<boolean>("modalOpen")
+import { action, set, signal } from "datastar-kit"
 
-<button data-on:click={ds.set(modalOpen, true)}>Open</button>
-<dialog data-effect={ds.action("syncDialog", modalOpen)} />
+const modalOpen = signal<boolean>("modalOpen")
+
+<button data-on:click={set(modalOpen, true)}>Open</button>
+<dialog data-effect={action("syncDialog", modalOpen)} />
 <button data-focus-when={modalOpen}>Cancel</button>
 ```
 

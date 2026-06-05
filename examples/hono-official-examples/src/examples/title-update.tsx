@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { ds, event, reply } from "datastar-kit"
+import { event, reply, get } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const currentTime = () => new Date().toLocaleTimeString()
@@ -14,7 +14,7 @@ example.get("/", () =>
       summary="Streams patches to the document title and a visible timestamp."
       source="https://data-star.dev/examples/title_update"
     >
-      <p data-init={ds.get("/examples/title_update/updates")}>
+      <p data-init={get("/examples/title_update/updates")}>
         Look at the title change in the browser tab!
       </p>
     </ExampleLayout>,

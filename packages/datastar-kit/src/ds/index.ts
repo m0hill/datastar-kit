@@ -1,6 +1,7 @@
 export {
   ActionNameError,
   action,
+  del,
   del as delete,
   get,
   patch,
@@ -11,8 +12,11 @@ export {
 } from "./actions.js"
 export type { FetchActionOptions, FetchActionResponseOverrides, SignalFilter } from "./actions.js"
 
-export { expr, regex, RegexExpressionError } from "./expression.js"
+export { js, regex, RegexExpressionError } from "./expression.js"
 export type { DatastarFunction, Expr, ExprInput } from "./expression.js"
+
+export { mod } from "./modifiers.js"
+export type { CaseModifier, DatastarModifierOptions, TimingModifierOptions } from "./modifiers.js"
 
 export { local, Signal, SignalNameError, signal } from "./signals.js"
 export type { SignalState, SignalStateInput, SignalValue, SignalValueInput } from "./signals.js"

@@ -1,62 +1,68 @@
 import { describe, expect, it } from "vitest"
-import * as ds from "../src/ds/index.js"
+import {
+  action,
+  ActionNameError,
+  js,
+  regex,
+  RegexExpressionError,
+  set,
+  signal
+} from "../src/ds/index.js"
 
 describe("expression escape hatches", () => {
   it("keeps simple signal refs typed", () => {
-    const saving = ds.signal<boolean>("saving")
+    const saving = signal<boolean>("saving")
 
     expect(saving.toDatastarExpression()).toBe("$saving")
   })
 
   it("uses explicit Datastar expressions instead of a framework expression DSL", () => {
-    expect(ds.expr("!($saving)").toDatastarExpression()).toBe("!($saving)")
-    expect(ds.expr("($ready) && ($dirty)").toDatastarExpression()).toBe("($ready) && ($dirty)")
-    expect(ds.expr('($enabled ? "Enabled" : "Disabled")').toDatastarExpression()).toBe(
+    expect(js("!($saving)").toDatastarExpression()).toBe("!($saving)")
+    expect(js("($ready) && ($dirty)").toDatastarExpression()).toBe("($ready) && ($dirty)")
+    expect(js('($enabled ? "Enabled" : "Disabled")').toDatastarExpression()).toBe(
       '($enabled ? "Enabled" : "Disabled")'
     )
   })
 
   it("interpolates Datastar expressions with signals and JS literals", () => {
-    const count = ds.signal<number>("count")
+    const count = signal<number>("count")
 
-    expect(ds.expr`${count} >= ${10}`.toDatastarExpression()).toBe("$count >= 10")
-    expect(ds.expr`${count} === ${"done"}`.toDatastarExpression()).toBe('$count === "done"')
+    expect(js`${count} >= ${10}`.toDatastarExpression()).toBe("$count >= 10")
+    expect(js`${count} === ${"done"}`.toDatastarExpression()).toBe('$count === "done"')
   })
 
   it("builds regular expressions without caller-managed literal escaping", () => {
-    expect(ds.regex("a/b", "i").toDatastarExpression()).toBe('new RegExp("a/b", "i")')
-    expect(() => ds.regex("[")).toThrow(ds.RegexExpressionError)
+    expect(regex("a/b", "i").toDatastarExpression()).toBe('new RegExp("a/b", "i")')
+    expect(() => regex("[")).toThrow(RegexExpressionError)
   })
 
   it("builds custom action expressions", () => {
-    const modalOpen = ds.signal<boolean>("modalOpen")
+    const modalOpen = signal<boolean>("modalOpen")
 
-    expect(ds.action("setSignal", "modalOpen", true).toDatastarExpression()).toBe(
+    expect(action("setSignal", "modalOpen", true).toDatastarExpression()).toBe(
       '@setSignal("modalOpen", true)'
     )
-    expect(ds.action("syncDialog", modalOpen).toDatastarExpression()).toBe(
-      "@syncDialog($modalOpen)"
-    )
+    expect(action("syncDialog", modalOpen).toDatastarExpression()).toBe("@syncDialog($modalOpen)")
   })
 
   it("rejects custom action names Datastar cannot call", () => {
-    expect(() => ds.action("bad-action")).toThrow(ds.ActionNameError)
+    expect(() => action("bad-action")).toThrow(ActionNameError)
   })
 
   it("builds typed signal mutation expressions", () => {
-    const open = ds.signal<boolean>("open")
+    const open = signal<boolean>("open")
 
-    expect(ds.set(open, false).toDatastarExpression()).toBe("$open = false")
+    expect(set(open, false).toDatastarExpression()).toBe("$open = false")
   })
 
   it("keeps signal mutation values typed to the target ref", () => {
-    const open = ds.signal<boolean>("open")
+    const open = signal<boolean>("open")
 
     if (false) {
       // @ts-expect-error Boolean signals cannot be assigned string literals.
-      ds.set(open, "yes")
+      set(open, "yes")
     }
 
-    expect(ds.set(open, true).toDatastarExpression()).toBe("$open = true")
+    expect(set(open, true).toDatastarExpression()).toBe("$open = true")
   })
 })

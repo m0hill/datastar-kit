@@ -6,7 +6,13 @@
     "lib": ["ES2023", "DOM"],
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "datastar-kit": ["../../packages/datastar-kit/src/index.ts"],
+      "datastar-kit/jsx-runtime": ["../../packages/datastar-kit/src/jsx-runtime.ts"],
+      "datastar-kit/jsx-dev-runtime": ["../../packages/datastar-kit/src/jsx-dev-runtime.ts"],
+      "datastar-kit/sse": ["../../packages/datastar-kit/src/sse.ts"]
+    }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"]
 }

@@ -1,4 +1,4 @@
-import { ds, read, reply } from "datastar-kit"
+import { read, reply, state as createState, mod, post } from "datastar-kit"
 import { z } from "zod"
 import { pageHead, type App } from "../app.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
@@ -9,7 +9,7 @@ const loginSchema = z.object({
   password: z.string().min(1, "Enter your password")
 })
 
-const loginState = ds.state({
+const loginState = createState({
   username: "",
   password: "",
   _validation: {
@@ -22,7 +22,7 @@ const loginState = ds.state({
 const LoginPage = () => (
   <main
     class="min-h-screen grid place-items-center p-4 bg-bg"
-    data-signals={[loginState.defaults, { ifMissing: true }]}
+    data-signals={mod(loginState.defaults, { ifMissing: true })}
   >
     <section class="w-full max-w-96 bg-surface border border-border p-6 flex flex-col gap-5 shadow-[0_4px_20px_rgba(0,0,0,0.35)]">
       <div class="flex items-center gap-2 border-b border-border pb-4">
@@ -31,7 +31,7 @@ const LoginPage = () => (
           Linear System / Login
         </h1>
       </div>
-      <form class="flex flex-col gap-4" data-on:submit={[ds.post("/login"), { prevent: true }]}>
+      <form class="flex flex-col gap-4" data-on:submit={mod(post("/login"), { prevent: true })}>
         <label class="flex flex-col gap-1.5 section-label">
           Username
           <input

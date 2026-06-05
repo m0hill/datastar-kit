@@ -11,16 +11,16 @@ It is not a framework. Bring your router, auth, database, validation, sessions, 
 ## Example
 
 ```tsx
-import { ds, reply } from "datastar-kit"
+import { post, reply } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
 let count = 0
 
 const Counter = () => (
   <main>
-    <button type="button" {...ds.on("click", ds.post("/increment"))}>
+    <button type="button" data-on:click={post("/increment")}>
       Increment
     </button>
     <output id="count">{count}</output>
@@ -54,12 +54,12 @@ The stable `id` is the patch contract. The server returns new HTML for `#count`;
 npm i datastar-kit
 ```
 
-Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.1`; use a pinned runtime URL or a self-hosted compatible copy.
+Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.2`; use a pinned runtime URL or a self-hosted compatible copy.
 
 ```html
 <script
   type="module"
-  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.1/bundles/datastar.js"
+  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 ></script>
 ```
 
