@@ -45,7 +45,6 @@ The root package exports helpers for action expressions, signal refs, typed sign
 | `toggleAll(filter?)`       | Build `@toggleAll(...)`.                                          |
 | `queryUrl(path, params)`   | Build a reactive URL expression with encoded query params.        |
 | `action(name, ...args)`    | Call an app-defined or Datastar built-in browser action.          |
-| `set(signal, value)`       | Build a signal assignment expression.                             |
 | `preserve(name, ...names)` | Build a `data-preserve-attr` space-separated attribute-name list. |
 
 Fetch action options include `headers`, `contentType`, `filterSignals`, `payload`, retry settings, and request cancellation behavior.

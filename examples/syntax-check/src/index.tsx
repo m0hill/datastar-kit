@@ -7,7 +7,6 @@ import {
   post,
   preserve,
   regex,
-  set,
   signal,
   state
 } from "datastar-kit"
@@ -133,7 +132,7 @@ export const DatastarSyntaxCheck = () => (
     </section>
 
     <my-widget
-      data-on:widget-loaded={mod(set(widgetReady, true), { case: "camel" })}
+      data-on:widget-loaded={mod(js`${widgetReady} = true`, { case: "camel" })}
       data-attr:user-email={form.refs.email}
     ></my-widget>
 

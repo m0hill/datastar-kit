@@ -144,11 +144,11 @@ import { mod, post } from "datastar-kit"
 Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, register a Datastar action or plugin in a browser module and call it from TSX with `action(...)` or the plugin's native `data-*` attribute:
 
 ```tsx
-import { action, set, signal } from "datastar-kit"
+import { action, js, signal } from "datastar-kit"
 
 const modalOpen = signal<boolean>("modalOpen")
 
-<button data-on:click={set(modalOpen, true)}>Open</button>
+<button data-on:click={js`${modalOpen} = true`}>Open</button>
 <dialog data-effect={action("syncDialog", modalOpen)} />
 <button data-focus-when={modalOpen}>Cancel</button>
 ```

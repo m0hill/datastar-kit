@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server"
 import { serveStatic } from "@hono/node-server/serve-static"
 import { fileURLToPath } from "node:url"
 import { Hono } from "hono"
-import { event, reply, get, js, mod, post, set, signal } from "datastar-kit"
+import { event, reply, get, js, mod, post, signal } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
@@ -50,8 +50,8 @@ app.get("/modal", () =>
         id="confirm-modal"
         aria-labelledby="confirm-modal-title"
         data-effect={js`${openModal} ? (!el.open && el.showModal()) : (el.open && el.close())`}
-        data-on:click={js`if (evt.target === el) { ${set(openModal, false)} }`}
-        data-on:close={set(openModal, false)}
+        data-on:click={js`if (evt.target === el) { ${openModal} = false }`}
+        data-on:close={js`${openModal} = false`}
       >
         <section class="modal">
           <h2 id="confirm-modal-title">Confirm the action</h2>
@@ -60,7 +60,7 @@ app.get("/modal", () =>
             Escape, backdrop clicks, and buttons all stay in sync.
           </p>
           <div class="modal-actions">
-            <button type="button" class="secondary" data-on:click={set(openModal, false)}>
+            <button type="button" class="secondary" data-on:click={js`${openModal} = false`}>
               Cancel
             </button>
             <button type="button" class="danger" data-on:click={post("/modal/confirm")}>

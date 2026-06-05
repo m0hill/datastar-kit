@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { reply, state, js, local, mod, set } from "datastar-kit"
+import { reply, state, js, local, mod } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const componentState = state({ _name: "Your Name" })
@@ -22,7 +22,7 @@ example.get("/", () =>
         </label>
         <span data-signals={{ [reversed.name]: "" }} data-text={reversed}></span>
         <reverse-component
-          data-on:reverse={set(reversed, js`evt.detail.value`)}
+          data-on:reverse={js`${reversed} = evt.detail.value`}
           data-attr:name={componentState.refs._name}
         ></reverse-component>
       </div>

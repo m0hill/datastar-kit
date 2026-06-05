@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { event, reply, read, state, del, get, js, mod, patch, post, put, set } from "datastar-kit"
+import { event, reply, read, state, del, get, js, mod, patch, post, put } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -109,7 +109,7 @@ const TodoMvc = () => {
             ? {
                 "data-signals": mod(todoInputState.defaults, { ifMissing: true }),
                 "data-bind": todoInputState.refs.input,
-                "data-on:keydown": js`if (evt.key === ${"Enter"} && ${todoInputState.refs.input}.trim()) { ${patch("/examples/todomvc/-1")}; ${set(todoInputState.refs.input, "")} }`
+                "data-on:keydown": js`if (evt.key === ${"Enter"} && ${todoInputState.refs.input}.trim()) { ${patch("/examples/todomvc/-1")}; ${todoInputState.refs.input} = ${""} }`
               }
             : {})}
         />

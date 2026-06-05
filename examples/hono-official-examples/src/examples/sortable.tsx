@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { reply, js, set, signal } from "datastar-kit"
+import { reply, js, signal } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const orderInfo = signal<string>("orderInfo")
@@ -23,7 +23,7 @@ example.get("/", () =>
         <div
           id="sortContainer"
           class="sortable-list"
-          data-on:reordered={set(orderInfo, js`evt.detail.orderInfo`)}
+          data-on:reordered={js`${orderInfo} = evt.detail.orderInfo`}
         >
           {Array.from({ length: 5 }, (_, index) => (
             <button type="button">Item {index + 1}</button>

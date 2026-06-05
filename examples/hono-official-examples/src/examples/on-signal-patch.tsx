@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { reply, state, js, mod, regex, set } from "datastar-kit"
+import { reply, state, js, mod, regex } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const patchState = state({
@@ -22,19 +22,16 @@ example.get("/", () =>
       <div class="stack" data-signals={mod(patchState.defaults, { ifMissing: true })}>
         <div class="actions">
           <button
-            data-on:click={set(
-              patchState.refs.message,
-              js`${"Updated: "} + performance.now().toFixed(2)`
-            )}
+            data-on:click={js`${patchState.refs.message} = ${"Updated: "} + performance.now().toFixed(2)`}
           >
             Update Message
           </button>
-          <button data-on:click={set(patchState.refs.counter, js`${patchState.refs.counter} + 1`)}>
+          <button data-on:click={js`${patchState.refs.counter} = ${patchState.refs.counter} + 1`}>
             Increment Counter
           </button>
           <button
             class="error"
-            data-on:click={js`${set(patchState.refs.allChanges, [])}; ${set(patchState.refs.counterChanges, [])}`}
+            data-on:click={js`${patchState.refs.allChanges} = []; ${patchState.refs.counterChanges} = []`}
           >
             Clear All Changes
           </button>

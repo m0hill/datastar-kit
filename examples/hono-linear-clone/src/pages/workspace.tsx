@@ -1,5 +1,5 @@
 import { getCookie } from "hono/cookie"
-import { event, read, reply, state, get, js, mod, post, set } from "datastar-kit"
+import { event, read, reply, state, get, js, mod, post } from "datastar-kit"
 import { z } from "zod"
 import { pageHead, type App } from "../app.js"
 import { deleteSessionCookie, deleteSession } from "../auth/session.js"
@@ -280,7 +280,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       <button
         type="button"
         class="btn h-8 w-8 p-0"
-        data-on:click={set(workspaceState.refs.modalOpen, false)}
+        data-on:click={js`${workspaceState.refs.modalOpen} = false`}
       >
         <svg
           width="14"
@@ -345,7 +345,7 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
     </div>
     <div class="flex justify-end gap-2 pt-4 border-t border-border">
-      <button type="button" class="btn" data-on:click={set(workspaceState.refs.modalOpen, false)}>
+      <button type="button" class="btn" data-on:click={js`${workspaceState.refs.modalOpen} = false`}>
         Cancel
       </button>
       <button type="submit" class="btn-primary">
@@ -360,8 +360,8 @@ const IssueModal = (props: { projects: Project[] }) => (
     id="issue-modal"
     class="bg-transparent p-0 m-0 max-w-none max-h-none w-full h-full border-0"
     data-effect={js`${workspaceState.refs.modalOpen} ? (!el.open && el.showModal()) : (el.open && el.close())`}
-    data-on:click={js`if (evt.target === el) { ${set(workspaceState.refs.modalOpen, false)} }`}
-    data-on:close={set(workspaceState.refs.modalOpen, false)}
+    data-on:click={js`if (evt.target === el) { ${workspaceState.refs.modalOpen} = false }`}
+    data-on:close={js`${workspaceState.refs.modalOpen} = false`}
   >
     <div class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-start justify-center pt-[10vh] px-4">
       <div id="modal-content">

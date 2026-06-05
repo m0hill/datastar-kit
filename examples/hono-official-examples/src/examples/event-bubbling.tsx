@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { reply, state, js, mod, set } from "datastar-kit"
+import { reply, state, js, mod } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const keyState = state({ key: "" })
@@ -36,10 +36,7 @@ example.get("/", () =>
         <div
           id="event-bubbling-container"
           class="keypad"
-          data-on:click={set(
-            keyState.refs.key,
-            js`evt.target.closest(${"button[data-id]"})?.dataset.id ?? ${keyState.refs.key}`
-          )}
+          data-on:click={js`${keyState.refs.key} = evt.target.closest(${"button[data-id]"})?.dataset.id ?? ${keyState.refs.key}`}
         >
           {keys.map((key) => (
             <button data-id={key} class={key.includes(" ") ? "gray" : undefined}>

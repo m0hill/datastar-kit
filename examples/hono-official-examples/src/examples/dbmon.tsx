@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { event, reply, read, get, js, local, mod, put, set } from "datastar-kit"
+import { event, reply, read, get, js, local, mod, put } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -53,8 +53,8 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
           min="0"
           max="100"
           value={config.mutationRate}
-          data-on:focus={set(editing, true)}
-          data-on:blur={js`${put("/examples/dbmon/inputs")}; ${set(editing, false)}`}
+          data-on:focus={js`${editing} = true`}
+          data-on:blur={js`${put("/examples/dbmon/inputs")}; ${editing} = false`}
           {...{ "data-attr:data-bind:mutation-rate": editing }}
           {...{ "data-attr:data-bind:_mutation-rate": js`!${editing}` }}
         />
@@ -66,8 +66,8 @@ const DbmonDemo = ({ renderTime }: { renderTime: number }) => (
           min="1"
           max="144"
           value={config.fps}
-          data-on:focus={set(editing, true)}
-          data-on:blur={js`${put("/examples/dbmon/inputs")}; ${set(editing, false)}`}
+          data-on:focus={js`${editing} = true`}
+          data-on:blur={js`${put("/examples/dbmon/inputs")}; ${editing} = false`}
           {...{ "data-attr:data-bind:fps": editing }}
           {...{ "data-attr:data-bind:_fps": js`!${editing}` }}
         />

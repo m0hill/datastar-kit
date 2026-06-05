@@ -121,14 +121,14 @@ const count = signal<number>("count")
 <button data-attr:disabled={js`${count} >= ${10}`}>+</button>
 ```
 
-For common signal mutation in event handlers, use `set(...)`:
+For signal mutation in event handlers, write the assignment as an explicit expression:
 
 ```tsx
-import { set, signal } from "datastar-kit"
+import { js, signal } from "datastar-kit"
 
 const open = signal<boolean>("open")
 
-<button data-on:click={set(open, false)}>Close</button>
+<button data-on:click={js`${open} = false`}>Close</button>
 ```
 
 ## Read signal payloads

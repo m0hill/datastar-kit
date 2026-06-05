@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { event, reply, read, state, js, mod, post, set } from "datastar-kit"
+import { event, reply, read, state, js, mod, post } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -72,7 +72,7 @@ example.get("/", () =>
             type="file"
             multiple
             data-bind={uploadState.refs.files}
-            data-on:change={set(uploadState.refs.errors.files, "")}
+            data-on:change={js`${uploadState.refs.errors.files} = ${""}`}
           />
         </label>
         <small
