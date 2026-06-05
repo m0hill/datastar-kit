@@ -1,8 +1,6 @@
 import type { SignalValue } from "../types.js"
 import type { Expr } from "./expression.js"
 
-export type { SignalState, SignalValue } from "../types.js"
-
 /**
  * Authoring-time signal value accepted by Datastar authoring helpers.
  *
