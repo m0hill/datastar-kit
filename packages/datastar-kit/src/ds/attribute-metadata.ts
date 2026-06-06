@@ -50,7 +50,7 @@ const modifierTargets = [
     exact: ["data-ref", "data-indicator"],
     prefixes: ["data-ref:", "data-indicator:", "data-class:"]
   },
-  { target: "computed", exact: ["data-computed"], prefixes: ["data-computed:"] },
+  { target: "computed", prefixes: ["data-computed:"] },
   { target: "ignore", exact: ["data-ignore"] },
   { target: "init", exact: ["data-init"] },
   { target: "intersect", exact: ["data-on-intersect"] },
