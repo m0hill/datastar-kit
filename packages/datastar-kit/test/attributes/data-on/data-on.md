@@ -1,11 +1,13 @@
 ### `data-on`
 
 Attaches an event listener to an element, executing an expression whenever the event is triggered.
+
 ```html
 <button data-on:click="$foo = ''">Reset</button>
 ```
 
 An `evt` variable that represents the event object is available in the expression.
+
 ```html
 <div data-on:my-event="$foo = evt.detail"></div>
 ```
@@ -16,11 +18,11 @@ The `data-on` attribute works with events and custom events. The `data-on:submit
 
 Modifiers allow you to modify behavior when events are triggered. Some modifiers have tags to further modify the behavior.
 
-- `__once` * – Only trigger the event listener once.
+- `__once` \* – Only trigger the event listener once.
 
-- `__passive` * – Do not call `preventDefault` on the event listener.
+- `__passive` \* – Do not call `preventDefault` on the event listener.
 
-- `__capture` * – Use a capture event listener.
+- `__capture` \* – Use a capture event listener.
 
 - `__case` – Converts the casing of the event.
 
@@ -70,7 +72,8 @@ Modifiers allow you to modify behavior when events are triggered. Some modifiers
 
 - `__stop` – Calls `stopPropagation` on the event listener.
 
-_* Only works with built-in events._
+_\* Only works with built-in events._
+
 ```html
 <button data-on:click__window__debounce.500ms.leading="$foo = ''"></button>
 <div data-on:my-event__case.camel="$foo = ''"></div>
@@ -79,8 +82,12 @@ _* Only works with built-in events._
 ## Attribute Evaluation Order
 
 Elements are evaluated by walking the DOM in a depth-first manner, and attributes are applied in the order they appear in the element. This is important in some cases, such as when using `data-indicator` with a fetch request initiated in a `data-init` attribute, in which the indicator signal must be created before the fetch request is initialized.
+
 ```html
-<div data-indicator:fetching data-init="@get('/endpoint')"></div>
+<div
+  data-indicator:fetching
+  data-init="@get('/endpoint')"
+></div>
 ```
 
 Data attributes are evaluated and applied on page load (after Datastar has initialized), and are reapplied after any DOM patches that add, remove, or change them. Note that morphing elements preserves existing attributes unless they are explicitly changed in the DOM, meaning they will only be reapplied if the attribute itself is changed.
@@ -99,41 +106,30 @@ You can use the `__case` modifier to convert between `camelCase`, `kebab-case`, 
 
 For example, if listening for an event called `widgetLoaded`, you would use `data-on:widget-loaded__case.camel`.
 
-
 ## Datastar Expressions
 
 Datastar expressions used in `data-*` attributes parse signals, converting all dollar signs followed by valid signal name characters into their corresponding signal values. Expressions support standard JavaScript syntax, including operators, function calls, ternary expressions, and object and array literals.
 
 A variable `el` is available in every Datastar expression, representing the element that the attribute exists on.
+
 ```html
-<div id="bar" data-text="$foo + el.id"></div>
+<div
+  id="bar"
+  data-text="$foo + el.id"
+></div>
 ```
 
 Read more about Datastar expressions in the guide.
 
-
 ## Error Handling
 
 Datastar has built-in error handling and reporting for runtime errors. When a data attribute is used incorrectly, for example `data-text-foo`, the following error message is logged to the browser console.
+
 ```html
-Uncaught datastar runtime error: textKeyNotAllowed
-More info: https://data-star.dev/errors/key_not_allowed?metadata=%7B%22plugin%22%3A%7B%22name%22%3A%22text%22%2C%22type%22%3A%22attribute%22%7D%2C%22element%22%3A%7B%22id%22%3A%22%22%2C%22tag%22%3A%22DIV%22%7D%2C%22expression%22%3A%7B%22rawKey%22%3A%22textFoo%22%2C%22key%22%3A%22foo%22%2C%22value%22%3A%22%22%2C%22fnContent%22%3A%22%22%7D%7D
-Context: {
-    "plugin": {
-        "name": "text",
-        "type": "attribute"
-    },
-    "element": {
-        "id": "",
-        "tag": "DIV"
-    },
-    "expression": {
-        "rawKey": "textFoo",
-        "key": "foo",
-        "value": "",
-        "fnContent": ""
-    }
-}
+Uncaught datastar runtime error: textKeyNotAllowed More info:
+https://data-star.dev/errors/key_not_allowed?metadata=%7B%22plugin%22%3A%7B%22name%22%3A%22text%22%2C%22type%22%3A%22attribute%22%7D%2C%22element%22%3A%7B%22id%22%3A%22%22%2C%22tag%22%3A%22DIV%22%7D%2C%22expression%22%3A%7B%22rawKey%22%3A%22textFoo%22%2C%22key%22%3A%22foo%22%2C%22value%22%3A%22%22%2C%22fnContent%22%3A%22%22%7D%7D
+Context: { "plugin": { "name": "text", "type": "attribute" }, "element": { "id": "", "tag": "DIV" },
+"expression": { "rawKey": "textFoo", "key": "foo", "value": "", "fnContent": "" } }
 ```
 
 The “More info” link takes you directly to a context-aware error page that explains the error and provides correct sample usage. See the error page for the example above, and all available error messages in the sidebar menu.
