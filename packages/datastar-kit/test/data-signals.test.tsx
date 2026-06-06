@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { js, local, mod, signal, state } from "../src/ds/index.js"
+import { js, local, mod, state } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
 import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
@@ -20,9 +20,7 @@ describe("data-signals", () => {
   it("renders raw object expressions with the hyperscript factory", () => {
     const node = h("div", { "data-signals": "{foo: {bar: 1, baz: 2}}" })
 
-    expect(renderToString(node)).toBe(
-      '<div data-signals="{foo: {bar: 1, baz: 2}}"></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-signals="{foo: {bar: 1, baz: 2}}"></div>')
   })
 
   it("renders JSX values from signals, local signals, state helpers, and expression helpers", () => {

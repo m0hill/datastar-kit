@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import { mod, post, preserve, signal, state } from "../src/ds/index.js"
 import { renderToString, type HtmlChild } from "../src/html.js"
 import type { JsxProps } from "../src/jsx.js"
+import { jsxDEV as runtimeJsxDev } from "../src/jsx-dev-runtime.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("automatic JSX runtime", () => {
@@ -239,6 +240,41 @@ describe("automatic JSX runtime", () => {
     expect(() =>
       runtimeJsx("output", { id: signal<number>("count") } as unknown as JsxProps)
     ).toThrow('Unsupported JSX prop value for "id"')
+  })
+
+  it("does not render compiler-managed JSX runtime props", () => {
+    const node = runtimeJsx("button", {
+      key: "save",
+      __self: {},
+      __source: { fileName: "fixture.tsx" },
+      children: "Save"
+    })
+
+    expect(renderToString(node)).toBe("<button>Save</button>")
+  })
+
+  it("renders through the development JSX runtime entrypoint", () => {
+    const node = runtimeJsxDev(
+      "span",
+      { className: "badge", children: "Dev" },
+      undefined,
+      false,
+      { fileName: "fixture.tsx" },
+      {}
+    )
+
+    expect(renderToString(node)).toBe('<span class="badge">Dev</span>')
+  })
+
+  it("lets an explicit class prop win over className normalization", () => {
+    const node = (
+      <div
+        class="from-class"
+        className="from-className"
+      ></div>
+    )
+
+    expect(renderToString(node)).toBe('<div class="from-class"></div>')
   })
 
   it("renders boolean JSX props according to HTML attribute kind", () => {

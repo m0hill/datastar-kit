@@ -81,16 +81,14 @@ describe("data-indicator", () => {
     )
 
     expect(renderToString(node)).toBe(
-      '<div><button data-indicator:my-fetch__case.camel></button><button data-indicator:my-fetch__case.snake></button><button data-indicator:my-fetch__case.kebab></button><button data-indicator:my-fetch__case.pascal></button></div>'
+      "<div><button data-indicator:my-fetch__case.camel></button><button data-indicator:my-fetch__case.snake></button><button data-indicator:my-fetch__case.kebab></button><button data-indicator:my-fetch__case.pascal></button></div>"
     )
   })
 
   it("renders normal hand-written case modifier syntax through JSX", () => {
     const node = <button {...{ "data-indicator:my-fetch__case.snake": true }}></button>
 
-    expect(renderToString(node)).toBe(
-      '<button data-indicator:my-fetch__case.snake></button>'
-    )
+    expect(renderToString(node)).toBe("<button data-indicator:my-fetch__case.snake></button>")
   })
 
   it("preserves authored order when indicator is needed before data-init", () => {

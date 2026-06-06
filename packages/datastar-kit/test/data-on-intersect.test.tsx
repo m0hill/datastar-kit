@@ -16,9 +16,7 @@ describe("data-on-intersect", () => {
 
     const node = <div data-on-intersect={js`${intersected} = ${true}`}></div>
 
-    expect(renderToString(node)).toBe(
-      '<div data-on-intersect="$intersected = true"></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-on-intersect="$intersected = true"></div>')
   })
 
   it("keeps string JSX values as raw Datastar expressions", () => {
@@ -77,8 +75,16 @@ describe("data-on-intersect", () => {
     const node = (
       <div>
         <div data-on-intersect={mod(expr, { delay: "500ms" })}></div>
-        <div data-on-intersect={mod(expr, { debounce: { duration: "1s", leading: true, noTrailing: true } })}></div>
-        <div data-on-intersect={mod(expr, { throttle: { duration: 250, noLeading: true, trailing: true } })}></div>
+        <div
+          data-on-intersect={mod(expr, {
+            debounce: { duration: "1s", leading: true, noTrailing: true }
+          })}
+        ></div>
+        <div
+          data-on-intersect={mod(expr, {
+            throttle: { duration: 250, noLeading: true, trailing: true }
+          })}
+        ></div>
         <div data-on-intersect={mod(expr, { viewTransition: true })}></div>
       </div>
     )
@@ -89,9 +95,7 @@ describe("data-on-intersect", () => {
   })
 
   it("renders normal hand-written modifier syntax through JSX", () => {
-    const node = (
-      <div {...{ "data-on-intersect__once__full": "$fullyIntersected = true" }}></div>
-    )
+    const node = <div {...{ "data-on-intersect__once__full": "$fullyIntersected = true" }}></div>
 
     expect(renderToString(node)).toBe(
       '<div data-on-intersect__once__full="$fullyIntersected = true"></div>'

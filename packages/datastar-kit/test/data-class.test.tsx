@@ -8,9 +8,7 @@ describe("data-class", () => {
   it("renders keyed class expressions with the hyperscript factory", () => {
     const node = h("div", { "data-class:font-bold": "$foo == 'strong'" })
 
-    expect(renderToString(node)).toBe(
-      '<div data-class:font-bold="$foo == &#39;strong&#39;"></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-class:font-bold="$foo == &#39;strong&#39;"></div>')
   })
 
   it("renders raw multi-class object expressions with the hyperscript factory", () => {
@@ -19,7 +17,7 @@ describe("data-class", () => {
     })
 
     expect(renderToString(node)).toBe(
-      "<div data-class=\"{success: $foo != &#39;&#39;, &#39;font-bold&#39;: $foo == &#39;strong&#39;}\"></div>"
+      '<div data-class="{success: $foo != &#39;&#39;, &#39;font-bold&#39;: $foo == &#39;strong&#39;}"></div>'
     )
   })
 
@@ -54,12 +52,10 @@ describe("data-class", () => {
   })
 
   it("renders normal hand-written Datastar object syntax through JSX", () => {
-    const node = (
-      <div data-class="{success: $foo != '', 'font-bold': $foo == 'strong'}"></div>
-    )
+    const node = <div data-class="{success: $foo != '', 'font-bold': $foo == 'strong'}"></div>
 
     expect(renderToString(node)).toBe(
-      "<div data-class=\"{success: $foo != &#39;&#39;, &#39;font-bold&#39;: $foo == &#39;strong&#39;}\"></div>"
+      '<div data-class="{success: $foo != &#39;&#39;, &#39;font-bold&#39;: $foo == &#39;strong&#39;}"></div>'
     )
   })
 
@@ -116,9 +112,7 @@ describe("data-class", () => {
   it("renders normal hand-written case modifier syntax through JSX", () => {
     const node = <div {...{ "data-class:my-class__case.camel": "$foo" }}></div>
 
-    expect(renderToString(node)).toBe(
-      '<div data-class:my-class__case.camel="$foo"></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-class:my-class__case.camel="$foo"></div>')
   })
 
   it("preserves authored attribute order for Datastar evaluation ordering", () => {

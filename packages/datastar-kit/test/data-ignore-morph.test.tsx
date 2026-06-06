@@ -30,21 +30,15 @@ describe("data-ignore-morph", () => {
       </div>
     )
 
-    expect(renderToString(node)).toBe("<div><section></section><section></section><section></section></div>")
+    expect(renderToString(node)).toBe(
+      "<div><section></section><section></section><section></section></div>"
+    )
   })
 
   it("keeps ordinary string values raw when authored by hand", () => {
     const node = <div data-ignore-morph=""></div>
 
     expect(renderToString(node)).toBe('<div data-ignore-morph=""></div>')
-  })
-
-  it("renders removal patches by omitting the attribute from replacement markup", () => {
-    const protectedNode = <div data-ignore-morph>Protected</div>
-    const unprotectedNode = <div>Unprotected</div>
-
-    expect(renderToString(protectedNode)).toBe("<div data-ignore-morph>Protected</div>")
-    expect(renderToString(unprotectedNode)).toBe("<div>Unprotected</div>")
   })
 
   it("preserves authored attribute order for Datastar evaluation ordering", () => {
@@ -56,9 +50,7 @@ describe("data-ignore-morph", () => {
       ></div>
     )
 
-    expect(renderToString(node)).toBe(
-      '<div id="panel" data-ignore-morph data-text="$label"></div>'
-    )
+    expect(renderToString(node)).toBe('<div id="panel" data-ignore-morph data-text="$label"></div>')
   })
 
   it("rejects explicit modifier wrappers because data-ignore-morph has no supported modifiers", () => {

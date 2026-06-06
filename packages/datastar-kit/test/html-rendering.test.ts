@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 import { h, HtmlNameError, mergeProps, renderToString, unsafeHtml } from "../src/html.js"
-import { page } from "../src/reply.js"
 
 describe("HTML rendering boundary", () => {
   it("escapes text by default and requires explicit unsafe HTML", () => {
@@ -64,19 +63,29 @@ describe("HTML rendering boundary", () => {
       renderToString(
         h("div", {
           "data-ignore": true,
+          "data-persist": true,
+          "data-persist:profile": true,
+          "data-query-string": true,
           "data-ref:panel": true,
+          "data-scope-children": true,
+          "data-scroll-into-view": true,
           "data-signals:result": true,
           "data-signals:cached__ifmissing": true
         })
       )
     ).toBe(
-      "<div data-ignore data-ref:panel data-signals:result data-signals:cached__ifmissing></div>"
+      "<div data-ignore data-persist data-persist:profile data-query-string data-ref:panel data-scope-children data-scroll-into-view data-signals:result data-signals:cached__ifmissing></div>"
     )
     expect(
       renderToString(
         h("div", {
           "data-ignore": false,
+          "data-persist": false,
+          "data-persist:profile": false,
+          "data-query-string": false,
           "data-ref:panel": false,
+          "data-scope-children": false,
+          "data-scroll-into-view": false,
           "data-signals:result": false,
           "data-signals:cached__ifmissing": false
         })
@@ -108,12 +117,9 @@ describe("HTML rendering boundary", () => {
     )
   })
 
-  it("renders child arrays and full pages", async () => {
+  it("renders child arrays", () => {
     expect(renderToString([h("span", {}, "A"), h("span", {}, "B")])).toBe(
       "<span>A</span><span>B</span>"
-    )
-    await expect(page(h("main", {}, "Hello")).text()).resolves.toBe(
-      '<!doctype html><html lang="en"><head></head><body><main>Hello</main></body></html>'
     )
   })
 

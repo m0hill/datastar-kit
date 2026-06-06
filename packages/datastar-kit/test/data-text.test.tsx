@@ -60,9 +60,7 @@ describe("data-text", () => {
   it("escapes fallback child content independently from the data-text expression", () => {
     const node = <span data-text="$foo">Fallback &lt;safe&gt;</span>
 
-    expect(renderToString(node)).toBe(
-      '<span data-text="$foo">Fallback &lt;safe&gt;</span>'
-    )
+    expect(renderToString(node)).toBe('<span data-text="$foo">Fallback &lt;safe&gt;</span>')
   })
 
   it("preserves authored attribute order for Datastar evaluation ordering", () => {

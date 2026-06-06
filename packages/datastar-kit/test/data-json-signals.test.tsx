@@ -33,9 +33,7 @@ describe("data-json-signals", () => {
   })
 
   it("keeps string JSX filter values as raw Datastar expressions", () => {
-    const node = (
-      <pre data-json-signals="{include: /^app/, exclude: /password/}"></pre>
-    )
+    const node = <pre data-json-signals="{include: /^app/, exclude: /password/}"></pre>
 
     expect(renderToString(node)).toBe(
       '<pre data-json-signals="{include: /^app/, exclude: /password/}"></pre>'
@@ -61,9 +59,7 @@ describe("data-json-signals", () => {
   it("renders raw expression helpers for filter objects", () => {
     const node = <pre data-json-signals={js("{include: /^counter$/}")}></pre>
 
-    expect(renderToString(node)).toBe(
-      '<pre data-json-signals="{include: /^counter$/}"></pre>'
-    )
+    expect(renderToString(node)).toBe('<pre data-json-signals="{include: /^counter$/}"></pre>')
   })
 
   it("renders terse modifier for display-all and filtered forms", () => {
@@ -82,9 +78,7 @@ describe("data-json-signals", () => {
   it("renders normal hand-written terse modifier syntax through JSX", () => {
     const node = <pre {...{ "data-json-signals__terse": "{include: /counter/}" }}></pre>
 
-    expect(renderToString(node)).toBe(
-      '<pre data-json-signals__terse="{include: /counter/}"></pre>'
-    )
+    expect(renderToString(node)).toBe('<pre data-json-signals__terse="{include: /counter/}"></pre>')
   })
 
   it("preserves authored attribute order for Datastar evaluation ordering", () => {

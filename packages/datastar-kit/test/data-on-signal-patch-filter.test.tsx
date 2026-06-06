@@ -30,7 +30,9 @@ describe("data-on-signal-patch-filter", () => {
   })
 
   it("serializes filter objects with native regular expressions", () => {
-    const node = <div data-on-signal-patch-filter={{ include: /^counter$/, exclude: /changes$/ }}></div>
+    const node = (
+      <div data-on-signal-patch-filter={{ include: /^counter$/, exclude: /changes$/ }}></div>
+    )
 
     expect(renderToString(node)).toBe(
       '<div data-on-signal-patch-filter="{&quot;include&quot;: new RegExp(&quot;^counter$&quot;, &quot;&quot;), &quot;exclude&quot;: new RegExp(&quot;changes$&quot;, &quot;&quot;)}"></div>'
@@ -38,7 +40,9 @@ describe("data-on-signal-patch-filter", () => {
   })
 
   it("serializes filter objects with regex expression helpers and strings", () => {
-    const node = <div data-on-signal-patch-filter={{ include: regex("user", "i"), exclude: "password" }}></div>
+    const node = (
+      <div data-on-signal-patch-filter={{ include: regex("user", "i"), exclude: "password" }}></div>
+    )
 
     expect(renderToString(node)).toBe(
       '<div data-on-signal-patch-filter="{&quot;include&quot;: new RegExp(&quot;user&quot;, &quot;i&quot;), &quot;exclude&quot;: &quot;password&quot;}"></div>'
@@ -48,9 +52,7 @@ describe("data-on-signal-patch-filter", () => {
   it("renders raw expression helpers for filter objects", () => {
     const node = <div data-on-signal-patch-filter={js("{include: /^app/}")}></div>
 
-    expect(renderToString(node)).toBe(
-      '<div data-on-signal-patch-filter="{include: /^app/}"></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-on-signal-patch-filter="{include: /^app/}"></div>')
   })
 
   it("renders the filter alongside data-on-signal-patch", () => {

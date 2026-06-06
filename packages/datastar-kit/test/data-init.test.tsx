@@ -75,7 +75,9 @@ describe("data-init", () => {
   })
 
   it("renders view transition modifier and combines it with delay in authored order", () => {
-    const node = <div data-init={mod(js("$count = 1"), { delay: "500ms", viewTransition: true })}></div>
+    const node = (
+      <div data-init={mod(js("$count = 1"), { delay: "500ms", viewTransition: true })}></div>
+    )
 
     expect(renderToString(node)).toBe(
       '<div data-init__delay.500ms__viewtransition="$count = 1"></div>'

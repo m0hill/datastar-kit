@@ -41,7 +41,9 @@ describe("data-ignore", () => {
       </div>
     )
 
-    expect(renderToString(node)).toBe("<div><section></section><section></section><section></section></div>")
+    expect(renderToString(node)).toBe(
+      "<div><section></section><section></section><section></section></div>"
+    )
   })
 
   it("renders self modifier with the SDK modifier helper", () => {

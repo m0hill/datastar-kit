@@ -8,9 +8,7 @@ describe("data-on", () => {
   it("renders event listener expressions with the hyperscript factory", () => {
     const node = h("button", { "data-on:click": "$foo = ''" }, "Reset")
 
-    expect(renderToString(node)).toBe(
-      '<button data-on:click="$foo = &#39;&#39;">Reset</button>'
-    )
+    expect(renderToString(node)).toBe('<button data-on:click="$foo = &#39;&#39;">Reset</button>')
   })
 
   it("renders JSX values from actions, signal refs, and expression helpers", () => {
@@ -62,7 +60,11 @@ describe("data-on", () => {
   })
 
   it("renders built-in event listener option modifiers", () => {
-    const node = <button data-on:click={mod(js("$clicked = true"), { once: true, passive: true, capture: true })}></button>
+    const node = (
+      <button
+        data-on:click={mod(js("$clicked = true"), { once: true, passive: true, capture: true })}
+      ></button>
+    )
 
     expect(renderToString(node)).toBe(
       '<button data-on:click__once__passive__capture="$clicked = true"></button>'
@@ -92,8 +94,16 @@ describe("data-on", () => {
     const node = (
       <div>
         <button data-on:click={mod(expr, { delay: "500ms" })}></button>
-        <button data-on:click={mod(expr, { debounce: { duration: "1s", leading: true, noTrailing: true } })}></button>
-        <button data-on:click={mod(expr, { throttle: { duration: 250, noLeading: true, trailing: true } })}></button>
+        <button
+          data-on:click={mod(expr, {
+            debounce: { duration: "1s", leading: true, noTrailing: true }
+          })}
+        ></button>
+        <button
+          data-on:click={mod(expr, {
+            throttle: { duration: 250, noLeading: true, trailing: true }
+          })}
+        ></button>
         <button data-on:click={mod(expr, { viewTransition: true })}></button>
       </div>
     )
@@ -121,7 +131,9 @@ describe("data-on", () => {
   })
 
   it("renders normal hand-written modifier syntax through JSX", () => {
-    const node = <button {...{ "data-on:click__window__debounce.500ms.leading": "$foo = ''" }}></button>
+    const node = (
+      <button {...{ "data-on:click__window__debounce.500ms.leading": "$foo = ''" }}></button>
+    )
 
     expect(renderToString(node)).toBe(
       '<button data-on:click__window__debounce.500ms.leading="$foo = &#39;&#39;"></button>'

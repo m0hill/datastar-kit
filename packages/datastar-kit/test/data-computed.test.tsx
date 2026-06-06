@@ -14,9 +14,7 @@ describe("data-computed", () => {
   it("renders raw object expressions with callable values using the hyperscript factory", () => {
     const node = h("div", { "data-computed": "{foo: () => $bar + $baz}" })
 
-    expect(renderToString(node)).toBe(
-      '<div data-computed="{foo: () =&gt; $bar + $baz}"></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-computed="{foo: () =&gt; $bar + $baz}"></div>')
   })
 
   it("renders keyed JSX values from signal refs and expression helpers", () => {
@@ -51,9 +49,7 @@ describe("data-computed", () => {
   it("renders normal hand-written Datastar object syntax through JSX", () => {
     const node = <div data-computed="{foo: () => $bar + $baz}"></div>
 
-    expect(renderToString(node)).toBe(
-      '<div data-computed="{foo: () =&gt; $bar + $baz}"></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-computed="{foo: () =&gt; $bar + $baz}"></div>')
   })
 
   it("serializes object syntax with callable expression helpers", () => {

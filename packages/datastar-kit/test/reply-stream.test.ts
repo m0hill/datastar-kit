@@ -6,8 +6,8 @@ describe("reply SSE responses", () => {
   afterEach(() => {
     vi.useRealTimers()
   })
-  it("serves Datastar SSE streams", async () => {
-    const response = reply.stream(["event: ready\n\n"], {}, { headers: { "x-sse": "yes" } })
+  it("serves Datastar SSE streams from a single event string", async () => {
+    const response = reply.stream("event: ready\n\n", {}, { headers: { "x-sse": "yes" } })
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/event-stream")

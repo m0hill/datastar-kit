@@ -64,7 +64,7 @@ describe("data-bind", () => {
     )
 
     expect(renderToString(node)).toBe(
-      '<div><input data-bind:foo-bar__case.camel><input data-bind:foo-bar__case.snake><input data-bind:foo-bar__case.kebab><input data-bind:foo-bar__case.pascal></div>'
+      "<div><input data-bind:foo-bar__case.camel><input data-bind:foo-bar__case.snake><input data-bind:foo-bar__case.kebab><input data-bind:foo-bar__case.pascal></div>"
     )
   })
 
@@ -87,7 +87,7 @@ describe("data-bind", () => {
     const node = <my-toggle data-bind:is-checked={mod({ prop: "checked", event: "change" })} />
 
     expect(renderToString(node)).toBe(
-      '<my-toggle data-bind:is-checked__prop.checked__event.change></my-toggle>'
+      "<my-toggle data-bind:is-checked__prop.checked__event.change></my-toggle>"
     )
   })
 
@@ -102,7 +102,7 @@ describe("data-bind", () => {
     )
 
     expect(renderToString(node)).toBe(
-      '<div data-bind:is-checked__prop.checked__event.change data-bind:foo-bar__case.snake></div>'
+      "<div data-bind:is-checked__prop.checked__event.change data-bind:foo-bar__case.snake></div>"
     )
   })
 

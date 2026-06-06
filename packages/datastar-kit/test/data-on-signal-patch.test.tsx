@@ -24,7 +24,9 @@ describe("data-on-signal-patch", () => {
   it("renders JSX values from signal refs and expression helpers", () => {
     const changed = signal<boolean>("changed")
 
-    const node = <div data-on-signal-patch={js`${changed} = Object.keys(patch).length > ${0}`}></div>
+    const node = (
+      <div data-on-signal-patch={js`${changed} = Object.keys(patch).length > ${0}`}></div>
+    )
 
     expect(renderToString(node)).toBe(
       '<div data-on-signal-patch="$changed = Object.keys(patch).length &gt; 0"></div>'
@@ -64,8 +66,16 @@ describe("data-on-signal-patch", () => {
     const node = (
       <div>
         <div data-on-signal-patch={mod(expr, { delay: "500ms" })}></div>
-        <div data-on-signal-patch={mod(expr, { debounce: { duration: "1s", leading: true, noTrailing: true } })}></div>
-        <div data-on-signal-patch={mod(expr, { throttle: { duration: 250, noLeading: true, trailing: true } })}></div>
+        <div
+          data-on-signal-patch={mod(expr, {
+            debounce: { duration: "1s", leading: true, noTrailing: true }
+          })}
+        ></div>
+        <div
+          data-on-signal-patch={mod(expr, {
+            throttle: { duration: 250, noLeading: true, trailing: true }
+          })}
+        ></div>
       </div>
     )
 

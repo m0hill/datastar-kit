@@ -70,14 +70,14 @@ describe("data-ref", () => {
     )
 
     expect(renderToString(node)).toBe(
-      '<div><div data-ref:my-ref__case.camel></div><div data-ref:my-ref__case.snake></div><div data-ref:my-ref__case.kebab></div><div data-ref:my-ref__case.pascal></div></div>'
+      "<div><div data-ref:my-ref__case.camel></div><div data-ref:my-ref__case.snake></div><div data-ref:my-ref__case.kebab></div><div data-ref:my-ref__case.pascal></div></div>"
     )
   })
 
   it("renders normal hand-written case modifier syntax through JSX", () => {
     const node = <div {...{ "data-ref:my-ref__case.kebab": true }}></div>
 
-    expect(renderToString(node)).toBe('<div data-ref:my-ref__case.kebab></div>')
+    expect(renderToString(node)).toBe("<div data-ref:my-ref__case.kebab></div>")
   })
 
   it("preserves authored attribute order for Datastar evaluation ordering", () => {
@@ -88,9 +88,7 @@ describe("data-ref", () => {
       ></div>
     )
 
-    expect(renderToString(node)).toBe(
-      '<div data-ref:panel data-init="$panel.focus()"></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-ref:panel data-init="$panel.focus()"></div>')
   })
 
   it("rejects explicit modifiers that data-ref does not support", () => {

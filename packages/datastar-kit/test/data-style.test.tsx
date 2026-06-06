@@ -15,11 +15,12 @@ describe("data-style", () => {
 
   it("renders raw object expressions with the hyperscript factory", () => {
     const node = h("div", {
-      "data-style": "{display: $hiding ? 'none' : 'flex', 'background-color': $red ? 'red' : 'green'}"
+      "data-style":
+        "{display: $hiding ? 'none' : 'flex', 'background-color': $red ? 'red' : 'green'}"
     })
 
     expect(renderToString(node)).toBe(
-      "<div data-style=\"{display: $hiding ? &#39;none&#39; : &#39;flex&#39;, &#39;background-color&#39;: $red ? &#39;red&#39; : &#39;green&#39;}\"></div>"
+      '<div data-style="{display: $hiding ? &#39;none&#39; : &#39;flex&#39;, &#39;background-color&#39;: $red ? &#39;red&#39; : &#39;green&#39;}"></div>'
     )
   })
 
@@ -58,7 +59,7 @@ describe("data-style", () => {
     )
 
     expect(renderToString(node)).toBe(
-      "<div data-style=\"{display: $hiding ? &#39;none&#39; : &#39;flex&#39;, &#39;background-color&#39;: $red ? &#39;red&#39; : &#39;green&#39;}\"></div>"
+      '<div data-style="{display: $hiding ? &#39;none&#39; : &#39;flex&#39;, &#39;background-color&#39;: $red ? &#39;red&#39; : &#39;green&#39;}"></div>'
     )
   })
 
@@ -104,9 +105,7 @@ describe("data-style", () => {
       ></div>
     )
 
-    expect(renderToString(node)).toBe(
-      '<div id="panel" data-style:width="el.dataset.width"></div>'
-    )
+    expect(renderToString(node)).toBe('<div id="panel" data-style:width="el.dataset.width"></div>')
   })
 
   it("preserves authored attribute order for Datastar evaluation ordering", () => {

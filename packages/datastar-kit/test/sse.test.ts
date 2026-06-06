@@ -35,6 +35,14 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
+  it("encodes non-default element patch namespaces", () => {
+    expect(
+      patchElements("<circle></circle>", { selector: "#icon", mode: "inner", namespace: "svg" })
+    ).toBe(
+      "event: datastar-patch-elements\ndata: selector #icon\ndata: mode inner\ndata: namespace svg\ndata: elements <circle></circle>\n\n"
+    )
+  })
+
   it("splits multiline element payloads into repeated data lines", () => {
     expect(patchElements("<div>\n  Hello\n</div>")).toBe(
       "event: datastar-patch-elements\ndata: elements <div>\ndata: elements   Hello\ndata: elements </div>\n\n"
@@ -71,6 +79,17 @@ describe("Datastar SSE encoding", () => {
   it("returns complete event strings that can be concatenated into a stream", () => {
     expect([patchElements("<div>One</div>"), patchElements("<div>Two</div>")].join("")).toBe(
       "event: datastar-patch-elements\ndata: elements <div>One</div>\n\nevent: datastar-patch-elements\ndata: elements <div>Two</div>\n\n"
+    )
+  })
+
+  it("encodes script attributes and auto-removal explicitly", () => {
+    expect(
+      executeScript("console.log('<')", {
+        attributes: { type: "module", "data-note": "A&B\"'" },
+        autoRemove: false
+      })
+    ).toBe(
+      'event: datastar-patch-elements\ndata: mode append\ndata: selector body\ndata: elements <script type="module" data-note="A&amp;B&quot;&#39;">console.log(\'<\')</script>\n\n'
     )
   })
 

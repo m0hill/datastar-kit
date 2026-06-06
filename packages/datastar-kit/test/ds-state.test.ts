@@ -9,6 +9,32 @@ describe("state helpers", () => {
     expect(form.defaults).toEqual({ name: "", email: "", errors: { name: "", email: "" } })
   })
 
+  it("does not retain mutable references to caller-owned defaults", () => {
+    const defaults = { profile: { name: "Ada" }, tags: ["admin"] }
+    const model = state(defaults)
+
+    defaults.profile.name = "Grace"
+    defaults.tags.push("editor")
+
+    expect(model.defaults).toEqual({ profile: { name: "Ada" }, tags: ["admin"] })
+  })
+
+  it("returns cloned patch and reset payloads", () => {
+    const form = state({ name: "", errors: { name: "" } })
+    const patchInput = { errors: { name: "Enter your name" } }
+
+    const patch = form.patch(patchInput)
+    patchInput.errors.name = "Changed after patch"
+
+    expect(patch).toEqual({ errors: { name: "Enter your name" } })
+
+    const reset = form.reset()
+    const resetErrors = reset.errors as { name: string }
+    resetErrors.name = "Changed reset result"
+
+    expect(form.reset()).toEqual({ name: "", errors: { name: "" } })
+  })
+
   it("creates nested signal refs from one defaults object", () => {
     const form = state({ name: "", errors: { name: "" } })
 

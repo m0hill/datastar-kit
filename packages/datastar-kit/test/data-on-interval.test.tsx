@@ -70,7 +70,13 @@ describe("data-on-interval", () => {
 
   it("renders leading and view transition modifiers", () => {
     const node = (
-      <div data-on-interval={mod(js("$count++"), { duration: "500ms", leading: true, viewTransition: true })}></div>
+      <div
+        data-on-interval={mod(js("$count++"), {
+          duration: "500ms",
+          leading: true,
+          viewTransition: true
+        })}
+      ></div>
     )
 
     expect(renderToString(node)).toBe(
@@ -81,9 +87,7 @@ describe("data-on-interval", () => {
   it("renders normal hand-written modifier syntax through JSX", () => {
     const node = <div {...{ "data-on-interval__duration.500ms": "$count++" }}></div>
 
-    expect(renderToString(node)).toBe(
-      '<div data-on-interval__duration.500ms="$count++"></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-on-interval__duration.500ms="$count++"></div>')
   })
 
   it("preserves authored attribute order for Datastar evaluation ordering", () => {

@@ -40,9 +40,7 @@ describe("data-show", () => {
       ></div>
     )
 
-    expect(renderToString(node)).toBe(
-      '<div data-show="$foo" style="display: none"></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-show="$foo" style="display: none"></div>')
   })
 
   it("preserves the el expression variable", () => {
@@ -53,9 +51,7 @@ describe("data-show", () => {
       ></div>
     )
 
-    expect(renderToString(node)).toBe(
-      '<div id="bar" data-show="el.id === &#39;bar&#39;"></div>'
-    )
+    expect(renderToString(node)).toBe('<div id="bar" data-show="el.id === &#39;bar&#39;"></div>')
   })
 
   it("serializes primitive expression values without omitting falsey values", () => {

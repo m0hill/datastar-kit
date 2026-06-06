@@ -35,6 +35,14 @@ describe("expression escape hatches", () => {
     expect(js`${count} = ${0}`.toDatastarExpression()).toBe("$count = 0")
   })
 
+  it("serializes structured JavaScript literals recursively", () => {
+    const count = signal<number>("count")
+
+    expect(
+      js`${{ count, flags: ["open", false, undefined], meta: { removed: null } }}`.toDatastarExpression()
+    ).toBe('{"count": $count, "flags": ["open", false, undefined], "meta": {"removed": null}}')
+  })
+
   it("builds regular expressions without caller-managed literal escaping", () => {
     expect(regex("a/b", "i").toDatastarExpression()).toBe('new RegExp("a/b", "i")')
     expect(js`${/a\/b/i}`.toDatastarExpression()).toBe('new RegExp("a\\\\/b", "i")')

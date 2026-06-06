@@ -14,7 +14,7 @@ describe("data-preserve-attr", () => {
     )
 
     expect(renderToString(node)).toBe(
-      "<details open data-preserve-attr=\"open\"><summary>Title</summary>Content</details>"
+      '<details open data-preserve-attr="open"><summary>Title</summary>Content</details>'
     )
   })
 

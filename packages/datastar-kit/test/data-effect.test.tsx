@@ -56,9 +56,7 @@ describe("data-effect", () => {
       ></div>
     )
 
-    expect(renderToString(node)).toBe(
-      '<div id="bar" data-effect="$foo = $prefix + el.id"></div>'
-    )
+    expect(renderToString(node)).toBe('<div id="bar" data-effect="$foo = $prefix + el.id"></div>')
   })
 
   it("serializes primitive expression values without omitting falsey values", () => {
