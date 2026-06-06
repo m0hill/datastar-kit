@@ -47,7 +47,7 @@ const modifierTargets = [
   { target: "bind", exact: ["data-bind"], prefixes: ["data-bind:"] },
   {
     target: "case",
-    exact: ["data-ref", "data-indicator"],
+    exact: ["data-ref"],
     prefixes: ["data-ref:", "data-indicator:", "data-class:"]
   },
   { target: "computed", prefixes: ["data-computed:"] },
