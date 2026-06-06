@@ -22,7 +22,10 @@ const todoState = state({
 })
 
 const TodoForm = () => (
-  <form class="panel" data-on:submit={mod(post("/todos"), { prevent: true })}>
+  <form
+    class="panel"
+    data-on:submit={mod(post("/todos"), { prevent: true })}
+  >
     <label for="todo-title">New todo</label>
     <div class="new-todo-row">
       <input
@@ -42,7 +45,10 @@ const TodoForm = () => (
 )
 
 const TodoList = ({ todos }: { readonly todos: readonly Todo[] }) => (
-  <section id="todos" class="panel">
+  <section
+    id="todos"
+    class="panel"
+  >
     <h2>{todos.length === 1 ? "1 todo" : `${todos.length} todos`}</h2>
     {todos.length === 0 ? (
       <p class="muted">No todos yet. Add one above and every open tab will update.</p>
@@ -56,7 +62,11 @@ const TodoList = ({ todos }: { readonly todos: readonly Todo[] }) => (
               data-on:change={patch(`/todos/${todo.id}/toggle`)}
             />
             <span class="todo-title">{todo.title}</span>
-            <button type="button" class="secondary" data-on:click={del(`/todos/${todo.id}`)}>
+            <button
+              type="button"
+              class="secondary"
+              data-on:click={del(`/todos/${todo.id}`)}
+            >
               Delete
             </button>
           </li>
@@ -67,7 +77,10 @@ const TodoList = ({ todos }: { readonly todos: readonly Todo[] }) => (
 )
 
 const TodosPage = ({ todos }: { readonly todos: readonly Todo[] }) => (
-  <main data-signals={mod(todoState.defaults, { ifMissing: true })} data-init={get("/live")}>
+  <main
+    data-signals={mod(todoState.defaults, { ifMissing: true })}
+    data-init={get("/live")}
+  >
     <header>
       <h1>Worker Hono live todos</h1>
       <p class="muted">
@@ -87,8 +100,14 @@ app.get("/", async (c) => {
   return reply.page(<TodosPage todos={todos} />, {
     title: "Worker Hono live todos",
     head: [
-      <meta name="viewport" content="width=device-width, initial-scale=1" />,
-      <link href="/styles.css" rel="stylesheet" />,
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+      />,
+      <link
+        href="/styles.css"
+        rel="stylesheet"
+      />,
       <script
         type="module"
         src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"

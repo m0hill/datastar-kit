@@ -39,7 +39,10 @@ const SignupPage = () => (
           Linear System / Register
         </h1>
       </div>
-      <form class="flex flex-col gap-4" data-on:submit={mod(post("/signup"), { prevent: true })}>
+      <form
+        class="flex flex-col gap-4"
+        data-on:submit={mod(post("/signup"), { prevent: true })}
+      >
         <label class="flex flex-col gap-1.5 section-label">
           Name
           <input
@@ -84,7 +87,10 @@ const SignupPage = () => (
           class="text-danger text-[13px] font-medium min-h-4"
           data-text={signupState.refs._validation.form}
         ></small>
-        <button type="submit" class="btn-primary mt-1 py-2.5">
+        <button
+          type="submit"
+          class="btn-primary mt-1 py-2.5"
+        >
           Initialize Instance
         </button>
       </form>

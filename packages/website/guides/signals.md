@@ -41,12 +41,18 @@ const SignupForm = () => (
   >
     <label>
       Name
-      <input name="name" data-bind={signup.refs.name} />
+      <input
+        name="name"
+        data-bind={signup.refs.name}
+      />
     </label>
 
     <label>
       Email
-      <input name="email" data-bind={signup.refs.email} />
+      <input
+        name="email"
+        data-bind={signup.refs.email}
+      />
     </label>
 
     <small data-text={signup.refs.errors.email} />

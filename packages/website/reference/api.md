@@ -61,7 +61,10 @@ Use native Datastar attributes directly:
   data-on:submit={mod(post("/signup"), { prevent: true })}
 >
   <input data-bind={form.refs.email} />
-  <small data-show={form.refs.errors.email} data-text={form.refs.errors.email} />
+  <small
+    data-show={form.refs.errors.email}
+    data-text={form.refs.errors.email}
+  />
 </form>
 ```
 

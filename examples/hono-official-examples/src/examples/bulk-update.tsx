@@ -32,7 +32,11 @@ let rows: BulkRow[] = initialRows.map((row) => ({
 }))
 
 const BulkTable = ({ highlightedRows }: { highlightedRows?: Set<number> } = {}) => (
-  <div id="demo" class="stack" data-signals={mod(bulkUpdateState.defaults, { ifMissing: true })}>
+  <div
+    id="demo"
+    class="stack"
+    data-signals={mod(bulkUpdateState.defaults, { ifMissing: true })}
+  >
     <table id="bulk-update">
       <thead>
         <tr>

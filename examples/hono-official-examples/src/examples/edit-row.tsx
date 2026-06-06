@@ -43,7 +43,10 @@ const DisplayRow = ({
     <td>{row.email}</td>
     <td>
       {disabled ? (
-        <button class="small info" data-attr:disabled={true}>
+        <button
+          class="small info"
+          data-attr:disabled={true}
+        >
           Edit
         </button>
       ) : (
@@ -112,7 +115,10 @@ const EditingRow = ({ index }: { index: number }) => (
 )
 
 const EditRowTable = ({ editingIndex }: { editingIndex?: number } = {}) => (
-  <div id="demo" data-signals={mod({ [fetching.name]: false }, { ifMissing: true })}>
+  <div
+    id="demo"
+    data-signals={mod({ [fetching.name]: false }, { ifMissing: true })}
+  >
     <table>
       <thead>
         <tr>
@@ -126,7 +132,11 @@ const EditRowTable = ({ editingIndex }: { editingIndex?: number } = {}) => (
           editingIndex === index ? (
             <EditingRow index={index} />
           ) : (
-            <DisplayRow row={row} index={index} disabled={editingIndex !== undefined} />
+            <DisplayRow
+              row={row}
+              index={index}
+              disabled={editingIndex !== undefined}
+            />
           )
         )}
       </tbody>

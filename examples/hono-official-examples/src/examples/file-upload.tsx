@@ -39,7 +39,10 @@ const uploadState = state({
 })
 
 const UploadResult = ({ files = [] }: { files?: readonly UploadedFile[] }) => (
-  <div id="file-upload-result" class="event-output">
+  <div
+    id="file-upload-result"
+    class="event-output"
+  >
     {files.length === 0 ? (
       <span>No files uploaded yet.</span>
     ) : (
@@ -65,7 +68,10 @@ example.get("/", () =>
       summary="Binds file inputs into Datastar signals and posts the encoded file list."
       source="https://data-star.dev/examples/file_upload"
     >
-      <div class="stack" data-signals={mod(uploadState.defaults, { ifMissing: true })}>
+      <div
+        class="stack"
+        data-signals={mod(uploadState.defaults, { ifMissing: true })}
+      >
         <label>
           <span>Pick anything less than 1 MiB</span>
           <input

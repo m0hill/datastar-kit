@@ -27,7 +27,12 @@ const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
 return reply.page(appShell, {
-  head: <script type="module" src={DATASTAR_RUNTIME} />
+  head: (
+    <script
+      type="module"
+      src={DATASTAR_RUNTIME}
+    />
+  )
 })
 ```
 

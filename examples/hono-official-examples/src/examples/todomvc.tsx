@@ -71,7 +71,10 @@ const TodoItem = ({ todo, index }: { todo: Todo; index: number }) => {
       <label for={`todo-checkbox-${index}`}>
         <span>{todo.text}</span>
       </label>
-      <button class="error small" data-on:click={del(`/examples/todomvc/${index}`)}>
+      <button
+        class="error small"
+        data-on:click={del(`/examples/todomvc/${index}`)}
+      >
         ×
       </button>
     </li>
@@ -93,8 +96,15 @@ const TodoMvc = () => {
   const allCompleted = todos.length > 0 && pending === 0
 
   return (
-    <section id="todomvc" class="todo-shell" data-init={get("/examples/todomvc/updates")}>
-      <header id="todo-header" class="todo-header">
+    <section
+      id="todomvc"
+      class="todo-shell"
+      data-init={get("/examples/todomvc/updates")}
+    >
+      <header
+        id="todo-header"
+        class="todo-header"
+      >
         <input
           type="checkbox"
           aria-label="Toggle all todos"
@@ -114,18 +124,36 @@ const TodoMvc = () => {
             : {})}
         />
       </header>
-      <ul id="todo-list" class="todo-list">
+      <ul
+        id="todo-list"
+        class="todo-list"
+      >
         {visibleTodos().map(({ todo, index }) => (
-          <TodoItem todo={todo} index={index} />
+          <TodoItem
+            todo={todo}
+            index={index}
+          />
         ))}
       </ul>
-      <div id="todo-actions" class="todo-actions">
+      <div
+        id="todo-actions"
+        class="todo-actions"
+      >
         <span>
           <strong>{pending}</strong> items pending
         </span>
-        <ModeButton value={0} label="All" />
-        <ModeButton value={1} label="Pending" />
-        <ModeButton value={2} label="Completed" />
+        <ModeButton
+          value={0}
+          label="All"
+        />
+        <ModeButton
+          value={1}
+          label="Pending"
+        />
+        <ModeButton
+          value={2}
+          label="Completed"
+        />
         <button
           class="error small"
           disabled={completed === 0}
@@ -133,7 +161,10 @@ const TodoMvc = () => {
         >
           Delete
         </button>
-        <button class="warning small" data-on:click={put("/examples/todomvc/reset")}>
+        <button
+          class="warning small"
+          data-on:click={put("/examples/todomvc/reset")}
+        >
           Reset
         </button>
       </div>

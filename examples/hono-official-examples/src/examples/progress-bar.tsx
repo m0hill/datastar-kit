@@ -14,7 +14,12 @@ const ProgressBar = ({ progress }: { progress: number }) => {
       class="progress-demo"
       data-init={get("/examples/progress_bar/updates", { openWhenHidden: true })}
     >
-      <svg width="220" height="220" viewBox="-25 -25 250 250" class="progress-ring">
+      <svg
+        width="220"
+        height="220"
+        viewBox="-25 -25 250 250"
+        class="progress-ring"
+      >
         <circle
           r="90"
           cx="100"
@@ -36,7 +41,14 @@ const ProgressBar = ({ progress }: { progress: number }) => {
           stroke-dashoffset={`${offset}px`}
           stroke-dasharray={`${circumference}px`}
         ></circle>
-        <text x="100" y="116" text-anchor="middle" fill="#16835b" font-size="44" font-weight="800">
+        <text
+          x="100"
+          y="116"
+          text-anchor="middle"
+          fill="#16835b"
+          font-size="44"
+          font-weight="800"
+        >
           {Math.round(progress)}%
         </text>
       </svg>

@@ -11,16 +11,25 @@ let count = 0
 const app = new Hono()
 
 const Count = () => (
-  <output id="count" aria-live="polite">
+  <output
+    id="count"
+    aria-live="polite"
+  >
     {count}
   </output>
 )
 
 const Counter = () => (
-  <main id="counter" data-init={get("/live")}>
+  <main
+    id="counter"
+    data-init={get("/live")}
+  >
     <h1>Hono Redis live counter</h1>
     <p>Open this page in two tabs. Clicking increment in either tab updates both through Redis.</p>
-    <button type="button" data-on:click={post("/increment")}>
+    <button
+      type="button"
+      data-on:click={post("/increment")}
+    >
       Increment
     </button>{" "}
     <Count />
@@ -30,7 +39,12 @@ const Counter = () => (
 app.get("/", () =>
   reply.page(<Counter />, {
     title: "Hono Redis live counter",
-    head: [<script type="module" src={DATASTAR_RUNTIME} />]
+    head: [
+      <script
+        type="module"
+        src={DATASTAR_RUNTIME}
+      />
+    ]
   })
 )
 

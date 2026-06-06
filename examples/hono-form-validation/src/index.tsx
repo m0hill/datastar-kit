@@ -30,7 +30,10 @@ app.get("/", () =>
           <label>
             Name
             <br />
-            <input name="name" data-bind={signup.refs.name} />
+            <input
+              name="name"
+              data-bind={signup.refs.name}
+            />
           </label>
           <br />
           <small
@@ -44,7 +47,10 @@ app.get("/", () =>
           <label>
             Email
             <br />
-            <input name="email" data-bind={signup.refs.email} />
+            <input
+              name="email"
+              data-bind={signup.refs.email}
+            />
           </label>
           <br />
           <small
@@ -60,7 +66,12 @@ app.get("/", () =>
     </main>,
     {
       title: "Datastar form validation",
-      head: <script type="module" src={DATASTAR_RUNTIME} />
+      head: (
+        <script
+          type="module"
+          src={DATASTAR_RUNTIME}
+        />
+      )
     }
   )
 )

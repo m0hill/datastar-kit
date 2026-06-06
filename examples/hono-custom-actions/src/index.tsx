@@ -11,7 +11,10 @@ app.use("/static/*", serveStatic({ root: fileURLToPath(new URL("../", import.met
 
 app.get("/", () =>
   reply.page(
-    <main id="app" data-signals={mod(dialogState.defaults, { ifMissing: true })}>
+    <main
+      id="app"
+      data-signals={mod(dialogState.defaults, { ifMissing: true })}
+    >
       <h1>Custom Datastar actions</h1>
       <p>
         This example shows custom browser actions from <code>static/datastar-actions.js</code>. The
@@ -34,7 +37,10 @@ app.get("/", () =>
             Open custom-action dialog
           </button>
         </div>
-        <output id="result" class="result">
+        <output
+          id="result"
+          class="result"
+        >
           No server confirmation yet.
         </output>
       </section>
@@ -79,7 +85,11 @@ app.get("/", () =>
             >
               Cancel
             </button>
-            <button type="button" class="danger" data-on:click={post("/confirm")}>
+            <button
+              type="button"
+              class="danger"
+              data-on:click={post("/confirm")}
+            >
               Confirm on server
             </button>
           </div>
@@ -89,8 +99,14 @@ app.get("/", () =>
     {
       title: "Datastar custom actions",
       head: [
-        <link rel="stylesheet" href="/static/styles.css" />,
-        <script type="module" src="/static/datastar-actions.js" />
+        <link
+          rel="stylesheet"
+          href="/static/styles.css"
+        />,
+        <script
+          type="module"
+          src="/static/datastar-actions.js"
+        />
       ]
     }
   )
@@ -100,7 +116,10 @@ app.post("/confirm", () =>
   reply.stream([
     event.signals(dialogState.reset()),
     event.patch(
-      <output id="result" class="result">
+      <output
+        id="result"
+        class="result"
+      >
         Confirmed at {new Date().toLocaleTimeString()}.
       </output>
     )

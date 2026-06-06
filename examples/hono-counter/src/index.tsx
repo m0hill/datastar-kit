@@ -15,14 +15,22 @@ app.get("/", () =>
   reply.page(
     <main id="counter">
       <h1>Hono counter</h1>
-      <button type="button" data-on:click={post("/increment")}>
+      <button
+        type="button"
+        data-on:click={post("/increment")}
+      >
         Increment
       </button>{" "}
       <Count />
     </main>,
     {
       title: "Hono counter",
-      head: [<script type="module" src={DATASTAR_RUNTIME} />]
+      head: [
+        <script
+          type="module"
+          src={DATASTAR_RUNTIME}
+        />
+      ]
     }
   )
 )

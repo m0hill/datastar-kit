@@ -116,7 +116,10 @@ Use sibling modes when the payload belongs next to a known element:
 
 ```tsx
 return reply.patch(
-  <p id="email-error" class="error">
+  <p
+    id="email-error"
+    class="error"
+  >
     Enter a valid email.
   </p>,
   { selector: "#email", mode: "after" }

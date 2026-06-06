@@ -64,7 +64,10 @@ let count = 0
 const Counter = () => (
   <main>
     <h1>Counter</h1>
-    <button type="button" data-on:click={post("/increment")}>
+    <button
+      type="button"
+      data-on:click={post("/increment")}
+    >
       Increment
     </button>
     <output id="count">{count}</output>
@@ -77,7 +80,12 @@ export function handle(request: Request): Response {
   if (request.method === "GET" && url.pathname === "/") {
     return reply.page(<Counter />, {
       title: "Counter",
-      head: <script type="module" src={DATASTAR_RUNTIME} />
+      head: (
+        <script
+          type="module"
+          src={DATASTAR_RUNTIME}
+        />
+      )
     })
   }
 

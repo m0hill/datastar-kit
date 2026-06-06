@@ -23,29 +23,74 @@ const randomInt = (min: number, max: number): number =>
 const color = () => colors[randomInt(0, colors.length - 1)] ?? colors[0]
 
 const ColorSvg = ({ fill = "red" }: { fill?: string }) => (
-  <svg id="circle-demo" viewBox="0 0 100 100" class="morph-svg">
-    <circle cx="50" cy="50" r="40" fill={fill}></circle>
+  <svg
+    id="circle-demo"
+    viewBox="0 0 100 100"
+    class="morph-svg"
+  >
+    <circle
+      cx="50"
+      cy="50"
+      r="40"
+      fill={fill}
+    ></circle>
   </svg>
 )
 
 const SizeSvg = ({ radius = 30 }: { radius?: number }) => (
-  <svg id="size-demo" viewBox="0 0 100 100" class="morph-svg">
-    <circle cx="50" cy="50" r={radius} fill="green"></circle>
+  <svg
+    id="size-demo"
+    viewBox="0 0 100 100"
+    class="morph-svg"
+  >
+    <circle
+      cx="50"
+      cy="50"
+      r={radius}
+      fill="green"
+    ></circle>
   </svg>
 )
 
 const ShapeSvg = ({ variant = 0 }: { variant?: number }) => (
-  <svg id="shape-demo" viewBox="0 0 100 100" class="morph-svg">
+  <svg
+    id="shape-demo"
+    viewBox="0 0 100 100"
+    class="morph-svg"
+  >
     {variant % 5 === 0 ? (
-      <circle cx="50" cy="50" r="40" fill="purple"></circle>
+      <circle
+        cx="50"
+        cy="50"
+        r="40"
+        fill="purple"
+      ></circle>
     ) : variant % 5 === 1 ? (
-      <rect x="20" y="20" width="60" height="60" fill="purple"></rect>
+      <rect
+        x="20"
+        y="20"
+        width="60"
+        height="60"
+        fill="purple"
+      ></rect>
     ) : variant % 5 === 2 ? (
-      <ellipse cx="50" cy="50" rx="45" ry="30" fill="purple"></ellipse>
+      <ellipse
+        cx="50"
+        cy="50"
+        rx="45"
+        ry="30"
+        fill="purple"
+      ></ellipse>
     ) : variant % 5 === 3 ? (
-      <polygon points="50,15 85,75 15,75" fill="purple"></polygon>
+      <polygon
+        points="50,15 85,75 15,75"
+        fill="purple"
+      ></polygon>
     ) : (
-      <polygon points="30,30 70,30 80,50 70,70 30,70 20,50" fill="purple"></polygon>
+      <polygon
+        points="30,30 70,30 80,50 70,70 30,70 20,50"
+        fill="purple"
+      ></polygon>
     )}
   </svg>
 )
@@ -64,17 +109,35 @@ const MultiSvg = ({ randomize = false }: { randomize?: boolean }) => {
       ]
 
   return (
-    <svg id="multi-demo" viewBox="0 0 100 100" class="morph-svg">
+    <svg
+      id="multi-demo"
+      viewBox="0 0 100 100"
+      class="morph-svg"
+    >
       {circles.map((circle) => (
-        <circle cx={circle.cx} cy={circle.cy} r={circle.r} fill={circle.fill}></circle>
+        <circle
+          cx={circle.cx}
+          cy={circle.cy}
+          r={circle.r}
+          fill={circle.fill}
+        ></circle>
       ))}
     </svg>
   )
 }
 
 const AnimatedSvg = ({ radius = 20, fill = "green" }: { radius?: number; fill?: string }) => (
-  <svg id="animated-demo" viewBox="0 0 100 100" class="morph-svg">
-    <circle cx="50" cy="50" r={radius} fill={fill}></circle>
+  <svg
+    id="animated-demo"
+    viewBox="0 0 100 100"
+    class="morph-svg"
+  >
+    <circle
+      cx="50"
+      cy="50"
+      r={radius}
+      fill={fill}
+    ></circle>
   </svg>
 )
 
@@ -172,7 +235,12 @@ example.get("/animated_morph", () =>
         [60, "yellow"],
         [20, "green"]
       ] as const) {
-        yield event.patch(<AnimatedSvg radius={radius} fill={fill} />)
+        yield event.patch(
+          <AnimatedSvg
+            radius={radius}
+            fill={fill}
+          />
+        )
         await new Promise((resolve) => setTimeout(resolve, 500))
       }
     })()

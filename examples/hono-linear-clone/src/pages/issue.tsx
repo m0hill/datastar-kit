@@ -92,7 +92,10 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
             data-text={issueState.refs._validation.commentBody}
           ></small>
         </label>
-        <button type="submit" class="btn-primary self-start">
+        <button
+          type="submit"
+          class="btn-primary self-start"
+        >
           Post comment
         </button>
       </form>
@@ -101,7 +104,10 @@ const IssueDetailView = (props: { detail: IssueDetail }) => {
 }
 
 const IssueOverview = (props: { issue: NonNullable<IssueRecord> }) => (
-  <div id="issue-overview" class="bg-surface border border-border p-5">
+  <div
+    id="issue-overview"
+    class="bg-surface border border-border p-5"
+  >
     <div class="flex items-center gap-2 mb-3">
       <span class="text-xs text-fg-muted select-none">›</span>
       <span class="font-mono text-[12px] text-fg-muted tracking-tight bg-surface-inset border border-border px-2 py-0.5 rounded-md">
@@ -120,7 +126,10 @@ const IssueOverview = (props: { issue: NonNullable<IssueRecord> }) => (
 )
 
 const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
-  <div id="issue-properties" class="bg-surface border border-border p-4">
+  <div
+    id="issue-properties"
+    class="bg-surface border border-border p-4"
+  >
     <h3 class="section-label mb-3">Properties</h3>
     <form
       class="flex flex-col bg-surface-inset border border-border rounded-xl px-3"
@@ -131,9 +140,15 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
     >
       <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2.5 border-b border-border-subtle">
         <label class="section-label">Status</label>
-        <select name="status" class="field">
+        <select
+          name="status"
+          class="field"
+        >
           {issueStatuses.map((status) => (
-            <option value={status.value} selected={props.issue.status === status.value}>
+            <option
+              value={status.value}
+              selected={props.issue.status === status.value}
+            >
               {status.label}
             </option>
           ))}
@@ -141,9 +156,15 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
       </div>
       <div class="grid grid-cols-[80px_1fr] items-center gap-3 py-2.5">
         <label class="section-label">Priority</label>
-        <select name="priority" class="field">
+        <select
+          name="priority"
+          class="field"
+        >
           {issuePriorities.map((priority) => (
-            <option value={priority.value} selected={props.issue.priority === priority.value}>
+            <option
+              value={priority.value}
+              selected={props.issue.priority === priority.value}
+            >
               {priority.label}
             </option>
           ))}
@@ -154,7 +175,10 @@ const IssueProperties = (props: { issue: NonNullable<IssueRecord> }) => (
 )
 
 const IssueCommentsList = (props: { comments: IssueComments }) => (
-  <div id="issue-comments" class="bg-surface border border-border p-4">
+  <div
+    id="issue-comments"
+    class="bg-surface border border-border p-4"
+  >
     <h3 class="section-label mb-3">Comments ({props.comments.length})</h3>
     {props.comments.length === 0 ? (
       <p class="text-fg-muted text-[13px]">No comments yet.</p>

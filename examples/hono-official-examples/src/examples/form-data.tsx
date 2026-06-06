@@ -3,7 +3,10 @@ import { reply, get, post } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const FormResult = ({ method, values }: { method: string; values: string[] }) => (
-  <output id="form-data-result" class="event-output">
+  <output
+    id="form-data-result"
+    class="event-output"
+  >
     {values.length === 0 ? `${method}: no values submitted` : `${method}: ${values.join(", ")}`}
   </output>
 )
@@ -28,15 +31,33 @@ example.get("/", () =>
       source="https://data-star.dev/examples/form_data"
     >
       <div class="stack">
-        <form id="myform" class="checks">
+        <form
+          id="myform"
+          class="checks"
+        >
           <label>
-            <input type="checkbox" name="checkboxes" value="foo" /> foo
+            <input
+              type="checkbox"
+              name="checkboxes"
+              value="foo"
+            />{" "}
+            foo
           </label>
           <label>
-            <input type="checkbox" name="checkboxes" value="bar" /> bar
+            <input
+              type="checkbox"
+              name="checkboxes"
+              value="bar"
+            />{" "}
+            bar
           </label>
           <label>
-            <input type="checkbox" name="checkboxes" value="baz" /> baz
+            <input
+              type="checkbox"
+              name="checkboxes"
+              value="baz"
+            />{" "}
+            baz
           </label>
           <div role="group">
             <button
@@ -62,7 +83,10 @@ example.get("/", () =>
         >
           Submit GET request from outside the form
         </button>
-        <FormResult method="Ready" values={[]} />
+        <FormResult
+          method="Ready"
+          values={[]}
+        />
       </div>
     </ExampleLayout>,
     {
@@ -73,9 +97,19 @@ example.get("/", () =>
 )
 
 example.get("/data", async (c) =>
-  reply.patch(<FormResult method="GET" values={await valuesFromRequest(c.req.raw)} />)
+  reply.patch(
+    <FormResult
+      method="GET"
+      values={await valuesFromRequest(c.req.raw)}
+    />
+  )
 )
 
 example.post("/data", async (c) =>
-  reply.patch(<FormResult method="POST" values={await valuesFromRequest(c.req.raw)} />)
+  reply.patch(
+    <FormResult
+      method="POST"
+      values={await valuesFromRequest(c.req.raw)}
+    />
+  )
 )

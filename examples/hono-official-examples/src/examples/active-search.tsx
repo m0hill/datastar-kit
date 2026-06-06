@@ -30,7 +30,10 @@ const Results = ({ search = "" }: { search?: string }) => {
     <tbody id="active-search-results">
       {filtered.length === 0 ? (
         <tr>
-          <td colSpan={2} class="muted">
+          <td
+            colSpan={2}
+            class="muted"
+          >
             No people match that search.
           </td>
         </tr>
@@ -56,7 +59,10 @@ example.get("/", () =>
       summary="Filters a server-rendered result set as the user types."
       source="https://data-star.dev/examples/active_search"
     >
-      <div class="stack" data-signals={mod(searchState.defaults, { ifMissing: true })}>
+      <div
+        class="stack"
+        data-signals={mod(searchState.defaults, { ifMissing: true })}
+      >
         <label>
           Search
           <input

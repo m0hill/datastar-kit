@@ -49,7 +49,10 @@ example.get("/", () =>
             })}
           />
         </label>
-        <p id="email-info" class="muted">
+        <p
+          id="email-info"
+          class="muted"
+        >
           The only valid email address is "test@test.com".
         </p>
         <small
@@ -92,7 +95,10 @@ example.get("/", () =>
           data-show={validationState.refs.errors.lastName}
           data-text={validationState.refs.errors.lastName}
         ></small>
-        <button class="success" data-on:click={post("/examples/inline_validation")}>
+        <button
+          class="success"
+          data-on:click={post("/examples/inline_validation")}
+        >
           Sign Up
         </button>
         <output id="inline-validation-result"></output>
@@ -140,7 +146,10 @@ example.post("/", async (c) => {
         })
       ),
       event.patch(
-        <output id="inline-validation-result" class="field-error">
+        <output
+          id="inline-validation-result"
+          class="field-error"
+        >
           Please fix the form.
         </output>
       )
@@ -150,7 +159,10 @@ example.post("/", async (c) => {
   return reply.stream([
     event.signals(validationState.reset()),
     event.patch(
-      <output id="inline-validation-result" class="success-text">
+      <output
+        id="inline-validation-result"
+        class="success-text"
+      >
         Signed up successfully.
       </output>
     )

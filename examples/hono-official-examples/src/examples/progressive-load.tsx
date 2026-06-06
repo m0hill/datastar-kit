@@ -3,7 +3,10 @@ import { event, reply, get, signal } from "datastar-kit"
 import { ExampleLayout, pageHead } from "../layout.js"
 
 const LoadShell = () => (
-  <div id="Load" class="progressive-content">
+  <div
+    id="Load"
+    class="progressive-content"
+  >
     <header id="header"></header>
     <section id="article"></section>
     <section id="comments"></section>
@@ -33,7 +36,10 @@ const Comments = () => (
   <section id="comments">
     <h5>Comments</h5>
     <p>This comments section is also filled progressively.</p>
-    <ul id="comments-list" class="comments-list"></ul>
+    <ul
+      id="comments-list"
+      class="comments-list"
+    ></ul>
   </section>
 )
 
@@ -71,7 +77,10 @@ example.get("/", () =>
           >
             Load
           </button>
-          <span class="muted" data-show={progressiveLoad}>
+          <span
+            class="muted"
+            data-show={progressiveLoad}
+          >
             Loading sections...
           </span>
         </div>
@@ -103,10 +112,16 @@ example.get("/updates", () =>
 
       for (const [index, name] of ["Ada Lovelace", "Grace Hopper", "Katherine Johnson"].entries()) {
         await new Promise((resolve) => setTimeout(resolve, 200))
-        yield event.patch(<Comment id={index + 1} name={name} />, {
-          selector: "#comments-list",
-          mode: "append"
-        })
+        yield event.patch(
+          <Comment
+            id={index + 1}
+            name={name}
+          />,
+          {
+            selector: "#comments-list",
+            mode: "append"
+          }
+        )
       }
     })()
   )

@@ -33,7 +33,12 @@ example.get("/", () =>
     </ExampleLayout>,
     {
       title: "Sortable - Datastar Kit",
-      head: pageHead(<script type="module" src="/public/sortable.js" />)
+      head: pageHead(
+        <script
+          type="module"
+          src="/public/sortable.js"
+        />
+      )
     }
   )
 )

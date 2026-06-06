@@ -14,7 +14,10 @@ app.use("/static/*", serveStatic({ root: fileURLToPath(new URL("../", import.met
 
 app.get("/", () =>
   reply.page(
-    <main id="app" data-signals={mod({ modalOpen: false }, { ifMissing: true })}>
+    <main
+      id="app"
+      data-signals={mod({ modalOpen: false }, { ifMissing: true })}
+    >
       <h1>Datastar modal</h1>
       <p>
         This example patches a native <code>&lt;dialog&gt;</code> into a modal slot from a Hono
@@ -23,21 +26,34 @@ app.get("/", () =>
       </p>
 
       <div class="row">
-        <button type="button" class="primary" data-on:click={get("/modal")}>
+        <button
+          type="button"
+          class="primary"
+          data-on:click={get("/modal")}
+        >
           Open server-rendered modal
         </button>
       </div>
 
       <div id="modal-slot"></div>
-      <p id="last-action" class="result">
+      <p
+        id="last-action"
+        class="result"
+      >
         No modal action yet.
       </p>
     </main>,
     {
       title: "Datastar Hono modal",
       head: [
-        <link rel="stylesheet" href="/static/styles.css" />,
-        <script type="module" src={DATASTAR_RUNTIME} />
+        <link
+          rel="stylesheet"
+          href="/static/styles.css"
+        />,
+        <script
+          type="module"
+          src={DATASTAR_RUNTIME}
+        />
       ]
     }
   )
@@ -60,10 +76,18 @@ app.get("/modal", () =>
             Escape, backdrop clicks, and buttons all stay in sync.
           </p>
           <div class="modal-actions">
-            <button type="button" class="secondary" data-on:click={js`${openModal} = false`}>
+            <button
+              type="button"
+              class="secondary"
+              data-on:click={js`${openModal} = false`}
+            >
               Cancel
             </button>
-            <button type="button" class="danger" data-on:click={post("/modal/confirm")}>
+            <button
+              type="button"
+              class="danger"
+              data-on:click={post("/modal/confirm")}
+            >
               Confirm
             </button>
           </div>
@@ -79,7 +103,10 @@ app.post("/modal/confirm", () =>
   reply.stream([
     event.signals({ modalOpen: false }),
     event.patch(
-      <p id="last-action" class="result">
+      <p
+        id="last-action"
+        class="result"
+      >
         Confirmed at {new Date().toLocaleTimeString()}.
       </p>
     )

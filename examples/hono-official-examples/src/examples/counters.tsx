@@ -13,13 +13,21 @@ const userClicks = (c: Parameters<typeof getCookie>[0]): number => {
 }
 
 const GlobalButton = () => (
-  <button id="global" class="info" data-on:click={patch("/examples/counters/global")}>
+  <button
+    id="global"
+    class="info"
+    data-on:click={patch("/examples/counters/global")}
+  >
     Increment Global: {globalClicks}
   </button>
 )
 
 const UserButton = ({ count }: { count: number }) => (
-  <button id="user" class="success" data-on:click={patch("/examples/counters/user")}>
+  <button
+    id="user"
+    class="success"
+    data-on:click={patch("/examples/counters/user")}
+  >
     Increment User: {count}
   </button>
 )
@@ -34,7 +42,10 @@ example.get("/", (c) =>
       summary="Shows a server-global counter streamed with SSE and a cookie-backed per-user counter."
       source="https://data-star.dev/examples/templ_counter"
     >
-      <div class="actions" data-init={get("/examples/counters/updates")}>
+      <div
+        class="actions"
+        data-init={get("/examples/counters/updates")}
+      >
         <GlobalButton />
         <UserButton count={userClicks(c)} />
       </div>

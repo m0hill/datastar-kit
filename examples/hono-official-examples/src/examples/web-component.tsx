@@ -15,12 +15,21 @@ example.get("/", () =>
       summary="Keeps a custom element attribute synchronized from a Datastar signal."
       source="https://data-star.dev/examples/web_component"
     >
-      <div class="stack" data-signals={mod(componentState.defaults, { ifMissing: true })}>
+      <div
+        class="stack"
+        data-signals={mod(componentState.defaults, { ifMissing: true })}
+      >
         <label>
           Reversed
-          <input type="text" data-bind={componentState.refs._name} />
+          <input
+            type="text"
+            data-bind={componentState.refs._name}
+          />
         </label>
-        <span data-signals={{ [reversed.name]: "" }} data-text={reversed}></span>
+        <span
+          data-signals={{ [reversed.name]: "" }}
+          data-text={reversed}
+        ></span>
         <reverse-component
           data-on:reverse={js`${reversed} = evt.detail.value`}
           data-attr:name={componentState.refs._name}
@@ -29,7 +38,12 @@ example.get("/", () =>
     </ExampleLayout>,
     {
       title: "Web Component - Datastar Kit",
-      head: pageHead(<script type="module" src="/public/reverse-component.js" />)
+      head: pageHead(
+        <script
+          type="module"
+          src="/public/reverse-component.js"
+        />
+      )
     }
   )
 )

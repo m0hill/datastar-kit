@@ -13,7 +13,10 @@ let rows = initialRows.map((row) => ({ name: row.name, email: row.email }))
 const fetching = local<boolean>("fetching")
 
 const DeleteRowTable = () => (
-  <div id="demo" data-signals={mod({ [fetching.name]: false }, { ifMissing: true })}>
+  <div
+    id="demo"
+    data-signals={mod({ [fetching.name]: false }, { ifMissing: true })}
+  >
     <table>
       <thead>
         <tr>
@@ -25,7 +28,10 @@ const DeleteRowTable = () => (
       <tbody>
         {rows.length === 0 ? (
           <tr>
-            <td colSpan={3} class="muted">
+            <td
+              colSpan={3}
+              class="muted"
+            >
               No rows remain.
             </td>
           </tr>

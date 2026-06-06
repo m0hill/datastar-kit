@@ -26,7 +26,12 @@ example.get("/", () =>
     </ExampleLayout>,
     {
       title: "Custom Event - Datastar Kit",
-      head: pageHead(<script type="module" src="/public/custom-event.js" />)
+      head: pageHead(
+        <script
+          type="module"
+          src="/public/custom-event.js"
+        />
+      )
     }
   )
 )

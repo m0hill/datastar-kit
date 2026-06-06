@@ -31,7 +31,10 @@ const LoginPage = () => (
           Linear System / Login
         </h1>
       </div>
-      <form class="flex flex-col gap-4" data-on:submit={mod(post("/login"), { prevent: true })}>
+      <form
+        class="flex flex-col gap-4"
+        data-on:submit={mod(post("/login"), { prevent: true })}
+      >
         <label class="flex flex-col gap-1.5 section-label">
           Username
           <input
@@ -63,7 +66,10 @@ const LoginPage = () => (
           class="text-danger text-[13px] font-medium min-h-4"
           data-text={loginState.refs._validation.form}
         ></small>
-        <button type="submit" class="btn-primary mt-1 py-2.5">
+        <button
+          type="submit"
+          class="btn-primary mt-1 py-2.5"
+        >
           Proceed Securely
         </button>
       </form>

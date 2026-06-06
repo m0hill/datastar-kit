@@ -29,14 +29,20 @@ const TodoList = (props: { todos: Todo[] }) => {
   const remaining = props.todos.filter((todo) => !todo.completed).length
 
   return (
-    <section id="todos" aria-label="Todos">
+    <section
+      id="todos"
+      aria-label="Todos"
+    >
       <h2>Todos</h2>
       {props.todos.length === 0 ? (
         <p id="empty-state">No todos yet.</p>
       ) : (
         <ul>
           {props.todos.map((todo) => (
-            <li id={`todo-${todo.id}`} data-completed={todo.completed}>
+            <li
+              id={`todo-${todo.id}`}
+              data-completed={todo.completed}
+            >
               <span>{todo.completed ? <s>{todo.title}</s> : todo.title}</span>{" "}
               <button
                 type="button"
@@ -45,7 +51,10 @@ const TodoList = (props: { todos: Todo[] }) => {
               >
                 {todo.completed ? "Reopen" : "Complete"}
               </button>{" "}
-              <button type="button" data-on:click={post(`/todos/${todo.id}/delete`)}>
+              <button
+                type="button"
+                data-on:click={post(`/todos/${todo.id}/delete`)}
+              >
                 Delete
               </button>
             </li>
@@ -62,10 +71,17 @@ const TodoList = (props: { todos: Todo[] }) => {
 const TodoPage = (props: { todos: Todo[] }) => (
   <main data-signals={mod(todoForm.defaults, { ifMissing: true })}>
     <h1>Hono todos</h1>
-    <form id="todo-form" data-on:submit={mod(post("/todos"), { prevent: true })}>
+    <form
+      id="todo-form"
+      data-on:submit={mod(post("/todos"), { prevent: true })}
+    >
       <label>
         New todo
-        <input name="title" autocomplete="off" data-bind={todoForm.refs.title} />
+        <input
+          name="title"
+          autocomplete="off"
+          data-bind={todoForm.refs.title}
+        />
       </label>
       <button type="submit">Add todo</button>
       <small
@@ -84,7 +100,12 @@ export const app = new Hono()
 app.get("/", () =>
   reply.page(<TodoPage todos={todos} />, {
     title: "Hono todos",
-    head: <script type="module" src={DATASTAR_RUNTIME} />
+    head: (
+      <script
+        type="module"
+        src={DATASTAR_RUNTIME}
+      />
+    )
   })
 )
 

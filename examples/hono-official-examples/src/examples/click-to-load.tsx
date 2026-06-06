@@ -32,7 +32,10 @@ const AgentRows = ({ offset, limit }: { offset: number; limit: number }) => (
 )
 
 const EnoughClicking = () => (
-  <div id="demo" class="stack">
+  <div
+    id="demo"
+    class="stack"
+  >
     <p>That’s enough clicking for you.</p>
     <iframe
       class="wide"
@@ -56,7 +59,10 @@ example.get("/", () =>
       summary="Requests the next slice of table rows and patches the body in place."
       source="https://data-star.dev/examples/click_to_load"
     >
-      <div id="demo" data-signals={mod(loadState.defaults, { ifMissing: true })}>
+      <div
+        id="demo"
+        data-signals={mod(loadState.defaults, { ifMissing: true })}
+      >
         <table>
           <thead>
             <tr>
@@ -66,7 +72,10 @@ example.get("/", () =>
             </tr>
           </thead>
           <tbody id="agents">
-            <AgentRows offset={0} limit={pageSize} />
+            <AgentRows
+              offset={0}
+              limit={pageSize}
+            />
           </tbody>
         </table>
         <button
@@ -96,9 +105,15 @@ example.get("/more", async (c) => {
 
   return reply.stream([
     event.signals(loadState.patch({ offset: nextOffset, limit })),
-    event.patch(<AgentRows offset={nextOffset} limit={limit} />, {
-      selector: "#agents",
-      mode: "append"
-    })
+    event.patch(
+      <AgentRows
+        offset={nextOffset}
+        limit={limit}
+      />,
+      {
+        selector: "#agents",
+        mode: "append"
+      }
+    )
   ])
 })

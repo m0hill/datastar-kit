@@ -63,15 +63,27 @@ const ContactForm = () => (
   >
     <label>
       Name
-      <input name="name" data-bind={contact.refs.name} />
+      <input
+        name="name"
+        data-bind={contact.refs.name}
+      />
     </label>
-    <small data-text={contact.refs.errors.name} data-show={contact.refs.errors.name} />
+    <small
+      data-text={contact.refs.errors.name}
+      data-show={contact.refs.errors.name}
+    />
 
     <label>
       Email
-      <input name="email" data-bind={contact.refs.email} />
+      <input
+        name="email"
+        data-bind={contact.refs.email}
+      />
     </label>
-    <small data-text={contact.refs.errors.email} data-show={contact.refs.errors.email} />
+    <small
+      data-text={contact.refs.errors.email}
+      data-show={contact.refs.errors.email}
+    />
 
     <button type="submit">Send</button>
   </form>

@@ -23,7 +23,10 @@ Then write synchronous view functions:
 import { renderToString, post } from "datastar-kit"
 
 const SaveButton = () => (
-  <button type="button" data-on:click={post("/settings/save")}>
+  <button
+    type="button"
+    data-on:click={post("/settings/save")}
+  >
     Save
   </button>
 )
@@ -51,7 +54,10 @@ const LoginForm = () => (
     data-signals={mod(login.defaults, { ifMissing: true })}
     data-on:submit={mod(post("/login"), { prevent: true })}
   >
-    <input type="password" data-bind={login.refs.password} />
+    <input
+      type="password"
+      data-bind={login.refs.password}
+    />
     <small
       data-show={login.refs._validation.password}
       data-text={login.refs._validation.password}
@@ -70,7 +76,10 @@ For example, `data-preserve-attr` expects a space-separated list of HTML attribu
 
 ```tsx
 import { preserve } from "datastar-kit"
-;<details open data-preserve-attr={preserve("open", "class")}>
+;<details
+  open
+  data-preserve-attr={preserve("open", "class")}
+>
   <summary>Filters</summary>
   ...
 </details>
@@ -95,7 +104,12 @@ const ProjectsPage = (props: { projects: Project[] }) => (
 
 return reply.page(<ProjectsPage projects={projects} />, {
   title: "Projects",
-  head: <script type="module" src={DATASTAR_RUNTIME} />
+  head: (
+    <script
+      type="module"
+      src={DATASTAR_RUNTIME}
+    />
+  )
 })
 ```
 
@@ -190,7 +204,10 @@ export async function dashboardRoute(request: Request): Promise<Response> {
   const data = await loadDashboard(request)
 
   return reply.page(
-    <DashboardLayout title="Dashboard" sidebar={<Sidebar user={data.user} />}>
+    <DashboardLayout
+      title="Dashboard"
+      sidebar={<Sidebar user={data.user} />}
+    >
       <ProjectList projects={data.projects} />
       <Notifications items={data.notifications} />
     </DashboardLayout>,
@@ -211,7 +228,10 @@ If a region is slow or live, render a shell and patch that region separately:
 ```tsx
 const DashboardShell = () => (
   <DashboardLayout title="Dashboard">
-    <section id="stats" data-init={get("/dashboard/stats")}>
+    <section
+      id="stats"
+      data-init={get("/dashboard/stats")}
+    >
       Loading stats...
     </section>
   </DashboardLayout>
@@ -243,7 +263,10 @@ Use `renderToString(...)` when you need serialized HTML outside a response helpe
 import { renderToString, post } from "datastar-kit"
 
 const html = renderToString(
-  <button type="button" data-on:click={post("/save")}>
+  <button
+    type="button"
+    data-on:click={post("/save")}
+  >
     Save
   </button>
 )

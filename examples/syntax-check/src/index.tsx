@@ -87,7 +87,10 @@ export const DatastarSyntaxCheck = () => (
           debounce: { duration: "300ms", leading: true }
         })}
       />
-      <small data-show={form.refs.errors.email} data-text={form.refs.errors.email}></small>
+      <small
+        data-show={form.refs.errors.email}
+        data-text={form.refs.errors.email}
+      ></small>
 
       <label htmlFor="search">Search</label>
       <input
@@ -140,7 +143,10 @@ export const DatastarSyntaxCheck = () => (
       Third-party widget root; descendants can still be processed.
     </div>
 
-    <details open data-preserve-attr={preserve("open", "class")}>
+    <details
+      open
+      data-preserve-attr={preserve("open", "class")}
+    >
       <summary>Debug signals</summary>
       <DebugPanel />
     </details>

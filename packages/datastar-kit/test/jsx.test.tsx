@@ -7,7 +7,10 @@ import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 describe("automatic JSX runtime", () => {
   it("renders JSX through the same HTML renderer", () => {
     const node = (
-      <button type="button" disabled>
+      <button
+        type="button"
+        disabled
+      >
         Save
       </button>
     )
@@ -26,7 +29,10 @@ describe("automatic JSX runtime", () => {
         data-signals={mod({ password: "", _validation: { password: "" } }, { ifMissing: true })}
         data-on:submit={mod(post("/login"), { prevent: true })}
       >
-        <input type="password" data-bind={login.refs.password} />
+        <input
+          type="password"
+          data-bind={login.refs.password}
+        />
         <small
           data-show={login.refs._validation.password}
           data-text={login.refs._validation.password}
@@ -44,7 +50,10 @@ describe("automatic JSX runtime", () => {
     const panel = signal<HTMLElement, "panel">("panel")
 
     const node = (
-      <button data-indicator={fetching} data-ref={panel}>
+      <button
+        data-indicator={fetching}
+        data-ref={panel}
+      >
         Save
       </button>
     )
@@ -70,7 +79,12 @@ describe("automatic JSX runtime", () => {
   })
 
   it("renders explicit modifier wrappers as Datastar attribute suffixes", () => {
-    const node = <input type="search" data-on:input={mod(post("/search"), { debounce: "200ms" })} />
+    const node = (
+      <input
+        type="search"
+        data-on:input={mod(post("/search"), { debounce: "200ms" })}
+      />
+    )
 
     expect(renderToString(node)).toBe(
       '<input type="search" data-on:input__debounce.200ms="@post(&quot;/search&quot;)">'
@@ -139,7 +153,10 @@ describe("automatic JSX runtime", () => {
 
   it("keeps string Datastar attribute values raw", () => {
     const node = (
-      <button data-on:click="@post('/save')" data-text="$message">
+      <button
+        data-on:click="@post('/save')"
+        data-text="$message"
+      >
         Save
       </button>
     )
@@ -234,10 +251,17 @@ describe("automatic JSX runtime", () => {
         draggable={false}
         contenteditable={false}
       >
-        <button type="button" disabled={false} autofocus>
+        <button
+          type="button"
+          disabled={false}
+          autofocus
+        >
           Save
         </button>
-        <div data-ignore={false} data-ref:panel></div>
+        <div
+          data-ignore={false}
+          data-ref:panel
+        ></div>
       </div>
     )
 
@@ -259,7 +283,12 @@ describe("automatic JSX runtime", () => {
   })
 
   it("renders data-preserve-attr helper output", () => {
-    const node = <details open data-preserve-attr={preserve("open", "class")}></details>
+    const node = (
+      <details
+        open
+        data-preserve-attr={preserve("open", "class")}
+      ></details>
+    )
 
     expect(renderToString(node)).toBe('<details open data-preserve-attr="open class"></details>')
   })

@@ -41,7 +41,10 @@ const Loader = () => (
 )
 
 const EnoughScrolling = () => (
-  <div id="demo" class="stack">
+  <div
+    id="demo"
+    class="stack"
+  >
     <p>That’s enough scrolling for you.</p>
     <iframe
       class="wide"
@@ -86,7 +89,10 @@ example.get("/", () =>
           </thead>
           <tbody id="agents"></tbody>
         </table>
-        <div id="infinite-scroll-loader" class="loading-row">
+        <div
+          id="infinite-scroll-loader"
+          class="loading-row"
+        >
           Loading...
         </div>
       </div>

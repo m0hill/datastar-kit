@@ -43,7 +43,10 @@ const projects: Project[] = [
 ]
 
 const DashboardLayout = (props: { title: string; toolbar?: HtmlChild; children?: HtmlChild }) => (
-  <div class="shell" data-signals={mod(projectForm.defaults, { ifMissing: true })}>
+  <div
+    class="shell"
+    data-signals={mod(projectForm.defaults, { ifMissing: true })}
+  >
     <aside class="sidebar">
       <strong>Datastar Kit</strong>
       <nav>
@@ -70,19 +73,31 @@ const DashboardLayout = (props: { title: string; toolbar?: HtmlChild; children?:
 const pageOptions = (title: string) => ({
   title,
   head: [
-    <script type="module" src={DATASTAR_RUNTIME} />,
-    <link rel="stylesheet" href="/public/styles.css" />
+    <script
+      type="module"
+      src={DATASTAR_RUNTIME}
+    />,
+    <link
+      rel="stylesheet"
+      href="/public/styles.css"
+    />
   ]
 })
 
 const ProjectList = (props: { projects: Project[] }) => (
-  <section id="project-list" class="card">
+  <section
+    id="project-list"
+    class="card"
+  >
     <h2>Projects</h2>
     {props.projects.length === 0 ? (
       <p class="muted">No projects yet.</p>
     ) : (
       props.projects.map((project) => (
-        <article class="project" id={`project-${project.id}`}>
+        <article
+          class="project"
+          id={`project-${project.id}`}
+        >
           <div>
             <a href={`/projects/${project.id}`}>{project.title}</a>
             <p class="muted">{project.summary}</p>
@@ -101,8 +116,14 @@ export const app = new Elysia()
       <DashboardLayout
         title="Projects"
         toolbar={
-          <form class="toolbar" data-on:submit={mod(post("/projects"), { prevent: true })}>
-            <input placeholder="New project title" data-bind={projectForm.refs.title} />
+          <form
+            class="toolbar"
+            data-on:submit={mod(post("/projects"), { prevent: true })}
+          >
+            <input
+              placeholder="New project title"
+              data-bind={projectForm.refs.title}
+            />
             <button>Add project</button>
           </form>
         }

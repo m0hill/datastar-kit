@@ -8,7 +8,10 @@ Use native Datastar event attributes with a fetch action such as `get(...)` or `
 
 ```tsx
 import { post } from "datastar-kit"
-;<button type="button" data-on:click={post("/todos/add")}>
+;<button
+  type="button"
+  data-on:click={post("/todos/add")}
+>
   Add todo
 </button>
 ```
@@ -132,7 +135,10 @@ import { mod, post } from "datastar-kit"
 ;<form
   data-on:submit={mod(post("/upload", { contentType: "form", selector: null }), { prevent: true })}
 >
-  <input type="file" name="avatar" />
+  <input
+    type="file"
+    name="avatar"
+  />
   <button>Upload</button>
 </form>
 ```

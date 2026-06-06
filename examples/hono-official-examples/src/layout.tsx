@@ -32,8 +32,14 @@ const examples = [
 ] as const
 
 export const pageHead = (extra?: HtmlChild | HtmlChild[]): HtmlChild[] => [
-  <meta name="viewport" content="width=device-width, initial-scale=1" />,
-  <link rel="stylesheet" href="/public/styles.css" />,
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  />,
+  <link
+    rel="stylesheet"
+    href="/public/styles.css"
+  />,
   <script
     type="module"
     src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
@@ -48,7 +54,10 @@ export const Shell = (props: {
 }): JSX.Element => (
   <main class="shell">
     <aside class="sidebar">
-      <a class="brand" href="/">
+      <a
+        class="brand"
+        href="/"
+      >
         Datastar Kit Examples
       </a>
       <nav>
@@ -65,7 +74,10 @@ export const Shell = (props: {
     <section class="content">
       <header class="page-header">
         <div>
-          <a class="back-link" href="/">
+          <a
+            class="back-link"
+            href="/"
+          >
             Index
           </a>
           <h1 id="page-title">{props.title}</h1>
@@ -83,10 +95,17 @@ export const ExampleLayout = (props: {
   source: string
   children: HtmlChild | HtmlChild[]
 }): JSX.Element => (
-  <Shell title={props.title} activeSlug={props.slug}>
+  <Shell
+    title={props.title}
+    activeSlug={props.slug}
+  >
     <section class="intro">
       <p>{props.summary}</p>
-      <a href={props.source} target="_blank" rel="noreferrer">
+      <a
+        href={props.source}
+        target="_blank"
+        rel="noreferrer"
+      >
         Official example
       </a>
     </section>

@@ -21,18 +21,30 @@ example.get("/", () =>
           >
             Alert using an action
           </button>
-          <button class="warning" type="button" data-alert={js`${"Hello from an attribute"}`}>
+          <button
+            class="warning"
+            type="button"
+            data-alert={js`${"Hello from an attribute"}`}
+          >
             Alert using an attribute
           </button>
         </div>
-        <output id="custom-plugin-output" class="event-output">
+        <output
+          id="custom-plugin-output"
+          class="event-output"
+        >
           No plugin has run yet.
         </output>
       </div>
     </ExampleLayout>,
     {
       title: "Custom Plugin - Datastar Kit",
-      head: pageHead(<script type="module" src="/public/custom-plugin.js" />)
+      head: pageHead(
+        <script
+          type="module"
+          src="/public/custom-plugin.js"
+        />
+      )
     }
   )
 )

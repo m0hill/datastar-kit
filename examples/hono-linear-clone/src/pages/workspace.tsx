@@ -77,7 +77,10 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
         <span class="text-xs font-semibold text-fg-muted select-none">π</span>
         <span class="text-xs font-bold tracking-wider text-fg truncate">Linear Clone</span>
       </div>
-      <span class="w-2 h-2 rounded-full bg-success" title="System operational"></span>
+      <span
+        class="w-2 h-2 rounded-full bg-success"
+        title="System operational"
+      ></span>
     </div>
 
     <div class="p-3 border-b border-border-subtle shrink-0">
@@ -134,15 +137,25 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
               data-bind={workspaceState.refs.projectDescription}
             ></textarea>
           </label>
-          <button type="submit" class="btn-primary">
+          <button
+            type="submit"
+            class="btn-primary"
+          >
             Create project
           </button>
         </form>
       </div>
     </div>
 
-    <form method="post" action="/logout" class="p-3 border-t border-border bg-surface">
-      <button type="submit" class="btn w-full">
+    <form
+      method="post"
+      action="/logout"
+      class="p-3 border-t border-border bg-surface"
+    >
+      <button
+        type="submit"
+        class="btn w-full"
+      >
         Sign out
       </button>
     </form>
@@ -213,7 +226,10 @@ const AssigneeCell = ({ name }: { name: string | null }) => {
 }
 
 export const Board = (props: { issues: Issue[] }) => (
-  <section id="board" class="overflow-hidden rounded-lg border border-border bg-surface-card">
+  <section
+    id="board"
+    class="overflow-hidden rounded-lg border border-border bg-surface-card"
+  >
     <div class="hidden md:grid grid-cols-[40px_100px_1fr_100px_60px_120px] gap-3 px-4 py-2 bg-surface border-b border-border text-[11px] font-bold tracking-widest uppercase text-fg-muted">
       <span></span>
       <span>ID</span>
@@ -256,7 +272,11 @@ export const Board = (props: { issues: Issue[] }) => (
 )
 
 export const IssueProjectSelect = (props: { projects: Project[] }) => (
-  <select id="issue-project-select" class="field" data-bind={workspaceState.refs.projectId}>
+  <select
+    id="issue-project-select"
+    class="field"
+    data-bind={workspaceState.refs.projectId}
+  >
     <option value="">Select project</option>
     {props.projects.map((project) => (
       <option value={project.id}>
@@ -329,7 +349,10 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
       <label class="flex flex-col gap-1.5 section-label">
         Status
-        <select class="field" data-bind={workspaceState.refs.issueStatus}>
+        <select
+          class="field"
+          data-bind={workspaceState.refs.issueStatus}
+        >
           {issueStatuses.map((status) => (
             <option value={status.value}>{status.label}</option>
           ))}
@@ -337,7 +360,10 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       </label>
       <label class="flex flex-col gap-1.5 section-label">
         Priority
-        <select class="field" data-bind={workspaceState.refs.issuePriority}>
+        <select
+          class="field"
+          data-bind={workspaceState.refs.issuePriority}
+        >
           {issuePriorities.map((priority) => (
             <option value={priority.value}>{priority.label}</option>
           ))}
@@ -352,7 +378,10 @@ const IssueModalForm = (props: { projects: Project[] }) => (
       >
         Cancel
       </button>
-      <button type="submit" class="btn-primary">
+      <button
+        type="submit"
+        class="btn-primary"
+      >
         Create
       </button>
     </div>
@@ -382,7 +411,10 @@ const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
     data-init={get("/workspace/live")}
   >
     <div class="hidden lg:flex">
-      <Sidebar user={props.user} projects={props.projects} />
+      <Sidebar
+        user={props.user}
+        projects={props.projects}
+      />
     </div>
     <section class="overflow-hidden min-w-0 flex flex-col">
       <header class="h-15 border-b border-border flex items-center justify-between px-6 bg-surface/40 backdrop-blur-md shrink-0">
@@ -390,7 +422,11 @@ const Page = (props: { user: User; projects: Project[]; issues: Issue[] }) => (
           <span class="text-xs text-fg-muted select-none">›</span>
           <h2 class="text-[13px] font-semibold uppercase tracking-wide text-fg">Issues</h2>
         </div>
-        <button type="button" class="btn-primary" data-on:click={get("/workspace/modal/issue")}>
+        <button
+          type="button"
+          class="btn-primary"
+          data-on:click={get("/workspace/modal/issue")}
+        >
           + Create Issue
         </button>
       </header>
@@ -406,10 +442,17 @@ export const registerWorkspacePage = (app: App) => {
   app.get("/workspace", async (c) => {
     const user = c.get("user")
     const [projects, issues] = await Promise.all([readProjects(), readIssues()])
-    return reply.page(<Page user={user} projects={projects} issues={issues} />, {
-      title: "Linear clone",
-      head: pageHead
-    })
+    return reply.page(
+      <Page
+        user={user}
+        projects={projects}
+        issues={issues}
+      />,
+      {
+        title: "Linear clone",
+        head: pageHead
+      }
+    )
   })
 
   app.get("/workspace/live", async (c) => {
@@ -418,7 +461,12 @@ export const registerWorkspacePage = (app: App) => {
     const render = async () => {
       const [projects, issues] = await Promise.all([readProjects(), readIssues()])
       return [
-        event.patch(<Sidebar user={user} projects={projects} />),
+        event.patch(
+          <Sidebar
+            user={user}
+            projects={projects}
+          />
+        ),
         event.patch(<Board issues={issues} />),
         event.patch(<IssueProjectSelect projects={projects} />)
       ]
@@ -477,7 +525,12 @@ export const registerWorkspacePage = (app: App) => {
     const projects = await readProjects()
     return reply.stream([
       event.signals(workspaceState.reset()),
-      event.patch(<Sidebar user={user} projects={projects} />),
+      event.patch(
+        <Sidebar
+          user={user}
+          projects={projects}
+        />
+      ),
       event.patch(<IssueProjectSelect projects={projects} />)
     ])
   })

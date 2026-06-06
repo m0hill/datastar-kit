@@ -19,7 +19,10 @@ example.get("/", () =>
       summary="Records signal patches with Datastar's signal-patch event hooks."
       source="https://data-star.dev/examples/on_signal_patch"
     >
-      <div class="stack" data-signals={mod(patchState.defaults, { ifMissing: true })}>
+      <div
+        class="stack"
+        data-signals={mod(patchState.defaults, { ifMissing: true })}
+      >
         <div class="actions">
           <button
             data-on:click={js`${patchState.refs.message} = ${"Updated: "} + performance.now().toFixed(2)`}

@@ -38,7 +38,10 @@ const ItemRow = (props: { item: Item }) => (
 )
 
 const ItemList = (props: { items: Item[] }) => (
-  <ul id="item-list" class="mt-4 grid gap-2">
+  <ul
+    id="item-list"
+    class="mt-4 grid gap-2"
+  >
     {props.items.length === 0 ? (
       <li
         id="empty-state"
@@ -47,7 +50,12 @@ const ItemList = (props: { items: Item[] }) => (
         No matching items.
       </li>
     ) : (
-      props.items.map((item) => <ItemRow key={item.id} item={item} />)
+      props.items.map((item) => (
+        <ItemRow
+          key={item.id}
+          item={item}
+        />
+      ))
     )}
   </ul>
 )
@@ -81,7 +89,10 @@ const routes: Route[] = [
                 data-on:input={mod(get("/items/search"), { debounce: "200ms" })}
               />
 
-              <form class="mt-3 flex gap-2" data-on:submit={mod(post("/items"), { prevent: true })}>
+              <form
+                class="mt-3 flex gap-2"
+                data-on:submit={mod(post("/items"), { prevent: true })}
+              >
                 <input
                   class="min-w-0 flex-1 rounded-lg border border-slate-300 px-4 py-3 text-slate-950 outline-none focus:border-blue-600"
                   placeholder="New item"
@@ -102,8 +113,15 @@ const routes: Route[] = [
         {
           title: "Deno searchable list",
           head: [
-            <script key="datastar" type="module" src={DATASTAR_RUNTIME} />,
-            <script key="tailwind" src="https://cdn.tailwindcss.com" />
+            <script
+              key="datastar"
+              type="module"
+              src={DATASTAR_RUNTIME}
+            />,
+            <script
+              key="tailwind"
+              src="https://cdn.tailwindcss.com"
+            />
           ]
         }
       )
