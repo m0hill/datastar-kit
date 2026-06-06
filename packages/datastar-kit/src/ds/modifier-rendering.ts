@@ -7,10 +7,7 @@ interface RenderedDatastarModifier {
   readonly suffix: string
 }
 
-const compatibleModifierTargets: Record<
-  DatastarModifierKey,
-  readonly DatastarModifierTarget[]
-> = {
+const compatibleModifierTargets: Record<DatastarModifierKey, readonly DatastarModifierTarget[]> = {
   capture: ["on"],
   case: ["bind", "case", "computed", "on", "signals"],
   debounce: ["on", "intersect", "signalPatch"],

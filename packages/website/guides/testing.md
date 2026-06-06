@@ -19,6 +19,24 @@ expect(response.status).toBe(204)
 
 This keeps tests close to production behavior and avoids framework mocks for SDK-shaped code.
 
+For Datastar actions, build a normal request with the same JSON signal payload the browser sends:
+
+```ts
+const response = await app.fetch(
+  new Request("http://test.local/todos", {
+    method: "POST",
+    headers: { "datastar-request": "true" },
+    body: JSON.stringify({ title: "Ship docs" })
+  })
+)
+
+expect(response.status).toBe(200)
+expect(response.headers.get("content-type")).toBe("text/event-stream")
+expect(await response.text()).toContain("datastar-patch-elements")
+```
+
+See `examples/hono-todos` for a complete app with tests that cover the initial HTML page, signal validation errors, element patches, and ordinary `404` responses.
+
 ## What to test
 
 | Layer                     | Good coverage                                                               |

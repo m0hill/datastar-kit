@@ -52,7 +52,10 @@ const LoginForm = () => (
     data-on:submit={mod(post("/login"), { prevent: true })}
   >
     <input type="password" data-bind={login.refs.password} />
-    <small data-show={login.refs._validation.password} data-text={login.refs._validation.password} />
+    <small
+      data-show={login.refs._validation.password}
+      data-text={login.refs._validation.password}
+    />
   </form>
 )
 ```

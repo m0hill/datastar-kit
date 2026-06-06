@@ -22,12 +22,12 @@ const signup = state({
 
 `state(...)` gives you four useful things:
 
-| API                        | Use                                                      |
-| -------------------------- | -------------------------------------------------------- |
-| `signup.defaults`          | Initial signal values for `data-signals`.                |
-| `signup.refs`              | Typed nested signal refs for attributes and expressions. |
-| `signup.patch(...)`        | Type-checked partial signal patches.                     |
-| `signup.reset(...)`        | Defaults, optionally merged with overrides.              |
+| API                 | Use                                                      |
+| ------------------- | -------------------------------------------------------- |
+| `signup.defaults`   | Initial signal values for `data-signals`.                |
+| `signup.refs`       | Typed nested signal refs for attributes and expressions. |
+| `signup.patch(...)` | Type-checked partial signal patches.                     |
+| `signup.reset(...)` | Defaults, optionally merged with overrides.              |
 
 Use those refs in Datastar attributes:
 

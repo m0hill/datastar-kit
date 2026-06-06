@@ -9,6 +9,7 @@ Run commands from the repository root. Node, Bun, and Deno examples usually serv
 | Start here                      | Why                                                                       |
 | ------------------------------- | ------------------------------------------------------------------------- |
 | `examples/hono-counter`         | Smallest complete request, page, action, and patch loop.                  |
+| `examples/hono-todos`           | A basic todo app with copyable request/response tests.                    |
 | `examples/hono-form-validation` | Signals, `read.signals(...)`, schema validation, and validation feedback. |
 | `examples/hono-live-counter`    | The live-view model with an in-memory invalidation hub.                   |
 | `examples/elysia-layout`        | Layouts, route-level data loading, named slots, and targeted patches.     |
@@ -18,6 +19,7 @@ Run commands from the repository root. Node, Bun, and Deno examples usually serv
 | Example                              | Shows                                                                                      | Run                                      |
 | ------------------------------------ | ------------------------------------------------------------------------------------------ | ---------------------------------------- |
 | `examples/hono-counter`              | Minimal Hono routes, TSX views, backend-owned count state, and `reply.patch(...)`.         | `pnpm run dev:hono-counter`              |
+| `examples/hono-todos`                | Basic todo routes plus tests for HTML, signal requests, SSE patches, and `404` responses.  | `pnpm run dev:hono-todos`                |
 | `examples/hono-live-counter`         | Count state synced across tabs with SSE and an in-memory invalidation hub.                 | `pnpm run dev:hono-live-counter`         |
 | `examples/hono-live-counter-redis`   | Redis pub/sub as a cross-process invalidation bus for live streams.                        | `pnpm run dev:hono-live-counter-redis`   |
 | `examples/hono-modal`                | Native `<dialog>` controlled by Datastar signals and a small browser bridge.               | `pnpm run dev:hono-modal`                |

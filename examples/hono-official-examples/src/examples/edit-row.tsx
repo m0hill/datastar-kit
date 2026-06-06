@@ -63,7 +63,12 @@ const DisplayRow = ({
 const EditingRow = ({ index }: { index: number }) => (
   <tr>
     <td>
-      <input type="text" required data-bind={editFormState.refs.name} data-attr:disabled={fetching} />
+      <input
+        type="text"
+        required
+        data-bind={editFormState.refs.name}
+        data-attr:disabled={fetching}
+      />
       <small
         class="field-error"
         style="display: none"

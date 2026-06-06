@@ -38,7 +38,11 @@ const BadApplePanel = () => (
         data-attr:value={playbackState.refs._percentage}
       />
     </label>
-    <pre style="line-height: 100%" aria-live="polite" data-text={playbackState.refs._contents}></pre>
+    <pre
+      style="line-height: 100%"
+      aria-live="polite"
+      data-text={playbackState.refs._contents}
+    ></pre>
   </div>
 )
 
