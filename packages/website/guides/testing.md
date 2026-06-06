@@ -35,6 +35,44 @@ expect(response.headers.get("content-type")).toBe("text/event-stream")
 expect(await response.text()).toContain("datastar-patch-elements")
 ```
 
+## Flight Recorder
+
+Use `datastar-kit/testing` when a test should explain the Datastar protocol instead of matching raw SSE strings:
+
+```ts
+import { read, reply } from "datastar-kit"
+import { assertDatastarResponse, createDatastarFlightRecorder } from "datastar-kit/testing"
+
+const recorder = createDatastarFlightRecorder()
+
+const response = await recorder.handle(request, async (request) => {
+  const signals = await read.signals(request)
+  return reply.signals({ count: Number(signals.count) + 1 })
+})
+
+recorder.assert().toHaveRequested({ method: "POST", signals: { count: 1 } })
+recorder.assert().toHavePatchedSignals({ count: 2 })
+
+await assertDatastarResponse(response).toHavePatchedSignals({ count: 2 })
+console.log(recorder.format())
+```
+
+`installDatastarFetchRecorder()` wraps a browser-like `fetch` target and records only requests with Datastar's `Datastar-Request` header by default, so unrelated network traffic does not pollute the flight.
+
+For browser/runtime tests, install the browser recorder before interacting with the page. It adds user events from `data-on:*` elements, browser signal patches, and DOM mutation summaries to the same timeline:
+
+```ts
+import { installDatastarBrowserRecorder } from "datastar-kit/testing"
+
+const recorder = installDatastarBrowserRecorder()
+
+// interact with the real page/runtime
+
+recorder.recorder.assert().toHaveBrowserUserEvent({ event: "click", expression: /post/ })
+recorder.recorder.assert().toHaveBrowserSignalPatch({ count: 2 })
+recorder.uninstall()
+```
+
 See `examples/hono-todos` for a complete app with tests that cover the initial HTML page, signal validation errors, element patches, and ordinary `404` responses.
 
 ## What to test

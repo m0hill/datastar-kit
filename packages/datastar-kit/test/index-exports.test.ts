@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import * as Root from "datastar-kit"
 import * as sse from "datastar-kit/sse"
+import * as testing from "datastar-kit/testing"
 import {
   action,
   del,
@@ -104,5 +105,19 @@ describe("package exports", () => {
       "stream"
     ])
     expect(exportedKeys(sse)).toEqual(["executeScript", "patchElements", "patchSignals"])
+    expect(exportedKeys(testing)).toEqual([
+      "DatastarFlightAssertionError",
+      "assertDatastarFlight",
+      "assertDatastarResponse",
+      "createDatastarFlightRecorder",
+      "datastarSseToFlightEvents",
+      "formatDatastarFlight",
+      "inspectDatastarRequest",
+      "inspectDatastarResponse",
+      "installDatastarBrowserRecorder",
+      "installDatastarFetchRecorder",
+      "isDatastarFetchRequest",
+      "parseDatastarSse"
+    ])
   })
 })

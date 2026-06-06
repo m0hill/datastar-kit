@@ -8,7 +8,8 @@
       "datastar-kit": ["./src/index.ts"],
       "datastar-kit/jsx-runtime": ["./src/jsx-runtime.ts"],
       "datastar-kit/jsx-dev-runtime": ["./src/jsx-dev-runtime.ts"],
-      "datastar-kit/sse": ["./src/sse.ts"]
+      "datastar-kit/sse": ["./src/sse.ts"],
+      "datastar-kit/testing": ["./src/testing.ts"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"],

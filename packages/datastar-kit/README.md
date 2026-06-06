@@ -82,6 +82,33 @@ export function handle(request: Request): Response {
 
 The stable `id` is the patch contract. The server returns new HTML for `#count`; Datastar applies it in the browser.
 
+## Flight Recorder
+
+`datastar-kit/testing` exposes protocol-level testing helpers for debugging Datastar handlers without asserting raw SSE strings.
+
+```ts
+import { read, reply } from "datastar-kit"
+import { assertDatastarResponse, createDatastarFlightRecorder } from "datastar-kit/testing"
+
+const recorder = createDatastarFlightRecorder()
+
+await recorder.handle(request, async (request) => {
+  const signals = await read.signals(request)
+  return reply.signals({ count: Number(signals.count) + 1 })
+})
+
+recorder.assert().toHaveRequested({ method: "POST", signals: { count: 1 } })
+recorder.assert().toHavePatchedSignals({ count: 2 })
+
+await assertDatastarResponse(reply.signals({ saved: true })).toHavePatchedSignals({ saved: true })
+
+console.log(recorder.format())
+```
+
+The recorder clones requests and responses before inspection, so normal handler code and response body reads still work. `installDatastarFetchRecorder()` can also wrap `fetch` in browser-like tests; by default it records requests with Datastar's `Datastar-Request` header to avoid unrelated network noise.
+
+For real browser debugging, `installDatastarBrowserRecorder()` records Datastar fetches, user events from `data-on:*` elements, browser signal patches, and DOM mutation summaries into the same timeline.
+
 See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for guides, API reference, and examples.
 
 ## License
