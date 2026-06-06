@@ -15,6 +15,7 @@ export type DatastarModifierTarget =
   | "on"
   | "signalPatch"
   | "signals"
+  | "signalsKey"
 
 const matches = (name: string, rule: AttributeRule): boolean =>
   (rule.exact?.includes(name) ?? false) ||
@@ -57,7 +58,8 @@ const modifierTargets = [
   { target: "jsonSignals", exact: ["data-json-signals"] },
   { target: "signalPatch", exact: ["data-on-signal-patch"] },
   { target: "on", prefixes: ["data-on:"] },
-  { target: "signals", exact: ["data-signals"], prefixes: ["data-signals:"] }
+  { target: "signals", exact: ["data-signals"] },
+  { target: "signalsKey", prefixes: ["data-signals:"] }
 ] as const satisfies readonly (AttributeRule & { readonly target: DatastarModifierTarget })[]
 
 export const datastarModifierTarget = (name: string): DatastarModifierTarget | undefined => {

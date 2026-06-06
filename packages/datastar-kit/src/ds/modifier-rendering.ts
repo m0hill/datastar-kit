@@ -9,7 +9,7 @@ interface RenderedDatastarModifier {
 
 const compatibleModifierTargets: Record<DatastarModifierKey, readonly DatastarModifierTarget[]> = {
   capture: ["on"],
-  case: ["bind", "case", "computed", "on", "signals"],
+  case: ["bind", "case", "computed", "on", "signalsKey"],
   debounce: ["on", "intersect", "signalPatch"],
   delay: ["on", "intersect", "signalPatch", "init"],
   document: ["on"],
@@ -18,7 +18,7 @@ const compatibleModifierTargets: Record<DatastarModifierKey, readonly DatastarMo
   exit: ["intersect"],
   full: ["intersect"],
   half: ["intersect"],
-  ifMissing: ["signals"],
+  ifMissing: ["signals", "signalsKey"],
   leading: [],
   once: ["on", "intersect"],
   outside: ["on"],
