@@ -2,7 +2,7 @@
 
 ## Status
 
-PASS — `datastar-kit` renders the documented `data-bind` forms and SDK modifier helpers correctly. No SDK fix was required.
+PASS after SDK fix — `datastar-kit` renders the documented `data-bind` forms and SDK modifier helpers correctly, and now rejects misleading `case` modifiers on unkeyed `data-bind`.
 
 ## Source Reviewed
 
@@ -28,6 +28,7 @@ PASS — `datastar-kit` renders the documented `data-bind` forms and SDK modifie
 | Attribute evaluation order | Authored order is preserved for `data-signals`, `data-bind`, and `value` |
 | Documented native scenarios | Checkbox array binding and file input binding render as expected |
 | Invalid SDK modifiers | Unsupported `prevent` modifier is rejected for `data-bind` |
+| Unkeyed case handling | `case` on exact `data-bind` is rejected because upstream only applies case to keys |
 
 ## Test File
 
@@ -40,15 +41,31 @@ PASS — `datastar-kit` renders the documented `data-bind` forms and SDK modifie
   - value: `data-bind="signalName"`
 - `Signal` refs render as bare signal names for `data-bind="..."`, not `$signal`, which matches Datastar's expected value form.
 - Keyed `data-bind:*` is correctly treated as a presence Datastar attribute.
-- The SDK supports all documented `data-bind` modifiers via `mod()`:
+- The SDK supports all documented keyed `data-bind` modifiers via `mod()`:
   - `case`
   - `prop`
   - `event`
+- Exact/value-form `data-bind` supports `prop` and `event`, while `case` is rejected because upstream Datastar only applies casing to keyed signal names.
 - Hand-written Datastar modifier syntax is still supported by using normal JSX/spread props; the SDK does not force helper usage.
 
 ## Issues / Fixes
 
-None.
+### Issue: unkeyed `data-bind` incorrectly accepted SDK `case` modifiers
+
+**Problem:** `src/ds/attribute-metadata.ts` used one modifier target for both exact `data-bind` and keyed `data-bind:*`. That made `data-bind={mod("fooBar", { case: "kebab" })}` render a `__case` suffix even though upstream Datastar only applies `modifyCasing` when a keyed suffix exists. Value-form signal names are not transformed by the modifier.
+
+**Possible solutions:**
+
+1. Keep accepting `case` and document that upstream ignores it for value form.
+2. Try to rewrite the signal-name value server-side when `case` is supplied.
+3. Split exact and keyed bind modifier targets so exact `data-bind` still accepts `prop` and `event`, while only keyed `data-bind:*` accepts `case`.
+
+**Chosen solution:** Option 3. Added a keyed bind modifier target internally and updated modifier compatibility so `prop` and `event` remain valid on both forms, while `case` is only valid on keyed bind attributes.
+
+**Files changed:**
+
+- `packages/datastar-kit/src/ds/attribute-metadata.ts`
+- `packages/datastar-kit/src/ds/modifier-rendering.ts`
 
 ## Considerations
 
@@ -57,5 +74,6 @@ None.
 
 ## Verification
 
-- `pnpm --filter datastar-kit exec vitest run test/attributes/data-bind/data-bind.test.tsx`
+- `pnpm --filter datastar-kit exec vitest run test/attributes/data-bind/data-bind.test.tsx test/jsx.test.tsx`
 - `pnpm --filter datastar-kit typecheck`
+- `pnpm --filter datastar-kit test`

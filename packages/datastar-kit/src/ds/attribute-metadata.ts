@@ -5,6 +5,7 @@ type AttributeRule = {
 
 export type DatastarModifierTarget =
   | "bind"
+  | "bindKey"
   | "case"
   | "computed"
   | "ignore"
@@ -45,7 +46,8 @@ export const isDatastarPresenceAttribute = (name: string): boolean =>
   matches(datastarAttributeRoot(name), presenceAttributes)
 
 const modifierTargets = [
-  { target: "bind", exact: ["data-bind"], prefixes: ["data-bind:"] },
+  { target: "bind", exact: ["data-bind"] },
+  { target: "bindKey", prefixes: ["data-bind:"] },
   {
     target: "case",
     prefixes: ["data-ref:", "data-indicator:", "data-class:"]

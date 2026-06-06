@@ -153,4 +153,12 @@ describe("data-bind", () => {
       } as unknown as JsxProps)
     ).toThrow('Datastar modifier "prevent" is not valid on "data-bind"')
   })
+
+  it("rejects case modifiers on unkeyed data-bind because upstream only applies case to keys", () => {
+    expect(() =>
+      runtimeJsx("input", {
+        "data-bind": mod(signal<string>("fooBar"), { case: "kebab" })
+      } as unknown as JsxProps)
+    ).toThrow('Datastar modifier "case" is not valid on "data-bind"')
+  })
 })
