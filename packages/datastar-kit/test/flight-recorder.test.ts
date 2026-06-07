@@ -210,17 +210,18 @@ describe("Datastar Flight Recorder response inspection", () => {
     await expect(signalResponse.text()).resolves.toContain("datastar-patch-signals")
   })
 
-  it("inspects direct Datastar response escape hatches", async () => {
-    await expect(
-      inspectDatastarResponse(reply.directHtml(h("p", {}, "Saved"), { selector: "#flash" }))
-    ).resolves.toMatchObject([
+  it("inspects and asserts direct Datastar response escape hatches", async () => {
+    const html = reply.directHtml(h("p", {}, "Saved"), { selector: "#flash" })
+    await expect(inspectDatastarResponse(html)).resolves.toMatchObject([
       { type: "response", status: 200 },
       { type: "direct.html", selector: "#flash", html: "<p>Saved</p>" }
     ])
-
     await expect(
-      inspectDatastarResponse(reply.directSignals({ saved: true }, { onlyIfMissing: true }))
-    ).resolves.toMatchObject([
+      assertDatastarResponse(html).toHaveDirectHtml({ selector: "#flash", html: /Saved/ })
+    ).resolves.toMatchObject({ type: "direct.html" })
+
+    const signals = reply.directSignals({ saved: true }, { onlyIfMissing: true })
+    await expect(inspectDatastarResponse(signals)).resolves.toMatchObject([
       { type: "response", status: 200 },
       {
         type: "direct.signals",
@@ -229,15 +230,21 @@ describe("Datastar Flight Recorder response inspection", () => {
         onlyIfMissing: true
       }
     ])
-
     await expect(
-      inspectDatastarResponse(
-        reply.directScript("console.log('saved')", { attributes: { type: "module" } })
-      )
-    ).resolves.toMatchObject([
+      assertDatastarResponse(signals).toHaveDirectSignals({ saved: true }, { onlyIfMissing: true })
+    ).resolves.toMatchObject({ type: "direct.signals" })
+
+    const script = reply.directScript("console.log('saved')", { attributes: { type: "module" } })
+    await expect(inspectDatastarResponse(script)).resolves.toMatchObject([
       { type: "response", status: 200 },
       { type: "direct.script", script: "console.log('saved')", attributes: { type: "module" } }
     ])
+    await expect(
+      assertDatastarResponse(script).toHaveDirectScript({
+        script: /saved/,
+        attributes: { type: "module" }
+      })
+    ).resolves.toMatchObject({ type: "direct.script" })
   })
 
   it("records malformed direct JSON signal responses as recorder errors", async () => {
@@ -283,14 +290,53 @@ describe("Datastar Flight Recorder response inspection", () => {
     ])
   })
 
-  it("records 204 command completion responses", async () => {
-    await expect(inspectDatastarResponse(reply.done())).resolves.toEqual([
+  it("records and asserts 204 command completion responses", async () => {
+    const response = reply.done()
+
+    await expect(inspectDatastarResponse(response)).resolves.toEqual([
       {
         type: "response",
         status: 204,
         contentType: null
       },
       { type: "response.done" }
+    ])
+    await expect(assertDatastarResponse(response).toHaveCompleted()).resolves.toEqual({
+      type: "response.done"
+    })
+  })
+
+  it("can truncate long-lived SSE response inspection instead of waiting forever", async () => {
+    const chunk = new TextEncoder().encode(
+      'event: datastar-patch-signals\ndata: signals {"count":1}\n\n'
+    )
+    const response = new Response(
+      new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(chunk)
+        }
+      }),
+      { headers: { "content-type": "text/event-stream" } }
+    )
+
+    await expect(inspectDatastarResponse(response, { timeoutMs: 1 })).resolves.toEqual([
+      {
+        type: "response",
+        status: 200,
+        contentType: "text/event-stream"
+      },
+      {
+        type: "patch.signals",
+        signalsSource: '{"count":1}',
+        signals: { count: 1 },
+        onlyIfMissing: false
+      },
+      {
+        type: "response.body.truncated",
+        reason: "timeout",
+        bytesRead: chunk.byteLength,
+        timeoutMs: 1
+      }
     ])
   })
 })
@@ -442,6 +488,30 @@ describe("Datastar Flight Recorder handler tracing", () => {
       type: "patch.signals"
     })
     expect(() => recorder.assert().toHaveNoSignalErrors()).not.toThrow()
+  })
+
+  it("can attach source, sequence, and timestamp metadata to recorded timelines", () => {
+    const recorder = createDatastarFlightRecorder({
+      source: "server",
+      sequence: true,
+      timestamp: () => Date.UTC(2026, 0, 1)
+    })
+
+    recorder.recordEvent({ type: "response.done" })
+
+    expect(recorder.flight().events).toEqual([
+      {
+        type: "response.done",
+        source: "server",
+        sequence: 0,
+        timestamp: Date.UTC(2026, 0, 1)
+      }
+    ])
+    expect(recorder.format()).toContain("[server #0 2026-01-01T00:00:00.000Z]")
+
+    recorder.clear()
+    recorder.recordEvent({ type: "response.done" })
+    expect(recorder.flight().events[0]).toMatchObject({ sequence: 0 })
   })
 
   it("records signal parse failures without stealing the request from the handler", async () => {

@@ -17,6 +17,10 @@ const debugBrowser = browserFlagEnabled(process.env.PWDEBUG)
 const headedBrowser = browserFlagEnabled(process.env.DATASTAR_KIT_BROWSER_HEADED) || debugBrowser
 
 const datastarKitBrowserModules = new Set(["read", "testing"])
+const browserRecorderScript = `<script type="module">
+  import { installDatastarBrowserRecorder } from "/__datastar-kit/testing.js"
+  window.__datastarKitFlightRecorder = installDatastarBrowserRecorder({ include: () => false })
+</script>`
 
 type VisibleTodoState = {
   readonly title: string
@@ -53,6 +57,17 @@ const datastarKitBrowserModule = async (fileName: string): Promise<Response> => 
   })
 }
 
+const injectBrowserRecorder = (html: string): string => {
+  if (html.includes(browserRecorderScript)) return html
+  if (html.includes('<script type="module" src=')) {
+    return html.replace(
+      '<script type="module" src=',
+      `${browserRecorderScript}<script type="module" src=`
+    )
+  }
+  return html.replace("</head>", `${browserRecorderScript}</head>`)
+}
+
 const startBrowserFixture = async (): Promise<{
   readonly recorder: DatastarFlightRecorder
   readonly server: ServerType
@@ -63,7 +78,24 @@ const startBrowserFixture = async (): Promise<{
   const recorder = createDatastarFlightRecorder()
 
   fixture.get("/__datastar-kit/:file", (c) => datastarKitBrowserModule(c.req.param("file")))
-  fixture.all("*", (c) => recorder.handle(c.req.raw, (request) => app.fetch(request)))
+  fixture.all("*", async (c) => {
+    const response = await recorder.handle(c.req.raw, (request) => app.fetch(request))
+    const contentType = response.headers.get("content-type")
+    const pathname = new URL(c.req.raw.url).pathname
+
+    if (pathname === "/" && contentType?.includes("text/html")) {
+      const headers = new Headers(response.headers)
+      headers.delete("content-length")
+
+      return new Response(injectBrowserRecorder(await response.text()), {
+        status: response.status,
+        statusText: response.statusText,
+        headers
+      })
+    }
+
+    return response
+  })
 
   const server = await new Promise<ServerType>((resolve) => {
     const running = serve({ fetch: fixture.fetch, hostname: "127.0.0.1", port: 0 }, () =>
@@ -84,14 +116,8 @@ const closeServer = async (server: ServerType): Promise<void> => {
   )
 }
 
-const installBrowserRecorder = async (page: Page): Promise<void> => {
-  await page.addScriptTag({
-    type: "module",
-    content: `
-      import { installDatastarBrowserRecorder } from "/__datastar-kit/testing.js"
-      window.__datastarKitFlightRecorder = installDatastarBrowserRecorder({ include: () => false })
-    `
-  })
+const waitForBrowserRecorder = async (page: Page): Promise<void> => {
+  await page.waitForFunction("window.__datastarKitFlightRecorder !== undefined")
 }
 
 const visibleTodoState = (page: Page): Promise<VisibleTodoState> =>
@@ -124,8 +150,8 @@ describe("Hono todos browser integration", () => {
 
     try {
       await page.goto(url)
+      await waitForBrowserRecorder(page)
       await page.getByText("No todos yet.").waitFor()
-      await installBrowserRecorder(page)
 
       await page.getByRole("button", { name: "Add todo" }).click()
       await page.getByText("Enter a todo title.").waitFor()
