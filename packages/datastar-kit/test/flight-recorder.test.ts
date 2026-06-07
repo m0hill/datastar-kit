@@ -523,6 +523,39 @@ describe("Datastar Flight Recorder handler tracing", () => {
     expect(() => recorder.assert().toHaveNoSignalErrors()).not.toThrow()
   })
 
+  it("records handler failures before rethrowing", async () => {
+    const recorder = createDatastarFlightRecorder()
+    const request = new Request("http://localhost/fail", {
+      method: "POST",
+      body: JSON.stringify({ count: 1 })
+    })
+
+    await expect(
+      recorder.handle(request, async () => {
+        throw new Error("database unavailable")
+      })
+    ).rejects.toThrow("database unavailable")
+
+    expect(recorder.flight().events).toEqual([
+      {
+        type: "request",
+        method: "POST",
+        url: "http://localhost/fail",
+        signals: { count: 1 }
+      },
+      {
+        type: "handler.error",
+        method: "POST",
+        url: "http://localhost/fail",
+        error: {
+          name: "Error",
+          message: "database unavailable"
+        }
+      }
+    ])
+    expect(recorder.format()).toContain("handler error POST http://localhost/fail")
+  })
+
   it("can attach source, sequence, and timestamp metadata to recorded timelines", () => {
     const recorder = createDatastarFlightRecorder({
       source: "server",

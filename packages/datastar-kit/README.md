@@ -105,7 +105,9 @@ await assertDatastarResponse(reply.signals({ saved: true })).toHavePatchedSignal
 console.log(recorder.format())
 ```
 
-The recorder clones requests and responses before inspection, so normal handler code and response body reads still work. `installDatastarFetchRecorder()` can also wrap `fetch` in browser-like tests; by default it records requests with Datastar's `Datastar-Request` header to avoid unrelated network noise.
+The recorder clones requests and responses before inspection, so normal handler code and response body reads still work. Handler failures are recorded as `handler.error` events before being rethrown. Recorders also apply bounded response inspection by default (`timeoutMs: 1000`, `maxBytes: 1_000_000`) so long-lived streams do not hang tests; pass `inspectResponse: {}` to opt into unbounded inspection for a specific recorder.
+
+`installDatastarFetchRecorder()` can also wrap `fetch` in browser-like tests; by default it records requests with Datastar's `Datastar-Request` header to avoid unrelated network noise.
 
 For real browser debugging, `installDatastarBrowserRecorder()` records Datastar fetches, user events from `data-on:*` elements, browser signal patches, and DOM mutation summaries into the same timeline.
 

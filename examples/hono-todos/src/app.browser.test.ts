@@ -17,7 +17,17 @@ const browserFlagEnabled = (value: string | undefined): boolean => value === "1"
 const debugBrowser = browserFlagEnabled(process.env.PWDEBUG)
 const headedBrowser = browserFlagEnabled(process.env.DATASTAR_KIT_BROWSER_HEADED) || debugBrowser
 
-const datastarKitBrowserModules = new Set(["read", "testing"])
+const datastarKitBrowserModules = new Set([
+  "read",
+  "testing/assertions",
+  "testing/browser",
+  "testing/fetch-recorder",
+  "testing/format",
+  "testing/index",
+  "testing/protocol",
+  "testing/recorder",
+  "testing/utils"
+])
 
 type VisibleTodoState = {
   readonly title: string
@@ -30,10 +40,10 @@ const loadApp = async (): Promise<Hono> => {
   return (await import("./app.js")).app
 }
 
-const datastarKitBrowserModule = async (fileName: string): Promise<Response> => {
-  if (!fileName.endsWith(".js")) return new Response("Not Found", { status: 404 })
+const datastarKitBrowserModule = async (modulePath: string): Promise<Response> => {
+  if (!modulePath.endsWith(".js")) return new Response("Not Found", { status: 404 })
 
-  const moduleName = fileName.slice(0, -".js".length)
+  const moduleName = modulePath.slice(0, -".js".length)
   if (!datastarKitBrowserModules.has(moduleName)) {
     return new Response("Not Found", { status: 404 })
   }
@@ -63,7 +73,9 @@ const startBrowserFixture = async (): Promise<{
   const fixture = new Hono()
   const recorder = createDatastarFlightRecorder()
 
-  fixture.get("/__datastar-kit/:file", (c) => datastarKitBrowserModule(c.req.param("file")))
+  fixture.get("/__datastar-kit/*", (c) =>
+    datastarKitBrowserModule(c.req.path.slice("/__datastar-kit/".length))
+  )
   fixture.all("*", async (c) => {
     const response = await recorder.handle(c.req.raw, (request) => app.fetch(request))
     const contentType = response.headers.get("content-type")
@@ -75,7 +87,7 @@ const startBrowserFixture = async (): Promise<{
 
       return new Response(
         injectDatastarBrowserRecorder(await response.text(), {
-          module: "/__datastar-kit/testing.js",
+          module: "/__datastar-kit/testing/index.js",
           fetches: false
         }),
         {

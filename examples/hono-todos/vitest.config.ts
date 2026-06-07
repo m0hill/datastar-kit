@@ -20,7 +20,7 @@ export default defineConfig({
       },
       {
         find: "datastar-kit/testing",
-        replacement: fromWorkspace("../../packages/datastar-kit/src/testing.ts")
+        replacement: fromWorkspace("../../packages/datastar-kit/src/testing/index.ts")
       },
       {
         find: "datastar-kit",

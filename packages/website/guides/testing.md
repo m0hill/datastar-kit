@@ -57,6 +57,8 @@ await assertDatastarResponse(response).toHavePatchedSignals({ count: 2 })
 console.log(recorder.format())
 ```
 
+The recorder records `handler.error` events before rethrowing handler failures. Recorder response inspection is bounded by default (`timeoutMs: 1000`, `maxBytes: 1_000_000`) so long-lived streams do not hang tests; pass `inspectResponse: {}` to opt into unbounded inspection for a specific recorder.
+
 `installDatastarFetchRecorder()` wraps a browser-like `fetch` target and records only requests with Datastar's `Datastar-Request` header by default, so unrelated network traffic does not pollute the flight.
 
 For browser/runtime tests, install the browser recorder before interacting with the page. It adds user events from `data-on:*` elements, browser signal patches, and DOM mutation summaries to the same timeline:
