@@ -61,18 +61,37 @@ The recorder records `handler.error` events before rethrowing handler failures. 
 
 `installDatastarFetchRecorder()` wraps a browser-like `fetch` target and records only requests with Datastar's `Datastar-Request` header by default, so unrelated network traffic does not pollute the flight.
 
-For browser/runtime tests, install the browser recorder before interacting with the page. It adds user events from `data-on:*` elements, browser signal patches, and DOM mutation summaries to the same timeline:
+For browser/runtime tests, use `datastar-kit/testing/node` to serve any fetch-compatible app on an ephemeral local server. The fixture wraps your real app handler, injects the browser recorder into HTML pages, and exposes both server and browser flights:
 
 ```ts
-import { installDatastarBrowserRecorder } from "datastar-kit/testing"
+import { chromium } from "playwright"
+import {
+  createDatastarBrowserTestServer,
+  waitForDatastarBrowserRecorder
+} from "datastar-kit/testing/node"
+import { app } from "./app"
 
-const recorder = installDatastarBrowserRecorder()
+const fixture = await createDatastarBrowserTestServer({
+  fetch: (request) => app.fetch(request)
+})
+const browser = await chromium.launch()
+const page = await browser.newPage()
 
-// interact with the real page/runtime
+try {
+  await page.goto(fixture.url)
+  await waitForDatastarBrowserRecorder(page)
+  await page.getByRole("button", { name: "Add todo" }).click()
 
-recorder.recorder.assert().toHaveBrowserUserEvent({ event: "click", expression: /post/ })
-recorder.recorder.assert().toHaveBrowserSignalPatch({ count: 2 })
-recorder.uninstall()
+  const flight = await fixture.assert(page)
+  fixture.recorder.assert().toHavePatchedSignals({ count: 2 })
+  flight.toHaveBrowserUserEvent({
+    event: "click",
+    expression: /post/
+  })
+} finally {
+  await browser.close()
+  await fixture.close()
+}
 ```
 
 See `examples/hono-todos` for a complete app with tests that cover the initial HTML page, signal validation errors, element patches, and ordinary `404` responses.

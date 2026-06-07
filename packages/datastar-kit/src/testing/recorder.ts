@@ -105,7 +105,7 @@ export const createDatastarFlightRecorder = (
       pushEvents(await inspectDatastarResponse(response, responseOptions ?? inspectResponse))
       return response
     },
-    async handle(request, handler) {
+    async handle(request, handler, responseOptions) {
       await recorder.recordRequest(request)
 
       let response: Response
@@ -116,7 +116,7 @@ export const createDatastarFlightRecorder = (
         throw error
       }
 
-      await recorder.recordResponse(response)
+      await recorder.recordResponse(response, responseOptions)
       return response
     }
   }

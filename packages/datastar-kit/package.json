@@ -36,6 +36,10 @@
       "types": "./dist/testing/index.d.ts",
       "default": "./dist/testing/index.js"
     },
+    "./testing/node": {
+      "types": "./dist/testing/node.d.ts",
+      "default": "./dist/testing/node.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

@@ -19,6 +19,10 @@ export default defineConfig({
         replacement: fromWorkspace("../../packages/datastar-kit/src/sse.ts")
       },
       {
+        find: "datastar-kit/testing/node",
+        replacement: fromWorkspace("../../packages/datastar-kit/src/testing/node.ts")
+      },
+      {
         find: "datastar-kit/testing",
         replacement: fromWorkspace("../../packages/datastar-kit/src/testing/index.ts")
       },

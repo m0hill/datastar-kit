@@ -19,6 +19,7 @@ import {
   mergeDatastarFlights,
   parseDatastarSse
 } from "datastar-kit/testing"
+import { createDatastarBrowserTestServer } from "datastar-kit/testing/node"
 
 class TestElement {
   readonly id: string
@@ -469,6 +470,48 @@ describe("Datastar Flight Recorder browser tracing", () => {
     expect(injectDatastarBrowserRecorder(injected, { module: "/__datastar-kit/testing.js" })).toBe(
       injected
     )
+  })
+
+  it("starts a fetch-compatible browser test server with recorder injection", async () => {
+    const fixture = await createDatastarBrowserTestServer({
+      fetch: async (request) => {
+        const url = new URL(request.url)
+        if (url.pathname === "/") {
+          return reply.page(h("main", {}, "Counter"), {
+            head: h("script", { type: "module", src: "/datastar.js" })
+          })
+        }
+        if (url.pathname === "/increment") {
+          const signals = await read.signals(request)
+          return reply.signals({ count: Number(signals.count) + 1 })
+        }
+        return new Response("Not Found", { status: 404 })
+      }
+    })
+
+    try {
+      const html = await fetch(fixture.url).then((response) => response.text())
+      expect(html).toContain("__datastarKitFlightRecorder")
+      expect(html.indexOf("__datastarKitFlightRecorder")).toBeLessThan(
+        html.indexOf('src="/datastar.js"')
+      )
+
+      const response = await fetch(`${fixture.url}/increment`, {
+        method: "POST",
+        headers: { "datastar-request": "true" },
+        body: JSON.stringify({ count: 1 })
+      })
+      await response.text()
+
+      fixture.recorder.assert().toHaveRequested({
+        method: "POST",
+        url: /\/increment$/,
+        signals: { count: 1 }
+      })
+      fixture.recorder.assert().toHavePatchedSignals({ count: 2 })
+    } finally {
+      await fixture.close()
+    }
   })
 })
 

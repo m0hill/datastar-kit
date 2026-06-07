@@ -1,33 +1,15 @@
-import { readFile } from "node:fs/promises"
-import { serve, type ServerType } from "@hono/node-server"
-import { Hono } from "hono"
 import { chromium, type Page } from "playwright"
-import { ModuleKind, ScriptTarget, transpileModule } from "typescript"
 import { describe, expect, it, vi } from "vitest"
 import {
-  assertDatastarFlight,
-  createDatastarFlightRecorder,
-  injectDatastarBrowserRecorder,
-  type DatastarFlight,
-  type DatastarFlightRecorder
-} from "datastar-kit/testing"
+  createDatastarBrowserTestServer,
+  waitForDatastarBrowserRecorder,
+  type DatastarBrowserTestServer
+} from "datastar-kit/testing/node"
 
 const browserFlagEnabled = (value: string | undefined): boolean => value === "1" || value === "true"
 // Set DATASTAR_KIT_BROWSER_HEADED=1 or PWDEBUG=1 to watch this test run.
 const debugBrowser = browserFlagEnabled(process.env.PWDEBUG)
 const headedBrowser = browserFlagEnabled(process.env.DATASTAR_KIT_BROWSER_HEADED) || debugBrowser
-
-const datastarKitBrowserModules = new Set([
-  "read",
-  "testing/assertions",
-  "testing/browser",
-  "testing/fetch-recorder",
-  "testing/format",
-  "testing/index",
-  "testing/protocol",
-  "testing/recorder",
-  "testing/utils"
-])
 
 type VisibleTodoState = {
   readonly title: string
@@ -35,93 +17,17 @@ type VisibleTodoState = {
   readonly error: string
 }
 
-const loadApp = async (): Promise<Hono> => {
+const loadApp = async () => {
   vi.resetModules()
   return (await import("./app.js")).app
 }
 
-const datastarKitBrowserModule = async (modulePath: string): Promise<Response> => {
-  if (!modulePath.endsWith(".js")) return new Response("Not Found", { status: 404 })
-
-  const moduleName = modulePath.slice(0, -".js".length)
-  if (!datastarKitBrowserModules.has(moduleName)) {
-    return new Response("Not Found", { status: 404 })
-  }
-
-  const source = await readFile(
-    new URL(`../../../packages/datastar-kit/src/${moduleName}.ts`, import.meta.url),
-    "utf8"
-  )
-  const { outputText } = transpileModule(source, {
-    compilerOptions: {
-      module: ModuleKind.ES2022,
-      target: ScriptTarget.ES2022
-    }
-  })
-
-  return new Response(outputText, {
-    headers: { "content-type": "text/javascript; charset=utf-8" }
-  })
-}
-
-const startBrowserFixture = async (): Promise<{
-  readonly recorder: DatastarFlightRecorder
-  readonly server: ServerType
-  readonly url: string
-}> => {
+const startBrowserFixture = async (): Promise<DatastarBrowserTestServer> => {
   const app = await loadApp()
-  const fixture = new Hono()
-  const recorder = createDatastarFlightRecorder()
 
-  fixture.get("/__datastar-kit/*", (c) =>
-    datastarKitBrowserModule(c.req.path.slice("/__datastar-kit/".length))
-  )
-  fixture.all("*", async (c) => {
-    const response = await recorder.handle(c.req.raw, (request) => app.fetch(request))
-    const contentType = response.headers.get("content-type")
-    const pathname = new URL(c.req.raw.url).pathname
-
-    if (pathname === "/" && contentType?.includes("text/html")) {
-      const headers = new Headers(response.headers)
-      headers.delete("content-length")
-
-      return new Response(
-        injectDatastarBrowserRecorder(await response.text(), {
-          module: "/__datastar-kit/testing/index.js",
-          fetches: false
-        }),
-        {
-          status: response.status,
-          statusText: response.statusText,
-          headers
-        }
-      )
-    }
-
-    return response
+  return createDatastarBrowserTestServer({
+    fetch: (request) => app.fetch(request)
   })
-
-  const server = await new Promise<ServerType>((resolve) => {
-    const running = serve({ fetch: fixture.fetch, hostname: "127.0.0.1", port: 0 }, () =>
-      resolve(running)
-    )
-  })
-  const address = server.address()
-  if (typeof address !== "object" || address === null) {
-    throw new Error("Expected Hono test server to listen on a TCP address")
-  }
-
-  return { recorder, server, url: `http://127.0.0.1:${address.port}` }
-}
-
-const closeServer = async (server: ServerType): Promise<void> => {
-  await new Promise<void>((resolve, reject) =>
-    server.close((error) => (error === undefined ? resolve() : reject(error)))
-  )
-}
-
-const waitForBrowserRecorder = async (page: Page): Promise<void> => {
-  await page.waitForFunction("window.__datastarKitFlightRecorder !== undefined")
 }
 
 const visibleTodoState = (page: Page): Promise<VisibleTodoState> =>
@@ -135,17 +41,9 @@ const expectVisibleTodoState = async (page: Page, expected: VisibleTodoState): P
   expect(await visibleTodoState(page)).toEqual(expected)
 }
 
-const recordedBrowserFlight = async (page: Page): Promise<DatastarFlight> => {
-  await page.evaluate(
-    () => new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)))
-  )
-  await page.evaluate("window.__datastarKitFlightRecorder.flush()")
-  return page.evaluate("window.__datastarKitFlightRecorder.recorder.flight()")
-}
-
 describe("Hono todos browser integration", () => {
   it("records the real Datastar runtime from user event to DOM patch", async () => {
-    const { recorder: serverRecorder, server, url } = await startBrowserFixture()
+    const fixture = await startBrowserFixture()
     const browser = await chromium.launch({
       headless: !headedBrowser,
       ...(debugBrowser ? { devtools: true } : {})
@@ -153,8 +51,8 @@ describe("Hono todos browser integration", () => {
     const page = await browser.newPage()
 
     try {
-      await page.goto(url)
-      await waitForBrowserRecorder(page)
+      await page.goto(fixture.url)
+      await waitForDatastarBrowserRecorder(page)
       await page.getByText("No todos yet.").waitFor()
 
       await page.getByRole("button", { name: "Add todo" }).click()
@@ -170,10 +68,10 @@ describe("Hono todos browser integration", () => {
         error: ""
       })
 
-      const browserAssertions = assertDatastarFlight(await recordedBrowserFlight(page))
-      const serverAssertions = serverRecorder.assert()
+      const flightAssertions = await fixture.assert(page)
+      const serverAssertions = fixture.recorder.assert()
 
-      browserAssertions.toHaveBrowserUserEvent({
+      flightAssertions.toHaveBrowserUserEvent({
         event: "submit",
         target: "form#todo-form",
         datastarAttribute: "data-on:submit__prevent",
@@ -196,12 +94,12 @@ describe("Hono todos browser integration", () => {
         mode: "outer",
         namespace: "html"
       })
-      browserAssertions.toHaveBrowserSignalPatch({ errors: { title: "Enter a todo title." } })
-      browserAssertions.toHaveDomMutation()
+      flightAssertions.toHaveBrowserSignalPatch({ errors: { title: "Enter a todo title." } })
+      flightAssertions.toHaveDomMutation()
       serverAssertions.toHaveNoSignalErrors()
-      browserAssertions.toHaveNoSignalErrors()
+      flightAssertions.toHaveNoSignalErrors()
     } finally {
-      await Promise.all([browser.close(), closeServer(server)])
+      await Promise.all([browser.close(), fixture.close()])
     }
   }, 35_000)
 })

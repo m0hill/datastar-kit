@@ -276,7 +276,8 @@ export interface DatastarFlightRecorder {
   recordResponse(response: Response, options?: DatastarResponseInspectionOptions): Promise<Response>
   handle(
     request: Request,
-    handler: (request: Request) => Response | Promise<Response>
+    handler: (request: Request) => Response | Promise<Response>,
+    options?: DatastarResponseInspectionOptions
   ): Promise<Response>
 }
 

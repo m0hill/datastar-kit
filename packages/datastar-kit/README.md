@@ -109,7 +109,7 @@ The recorder clones requests and responses before inspection, so normal handler 
 
 `installDatastarFetchRecorder()` can also wrap `fetch` in browser-like tests; by default it records requests with Datastar's `Datastar-Request` header to avoid unrelated network noise.
 
-For real browser debugging, `installDatastarBrowserRecorder()` records Datastar fetches, user events from `data-on:*` elements, browser signal patches, and DOM mutation summaries into the same timeline.
+For real browser debugging, `datastar-kit/testing/node` provides `createDatastarBrowserTestServer({ fetch: (request) => app.fetch(request) })`. It starts an ephemeral local server, wraps your real fetch-compatible app with server-side recording, injects the browser recorder into HTML pages, and lets tests read browser flights with `fixture.browserFlight(page)`.
 
 See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for guides, API reference, and examples.
 

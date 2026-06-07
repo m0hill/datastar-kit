@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import * as Root from "datastar-kit"
 import * as sse from "datastar-kit/sse"
 import * as testing from "datastar-kit/testing"
+import * as testingNode from "datastar-kit/testing/node"
 import {
   action,
   del,
@@ -121,6 +122,11 @@ describe("package exports", () => {
       "isDatastarFetchRequest",
       "mergeDatastarFlights",
       "parseDatastarSse"
+    ])
+    expect(exportedKeys(testingNode)).toEqual([
+      "createDatastarBrowserTestServer",
+      "datastarBrowserFlight",
+      "waitForDatastarBrowserRecorder"
     ])
   })
 })
