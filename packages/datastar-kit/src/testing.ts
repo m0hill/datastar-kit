@@ -318,6 +318,28 @@ export interface DatastarBrowserRecorderOptions extends DatastarFetchRecorderOpt
 
 export type DatastarBrowserRecorderInstallation = DatastarFetchRecorderInstallation
 
+export type DatastarBrowserRecorderScriptOptions = Pick<
+  DatastarBrowserRecorderOptions,
+  "userEvents" | "signalPatches" | "domMutations"
+> & {
+  /** Browser module specifier that exports `installDatastarBrowserRecorder`. */
+  readonly module?: string
+  /** Global property that receives the recorder installation. */
+  readonly globalName?: string
+  /** Whether browser fetches should be recorded. Disable this when the server is recorded separately. */
+  readonly fetches?: boolean
+}
+
+export interface InjectDatastarBrowserRecorderOptions extends DatastarBrowserRecorderScriptOptions {
+  /** When true, returns the original HTML if it already references the configured global name. */
+  readonly skipIfPresent?: boolean
+}
+
+export interface DatastarFlightMergeOptions {
+  /** Sort merged events by timestamp when timestamps are available. @defaultValue `true` */
+  readonly sortByTimestamp?: boolean
+}
+
 interface RawSseEvent {
   readonly event?: string
   readonly id?: string
@@ -1027,6 +1049,34 @@ export const formatDatastarFlight = (flight: DatastarFlight): string => {
 }
 
 /**
+ * Combines multiple Flight Recorder timelines into one timeline for cross-boundary debugging.
+ */
+export const mergeDatastarFlights = (
+  flights: readonly DatastarFlight[],
+  options: DatastarFlightMergeOptions = {}
+): DatastarFlight => {
+  const indexed = flights
+    .flatMap((flight) => flight.events)
+    .map((event, index) => ({ event, index }))
+
+  if (options.sortByTimestamp !== false) {
+    indexed.sort((left, right) => {
+      const leftTimestamp = left.event.timestamp
+      const rightTimestamp = right.event.timestamp
+
+      if (leftTimestamp !== undefined && rightTimestamp !== undefined) {
+        const timestampOrder = leftTimestamp - rightTimestamp
+        if (timestampOrder !== 0) return timestampOrder
+      }
+
+      return left.index - right.index
+    })
+  }
+
+  return { events: indexed.map(({ event }) => event) }
+}
+
+/**
  * Error thrown by framework-agnostic Flight Recorder assertion helpers.
  */
 export class DatastarFlightAssertionError extends Error {
@@ -1426,7 +1476,7 @@ export const installDatastarBrowserRecorder = (
   const fetchInstallation = installDatastarFetchRecorder({
     recorder,
     ...(options.include === undefined ? {} : { include: options.include }),
-    ...(options.inspectResponse === undefined ? {} : { inspectResponse: options.inspectResponse }),
+    inspectResponse: options.inspectResponse ?? { timeoutMs: 1000, maxBytes: 1_000_000 },
     ...(options.target === undefined ? {} : { target: options.target })
   })
   const documentTarget = options.document ?? browserDocument()
@@ -1489,6 +1539,64 @@ export const installDatastarBrowserRecorder = (
       fetchInstallation.uninstall()
     }
   }
+}
+
+const serializedBrowserRecorderOptions = (
+  options: DatastarBrowserRecorderScriptOptions
+): string => {
+  const entries: string[] = []
+
+  if (options.fetches === false) entries.push("include: () => false")
+  if (options.userEvents !== undefined) {
+    entries.push(`userEvents: ${JSON.stringify(options.userEvents)}`)
+  }
+  if (options.signalPatches !== undefined) {
+    entries.push(`signalPatches: ${JSON.stringify(options.signalPatches)}`)
+  }
+  if (options.domMutations !== undefined) {
+    entries.push(`domMutations: ${JSON.stringify(options.domMutations)}`)
+  }
+
+  return `{${entries.join(", ")}}`
+}
+
+/**
+ * Returns an install script for browser Flight Recorder tests.
+ */
+export const datastarBrowserRecorderScript = (
+  options: DatastarBrowserRecorderScriptOptions = {}
+): string => {
+  const module = options.module ?? "datastar-kit/testing"
+  const globalName = options.globalName ?? "__datastarKitFlightRecorder"
+
+  return `<script type="module">
+  import { installDatastarBrowserRecorder } from ${JSON.stringify(module)}
+  globalThis[${JSON.stringify(globalName)}] = installDatastarBrowserRecorder(${serializedBrowserRecorderOptions(options)})
+</script>`
+}
+
+/**
+ * Injects browser Flight Recorder setup before the Datastar runtime when possible.
+ */
+export const injectDatastarBrowserRecorder = (
+  html: string,
+  options: InjectDatastarBrowserRecorderOptions = {}
+): string => {
+  const globalName = options.globalName ?? "__datastarKitFlightRecorder"
+  if (options.skipIfPresent !== false && html.includes(globalName)) return html
+
+  const script = datastarBrowserRecorderScript(options)
+  const datastarRuntime = /<script\b(?=[^>]*\bsrc=(['"])[^'"]*datastar[^'"]*\1)[^>]*>/iu.exec(html)
+  if (datastarRuntime !== null) {
+    return `${html.slice(0, datastarRuntime.index)}${script}${html.slice(datastarRuntime.index)}`
+  }
+
+  const headClose = /<\/head\s*>/iu.exec(html)
+  if (headClose !== null) {
+    return `${html.slice(0, headClose.index)}${script}${html.slice(headClose.index)}`
+  }
+
+  return `${script}${html}`
 }
 
 /**

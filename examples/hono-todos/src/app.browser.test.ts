@@ -7,6 +7,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   assertDatastarFlight,
   createDatastarFlightRecorder,
+  injectDatastarBrowserRecorder,
   type DatastarFlight,
   type DatastarFlightRecorder
 } from "datastar-kit/testing"
@@ -17,10 +18,6 @@ const debugBrowser = browserFlagEnabled(process.env.PWDEBUG)
 const headedBrowser = browserFlagEnabled(process.env.DATASTAR_KIT_BROWSER_HEADED) || debugBrowser
 
 const datastarKitBrowserModules = new Set(["read", "testing"])
-const browserRecorderScript = `<script type="module">
-  import { installDatastarBrowserRecorder } from "/__datastar-kit/testing.js"
-  window.__datastarKitFlightRecorder = installDatastarBrowserRecorder({ include: () => false })
-</script>`
 
 type VisibleTodoState = {
   readonly title: string
@@ -57,17 +54,6 @@ const datastarKitBrowserModule = async (fileName: string): Promise<Response> => 
   })
 }
 
-const injectBrowserRecorder = (html: string): string => {
-  if (html.includes(browserRecorderScript)) return html
-  if (html.includes('<script type="module" src=')) {
-    return html.replace(
-      '<script type="module" src=',
-      `${browserRecorderScript}<script type="module" src=`
-    )
-  }
-  return html.replace("</head>", `${browserRecorderScript}</head>`)
-}
-
 const startBrowserFixture = async (): Promise<{
   readonly recorder: DatastarFlightRecorder
   readonly server: ServerType
@@ -87,11 +73,17 @@ const startBrowserFixture = async (): Promise<{
       const headers = new Headers(response.headers)
       headers.delete("content-length")
 
-      return new Response(injectBrowserRecorder(await response.text()), {
-        status: response.status,
-        statusText: response.statusText,
-        headers
-      })
+      return new Response(
+        injectDatastarBrowserRecorder(await response.text(), {
+          module: "/__datastar-kit/testing.js",
+          fetches: false
+        }),
+        {
+          status: response.status,
+          statusText: response.statusText,
+          headers
+        }
+      )
     }
 
     return response

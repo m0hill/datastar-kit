@@ -7,13 +7,16 @@ import {
   assertDatastarResponse,
   createDatastarFlightRecorder,
   DatastarFlightAssertionError,
+  datastarBrowserRecorderScript,
   datastarSseToFlightEvents,
   installDatastarBrowserRecorder,
   installDatastarFetchRecorder,
   formatDatastarFlight,
+  injectDatastarBrowserRecorder,
   inspectDatastarRequest,
   inspectDatastarResponse,
   isDatastarFetchRequest,
+  mergeDatastarFlights,
   parseDatastarSse
 } from "datastar-kit/testing"
 
@@ -437,6 +440,36 @@ describe("Datastar Flight Recorder browser tracing", () => {
     installation.uninstall()
     expect(observer.disconnected).toBe(true)
   })
+
+  it("generates and injects browser recorder scripts before the Datastar runtime", () => {
+    const script = datastarBrowserRecorderScript({
+      module: "/__datastar-kit/testing.js",
+      fetches: false,
+      userEvents: ["click"],
+      domMutations: false
+    })
+
+    expect(script).toContain(
+      'import { installDatastarBrowserRecorder } from "/__datastar-kit/testing.js"'
+    )
+    expect(script).toContain("include: () => false")
+    expect(script).toContain('userEvents: ["click"]')
+    expect(script).toContain("domMutations: false")
+
+    const html =
+      '<html><head><script type="module" src="/datastar.js"></script></head><body></body></html>'
+    const injected = injectDatastarBrowserRecorder(html, {
+      module: "/__datastar-kit/testing.js",
+      fetches: false
+    })
+
+    expect(injected.indexOf("__datastarKitFlightRecorder")).toBeLessThan(
+      injected.indexOf('src="/datastar.js"')
+    )
+    expect(injectDatastarBrowserRecorder(injected, { module: "/__datastar-kit/testing.js" })).toBe(
+      injected
+    )
+  })
 })
 
 describe("Datastar Flight Recorder handler tracing", () => {
@@ -512,6 +545,38 @@ describe("Datastar Flight Recorder handler tracing", () => {
     recorder.clear()
     recorder.recordEvent({ type: "response.done" })
     expect(recorder.flight().events[0]).toMatchObject({ sequence: 0 })
+  })
+
+  it("merges browser and server flights into one timestamp-ordered timeline", () => {
+    const merged = mergeDatastarFlights([
+      {
+        events: [
+          {
+            type: "patch.signals",
+            source: "server",
+            timestamp: 2,
+            signalsSource: '{"saved":true}',
+            signals: { saved: true },
+            onlyIfMissing: false
+          }
+        ]
+      },
+      {
+        events: [
+          {
+            type: "browser.user",
+            source: "browser",
+            timestamp: 1,
+            event: "submit",
+            target: "form#todo-form"
+          }
+        ]
+      }
+    ])
+
+    expect(merged.events.map((event) => event.type)).toEqual(["browser.user", "patch.signals"])
+    expect(formatDatastarFlight(merged)).toContain("[browser")
+    expect(formatDatastarFlight(merged)).toContain("[server")
   })
 
   it("records signal parse failures without stealing the request from the handler", async () => {

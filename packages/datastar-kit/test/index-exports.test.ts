@@ -110,13 +110,16 @@ describe("package exports", () => {
       "assertDatastarFlight",
       "assertDatastarResponse",
       "createDatastarFlightRecorder",
+      "datastarBrowserRecorderScript",
       "datastarSseToFlightEvents",
       "formatDatastarFlight",
+      "injectDatastarBrowserRecorder",
       "inspectDatastarRequest",
       "inspectDatastarResponse",
       "installDatastarBrowserRecorder",
       "installDatastarFetchRecorder",
       "isDatastarFetchRequest",
+      "mergeDatastarFlights",
       "parseDatastarSse"
     ])
   })
