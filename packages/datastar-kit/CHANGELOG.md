@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+No changes yet.
+
+## 0.3.0 - 2026-06-07
+
 ### Added
 
 - Added typed serialization for native Datastar `data-*` attributes in TSX.
