@@ -1,5 +1,6 @@
 import type { Hono } from "hono"
 import { describe, expect, it, vi } from "vitest"
+import { assertDatastarResponse, createDatastarFlightRecorder } from "datastar-kit/testing"
 
 const request = (path: string, init: RequestInit = {}): Request =>
   new Request(`http://test.local${path}`, init)
@@ -35,33 +36,39 @@ describe("Hono todos", () => {
     expect(html).toContain("No todos yet.")
   })
 
-  it("adds a todo by calling the Hono app with a Datastar signal request", async () => {
+  it("records the add-todo Datastar request and semantic response patches", async () => {
     const app = await loadApp()
-    const response = await app.fetch(datastarPost("/todos", { title: "Write tests" }))
-    const body = await response.text()
+    const recorder = createDatastarFlightRecorder()
+    const addTodoRequest = datastarPost("/todos", { title: "Write tests" })
+
+    const response = await recorder.handle(addTodoRequest, (handlerRequest) =>
+      app.fetch(handlerRequest)
+    )
 
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(response.headers.get("cache-control")).toBe("no-cache")
-    expect(body).toContain(
-      'event: datastar-patch-signals\ndata: signals {"title":"","errors":{"title":""}}\n\n'
-    )
-    expect(body).toContain("event: datastar-patch-elements")
-    expect(body).toContain('<li id="todo-1" data-completed="false">')
-    expect(body).toContain("Write tests")
-    expect(body).toContain("@post(&quot;/todos/1/toggle&quot;)")
-    expect(body).toContain("1 of 1 remaining")
+    const assertions = recorder.assert()
+    assertions.toHaveRequested({
+      method: "POST",
+      url: /\/todos$/,
+      signals: { title: "Write tests" }
+    })
+    assertions.toHavePatchedSignals({ title: "", errors: { title: "" } })
+    assertions.toHavePatchedElements({
+      elements: /<li id="todo-1" data-completed="false">[\s\S]*Write tests[\s\S]*1 of 1 remaining/
+    })
+    assertions.toHaveNoSignalErrors()
   })
 
-  it("returns signal validation errors without a browser or framework mock", async () => {
+  it("returns signal validation errors without raw SSE assertions", async () => {
     const app = await loadApp()
     const response = await app.fetch(datastarPost("/todos", { title: "   " }))
 
     expect(response.status).toBe(200)
-    expect(response.headers.get("content-type")).toBe("text/event-stream")
-    await expect(response.text()).resolves.toBe(
-      'event: datastar-patch-signals\ndata: signals {"errors":{"title":"Enter a todo title."}}\n\n'
-    )
+    await assertDatastarResponse(response).toHavePatchedSignals({
+      errors: { title: "Enter a todo title." }
+    })
   })
 
   it("patches the todo list after toggling and deleting items", async () => {
@@ -69,19 +76,17 @@ describe("Hono todos", () => {
     await addTodo(app, "Write docs")
 
     const toggled = await app.fetch(datastarPost("/todos/1/toggle"))
-    const toggledBody = await toggled.text()
-
     expect(toggled.status).toBe(200)
-    expect(toggledBody).toContain('<li id="todo-1" data-completed="true">')
-    expect(toggledBody).toContain("<s>Write docs</s>")
-    expect(toggledBody).toContain("0 of 1 remaining")
+    await assertDatastarResponse(toggled).toHavePatchedElements({
+      elements:
+        /<li id="todo-1" data-completed="true">[\s\S]*<s>Write docs<\/s>[\s\S]*0 of 1 remaining/
+    })
 
     const deleted = await app.fetch(datastarPost("/todos/1/delete"))
-    const deletedBody = await deleted.text()
-
     expect(deleted.status).toBe(200)
-    expect(deletedBody).toContain('<p id="empty-state">No todos yet.</p>')
-    expect(deletedBody).toContain("0 of 0 remaining")
+    await assertDatastarResponse(deleted).toHavePatchedElements({
+      elements: /<p id="empty-state">No todos yet\.<\/p>[\s\S]*0 of 0 remaining/
+    })
   })
 
   it("uses normal HTTP assertions for routes outside the Datastar contract", async () => {
