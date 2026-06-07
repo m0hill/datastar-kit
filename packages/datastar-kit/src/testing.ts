@@ -2,20 +2,35 @@ import * as read from "./read.js"
 import type { SseEventOptions } from "./sse.js"
 import type { SignalState } from "./types.js"
 
-export type DatastarFlightEvent =
-  | DatastarRequestEvent
-  | DatastarResponseEvent
-  | DatastarResponseDoneEvent
-  | DatastarDirectHtmlEvent
-  | DatastarDirectSignalsEvent
-  | DatastarDirectScriptEvent
-  | DatastarPatchElementsEvent
-  | DatastarPatchSignalsEvent
-  | DatastarFetchErrorEvent
-  | DatastarBrowserUserEvent
-  | DatastarBrowserSignalPatchEvent
-  | DatastarDomMutationEvent
-  | DatastarUnknownSseEvent
+export type DatastarFlightEventSource = "server" | "browser"
+
+export interface DatastarFlightEventMeta {
+  readonly source?: DatastarFlightEventSource
+  readonly sequence?: number
+  readonly timestamp?: number
+}
+
+type MutableFlightEventMeta = {
+  -readonly [Key in keyof DatastarFlightEventMeta]: DatastarFlightEventMeta[Key]
+}
+
+export type DatastarFlightEvent = DatastarFlightEventMeta &
+  (
+    | DatastarRequestEvent
+    | DatastarResponseEvent
+    | DatastarResponseDoneEvent
+    | DatastarResponseBodyTruncatedEvent
+    | DatastarDirectHtmlEvent
+    | DatastarDirectSignalsEvent
+    | DatastarDirectScriptEvent
+    | DatastarPatchElementsEvent
+    | DatastarPatchSignalsEvent
+    | DatastarFetchErrorEvent
+    | DatastarBrowserUserEvent
+    | DatastarBrowserSignalPatchEvent
+    | DatastarDomMutationEvent
+    | DatastarUnknownSseEvent
+  )
 
 export interface DatastarFlight {
   readonly events: readonly DatastarFlightEvent[]
@@ -45,6 +60,14 @@ export interface DatastarResponseEvent {
 
 export interface DatastarResponseDoneEvent {
   readonly type: "response.done"
+}
+
+export interface DatastarResponseBodyTruncatedEvent {
+  readonly type: "response.body.truncated"
+  readonly reason: "timeout" | "maxBytes"
+  readonly bytesRead: number
+  readonly maxBytes?: number
+  readonly timeoutMs?: number
 }
 
 export interface DatastarDirectHtmlEvent {
@@ -160,6 +183,21 @@ export type DatastarPatchSignalsExpectation = Partial<
   Pick<DatastarPatchSignalsEvent, "onlyIfMissing">
 >
 
+export type DatastarDirectHtmlExpectation = TextExpectations<
+  DatastarDirectHtmlEvent,
+  "html" | "selector" | "mode" | "namespace"
+> &
+  Partial<Pick<DatastarDirectHtmlEvent, "useViewTransition">>
+
+export type DatastarDirectSignalsExpectation = Partial<
+  Pick<DatastarDirectSignalsEvent, "onlyIfMissing">
+>
+
+export type DatastarDirectScriptExpectation = Partial<{
+  readonly script: TextExpectation<DatastarDirectScriptEvent["script"]>
+  readonly attributes: Readonly<Record<string, unknown>>
+}>
+
 export type DatastarBrowserUserExpectation = Partial<Pick<DatastarBrowserUserEvent, "event">> &
   TextExpectations<DatastarBrowserUserEvent, "target" | "datastarAttribute" | "expression">
 
@@ -168,6 +206,17 @@ export type DatastarDomMutationExpectation = Partial<Pick<DatastarDomMutation, "
 
 export interface DatastarFlightAssertions {
   toHaveRequested(expectation: DatastarRequestExpectation): DatastarRequestEvent
+  toHaveDirectHtml(expectation: DatastarDirectHtmlExpectation): DatastarDirectHtmlEvent
+  toHaveDirectSignals(
+    signals: SignalExpectation,
+    expectation?: DatastarDirectSignalsExpectation
+  ): DatastarDirectSignalsEvent
+  toHaveDirectSignalSource(
+    source: TextExpectation<DatastarDirectSignalsEvent["signalsSource"]>,
+    expectation?: DatastarDirectSignalsExpectation
+  ): DatastarDirectSignalsEvent
+  toHaveDirectScript(expectation: DatastarDirectScriptExpectation): DatastarDirectScriptEvent
+  toHaveCompleted(): DatastarResponseDoneEvent
   toHavePatchedElements(expectation: DatastarPatchElementsExpectation): DatastarPatchElementsEvent
   toHavePatchedSignals(
     signals: SignalExpectation,
@@ -189,15 +238,32 @@ type AsyncFlightAssertions<Keys extends keyof DatastarFlightAssertions> = {
     : never
 }
 
-type DatastarResponseAssertionName =
-  | "toHavePatchedElements"
-  | "toHavePatchedSignals"
-  | "toHavePatchedSignalSource"
-  | "toHaveNoSignalErrors"
+type DatastarResponseAssertionName = Exclude<
+  keyof DatastarFlightAssertions,
+  "toHaveRequested" | "toHaveBrowserUserEvent" | "toHaveBrowserSignalPatch" | "toHaveDomMutation"
+>
 
 export type DatastarResponseAssertions = AsyncFlightAssertions<DatastarResponseAssertionName> & {
   flight(): Promise<DatastarFlight>
   format(): Promise<string>
+}
+
+export interface DatastarResponseInspectionOptions {
+  /** Maximum response-body bytes inspected before a truncation event is recorded. */
+  readonly maxBytes?: number
+  /** Maximum response-body read time before a truncation event is recorded. */
+  readonly timeoutMs?: number
+}
+
+export interface DatastarFlightRecorderOptions {
+  /** Optional source label attached to events recorded by this recorder. */
+  readonly source?: DatastarFlightEventSource
+  /** Whether to attach monotonically increasing sequence numbers to recorded events. */
+  readonly sequence?: boolean
+  /** Optional timestamp source. `true` uses `Date.now()`. */
+  readonly timestamp?: boolean | (() => number)
+  /** Default response-body inspection limits used by `recordResponse()` and `handle()`. */
+  readonly inspectResponse?: DatastarResponseInspectionOptions
 }
 
 export interface DatastarFlightRecorder {
@@ -207,7 +273,7 @@ export interface DatastarFlightRecorder {
   format(): string
   recordEvent(event: DatastarFlightEvent): void
   recordRequest(request: Request): Promise<DatastarRequestEvent>
-  recordResponse(response: Response): Promise<Response>
+  recordResponse(response: Response, options?: DatastarResponseInspectionOptions): Promise<Response>
   handle(
     request: Request,
     handler: (request: Request) => Response | Promise<Response>
@@ -221,6 +287,8 @@ export type DatastarFetchRecorderInclude = (request: Request) => boolean
 export interface DatastarFetchRecorderOptions {
   /** Predicate deciding which fetch requests are recorded. Defaults to Datastar action requests. */
   readonly include?: DatastarFetchRecorderInclude
+  /** Response-body inspection limits for recorded responses. */
+  readonly inspectResponse?: DatastarResponseInspectionOptions
   /** Existing recorder to write fetch events into. A new recorder is created when omitted. */
   readonly recorder?: DatastarFlightRecorder
   /** Object whose `fetch` method should be wrapped. Defaults to `globalThis`. */
@@ -479,6 +547,100 @@ const patchSignalsEvent = (event: DatastarSseEvent): DatastarPatchSignalsEvent =
 const contentTypeIncludes = (contentType: string | null, expected: string): boolean =>
   contentType?.toLowerCase().includes(expected) ?? false
 
+const responseTruncationEvent = (
+  reason: DatastarResponseBodyTruncatedEvent["reason"],
+  bytesRead: number,
+  options: DatastarResponseInspectionOptions
+): DatastarResponseBodyTruncatedEvent => ({
+  type: "response.body.truncated",
+  reason,
+  bytesRead,
+  ...(options.maxBytes === undefined ? {} : { maxBytes: options.maxBytes }),
+  ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs })
+})
+
+interface ResponseTextInspection {
+  readonly text: string
+  readonly truncated?: DatastarResponseBodyTruncatedEvent
+}
+
+const timeout = Symbol("Datastar response inspection timeout")
+
+const readWithOptionalTimeout = async <T>(
+  promise: Promise<T>,
+  timeoutMs: number | undefined
+): Promise<T | typeof timeout> => {
+  if (timeoutMs === undefined) return promise
+
+  let timer: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race<T | typeof timeout>([
+      promise,
+      new Promise<typeof timeout>((resolve) => {
+        timer = setTimeout(() => resolve(timeout), timeoutMs)
+      })
+    ])
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+const inspectResponseText = async (
+  response: Response,
+  options: DatastarResponseInspectionOptions = {}
+): Promise<ResponseTextInspection> => {
+  const maxBytes = options.maxBytes
+  const body = response.clone().body
+
+  if (body === null) {
+    return { text: "" }
+  }
+
+  const reader = body.getReader()
+  const decoder = new TextDecoder()
+  let text = ""
+  let bytesRead = 0
+  let releaseLock = true
+
+  try {
+    while (true) {
+      const result = await readWithOptionalTimeout(reader.read(), options.timeoutMs)
+
+      if (result === timeout) {
+        releaseLock = false
+        void reader.cancel().catch(() => undefined)
+        return { text, truncated: responseTruncationEvent("timeout", bytesRead, options) }
+      }
+
+      if (result.done) {
+        return { text: text + decoder.decode() }
+      }
+
+      const chunk = result.value
+      if (maxBytes !== undefined && bytesRead + chunk.byteLength > maxBytes) {
+        const remaining = Math.max(0, maxBytes - bytesRead)
+        if (remaining > 0) {
+          text += decoder.decode(chunk.slice(0, remaining), { stream: true })
+          bytesRead += remaining
+        }
+        void reader.cancel().catch(() => undefined)
+        return { text, truncated: responseTruncationEvent("maxBytes", bytesRead, options) }
+      }
+
+      bytesRead += chunk.byteLength
+      text += decoder.decode(chunk, { stream: true })
+    }
+  } finally {
+    if (releaseLock) reader.releaseLock()
+  }
+}
+
+const withOptionalTruncation = (
+  events: readonly DatastarFlightEvent[],
+  inspection: ResponseTextInspection
+): readonly DatastarFlightEvent[] =>
+  inspection.truncated === undefined ? events : [...events, inspection.truncated]
+
 const describeObject = (value: unknown): string =>
   JSON.stringify(
     value,
@@ -641,6 +803,11 @@ const formatEvent = (event: DatastarFlightEvent): readonly string[] => {
       return [`response ${event.status}`, `content-type: ${event.contentType ?? "<none>"}`]
     case "response.done":
       return ["response completed with no Datastar body"]
+    case "response.body.truncated":
+      return [
+        `response body truncated (${event.reason})`,
+        `bytes read: ${event.bytesRead}${event.maxBytes === undefined ? "" : ` / ${event.maxBytes}`}`
+      ]
     case "direct.html":
       return [
         `direct HTML${event.selector === undefined ? "" : ` -> ${event.selector}`}`,
@@ -776,7 +943,8 @@ export const inspectDatastarRequest = async (request: Request): Promise<Datastar
  * Parses a native `Response` into semantic Datastar response events.
  */
 export const inspectDatastarResponse = async (
-  response: Response
+  response: Response,
+  options: DatastarResponseInspectionOptions = {}
 ): Promise<readonly DatastarFlightEvent[]> => {
   const contentType = response.headers.get("content-type")
   const responseEvent: DatastarResponseEvent = {
@@ -793,23 +961,38 @@ export const inspectDatastarResponse = async (
     return [responseEvent]
   }
 
-  const readBody = () => response.clone().text()
+  const readBody = () => inspectResponseText(response, options)
 
   if (contentTypeIncludes(contentType, "text/event-stream")) {
     const body = await readBody()
-    return [responseEvent, ...datastarSseToFlightEvents(parseDatastarSse(body))]
+    return withOptionalTruncation(
+      [responseEvent, ...datastarSseToFlightEvents(parseDatastarSse(body.text))],
+      body
+    )
   }
 
   if (contentTypeIncludes(contentType, "text/html")) {
-    return [responseEvent, directHtmlEvent(await readBody(), response.headers)]
+    const body = await readBody()
+    return withOptionalTruncation(
+      [responseEvent, directHtmlEvent(body.text, response.headers)],
+      body
+    )
   }
 
   if (contentTypeIncludes(contentType, "application/json")) {
-    return [responseEvent, directSignalsEvent(await readBody(), response.headers)]
+    const body = await readBody()
+    return withOptionalTruncation(
+      [responseEvent, directSignalsEvent(body.text, response.headers)],
+      body
+    )
   }
 
   if (contentTypeIncludes(contentType, "text/javascript")) {
-    return [responseEvent, directScriptEvent(await readBody(), response.headers)]
+    const body = await readBody()
+    return withOptionalTruncation(
+      [responseEvent, directScriptEvent(body.text, response.headers)],
+      body
+    )
   }
 
   return [responseEvent]
@@ -818,12 +1001,22 @@ export const inspectDatastarResponse = async (
 /**
  * Formats a recorded Flight timeline for assertion failures and debugging output.
  */
+const formatEventMeta = (event: DatastarFlightEvent): string => {
+  const meta = [
+    event.source,
+    event.sequence === undefined ? undefined : `#${event.sequence}`,
+    event.timestamp === undefined ? undefined : new Date(event.timestamp).toISOString()
+  ].filter((item) => item !== undefined)
+
+  return meta.length === 0 ? "" : `[${meta.join(" ")}] `
+}
+
 export const formatDatastarFlight = (flight: DatastarFlight): string => {
   const lines = ["Datastar Flight Recorder", ""]
 
   for (const [index, event] of flight.events.entries()) {
     const [title, ...details] = formatEvent(event)
-    lines.push(`${index + 1}. ${title}`)
+    lines.push(`${index + 1}. ${formatEventMeta(event)}${title}`)
     for (const detail of details) {
       lines.push(...detail.split("\n").map((line) => (line.length === 0 ? "   " : `   ${line}`)))
     }
@@ -889,6 +1082,53 @@ const requestMatches = (
   return true
 }
 
+const directHtmlMatches = (
+  event: DatastarFlightEvent,
+  expectation: DatastarDirectHtmlExpectation
+): event is DatastarDirectHtmlEvent =>
+  event.type === "direct.html" &&
+  matchesText(event.html, expectation.html) &&
+  matchesText(event.selector, expectation.selector) &&
+  matchesText(event.mode, expectation.mode) &&
+  matchesText(event.namespace, expectation.namespace) &&
+  (expectation.useViewTransition === undefined ||
+    event.useViewTransition === expectation.useViewTransition)
+
+const onlyIfMissingMatches = (
+  event: { readonly onlyIfMissing?: boolean },
+  expectation: { readonly onlyIfMissing?: boolean }
+): boolean =>
+  expectation.onlyIfMissing === undefined || event.onlyIfMissing === expectation.onlyIfMissing
+
+const directSignalsMatches = (
+  event: DatastarFlightEvent,
+  signals: SignalExpectation,
+  expectation: DatastarDirectSignalsExpectation
+): event is DatastarDirectSignalsEvent =>
+  event.type === "direct.signals" &&
+  matchesValue(event.signals, signals) &&
+  onlyIfMissingMatches(event, expectation)
+
+const directSignalSourceMatches = (
+  event: DatastarFlightEvent,
+  source: TextExpectation<DatastarDirectSignalsEvent["signalsSource"]>,
+  expectation: DatastarDirectSignalsExpectation
+): event is DatastarDirectSignalsEvent =>
+  event.type === "direct.signals" &&
+  matchesText(event.signalsSource, source) &&
+  onlyIfMissingMatches(event, expectation)
+
+const directScriptMatches = (
+  event: DatastarFlightEvent,
+  expectation: DatastarDirectScriptExpectation
+): event is DatastarDirectScriptEvent =>
+  event.type === "direct.script" &&
+  matchesText(event.script, expectation.script) &&
+  (expectation.attributes === undefined || matchesValue(event.attributes, expectation.attributes))
+
+const completedMatches = (event: DatastarFlightEvent): event is DatastarResponseDoneEvent =>
+  event.type === "response.done"
+
 const patchElementsMatches = (
   event: DatastarFlightEvent,
   expectation: DatastarPatchElementsExpectation
@@ -909,7 +1149,7 @@ const patchSignalsMatches = (
 ): event is DatastarPatchSignalsEvent =>
   event.type === "patch.signals" &&
   matchesValue(event.signals, signals) &&
-  (expectation.onlyIfMissing === undefined || event.onlyIfMissing === expectation.onlyIfMissing)
+  onlyIfMissingMatches(event, expectation)
 
 const patchSignalSourceMatches = (
   event: DatastarFlightEvent,
@@ -918,7 +1158,7 @@ const patchSignalSourceMatches = (
 ): event is DatastarPatchSignalsEvent =>
   event.type === "patch.signals" &&
   matchesText(event.signalsSource, source) &&
-  (expectation.onlyIfMissing === undefined || event.onlyIfMissing === expectation.onlyIfMissing)
+  onlyIfMissingMatches(event, expectation)
 
 const browserUserEventMatches = (
   event: DatastarFlightEvent,
@@ -960,6 +1200,33 @@ export const assertDatastarFlight = (flight: DatastarFlight): DatastarFlightAsse
     return expectFlightEvent(flight, `request ${describeExpectation(expectation)}`, (event) =>
       requestMatches(event, expectation)
     )
+  },
+  toHaveDirectHtml(expectation) {
+    return expectFlightEvent(flight, `direct HTML ${describeExpectation(expectation)}`, (event) =>
+      directHtmlMatches(event, expectation)
+    )
+  },
+  toHaveDirectSignals(signals, expectation = {}) {
+    return expectFlightEvent(
+      flight,
+      `direct signals ${describeExpectation({ signals, ...expectation })}`,
+      (event) => directSignalsMatches(event, signals, expectation)
+    )
+  },
+  toHaveDirectSignalSource(source, expectation = {}) {
+    return expectFlightEvent(
+      flight,
+      `raw direct signals ${describeExpectation({ source, ...expectation })}`,
+      (event) => directSignalSourceMatches(event, source, expectation)
+    )
+  },
+  toHaveDirectScript(expectation) {
+    return expectFlightEvent(flight, `direct script ${describeExpectation(expectation)}`, (event) =>
+      directScriptMatches(event, expectation)
+    )
+  },
+  toHaveCompleted() {
+    return expectFlightEvent(flight, "command completion response", completedMatches)
   },
   toHavePatchedElements(expectation) {
     return expectFlightEvent(flight, `element patch ${describeExpectation(expectation)}`, (event) =>
@@ -1013,8 +1280,15 @@ export const assertDatastarFlight = (flight: DatastarFlight): DatastarFlightAsse
 /**
  * Creates semantic assertions for a single Datastar response without consuming its body.
  */
-export const assertDatastarResponse = (response: Response): DatastarResponseAssertions => {
-  const flight = inspectDatastarResponse(response).then((events): DatastarFlight => ({ events }))
+export const assertDatastarResponse = (
+  response: Response,
+  options: DatastarResponseInspectionOptions = {}
+): DatastarResponseAssertions => {
+  const flight = inspectDatastarResponse(response, options).then(
+    (events): DatastarFlight => ({
+      events
+    })
+  )
   const assertions = flight.then(assertDatastarFlight)
 
   return {
@@ -1023,6 +1297,21 @@ export const assertDatastarResponse = (response: Response): DatastarResponseAsse
     },
     async format() {
       return formatDatastarFlight(await flight)
+    },
+    async toHaveCompleted() {
+      return (await assertions).toHaveCompleted()
+    },
+    async toHaveDirectHtml(expectation) {
+      return (await assertions).toHaveDirectHtml(expectation)
+    },
+    async toHaveDirectSignals(signals, expectation) {
+      return (await assertions).toHaveDirectSignals(signals, expectation)
+    },
+    async toHaveDirectSignalSource(source, expectation) {
+      return (await assertions).toHaveDirectSignalSource(source, expectation)
+    },
+    async toHaveDirectScript(expectation) {
+      return (await assertions).toHaveDirectScript(expectation)
     },
     async toHavePatchedElements(expectation) {
       return (await assertions).toHavePatchedElements(expectation)
@@ -1047,6 +1336,7 @@ export const installDatastarFetchRecorder = (
 ): DatastarFetchRecorderInstallation => {
   const recorder = options.recorder ?? createDatastarFlightRecorder()
   const include = options.include ?? isDatastarFetchRequest
+  const inspectResponse = options.inspectResponse
   const target = options.target ?? globalThis
   const originalFetch = target.fetch
   const callOriginalFetch: typeof fetch = originalFetch.bind(target)
@@ -1080,7 +1370,7 @@ export const installDatastarFetchRecorder = (
 
   const recordResponse = async (response: Response, request?: Request): Promise<void> => {
     try {
-      await recorder.recordResponse(response.clone())
+      await recorder.recordResponse(response.clone(), inspectResponse)
     } catch (error) {
       recorder.recordEvent(fetchErrorEvent(error, request))
     }
@@ -1136,6 +1426,7 @@ export const installDatastarBrowserRecorder = (
   const fetchInstallation = installDatastarFetchRecorder({
     recorder,
     ...(options.include === undefined ? {} : { include: options.include }),
+    ...(options.inspectResponse === undefined ? {} : { inspectResponse: options.inspectResponse }),
     ...(options.target === undefined ? {} : { target: options.target })
   })
   const documentTarget = options.document ?? browserDocument()
@@ -1203,8 +1494,43 @@ export const installDatastarBrowserRecorder = (
 /**
  * Creates a handler-level Flight Recorder for Datastar request/response tests.
  */
-export const createDatastarFlightRecorder = (): DatastarFlightRecorder => {
+export const createDatastarFlightRecorder = (
+  options: DatastarFlightRecorderOptions = {}
+): DatastarFlightRecorder => {
   const events: DatastarFlightEvent[] = []
+  const timestamp =
+    typeof options.timestamp === "function"
+      ? options.timestamp
+      : options.timestamp === true
+        ? Date.now
+        : undefined
+  let sequence = 0
+
+  const addMetadata = <Event extends DatastarFlightEvent>(event: Event): Event => {
+    const meta: MutableFlightEventMeta = {}
+
+    if (options.source !== undefined && event.source === undefined) {
+      meta.source = options.source
+    }
+    if (options.sequence === true && event.sequence === undefined) {
+      meta.sequence = sequence
+      sequence += 1
+    }
+    if (timestamp !== undefined && event.timestamp === undefined) {
+      meta.timestamp = timestamp()
+    }
+
+    return Object.keys(meta).length === 0 ? event : ({ ...event, ...meta } as Event)
+  }
+
+  const pushEvent = <Event extends DatastarFlightEvent>(event: Event): Event => {
+    const recorded = addMetadata(event)
+    events.push(recorded)
+    return recorded
+  }
+
+  const pushEvents = (items: readonly DatastarFlightEvent[]): readonly DatastarFlightEvent[] =>
+    items.map(pushEvent)
 
   const recorder: DatastarFlightRecorder = {
     assert() {
@@ -1212,6 +1538,7 @@ export const createDatastarFlightRecorder = (): DatastarFlightRecorder => {
     },
     clear() {
       events.length = 0
+      sequence = 0
     },
     flight() {
       return { events: [...events] }
@@ -1220,15 +1547,15 @@ export const createDatastarFlightRecorder = (): DatastarFlightRecorder => {
       return formatDatastarFlight(recorder.flight())
     },
     recordEvent(event) {
-      events.push(event)
+      pushEvent(event)
     },
     async recordRequest(request) {
-      const event = await inspectDatastarRequest(request)
-      events.push(event)
-      return event
+      return pushEvent(await inspectDatastarRequest(request))
     },
-    async recordResponse(response) {
-      events.push(...(await inspectDatastarResponse(response)))
+    async recordResponse(response, responseOptions) {
+      pushEvents(
+        await inspectDatastarResponse(response, responseOptions ?? options.inspectResponse)
+      )
       return response
     },
     async handle(request, handler) {
