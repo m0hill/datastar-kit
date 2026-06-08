@@ -18,12 +18,13 @@ Start with [Introduction](index.md) if you are new to Datastar Kit. After that, 
 
 7. [Validation](guides/validation-and-errors.md) shows the app-owned decode-then-validate pattern and user-facing error patches.
 8. [Realtime](guides/realtime.md) explains current-state live views with `reply.stream(...)` and app-owned invalidation sources.
+9. [Debugger](guides/debugger.md) adds a development-only web component for inspecting signals, signal patches, and Datastar SSE/fetch traffic.
 
 ## Operate it
 
-9. [Security](guides/security.md) covers trust boundaries, auth, CSRF, ownership checks, and safe navigation.
-10. [Deployment](guides/deployment.md) covers runtime adapters, Datastar assets, SSE proxy settings, and production checks.
-11. [Testing](guides/testing.md) covers request/response tests and protocol-level verification.
+10. [Security](guides/security.md) covers trust boundaries, auth, CSRF, ownership checks, and safe navigation.
+11. [Deployment](guides/deployment.md) covers runtime adapters, Datastar assets, SSE proxy settings, and production checks.
+12. [Testing](guides/testing.md) covers request/response tests and protocol-level verification.
 
 ## Reference
 

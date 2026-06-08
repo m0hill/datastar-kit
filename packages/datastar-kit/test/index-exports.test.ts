@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import * as Root from "datastar-kit"
+import * as debuggerModule from "datastar-kit/debugger"
 import * as sse from "datastar-kit/sse"
 import {
   action,
@@ -108,6 +109,11 @@ describe("package exports", () => {
       "executeScript",
       "patchElements",
       "patchSignals"
+    ])
+    expect(exportedKeys(debuggerModule)).toEqual([
+      "DATASTAR_DEBUGGER_STATE_NAME",
+      "DatastarDebugger",
+      "datastarDebuggerDefaults"
     ])
   })
 })

@@ -2,6 +2,8 @@
 
 A single Hono Node app that ports the official Datastar examples to Datastar Kit.
 
+The Datastar Kit debugger is rendered on every page, so this example app is a convenient place to inspect live signals, signal patches, and Datastar SSE/fetch traffic.
+
 ```sh
 pnpm --filter @datastar-kit/example-hono-official-examples dev
 ```

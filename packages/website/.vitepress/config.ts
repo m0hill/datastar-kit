@@ -35,7 +35,8 @@ export default defineConfig({
           { text: "Actions and responses", link: "/guides/actions-and-responses" },
           { text: "Element patches", link: "/guides/patch-elements" },
           { text: "Validation", link: "/guides/validation-and-errors" },
-          { text: "Realtime", link: "/guides/realtime" }
+          { text: "Realtime", link: "/guides/realtime" },
+          { text: "Debugger", link: "/guides/debugger" }
         ]
       },
       {
