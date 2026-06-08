@@ -32,6 +32,10 @@
       "types": "./dist/sse.d.ts",
       "default": "./dist/sse.js"
     },
+    "./debugger": {
+      "types": "./dist/debugger.d.ts",
+      "default": "./dist/debugger.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Added the `datastar-kit/debugger` subpath with a development-only `DatastarDebugger` TSX component for inspecting current signals, signal patch events, and Datastar fetch/SSE activity.
+
 ### Fixed
 
 - Render bare boolean HTML children as empty strings, so `true` no longer leaks visible text into serialized markup.

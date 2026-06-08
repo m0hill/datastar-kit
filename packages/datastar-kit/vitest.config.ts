@@ -9,6 +9,7 @@ export default defineConfig({
       { find: "datastar-kit/jsx-runtime", replacement: fromRoot("./src/jsx-runtime.ts") },
       { find: "datastar-kit/jsx-dev-runtime", replacement: fromRoot("./src/jsx-dev-runtime.ts") },
       { find: "datastar-kit/sse", replacement: fromRoot("./src/sse.ts") },
+      { find: "datastar-kit/debugger", replacement: fromRoot("./src/debugger.ts") },
       { find: "datastar-kit", replacement: fromRoot("./src/index.ts") }
     ]
   },
