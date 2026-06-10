@@ -16,6 +16,7 @@ export interface DatastarDebuggerFetchEntry {
   readonly kind: "fetch"
   readonly type: string
   readonly element: string
+  readonly target?: string
   readonly argsRaw: Readonly<Record<string, unknown>>
   readonly signals?: Readonly<Record<string, unknown>>
 }
@@ -231,6 +232,8 @@ const debuggerStyles = `
 }
 .${DEBUGGER_CLASS} .dsk-debug-event[open] { border-color: var(--dsk-border-strong); }
 .${DEBUGGER_CLASS} .dsk-debug-event summary {
+  flex-wrap: nowrap;
+  min-width: 0;
   padding: 0.55rem 0.7rem;
   border: 0;
   font-weight: 500;
@@ -247,17 +250,27 @@ const debuggerStyles = `
   background: var(--dsk-bg);
 }
 .${DEBUGGER_CLASS} .dsk-debug-time {
+  flex: 0 0 auto;
   color: var(--dsk-faint);
   font-variant-numeric: tabular-nums;
 }
-.${DEBUGGER_CLASS} .dsk-debug-source { color: var(--dsk-muted); margin-left: auto; }
+.${DEBUGGER_CLASS} .dsk-debug-source {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  color: var(--dsk-muted);
+  text-align: right;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .${DEBUGGER_CLASS} .dsk-debug-empty {
   margin: 0;
   padding: 1.75rem 0.75rem;
   text-align: center;
   color: var(--dsk-faint);
 }
-.${DEBUGGER_CLASS} .dsk-debug-kind { font-weight: 600; }
+.${DEBUGGER_CLASS} .dsk-debug-kind { flex: 0 0 auto; font-weight: 600; }
 .${DEBUGGER_CLASS} .dsk-debug-kind[data-kind="signal"] { color: var(--dsk-add); }
 .${DEBUGGER_CLASS} .dsk-debug-kind[data-kind="fetch"] { color: var(--dsk-blue); }
 .${DEBUGGER_CLASS} ::-webkit-scrollbar { width: 9px; height: 9px; }
@@ -368,6 +381,26 @@ const toDebugValue = (value, seen = new WeakSet()) => {
 }
 `
 
+const patchTargetSource = `
+const patchTargetLabel = (type, argsRaw) => {
+  if (type !== "datastar-patch-elements") return undefined
+
+  const selector = typeof argsRaw.selector === "string" ? argsRaw.selector.trim() : ""
+  if (selector) return selector
+
+  const elements = typeof argsRaw.elements === "string" ? argsRaw.elements : ""
+  if (!elements) return undefined
+
+  const template = document.createElement("template")
+  template.innerHTML = elements
+  const ids = Array.from(template.content.children)
+    .map((element) => element.id ? "#" + element.id : "")
+    .filter(Boolean)
+
+  return ids.length > 0 ? ids.join(", ") : undefined
+}
+`
+
 const signalSnapshotSource = (stateName: DatastarDebuggerStateName): string => `
 const signalSnapshot = () => {
   const snapshot = {}
@@ -407,16 +440,21 @@ const fetchExpression = (stateName: DatastarDebuggerStateName, maxEvents: number
   if (debug.paused) return
 
   ${debugValueSource}
+  ${patchTargetSource}
   ${signalSnapshotSource(stateName)}
   ${rememberEventSource(maxEvents)}
 
   const detail = evt.detail || {}
+  const type = detail.type || evt.type
+  const argsRaw = detail.argsRaw || {}
+  const target = patchTargetLabel(type, argsRaw)
   const entry = {
     at: new Date().toLocaleTimeString(),
     kind: "fetch",
-    type: detail.type || evt.type,
+    type,
     element: toElementLabel(detail.el),
-    argsRaw: toDebugValue(detail.argsRaw || {})
+    ...(target ? { target } : {}),
+    argsRaw: toDebugValue(argsRaw)
   }
 
   if (entry.type === "started") entry.signals = signalSnapshot()
@@ -473,16 +511,17 @@ const eventsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
 
   const events = Array.from(${signalRef(stateName)}.events || [])
   const eventLabel = (event) => event.kind === "signal" ? "signal patch" : event.type
+  const eventSource = (event) => event.kind !== "fetch" ? "" : event.target || event.element
   const eventText = (event) => {
     if (event.kind === "signal") return [event.at, eventLabel(event), toDebugJson(event.patch)].join(" ")
-    return [event.at, event.type, event.element, toDebugJson(event.argsRaw), toDebugJson(event.signals || {})].join(" ")
+    return [event.at, event.type, event.element, event.target || "", toDebugJson(event.argsRaw), toDebugJson(event.signals || {})].join(" ")
   }
   const renderEvent = (event) => [
     '<details class="dsk-debug-event">',
       '<summary>',
         '<span class="dsk-debug-time">', escapeHtml(event.at), '</span>',
         '<span class="dsk-debug-kind" data-kind="', escapeHtml(event.kind), '">', escapeHtml(eventLabel(event)), '</span>',
-        event.kind === "fetch" ? '<span class="dsk-debug-source">' + escapeHtml(event.element) + '</span>' : '',
+        event.kind === "fetch" ? '<span class="dsk-debug-source">' + escapeHtml(eventSource(event)) + '</span>' : '',
       '</summary>',
       '<pre>', escapeHtml(toDebugJson(event)), '</pre>',
     '</details>'
