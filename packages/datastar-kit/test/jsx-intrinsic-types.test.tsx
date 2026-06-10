@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { get, js, mod, signal } from "../src/ds/index.js"
+import { get, js, mod, signal, type DatastarAttributes } from "../src/ds/index.js"
 import { renderToString } from "../src/html.js"
+
+const typecheckOnly = (testCases: () => void): void => {
+  void testCases
+}
 
 describe("typed JSX intrinsic elements", () => {
   it("renders typed HTML attributes", () => {
@@ -109,5 +113,51 @@ describe("typed JSX intrinsic elements", () => {
     ]
 
     expect(nodes).toHaveLength(6)
+  })
+
+  it("renders per-attribute modifier combinations the runtime accepts", () => {
+    const node = (
+      <form
+        data-signals={mod({ count: 0 }, { ifMissing: true })}
+        data-on:submit={mod(get("/search"), { prevent: true })}
+      >
+        <input data-bind={mod("accepted", { prop: "checked", event: "change" })} />
+      </form>
+    )
+
+    expect(renderToString(node)).toBe(
+      '<form data-signals__ifmissing="{&quot;count&quot;: 0}" data-on:submit__prevent="@get(&quot;/search&quot;)">' +
+        '<input data-bind__prop.checked__event.change="accepted"></form>'
+    )
+  })
+
+  it("rejects incompatible modifier combinations at compile time", () => {
+    typecheckOnly(() => {
+      const nodes = [
+        // @ts-expect-error unknown modifier keys are rejected by mod()
+        <button data-on:click={mod(get("/save"), { prevent: true, nope: true })} />,
+        // @ts-expect-error data-signals does not accept the prevent modifier
+        <form data-signals={mod({ count: 0 }, { prevent: true })} />,
+        // @ts-expect-error data-on events do not accept the ifMissing modifier
+        <button data-on:click={mod(get("/save"), { ifMissing: true })} />,
+        // @ts-expect-error data-bind does not accept timing modifiers
+        <input data-bind={mod("accepted", { debounce: "200ms" })} />,
+        // @ts-expect-error data-ignore only accepts the self modifier
+        <div data-ignore={mod({ prevent: true })} />,
+        // @ts-expect-error data-init does not accept event modifiers
+        <div data-init={mod("$count = 1", { debounce: "500ms" })} />,
+        // @ts-expect-error data-on-signal-patch does not accept viewTransition
+        <div data-on-signal-patch={mod("console.log(patch)", { viewTransition: true })} />
+      ]
+      const customEventAttrs: DatastarAttributes = {
+        // @ts-expect-error custom data-on events do not accept the ifMissing modifier
+        "data-on:widget-loaded": mod(get("/save"), { ifMissing: true })
+      }
+
+      void nodes
+      void customEventAttrs
+    })
+
+    expect(true).toBe(true)
   })
 })
