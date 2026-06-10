@@ -54,7 +54,12 @@ describe("typed JSX intrinsic elements", () => {
   it("renders unknown tags and attributes through the escape hatches", () => {
     const ready = signal<boolean, "ready">("ready")
 
-    const node = (
+    const nodes = [
+      <div
+        unknownattr="x"
+        hx-get="/fragment"
+        x-data="{ open: false }"
+      />,
       <my-widget
         theme="dark"
         data-on:widget-loaded={js`${ready} = true`}
@@ -73,10 +78,11 @@ describe("typed JSX intrinsic elements", () => {
           />
         </svg>
       </my-widget>
-    )
+    ]
 
-    expect(renderToString(node)).toBe(
-      '<my-widget theme="dark" data-on:widget-loaded="$ready = true" data-rows="3" aria-roledescription="widget">' +
+    expect(renderToString(nodes)).toBe(
+      '<div unknownattr="x" hx-get="/fragment" x-data="{ open: false }"></div>' +
+        '<my-widget theme="dark" data-on:widget-loaded="$ready = true" data-rows="3" aria-roledescription="widget">' +
         '<svg viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" data-show="$ready"></circle></svg>' +
         "</my-widget>"
     )
@@ -92,10 +98,6 @@ describe("typed JSX intrinsic elements", () => {
         // @ts-expect-error type must be a button type keyword
         type="anchor"
       />,
-      <div
-        // @ts-expect-error unknown attributes are rejected on known tags
-        unknownattr="x"
-      />,
       // @ts-expect-error data-show does not accept regular expressions
       <div data-show={/pattern/} />,
       // @ts-expect-error data-bind expects a signal reference or name
@@ -106,6 +108,6 @@ describe("typed JSX intrinsic elements", () => {
       <input type="text">text</input>
     ]
 
-    expect(nodes).toHaveLength(7)
+    expect(nodes).toHaveLength(6)
   })
 })

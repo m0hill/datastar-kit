@@ -6,6 +6,8 @@ import type { HtmlChild, HtmlPropValue } from "./html.js"
  */
 type Loose<Known extends string> = Known | (string & {})
 
+type HtmlAttributeValue = HtmlPropValue | HtmlChild | readonly HtmlChild[] | DatastarAttributeValue
+
 type AriaBoolean = boolean | "true" | "false" | undefined
 
 /**
@@ -205,6 +207,9 @@ type AutocompleteValue = Loose<
  * Global HTML attributes accepted by every intrinsic JSX element, including Datastar attributes.
  */
 export interface HtmlGlobalAttributes extends DatastarAttributes, AriaAttributes {
+  /** Escape hatch for custom, vendor, and future HTML attributes. */
+  [attribute: string]: HtmlAttributeValue
+
   /** JSX list key consumed by the compiler/runtime boundary; never rendered. */
   key?: string | number | undefined
   /** Element children. */
@@ -712,7 +717,7 @@ export interface VideoHtmlAttributes extends HtmlGlobalAttributes {
  * attribute accepts a serializable value.
  */
 export interface SvgElementAttributes extends HtmlGlobalAttributes {
-  [attribute: string]: HtmlPropValue | HtmlChild | readonly HtmlChild[] | DatastarAttributeValue
+  [attribute: string]: HtmlAttributeValue
 }
 
 /**

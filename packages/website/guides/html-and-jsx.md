@@ -87,17 +87,18 @@ import { preserve } from "datastar-kit"
 
 ## Typed attributes and autocomplete
 
-Intrinsic elements are fully typed. Your editor autocompletes HTML tag names, per-tag HTML
-attributes (`<input accept maxlength>`, `<form method enctype>`, ...), ARIA attributes, and every
-Datastar attribute. Attribute values are checked too: `data-bind` expects a signal ref or name,
-`data-show` expects an expression, `data-signals` expects a signal object, and
-`<button type="...">` only accepts real button types.
+Intrinsic elements have typed common attributes. Your editor autocompletes HTML tag names,
+per-tag HTML attributes (`<input accept maxlength>`, `<form method enctype>`, ...), ARIA
+attributes, and every Datastar attribute. Known attribute values are checked too: `data-bind`
+expects a signal ref or name, `data-show` expects an expression, `data-signals` expects a signal
+object, and `<button type="...">` only accepts real button types.
 
 Keyed Datastar attributes are typed through template patterns, so `data-on:click` and common event
 names are suggested while custom events such as `data-on:widget-loaded` still type-check.
 
-Two escape hatches keep server-side JSX flexible:
+Escape hatches keep server-side JSX flexible:
 
+- Unknown attributes on known tags are accepted for custom, vendor, and future HTML attributes.
 - Unknown tags (custom elements such as `<my-widget>`, and anything else) accept loosely typed
   props, so any attribute the runtime can serialize is allowed.
 - Unrecognized `data-*` and `aria-*` attributes are always accepted on every element.
