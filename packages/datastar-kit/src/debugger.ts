@@ -40,8 +40,6 @@ export interface DatastarDebuggerProps {
   readonly open?: boolean
   /** Maximum debugger events retained in browser signal state. @defaultValue `100` */
   readonly maxEvents?: number
-  /** Visible title in the summary row. @defaultValue `"Datastar debugger"` */
-  readonly title?: string
   /** Additional class on the debugger container. */
   readonly class?: string
   /** Additional class on the debugger container for JSX callers that prefer `className`. */
@@ -61,7 +59,17 @@ const debuggerStyles = `
 .${DEBUGGER_CLASS} {
   display: contents;
   color-scheme: dark;
-  font: 12px/1.4 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --dsk-bg: #0a0a0a;
+  --dsk-surface: #131313;
+  --dsk-surface-2: #1a1a1a;
+  --dsk-border: #262626;
+  --dsk-border-strong: #3a3a3a;
+  --dsk-text: #ededed;
+  --dsk-muted: #8a8a8a;
+  --dsk-faint: #6b6b6b;
+  --dsk-accent: #e5e5e5;
+  --dsk-warn: #f0b429;
+  font: 12px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .${DEBUGGER_CLASS} * { box-sizing: border-box; }
 .${DEBUGGER_CLASS} details {
@@ -72,85 +80,119 @@ const debuggerStyles = `
   width: min(92vw, 34rem);
   max-height: min(72vh, 36rem);
   overflow: auto;
-  border: 1px solid #334155;
-  border-radius: 0.75rem;
-  background: #020617;
-  color: #e2e8f0;
-  box-shadow: 0 20px 60px rgb(0 0 0 / 45%);
+  border: 1px solid var(--dsk-border);
+  border-radius: 0.875rem;
+  background: var(--dsk-bg);
+  color: var(--dsk-text);
+  box-shadow: 0 1px 0 0 rgb(255 255 255 / 4%) inset, 0 24px 60px -12px rgb(0 0 0 / 70%);
 }
 .${DEBUGGER_CLASS} details:not([open]) { width: auto; }
 .${DEBUGGER_CLASS} summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.45rem;
+  gap: 0.5rem;
   align-items: center;
   cursor: pointer;
-  padding: 0.65rem 0.75rem;
+  padding: 0.7rem 0.85rem;
   list-style: none;
-  font-weight: 700;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  user-select: none;
+  transition: background 0.12s ease;
 }
+.${DEBUGGER_CLASS} summary:hover { background: var(--dsk-surface); }
 .${DEBUGGER_CLASS} summary::-webkit-details-marker { display: none; }
-.${DEBUGGER_CLASS} .dsk-debug-title { margin-right: auto; }
+.${DEBUGGER_CLASS} .dsk-debug-pill:first-of-type { margin-left: auto; }
 .${DEBUGGER_CLASS} .dsk-debug-pill {
-  border: 1px solid #334155;
-  border-radius: 999px;
-  background: #0f172a;
-  color: #94a3b8;
-  padding: 0.1rem 0.45rem;
+  color: var(--dsk-muted);
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
-.${DEBUGGER_CLASS} .dsk-debug-pill[data-kind="warn"] { color: #fbbf24; }
+.${DEBUGGER_CLASS} .dsk-debug-pill[data-kind="warn"] { color: var(--dsk-text); }
 .${DEBUGGER_CLASS} .dsk-debug-body {
   display: grid;
-  gap: 0.7rem;
-  padding: 0.75rem;
-  border-top: 1px solid #334155;
+  gap: 0.8rem;
+  padding: 0.85rem;
+  border-top: 1px solid var(--dsk-border);
 }
-.${DEBUGGER_CLASS} .dsk-debug-controls,
+.${DEBUGGER_CLASS} .dsk-debug-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+.${DEBUGGER_CLASS} .dsk-debug-controls input { grid-column: 1 / -1; }
 .${DEBUGGER_CLASS} .dsk-debug-tabs {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
+  gap: 0.25rem;
   align-items: center;
+  padding: 0.25rem;
+  border: 1px solid var(--dsk-border);
+  border-radius: 0.6rem;
+  background: var(--dsk-surface);
 }
 .${DEBUGGER_CLASS} input,
 .${DEBUGGER_CLASS} button {
-  border: 1px solid #334155;
-  border-radius: 0.45rem;
-  background: #0f172a;
-  color: #e2e8f0;
+  border: 1px solid var(--dsk-border);
+  border-radius: 0.5rem;
+  background: var(--dsk-surface-2);
+  color: var(--dsk-text);
   font: inherit;
-  padding: 0.35rem 0.55rem;
+  padding: 0.4rem 0.6rem;
+  transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
 }
-.${DEBUGGER_CLASS} input { flex: 1 1 12rem; }
-.${DEBUGGER_CLASS} button { cursor: pointer; }
-.${DEBUGGER_CLASS} button:hover,
-.${DEBUGGER_CLASS} button[aria-selected="true"] { border-color: #38bdf8; }
-.${DEBUGGER_CLASS} button[aria-pressed="true"] {
-  border-color: #fbbf24;
-  color: #fbbf24;
+.${DEBUGGER_CLASS} input {
+  flex: 1 1 12rem;
+  background: var(--dsk-surface);
 }
-.${DEBUGGER_CLASS} .dsk-debug-panel { display: grid; gap: 0.45rem; }
+.${DEBUGGER_CLASS} input::placeholder { color: var(--dsk-faint); }
+.${DEBUGGER_CLASS} input:focus-visible {
+  outline: none;
+  border-color: var(--dsk-border-strong);
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 8%);
+}
+.${DEBUGGER_CLASS} button { cursor: pointer; font-weight: 550; }
+.${DEBUGGER_CLASS} button:hover { border-color: var(--dsk-border-strong); background: #222; }
+.${DEBUGGER_CLASS} .dsk-debug-tabs button {
+  flex: 1;
+  border-color: transparent;
+  background: transparent;
+  color: var(--dsk-muted);
+  font-weight: 600;
+}
+.${DEBUGGER_CLASS} .dsk-debug-tabs button:hover:not([aria-selected]:not([aria-selected="false"])) {
+  color: var(--dsk-text);
+}
+.${DEBUGGER_CLASS} .dsk-debug-tabs button[aria-selected]:not([aria-selected="false"]) {
+  background: var(--dsk-surface-2);
+  color: #fff;
+}
+.${DEBUGGER_CLASS} button[aria-pressed]:not([aria-pressed="false"]) {
+  border-color: var(--dsk-border-strong);
+  background: var(--dsk-surface-2);
+  color: #fff;
+}
+.${DEBUGGER_CLASS} .dsk-debug-panel { display: grid; gap: 0.5rem; }
 .${DEBUGGER_CLASS} h3 {
   margin: 0;
-  color: #94a3b8;
-  font-size: 11px;
-  letter-spacing: 0.04em;
+  color: var(--dsk-faint);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 .${DEBUGGER_CLASS} pre {
   max-height: 18rem;
   overflow: auto;
   margin: 0;
-  border: 1px solid #1e293b;
-  border-radius: 0.55rem;
-  background: #0f172a;
-  color: #e2e8f0;
-  padding: 0.6rem;
+  border: 1px solid var(--dsk-border);
+  border-radius: 0.6rem;
+  background: var(--dsk-surface);
+  color: var(--dsk-text);
+  padding: 0.7rem 0.75rem;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font: 11px/1.45 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font: 11px/1.5 "SFMono-Regular", ui-monospace, Consolas, "Liberation Mono", monospace;
 }
 .${DEBUGGER_CLASS} .dsk-debug-events {
   display: grid;
@@ -160,27 +202,52 @@ const debuggerStyles = `
   position: static;
   width: auto;
   max-height: none;
-  overflow: visible;
-  border: 1px solid #1e293b;
-  border-radius: 0.55rem;
-  background: #0f172a;
+  overflow: hidden;
+  border: 1px solid var(--dsk-border);
+  border-radius: 0.6rem;
+  background: var(--dsk-surface);
   box-shadow: none;
 }
+.${DEBUGGER_CLASS} .dsk-debug-event[open] { border-color: var(--dsk-border-strong); }
 .${DEBUGGER_CLASS} .dsk-debug-event summary {
-  padding: 0.5rem 0.6rem;
+  padding: 0.5rem 0.65rem;
   border: 0;
   font-weight: 500;
+  gap: 0.55rem;
+  font-family: "SFMono-Regular", ui-monospace, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
 }
+.${DEBUGGER_CLASS} .dsk-debug-event[open] summary { border-bottom: 1px solid var(--dsk-border); }
 .${DEBUGGER_CLASS} .dsk-debug-event pre {
   max-height: 14rem;
   border: 0;
-  border-top: 1px solid #1e293b;
   border-radius: 0;
+  background: var(--dsk-bg);
 }
-.${DEBUGGER_CLASS} .dsk-debug-time,
-.${DEBUGGER_CLASS} .dsk-debug-source,
-.${DEBUGGER_CLASS} .dsk-debug-empty { color: #94a3b8; }
-.${DEBUGGER_CLASS} .dsk-debug-kind { color: #38bdf8; }
+.${DEBUGGER_CLASS} .dsk-debug-time {
+  color: var(--dsk-faint);
+  font-variant-numeric: tabular-nums;
+}
+.${DEBUGGER_CLASS} .dsk-debug-source { color: var(--dsk-muted); margin-left: auto; }
+.${DEBUGGER_CLASS} .dsk-debug-empty {
+  margin: 0;
+  padding: 1.25rem 0.75rem;
+  text-align: center;
+  color: var(--dsk-faint);
+}
+.${DEBUGGER_CLASS} .dsk-debug-kind {
+  color: var(--dsk-accent);
+  font-weight: 600;
+}
+.${DEBUGGER_CLASS} ::-webkit-scrollbar { width: 9px; height: 9px; }
+.${DEBUGGER_CLASS} ::-webkit-scrollbar-thumb {
+  background: #2e2e2e;
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.${DEBUGGER_CLASS} ::-webkit-scrollbar-thumb:hover { background: #3d3d3d; background-clip: padding-box; }
+.${DEBUGGER_CLASS} ::-webkit-scrollbar-track { background: transparent; }
 `
 
 function assertStateName(stateName: string): asserts stateName is DatastarDebuggerStateName {
@@ -467,7 +534,6 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
   const stateName = props.stateName ?? DATASTAR_DEBUGGER_STATE_NAME
   assertStateName(stateName)
   const maxEvents = maxEventsValue(props.maxEvents)
-  const title = props.title ?? "Datastar debugger"
 
   return h(
     "section",
@@ -487,7 +553,6 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
       h(
         "summary",
         {},
-        h("span", { class: "dsk-debug-title" }, title),
         pill({ "data-text": signalCountExpression(stateName) }, "0 signals"),
         pill({ "data-text": `${signalRef(stateName)}.events.length + " events"` }, "0 events"),
         pill(
