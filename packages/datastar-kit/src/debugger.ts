@@ -151,7 +151,7 @@ const debuggerStyles = `
   padding: 0.45rem 0.65rem;
   transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
 }
-.${DEBUGGER_CLASS} input { flex: 1 1 12rem; }
+.${DEBUGGER_CLASS} input { flex: 1 1 12rem; background: var(--dsk-surface-2); }
 .${DEBUGGER_CLASS} input::placeholder { color: var(--dsk-faint); }
 .${DEBUGGER_CLASS} input:focus-visible {
   outline: none;
@@ -165,12 +165,12 @@ const debuggerStyles = `
   width: 2.25rem;
   padding: 0;
   color: var(--dsk-muted);
-  background: var(--dsk-surface);
+  background: var(--dsk-surface-2);
 }
 .${DEBUGGER_CLASS} .dsk-debug-controls button:hover {
   color: var(--dsk-text);
   border-color: var(--dsk-border-strong);
-  background: var(--dsk-surface-2);
+  background: #1f1f1f;
 }
 .${DEBUGGER_CLASS} .dsk-debug-controls button svg { display: block; }
 .${DEBUGGER_CLASS} .dsk-debug-tabs button {
@@ -208,7 +208,7 @@ const debuggerStyles = `
   margin: 0;
   border: 1px solid var(--dsk-border);
   border-radius: 0.5rem;
-  background: var(--dsk-surface);
+  background: var(--dsk-surface-2);
   color: var(--dsk-text);
   padding: 0.75rem 0.85rem;
   white-space: pre-wrap;
@@ -226,7 +226,7 @@ const debuggerStyles = `
   overflow: hidden;
   border: 1px solid var(--dsk-border);
   border-radius: 0.5rem;
-  background: var(--dsk-surface);
+  background: var(--dsk-surface-2);
   box-shadow: none;
 }
 .${DEBUGGER_CLASS} .dsk-debug-event[open] { border-color: var(--dsk-border-strong); }
@@ -238,7 +238,7 @@ const debuggerStyles = `
   font-family: var(--dsk-mono);
   font-size: 11px;
 }
-.${DEBUGGER_CLASS} .dsk-debug-event summary:hover { background: var(--dsk-surface-2); }
+.${DEBUGGER_CLASS} .dsk-debug-event summary:hover { background: #1f1f1f; }
 .${DEBUGGER_CLASS} .dsk-debug-event[open] summary { border-bottom: 1px solid var(--dsk-border); }
 .${DEBUGGER_CLASS} .dsk-debug-event pre {
   max-height: 14rem;

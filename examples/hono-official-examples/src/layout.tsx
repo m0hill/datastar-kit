@@ -55,7 +55,7 @@ export const Shell = (props: {
 }): JSX.Element => (
   <main class="shell">
     <DatastarDebugger
-      open
+      open={false}
       maxEvents={200}
     />
     <aside class="sidebar">
