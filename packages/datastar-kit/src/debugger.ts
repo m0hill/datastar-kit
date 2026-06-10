@@ -249,17 +249,8 @@ const debuggerStyles = `
   border-radius: 0;
   background: var(--dsk-bg);
 }
-.${DEBUGGER_CLASS} .dsk-debug-detail-label {
+.${DEBUGGER_CLASS} .dsk-debug-divider {
   border-top: 1px solid var(--dsk-border);
-  padding: 0.55rem 0.85rem 0.2rem;
-  color: var(--dsk-muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-.${DEBUGGER_CLASS} .dsk-debug-html {
-  color: #d6d6d6;
 }
 .${DEBUGGER_CLASS} .dsk-debug-time {
   flex: 0 0 auto;
@@ -599,8 +590,8 @@ const eventsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
       argsRaw: { ...event.argsRaw, elements: "[formatted below]" }
     }
     return '<pre>' + escapeHtml(toDebugJson(eventWithoutElements)) + '</pre>'
-      + '<div class="dsk-debug-detail-label">elements</div>'
-      + '<pre class="dsk-debug-html">' + escapeHtml(formatHtml(elements)) + '</pre>'
+      + '<div class="dsk-debug-divider"></div>'
+      + '<pre>' + escapeHtml(formatHtml(elements)) + '</pre>'
   }
   const renderEvent = (event) => [
     '<details class="dsk-debug-event">',
