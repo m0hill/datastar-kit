@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { HtmlNameError } from "../src/html.js"
-import { executeScript, patchElements, patchSignals } from "../src/sse.js"
+import { executeScript, patchElements, patchSignals, SseFieldError } from "../src/sse.js"
 
 describe("Datastar SSE encoding", () => {
   it("encodes default element patches like the SDK fixture", () => {
@@ -46,6 +46,32 @@ describe("Datastar SSE encoding", () => {
   it("splits multiline element payloads into repeated data lines", () => {
     expect(patchElements("<div>\n  Hello\n</div>")).toBe(
       "event: datastar-patch-elements\ndata: elements <div>\ndata: elements   Hello\ndata: elements </div>\n\n"
+    )
+  })
+
+  it("splits carriage-return payloads into repeated data lines", () => {
+    expect(patchElements("<div>\r  Hello\r</div>")).toBe(
+      "event: datastar-patch-elements\ndata: elements <div>\ndata: elements   Hello\ndata: elements </div>\n\n"
+    )
+    expect(patchSignals('{"safe":true}\rid: injected')).toBe(
+      'event: datastar-patch-signals\ndata: signals {"safe":true}\ndata: signals id: injected\n\n'
+    )
+  })
+
+  it("rejects newlines in SSE event IDs", () => {
+    expect(() => patchElements("<div/>", { id: "a\nb" })).toThrow(SseFieldError)
+    expect(() => patchSignals({ a: 1 }, { id: "bad\nid" })).toThrow(SseFieldError)
+  })
+
+  it("rejects newlines in element selector fields", () => {
+    expect(() => patchElements("<div/>", { selector: "#x\ndata: elements <script>" })).toThrow(
+      SseFieldError
+    )
+  })
+
+  it("rejects carriage returns in scoped view transition selector fields", () => {
+    expect(() => patchElements("<div/>", { viewTransitionSelector: "#x\r\n" })).toThrow(
+      SseFieldError
     )
   })
 

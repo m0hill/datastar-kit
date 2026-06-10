@@ -76,12 +76,37 @@ export interface ExecuteScriptOptions extends SseEventOptions {
 const PATCH_ELEMENTS_EVENT = "datastar-patch-elements"
 const PATCH_SIGNALS_EVENT = "datastar-patch-signals"
 
+/**
+ * Error thrown when an SSE field value contains characters that would corrupt
+ * the line-oriented SSE protocol (newlines, carriage returns, control chars).
+ */
+export class SseFieldError extends Error {
+  constructor(
+    readonly field: string,
+    readonly value: string
+  ) {
+    super(`Invalid Datastar SSE ${field} value: ${JSON.stringify(value)}`)
+  }
+}
+
 interface EventLine {
   readonly key: string
   readonly value: string
 }
 
-const splitLines = (value: string): ReadonlyArray<string> => value.split("\n")
+// SSE fields are single lines; CR/LF or other control chars would let a value
+// inject extra protocol lines or forged events.
+const controlCharPattern = /[\u0000-\u001F\u007F]/u
+
+const assertSseField = (field: string, value: string): void => {
+  if (controlCharPattern.test(value)) {
+    throw new SseFieldError(field, value)
+  }
+}
+
+// SSE parsers treat CRLF, bare CR, and bare LF as line breaks.
+const sseLineBreakPattern = /\r\n|\r|\n/u
+const splitLines = (value: string): ReadonlyArray<string> => value.split(sseLineBreakPattern)
 
 const dataLines = (key: string, value: string): ReadonlyArray<EventLine> =>
   splitLines(value).map((line) => ({ key, value: line }))
@@ -94,6 +119,7 @@ const serializeEvent = (
   const out = [`event: ${event}`]
 
   if (options.id !== undefined) {
+    assertSseField("id", options.id)
     out.push(`id: ${options.id}`)
   }
 
@@ -138,6 +164,7 @@ export const patchElements = (elements: string, options: PatchElementsOptions = 
   const lines: Array<EventLine> = []
 
   if (options.selector !== undefined) {
+    assertSseField("selector", options.selector)
     lines.push({ key: "selector", value: options.selector })
   }
 
@@ -154,6 +181,7 @@ export const patchElements = (elements: string, options: PatchElementsOptions = 
   }
 
   if (options.viewTransitionSelector !== undefined) {
+    assertSseField("viewTransitionSelector", options.viewTransitionSelector)
     lines.push({ key: "viewTransitionSelector", value: options.viewTransitionSelector })
   }
 

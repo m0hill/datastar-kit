@@ -103,6 +103,11 @@ describe("package exports", () => {
       "signals",
       "stream"
     ])
-    expect(exportedKeys(sse)).toEqual(["executeScript", "patchElements", "patchSignals"])
+    expect(exportedKeys(sse)).toEqual([
+      "SseFieldError",
+      "executeScript",
+      "patchElements",
+      "patchSignals"
+    ])
   })
 })
