@@ -6,6 +6,19 @@ import {
   datastarDebuggerDefaults
 } from "../src/debugger.js"
 
+const decodeHtmlAttribute = (value: string): string =>
+  value
+    .replaceAll("&quot;", '"')
+    .replaceAll("&#39;", "'")
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&amp;", "&")
+
+const attributeValues = (html: string, attribute: string): string[] =>
+  Array.from(html.matchAll(new RegExp(`${attribute}="([\\s\\S]*?)"`, "g")), ([, value]) =>
+    decodeHtmlAttribute(value ?? "")
+  )
+
 describe("Datastar debugger", () => {
   it("renders as ordinary Datastar-authored HTML", () => {
     const html = renderToString(<DatastarDebugger open={false} />)
@@ -20,11 +33,28 @@ describe("Datastar debugger", () => {
     expect(html).toContain("data-effect")
     expect(html).toContain("patchTargetLabel")
     expect(html).toContain("formatHtml")
+    expect(html).toContain("highlightJson")
+    expect(html).toContain("highlightHtml")
     expect(html).toContain("dsk-debug-divider")
     expect(html).toContain("Signals")
     expect(html).toContain("Events")
     expect(html).not.toContain("<table")
     expect(html).not.toContain("datastar-debugger")
+  })
+
+  it("emits parseable Datastar expressions", () => {
+    const html = renderToString(<DatastarDebugger />)
+
+    for (const attribute of [
+      "data-effect",
+      "data-text",
+      "data-on-signal-patch",
+      "data-on:datastar-fetch__document"
+    ]) {
+      for (const expression of attributeValues(html, attribute)) {
+        expect(() => new Function(expression)).not.toThrow()
+      }
+    }
   })
 
   it("allows a typed local state name", () => {
