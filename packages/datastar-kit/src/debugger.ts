@@ -249,6 +249,18 @@ const debuggerStyles = `
   border-radius: 0;
   background: var(--dsk-bg);
 }
+.${DEBUGGER_CLASS} .dsk-debug-detail-label {
+  border-top: 1px solid var(--dsk-border);
+  padding: 0.55rem 0.85rem 0.2rem;
+  color: var(--dsk-muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.${DEBUGGER_CLASS} .dsk-debug-html {
+  color: #d6d6d6;
+}
 .${DEBUGGER_CLASS} .dsk-debug-time {
   flex: 0 0 auto;
   color: var(--dsk-faint);
@@ -330,6 +342,65 @@ const escapeHtml = (value) => String(value)
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;")
   .replaceAll("'", "&#39;")
+`
+
+const htmlFormatterSource = `
+const formatHtml = (html) => {
+  try {
+    const voidTags = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "param", "source", "track", "wbr"])
+    const template = document.createElement("template")
+    template.innerHTML = html
+    const lines = []
+    const attrText = (attr) => {
+      const quote = attr.value.includes('"') && !attr.value.includes("'") ? "'" : '"'
+      const escaped = quote === '"'
+        ? attr.value.replaceAll('"', "&quot;")
+        : attr.value.replaceAll("'", "&#39;")
+      return attr.name + "=" + quote + escaped + quote
+    }
+    const openLines = (element, indent) => {
+      const tag = element.tagName.toLowerCase()
+      const attrs = Array.from(element.attributes).map(attrText)
+      const singleLine = "<" + tag + (attrs.length ? " " + attrs.join(" ") : "") + ">"
+      if (singleLine.length <= 80) return [indent + singleLine]
+      return [indent + "<" + tag, ...attrs.map((attr) => indent + "  " + attr), indent + ">"]
+    }
+    const walk = (node, depth = 0) => {
+      const indent = "  ".repeat(depth)
+      if (node.nodeType === Node.TEXT_NODE) {
+        const text = node.textContent.trim()
+        if (text) lines.push(indent + text)
+        return
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return
+
+      const tag = node.tagName.toLowerCase()
+      const children = Array.from(node.childNodes)
+      const opening = openLines(node, indent)
+      if (voidTags.has(tag)) {
+        lines.push(...opening)
+        return
+      }
+      if (opening.length === 1 && children.length === 1 && children[0].nodeType === Node.TEXT_NODE) {
+        const text = children[0].textContent.trim()
+        const line = opening[0] + text + "</" + tag + ">"
+        if (line.length <= 120) {
+          lines.push(line)
+          return
+        }
+      }
+
+      lines.push(...opening)
+      for (const child of children) walk(child, depth + 1)
+      lines.push(indent + "</" + tag + ">")
+    }
+
+    for (const child of Array.from(template.content.childNodes)) walk(child)
+    return lines.join("\\n") || html
+  } catch {
+    return html
+  }
+}
 `
 
 const matcherSource = (stateName: DatastarDebuggerStateName): string => `
@@ -508,6 +579,7 @@ const eventsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
   ${stringifySource}
   ${matcherSource(stateName)}
   ${htmlEscapeSource}
+  ${htmlFormatterSource}
 
   const events = Array.from(${signalRef(stateName)}.events || [])
   const eventLabel = (event) => event.kind === "signal" ? "signal patch" : event.type
@@ -516,6 +588,20 @@ const eventsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
     if (event.kind === "signal") return [event.at, eventLabel(event), toDebugJson(event.patch)].join(" ")
     return [event.at, event.type, event.element, event.target || "", toDebugJson(event.argsRaw), toDebugJson(event.signals || {})].join(" ")
   }
+  const eventDetails = (event) => {
+    const elements = event.kind === "fetch" && event.type === "datastar-patch-elements" && typeof event.argsRaw.elements === "string"
+      ? event.argsRaw.elements
+      : undefined
+    if (!elements) return '<pre>' + escapeHtml(toDebugJson(event)) + '</pre>'
+
+    const eventWithoutElements = {
+      ...event,
+      argsRaw: { ...event.argsRaw, elements: "[formatted below]" }
+    }
+    return '<pre>' + escapeHtml(toDebugJson(eventWithoutElements)) + '</pre>'
+      + '<div class="dsk-debug-detail-label">elements</div>'
+      + '<pre class="dsk-debug-html">' + escapeHtml(formatHtml(elements)) + '</pre>'
+  }
   const renderEvent = (event) => [
     '<details class="dsk-debug-event">',
       '<summary>',
@@ -523,7 +609,7 @@ const eventsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
         '<span class="dsk-debug-kind" data-kind="', escapeHtml(event.kind), '">', escapeHtml(eventLabel(event)), '</span>',
         event.kind === "fetch" ? '<span class="dsk-debug-source">' + escapeHtml(eventSource(event)) + '</span>' : '',
       '</summary>',
-      '<pre>', escapeHtml(toDebugJson(event)), '</pre>',
+      eventDetails(event),
     '</details>'
   ].join("")
 
