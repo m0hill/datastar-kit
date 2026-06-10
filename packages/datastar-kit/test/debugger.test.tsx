@@ -18,6 +18,7 @@ describe("Datastar debugger", () => {
     expect(html).toContain("data-text")
     expect(html).toContain("data-bind")
     expect(html).toContain("data-effect")
+    expect(html).toContain("patchTargetLabel")
     expect(html).toContain("Signals")
     expect(html).toContain("Events")
     expect(html).not.toContain("<table")

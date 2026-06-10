@@ -37,7 +37,7 @@ Do not ship the debugger in production pages. It mirrors browser-side signal sta
 The debugger is intentionally plain: a fixed `<details>` panel with two tabs.
 
 - **Signals**: the current browser signal snapshot as pretty JSON, excluding the debugger's own local signal.
-- **Events**: a newest-first Datastar event timeline. Rows show time, event type, and source element; expand a row for truncated JSON details. `started` fetch events also capture the signal snapshot at that moment.
+- **Events**: a newest-first Datastar event timeline. Rows show time, event type, and the patch target when known; otherwise they show the source element. Expand a row for truncated JSON details. `started` fetch events also capture the signal snapshot at that moment.
 
 Use **Search** to filter the current tab. Plain text is case-insensitive; `/pattern/i` uses a regular expression. Use **Pause** to stop recording and **Clear** to empty the event log.
 
@@ -49,7 +49,6 @@ Use **Search** to filter the current tab. Plain text is case-insensitive; `/patt
 | `stateName`         | `"_datastarKitDebugger"`  | Local root signal used by the debugger. Must be underscore-prefixed. |
 | `open`              | `true`                    | Whether the `<details>` panel starts expanded.                       |
 | `maxEvents`         | `100`                     | Maximum debugger events retained in browser state.                   |
-| `title`             | `"Datastar debugger"`     | Summary title.                                                       |
 | `class`/`className` | none                      | Additional container class.                                          |
 | `style`             | none                      | Inline container style.                                              |
 
