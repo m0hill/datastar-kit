@@ -59,16 +59,18 @@ const debuggerStyles = `
 .${DEBUGGER_CLASS} {
   display: contents;
   color-scheme: dark;
-  --dsk-bg: #0a0a0a;
-  --dsk-surface: #131313;
-  --dsk-surface-2: #1a1a1a;
-  --dsk-border: #262626;
-  --dsk-border-strong: #3a3a3a;
+  --dsk-bg: #000;
+  --dsk-surface: #0c0c0c;
+  --dsk-surface-2: #161616;
+  --dsk-border: #1f1f1f;
+  --dsk-border-strong: #333;
   --dsk-text: #ededed;
-  --dsk-muted: #8a8a8a;
-  --dsk-faint: #6b6b6b;
-  --dsk-accent: #e5e5e5;
-  --dsk-warn: #f0b429;
+  --dsk-muted: #7d7d7d;
+  --dsk-faint: #565656;
+  --dsk-add: #5fb46a;
+  --dsk-blue: #7aa2f7;
+  --dsk-red: #f0666f;
+  --dsk-mono: "SFMono-Regular", ui-monospace, "JetBrains Mono", Consolas, "Liberation Mono", monospace;
   font: 12px/1.5 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .${DEBUGGER_CLASS} * { box-sizing: border-box; }
@@ -77,56 +79,64 @@ const debuggerStyles = `
   right: 1rem;
   bottom: 1rem;
   z-index: 2147483647;
-  width: min(92vw, 34rem);
-  max-height: min(72vh, 36rem);
+  width: min(92vw, 33rem);
+  max-height: min(74vh, 38rem);
   overflow: auto;
   border: 1px solid var(--dsk-border);
-  border-radius: 0.875rem;
+  border-radius: 0.75rem;
   background: var(--dsk-bg);
   color: var(--dsk-text);
-  box-shadow: 0 1px 0 0 rgb(255 255 255 / 4%) inset, 0 24px 60px -12px rgb(0 0 0 / 70%);
+  box-shadow: 0 24px 70px -16px rgb(0 0 0 / 85%);
 }
 .${DEBUGGER_CLASS} details:not([open]) { width: auto; }
 .${DEBUGGER_CLASS} summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.65rem;
   align-items: center;
   cursor: pointer;
-  padding: 0.7rem 0.85rem;
+  padding: 0.8rem 1rem;
   list-style: none;
-  font-weight: 600;
-  letter-spacing: 0.01em;
   user-select: none;
   transition: background 0.12s ease;
 }
 .${DEBUGGER_CLASS} summary:hover { background: var(--dsk-surface); }
 .${DEBUGGER_CLASS} summary::-webkit-details-marker { display: none; }
+.${DEBUGGER_CLASS} .dsk-debug-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dsk-text);
+}
 .${DEBUGGER_CLASS} .dsk-debug-pill:first-of-type { margin-left: auto; }
 .${DEBUGGER_CLASS} .dsk-debug-pill {
   color: var(--dsk-muted);
   font-size: 11px;
-  font-weight: 500;
+  font-family: var(--dsk-mono);
   font-variant-numeric: tabular-nums;
 }
-.${DEBUGGER_CLASS} .dsk-debug-pill[data-kind="warn"] { color: var(--dsk-text); }
+.${DEBUGGER_CLASS} .dsk-debug-pill[data-kind="warn"] {
+  color: var(--dsk-red);
+  font-weight: 600;
+}
 .${DEBUGGER_CLASS} .dsk-debug-body {
   display: grid;
-  gap: 0.8rem;
-  padding: 0.85rem;
+  gap: 1.1rem;
+  padding: 1rem;
   border-top: 1px solid var(--dsk-border);
 }
 .${DEBUGGER_CLASS} .dsk-debug-controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.4rem;
+  display: flex;
+  gap: 0.45rem;
+  align-items: stretch;
 }
-.${DEBUGGER_CLASS} .dsk-debug-controls input { grid-column: 1 / -1; }
+.${DEBUGGER_CLASS} .dsk-debug-controls input { flex: 1 1 auto; min-width: 0; }
 .${DEBUGGER_CLASS} .dsk-debug-tabs {
   display: flex;
-  gap: 0.25rem;
+  gap: 0.3rem;
   align-items: center;
-  padding: 0.25rem;
+  padding: 0.3rem;
   border: 1px solid var(--dsk-border);
   border-radius: 0.6rem;
   background: var(--dsk-surface);
@@ -135,30 +145,41 @@ const debuggerStyles = `
 .${DEBUGGER_CLASS} button {
   border: 1px solid var(--dsk-border);
   border-radius: 0.5rem;
-  background: var(--dsk-surface-2);
+  background: var(--dsk-surface);
   color: var(--dsk-text);
   font: inherit;
-  padding: 0.4rem 0.6rem;
+  padding: 0.45rem 0.65rem;
   transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
 }
-.${DEBUGGER_CLASS} input {
-  flex: 1 1 12rem;
-  background: var(--dsk-surface);
-}
+.${DEBUGGER_CLASS} input { flex: 1 1 12rem; }
 .${DEBUGGER_CLASS} input::placeholder { color: var(--dsk-faint); }
 .${DEBUGGER_CLASS} input:focus-visible {
   outline: none;
   border-color: var(--dsk-border-strong);
-  box-shadow: 0 0 0 3px rgb(255 255 255 / 8%);
 }
-.${DEBUGGER_CLASS} button { cursor: pointer; font-weight: 550; }
-.${DEBUGGER_CLASS} button:hover { border-color: var(--dsk-border-strong); background: #222; }
+.${DEBUGGER_CLASS} .dsk-debug-controls button {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  padding: 0;
+  color: var(--dsk-muted);
+  background: var(--dsk-surface);
+}
+.${DEBUGGER_CLASS} .dsk-debug-controls button:hover {
+  color: var(--dsk-text);
+  border-color: var(--dsk-border-strong);
+  background: var(--dsk-surface-2);
+}
+.${DEBUGGER_CLASS} .dsk-debug-controls button svg { display: block; }
 .${DEBUGGER_CLASS} .dsk-debug-tabs button {
   flex: 1;
+  cursor: pointer;
+  font-weight: 600;
   border-color: transparent;
   background: transparent;
   color: var(--dsk-muted);
-  font-weight: 600;
 }
 .${DEBUGGER_CLASS} .dsk-debug-tabs button:hover:not([aria-selected]:not([aria-selected="false"])) {
   color: var(--dsk-text);
@@ -167,18 +188,18 @@ const debuggerStyles = `
   background: var(--dsk-surface-2);
   color: #fff;
 }
-.${DEBUGGER_CLASS} button[aria-pressed]:not([aria-pressed="false"]) {
+.${DEBUGGER_CLASS} .dsk-debug-controls button[aria-pressed]:not([aria-pressed="false"]) {
   border-color: var(--dsk-border-strong);
   background: var(--dsk-surface-2);
-  color: #fff;
+  color: var(--dsk-text);
 }
-.${DEBUGGER_CLASS} .dsk-debug-panel { display: grid; gap: 0.5rem; }
+.${DEBUGGER_CLASS} .dsk-debug-panel { display: grid; gap: 0.6rem; }
 .${DEBUGGER_CLASS} h3 {
   margin: 0;
-  color: var(--dsk-faint);
+  color: var(--dsk-muted);
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
 }
 .${DEBUGGER_CLASS} pre {
@@ -186,17 +207,17 @@ const debuggerStyles = `
   overflow: auto;
   margin: 0;
   border: 1px solid var(--dsk-border);
-  border-radius: 0.6rem;
+  border-radius: 0.5rem;
   background: var(--dsk-surface);
   color: var(--dsk-text);
-  padding: 0.7rem 0.75rem;
+  padding: 0.75rem 0.85rem;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  font: 11px/1.5 "SFMono-Regular", ui-monospace, Consolas, "Liberation Mono", monospace;
+  font: 11px/1.6 var(--dsk-mono);
 }
 .${DEBUGGER_CLASS} .dsk-debug-events {
   display: grid;
-  gap: 0.4rem;
+  gap: 0.45rem;
 }
 .${DEBUGGER_CLASS} .dsk-debug-event {
   position: static;
@@ -204,19 +225,20 @@ const debuggerStyles = `
   max-height: none;
   overflow: hidden;
   border: 1px solid var(--dsk-border);
-  border-radius: 0.6rem;
+  border-radius: 0.5rem;
   background: var(--dsk-surface);
   box-shadow: none;
 }
 .${DEBUGGER_CLASS} .dsk-debug-event[open] { border-color: var(--dsk-border-strong); }
 .${DEBUGGER_CLASS} .dsk-debug-event summary {
-  padding: 0.5rem 0.65rem;
+  padding: 0.55rem 0.7rem;
   border: 0;
   font-weight: 500;
-  gap: 0.55rem;
-  font-family: "SFMono-Regular", ui-monospace, Consolas, "Liberation Mono", monospace;
+  gap: 0.6rem;
+  font-family: var(--dsk-mono);
   font-size: 11px;
 }
+.${DEBUGGER_CLASS} .dsk-debug-event summary:hover { background: var(--dsk-surface-2); }
 .${DEBUGGER_CLASS} .dsk-debug-event[open] summary { border-bottom: 1px solid var(--dsk-border); }
 .${DEBUGGER_CLASS} .dsk-debug-event pre {
   max-height: 14rem;
@@ -231,22 +253,21 @@ const debuggerStyles = `
 .${DEBUGGER_CLASS} .dsk-debug-source { color: var(--dsk-muted); margin-left: auto; }
 .${DEBUGGER_CLASS} .dsk-debug-empty {
   margin: 0;
-  padding: 1.25rem 0.75rem;
+  padding: 1.75rem 0.75rem;
   text-align: center;
   color: var(--dsk-faint);
 }
-.${DEBUGGER_CLASS} .dsk-debug-kind {
-  color: var(--dsk-accent);
-  font-weight: 600;
-}
+.${DEBUGGER_CLASS} .dsk-debug-kind { font-weight: 600; }
+.${DEBUGGER_CLASS} .dsk-debug-kind[data-kind="signal"] { color: var(--dsk-add); }
+.${DEBUGGER_CLASS} .dsk-debug-kind[data-kind="fetch"] { color: var(--dsk-blue); }
 .${DEBUGGER_CLASS} ::-webkit-scrollbar { width: 9px; height: 9px; }
 .${DEBUGGER_CLASS} ::-webkit-scrollbar-thumb {
-  background: #2e2e2e;
+  background: #262626;
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
-.${DEBUGGER_CLASS} ::-webkit-scrollbar-thumb:hover { background: #3d3d3d; background-clip: padding-box; }
+.${DEBUGGER_CLASS} ::-webkit-scrollbar-thumb:hover { background: #383838; background-clip: padding-box; }
 .${DEBUGGER_CLASS} ::-webkit-scrollbar-track { background: transparent; }
 `
 
@@ -460,7 +481,7 @@ const eventsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
     '<details class="dsk-debug-event">',
       '<summary>',
         '<span class="dsk-debug-time">', escapeHtml(event.at), '</span>',
-        '<span class="dsk-debug-kind">', escapeHtml(eventLabel(event)), '</span>',
+        '<span class="dsk-debug-kind" data-kind="', escapeHtml(event.kind), '">', escapeHtml(eventLabel(event)), '</span>',
         event.kind === "fetch" ? '<span class="dsk-debug-source">' + escapeHtml(event.element) + '</span>' : '',
       '</summary>',
       '<pre>', escapeHtml(toDebugJson(event)), '</pre>',
@@ -500,6 +521,49 @@ const tabButton = ({
 
 const pill = (props: Record<string, string>, fallback: string): HtmlChild =>
   h("span", { class: "dsk-debug-pill", ...props }, fallback)
+
+const icon = (props: Record<string, string>, ...paths: readonly HtmlChild[]): HtmlChild =>
+  h(
+    "svg",
+    {
+      width: "15",
+      height: "15",
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "2",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      "aria-hidden": "true",
+      ...props
+    },
+    ...paths
+  )
+
+const pauseIcon = (stateName: DatastarDebuggerStateName): HtmlChild => [
+  h(
+    "span",
+    { "data-show": `!${signalRef(stateName)}.paused`, style: "display:flex" },
+    icon(
+      {},
+      h("rect", { x: "6", y: "5", width: "4", height: "14", rx: "1" }),
+      h("rect", { x: "14", y: "5", width: "4", height: "14", rx: "1" })
+    )
+  ),
+  h(
+    "span",
+    { "data-show": `${signalRef(stateName)}.paused`, style: "display:flex" },
+    icon({}, h("path", { d: "M7 5l12 7-12 7z" }))
+  )
+]
+
+const trashIcon = (): HtmlChild =>
+  icon(
+    {},
+    h("path", { d: "M3 6h18" }),
+    h("path", { d: "M8 6V4h8v2" }),
+    h("path", { d: "M6 6l1 14h10l1-14" })
+  )
 
 const tabPanel = ({
   stateName,
@@ -553,6 +617,7 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
       h(
         "summary",
         {},
+        h("span", { class: "dsk-debug-label" }, "Debug"),
         pill({ "data-text": signalCountExpression(stateName) }, "0 signals"),
         pill({ "data-text": `${signalRef(stateName)}.events.length + " events"` }, "0 events"),
         pill(
@@ -585,19 +650,23 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
             "button",
             {
               type: "button",
+              "aria-label": "Pause debugger",
+              "data-attr:title": `${signalRef(stateName)}.paused ? "Resume" : "Pause"`,
               "data-on:click": `${signalRef(stateName)}.paused = !${signalRef(stateName)}.paused`,
-              "data-attr:aria-pressed": `${signalRef(stateName)}.paused`,
-              "data-text": `${signalRef(stateName)}.paused ? "Resume" : "Pause"`
+              "data-attr:aria-pressed": `${signalRef(stateName)}.paused`
             },
-            "Pause"
+            pauseIcon(stateName)
           ),
           h(
             "button",
             {
               type: "button",
+              "data-act": "clear",
+              "aria-label": "Clear events",
+              title: "Clear events",
               "data-on:click": `${signalRef(stateName)}.events = []`
             },
-            "Clear"
+            trashIcon()
           )
         ),
         tabPanel({
