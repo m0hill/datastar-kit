@@ -85,6 +85,39 @@ import { preserve } from "datastar-kit"
 </details>
 ```
 
+## Typed attributes and autocomplete
+
+Intrinsic elements are fully typed. Your editor autocompletes HTML tag names, per-tag HTML
+attributes (`<input accept maxlength>`, `<form method enctype>`, ...), ARIA attributes, and every
+Datastar attribute. Attribute values are checked too: `data-bind` expects a signal ref or name,
+`data-show` expects an expression, `data-signals` expects a signal object, and
+`<button type="...">` only accepts real button types.
+
+Keyed Datastar attributes are typed through template patterns, so `data-on:click` and common event
+names are suggested while custom events such as `data-on:widget-loaded` still type-check.
+
+Two escape hatches keep server-side JSX flexible:
+
+- Unknown tags (custom elements such as `<my-widget>`, and anything else) accept loosely typed
+  props, so any attribute the runtime can serialize is allowed.
+- Unrecognized `data-*` and `aria-*` attributes are always accepted on every element.
+
+```tsx
+<my-widget
+  theme="dark"
+  data-on:widget-loaded={js`${ready} = true`}
+>
+  <svg viewBox="0 0 10 10">
+    <circle
+      cx={5}
+      cy={5}
+      r={4}
+      data-show={ready}
+    />
+  </svg>
+</my-widget>
+```
+
 ## Pages
 
 `reply.page(...)` renders a full HTML document and returns a native `Response`:

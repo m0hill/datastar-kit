@@ -29,7 +29,7 @@ const DeleteRowTable = () => (
         {rows.length === 0 ? (
           <tr>
             <td
-              colSpan={3}
+              colspan={3}
               class="muted"
             >
               No rows remain.

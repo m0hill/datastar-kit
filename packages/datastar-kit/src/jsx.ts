@@ -4,27 +4,19 @@ import {
   isDatastarExpressionAttribute,
   isDatastarSignalNameAttribute
 } from "./ds/attribute-metadata.js"
-import { isExpr, toJs, type Expr } from "./ds/expression.js"
+import type { DatastarAttributeValue } from "./ds/attribute-types.js"
+import { isExpr, toJs } from "./ds/expression.js"
 import { renderDatastarModifierSuffixes } from "./ds/modifier-rendering.js"
-import { isDatastarModifiedValue, type DatastarModifiedValue } from "./ds/modifiers.js"
+import { isDatastarModifiedValue } from "./ds/modifiers.js"
 import { Signal } from "./ds/signals.js"
 import type { HtmlChild, HtmlProps, HtmlPropValue } from "./html.js"
 import { h } from "./html.js"
 
 /**
- * Internal JSX props accepted by intrinsic HTML elements.
- *
- * @internal
+ * Loosely typed JSX props accepted by unknown intrinsic elements such as custom elements.
  */
-type DatastarJsxValue =
-  | HtmlPropValue
-  | Expr
-  | DatastarModifiedValue
-  | readonly DatastarJsxValue[]
-  | { readonly [key: string]: DatastarJsxValue }
-
 export type JsxProps = Readonly<
-  Record<string, HtmlPropValue | HtmlChild | readonly HtmlChild[] | DatastarJsxValue>
+  Record<string, HtmlPropValue | HtmlChild | readonly HtmlChild[] | DatastarAttributeValue>
 >
 
 /**
