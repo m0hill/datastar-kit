@@ -13,6 +13,17 @@ export {
 } from "./actions.js"
 export type { FetchActionOptions, SignalFilter } from "./actions.js"
 
+export type {
+  DatastarAttributes,
+  DatastarAttributeValue,
+  DatastarEventName,
+  DatastarExpression,
+  DatastarExpressionValue,
+  DatastarModifiable,
+  DatastarSignalFilterInput,
+  DatastarSignalReference
+} from "./attribute-types.js"
+
 export { preserve } from "./attributes.js"
 
 export { js, regex, RegexExpressionError } from "./expression.js"

@@ -31,7 +31,7 @@ const Results = ({ search = "" }: { search?: string }) => {
       {filtered.length === 0 ? (
         <tr>
           <td
-            colSpan={2}
+            colspan={2}
             class="muted"
           >
             No people match that search.
