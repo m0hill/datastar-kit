@@ -276,6 +276,12 @@ const debuggerStyles = `
 .${DEBUGGER_CLASS} .dsk-debug-kind { flex: 0 0 auto; font-weight: 600; }
 .${DEBUGGER_CLASS} .dsk-debug-kind[data-kind="signal"] { color: var(--dsk-add); }
 .${DEBUGGER_CLASS} .dsk-debug-kind[data-kind="fetch"] { color: var(--dsk-blue); }
+.${DEBUGGER_CLASS} .dsk-token-punct { color: var(--dsk-faint); }
+.${DEBUGGER_CLASS} .dsk-token-key,
+.${DEBUGGER_CLASS} .dsk-token-tag { color: var(--dsk-text); font-weight: 600; }
+.${DEBUGGER_CLASS} .dsk-token-attr { color: #a7a7a7; }
+.${DEBUGGER_CLASS} .dsk-token-string { color: #d8d19a; }
+.${DEBUGGER_CLASS} .dsk-token-literal { color: #f0f0f0; }
 .${DEBUGGER_CLASS} ::-webkit-scrollbar { width: 9px; height: 9px; }
 .${DEBUGGER_CLASS} ::-webkit-scrollbar-thumb {
   background: #262626;
@@ -333,6 +339,58 @@ const escapeHtml = (value) => String(value)
   .replaceAll(">", "&gt;")
   .replaceAll('"', "&quot;")
   .replaceAll("'", "&#39;")
+`
+
+const syntaxHighlightSource = `
+const highlightJson = (value) => toDebugJson(value).replace(
+  /("(?:\\\\.|[^"\\\\])*")(\\s*:)?|-?\\d+(?:\\.\\d+)?(?:[eE][+-]?\\d+)?|\\btrue\\b|\\bfalse\\b|\\bnull\\b/g,
+  (token, stringToken, keySuffix = "") => {
+    if (stringToken) {
+      const className = keySuffix ? "dsk-token-key" : "dsk-token-string"
+      return '<span class="' + className + '">' + escapeHtml(stringToken) + '</span>' + escapeHtml(keySuffix)
+    }
+    return '<span class="dsk-token-literal">' + escapeHtml(token) + '</span>'
+  }
+)
+const highlightAttrs = (text) => {
+  let output = ""
+  let lastIndex = 0
+  text.replace(/([^\\s=]+)=("[^"]*"|'[^']*')/g, (match, name, value, index) => {
+    output += escapeHtml(text.slice(lastIndex, index))
+    output += '<span class="dsk-token-attr">' + escapeHtml(name) + '</span>'
+    output += '<span class="dsk-token-punct">=</span>'
+    output += '<span class="dsk-token-string">' + escapeHtml(value) + '</span>'
+    lastIndex = index + match.length
+    return match
+  })
+  return output + escapeHtml(text.slice(lastIndex))
+}
+const highlightHtmlLine = (line) => {
+  const blockStart = line.match(/^(\\s*)<([A-Za-z][A-Za-z0-9:-]*)$/)
+  if (blockStart) {
+    return escapeHtml(blockStart[1]) + '<span class="dsk-token-punct">&lt;</span><span class="dsk-token-tag">' + escapeHtml(blockStart[2]) + '</span>'
+  }
+  const blockEnd = line.match(/^(\\s*)>$/)
+  if (blockEnd) return escapeHtml(blockEnd[1]) + '<span class="dsk-token-punct">&gt;</span>'
+
+  const attrLine = line.match(/^(\\s*)([^\\s=]+)=("[^"]*"|'[^']*')$/)
+  if (attrLine) {
+    return escapeHtml(attrLine[1])
+      + '<span class="dsk-token-attr">' + escapeHtml(attrLine[2]) + '</span>'
+      + '<span class="dsk-token-punct">=</span>'
+      + '<span class="dsk-token-string">' + escapeHtml(attrLine[3]) + '</span>'
+  }
+
+  const tagLine = line.match(/^(\\s*)<(\\/?)([A-Za-z][A-Za-z0-9:-]*)([^>]*)>$/)
+  if (!tagLine) return escapeHtml(line)
+
+  return escapeHtml(tagLine[1])
+    + '<span class="dsk-token-punct">&lt;' + escapeHtml(tagLine[2]) + '</span>'
+    + '<span class="dsk-token-tag">' + escapeHtml(tagLine[3]) + '</span>'
+    + highlightAttrs(tagLine[4])
+    + '<span class="dsk-token-punct">&gt;</span>'
+}
+const highlightHtml = (html) => html.split("\\n").map(highlightHtmlLine).join("\\n")
 `
 
 const htmlFormatterSource = `
@@ -527,15 +585,20 @@ const fetchExpression = (stateName: DatastarDebuggerStateName, maxEvents: number
 const signalCountExpression = (stateName: DatastarDebuggerStateName): string =>
   `Object.keys($).filter((key) => key !== ${JSON.stringify(stateName)}).length + " signals"`
 
-const signalsTextExpression = (stateName: DatastarDebuggerStateName): string => `
+const signalsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
 (() => {
   ${debugValueSource}
   ${signalSnapshotSource(stateName)}
   ${stringifySource}
+  ${htmlEscapeSource}
+  ${syntaxHighlightSource}
   ${matcherSource(stateName)}
 
   const snapshot = signalSnapshot()
-  if (!search) return toDebugJson(snapshot)
+  if (!search) {
+    el.innerHTML = highlightJson(snapshot)
+    return
+  }
 
   const noMatch = Symbol("noMatch")
   const prunedValue = (value, path = "") => {
@@ -561,15 +624,15 @@ const signalsTextExpression = (stateName: DatastarDebuggerStateName): string => 
   }
 
   const pruned = prunedValue(snapshot)
-  return pruned === noMatch ? "No signals match search." : toDebugJson(pruned)
+  el.innerHTML = pruned === noMatch ? "No signals match search." : highlightJson(pruned)
 })()
 `
-
 const eventsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
 (() => {
   ${stringifySource}
   ${matcherSource(stateName)}
   ${htmlEscapeSource}
+  ${syntaxHighlightSource}
   ${htmlFormatterSource}
 
   const events = Array.from(${signalRef(stateName)}.events || [])
@@ -583,15 +646,15 @@ const eventsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
     const elements = event.kind === "fetch" && event.type === "datastar-patch-elements" && typeof event.argsRaw.elements === "string"
       ? event.argsRaw.elements
       : undefined
-    if (!elements) return '<pre>' + escapeHtml(toDebugJson(event)) + '</pre>'
+    if (!elements) return '<pre>' + highlightJson(event) + '</pre>'
 
     const eventWithoutElements = {
       ...event,
       argsRaw: { ...event.argsRaw, elements: "[formatted below]" }
     }
-    return '<pre>' + escapeHtml(toDebugJson(eventWithoutElements)) + '</pre>'
+    return '<pre>' + highlightJson(eventWithoutElements) + '</pre>'
       + '<div class="dsk-debug-divider"></div>'
-      + '<pre>' + escapeHtml(formatHtml(elements)) + '</pre>'
+      + '<pre>' + highlightHtml(formatHtml(elements)) + '</pre>'
   }
   const renderEvent = (event) => [
     '<details class="dsk-debug-event">',
@@ -789,7 +852,7 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
           stateName,
           tab: "signals",
           title: "Signals",
-          children: h("pre", { "data-text": signalsTextExpression(stateName) }, "{}")
+          children: h("pre", { "data-effect": signalsHtmlExpression(stateName) }, "{}")
         }),
         tabPanel({
           stateName,
