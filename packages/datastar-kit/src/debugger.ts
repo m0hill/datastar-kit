@@ -3,28 +3,32 @@ import { h, type HtmlChild } from "./html.js"
 export const DATASTAR_DEBUGGER_STATE_NAME = "_datastarKitDebugger" as const
 
 export type DatastarDebuggerStateName = `_${string}`
-export type DatastarDebuggerTab = "signals" | "patches" | "fetch"
+export type DatastarDebuggerTab = "signals" | "events"
 
 export interface DatastarDebuggerSignalPatchEntry {
   readonly at: string
-  readonly paths: readonly string[]
+  readonly kind: "signal"
   readonly patch: unknown
 }
 
 export interface DatastarDebuggerFetchEntry {
   readonly at: string
+  readonly kind: "fetch"
   readonly type: string
   readonly element: string
   readonly argsRaw: Readonly<Record<string, string>>
+  readonly signals?: Readonly<Record<string, unknown>>
 }
+
+export type DatastarDebuggerEventEntry =
+  | DatastarDebuggerSignalPatchEntry
+  | DatastarDebuggerFetchEntry
 
 export interface DatastarDebuggerState {
   readonly tab: DatastarDebuggerTab
-  readonly filter: string
+  readonly search: string
   readonly paused: boolean
-  readonly status: string
-  readonly patches: readonly DatastarDebuggerSignalPatchEntry[]
-  readonly events: readonly DatastarDebuggerFetchEntry[]
+  readonly events: readonly DatastarDebuggerEventEntry[]
 }
 
 export interface DatastarDebuggerProps {
@@ -34,7 +38,7 @@ export interface DatastarDebuggerProps {
   readonly stateName?: DatastarDebuggerStateName
   /** Whether the `<details>` panel starts open. @defaultValue `true` */
   readonly open?: boolean
-  /** Maximum signal patch and fetch events retained in browser signal state. @defaultValue `100` */
+  /** Maximum debugger events retained in browser signal state. @defaultValue `100` */
   readonly maxEvents?: number
   /** Visible title in the summary row. @defaultValue `"Datastar debugger"` */
   readonly title?: string
@@ -51,16 +55,8 @@ const localStateNamePattern = /^_[A-Za-z][A-Za-z0-9_]*$/
 const debuggerStyles = `
 .datastar-kit-debugger {
   display: contents;
-  --dsk-debug-bg: #020617;
-  --dsk-debug-panel: #0f172a;
-  --dsk-debug-panel-soft: #111827;
-  --dsk-debug-border: #334155;
-  --dsk-debug-text: #e2e8f0;
-  --dsk-debug-muted: #94a3b8;
-  --dsk-debug-accent: #38bdf8;
-  --dsk-debug-warning: #fbbf24;
   color-scheme: dark;
-  font: 12px/1.45 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font: 12px/1.4 ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 .datastar-kit-debugger * { box-sizing: border-box; }
 .datastar-kit-debugger details {
@@ -68,59 +64,46 @@ const debuggerStyles = `
   right: 1rem;
   bottom: 1rem;
   z-index: 2147483647;
-  width: min(94vw, 46rem);
-  max-height: min(82vh, 44rem);
-  overflow: hidden;
-  border: 1px solid var(--dsk-debug-border);
-  border-radius: 1rem;
-  background: color-mix(in srgb, var(--dsk-debug-bg), transparent 4%);
-  color: var(--dsk-debug-text);
-  box-shadow: 0 24px 70px rgb(0 0 0 / 42%);
+  width: min(92vw, 34rem);
+  max-height: min(72vh, 36rem);
+  overflow: auto;
+  border: 1px solid #334155;
+  border-radius: 0.75rem;
+  background: #020617;
+  color: #e2e8f0;
+  box-shadow: 0 20px 60px rgb(0 0 0 / 45%);
 }
-.datastar-kit-debugger details:not([open]) {
-  width: auto;
-}
+.datastar-kit-debugger details:not([open]) { width: auto; }
 .datastar-kit-debugger summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.45rem;
   align-items: center;
   cursor: pointer;
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--dsk-debug-border);
-  font-weight: 750;
+  padding: 0.65rem 0.75rem;
   list-style: none;
-}
-.datastar-kit-debugger details:not([open]) summary {
-  border-bottom: 0;
+  font-weight: 700;
 }
 .datastar-kit-debugger summary::-webkit-details-marker { display: none; }
-.datastar-kit-debugger .dsk-debug-title {
-  margin-right: auto;
-}
+.datastar-kit-debugger .dsk-debug-title { margin-right: auto; }
 .datastar-kit-debugger .dsk-debug-pill {
-  display: inline-flex;
-  align-items: center;
-  min-height: 1.3rem;
+  border: 1px solid #334155;
   border-radius: 999px;
-  background: var(--dsk-debug-panel);
-  color: var(--dsk-debug-muted);
-  padding: 0.1rem 0.5rem;
+  background: #0f172a;
+  color: #94a3b8;
+  padding: 0.1rem 0.45rem;
+  font-size: 11px;
   font-weight: 650;
 }
-.datastar-kit-debugger .dsk-debug-pill[data-kind="warn"] {
-  color: var(--dsk-debug-warning);
-}
+.datastar-kit-debugger .dsk-debug-pill[data-kind="warn"] { color: #fbbf24; }
 .datastar-kit-debugger .dsk-debug-body {
   display: grid;
-  gap: 0.65rem;
-  max-height: calc(min(82vh, 44rem) - 3rem);
-  overflow: auto;
+  gap: 0.7rem;
   padding: 0.75rem;
+  border-top: 1px solid #334155;
 }
 .datastar-kit-debugger .dsk-debug-controls,
-.datastar-kit-debugger .dsk-debug-tabs,
-.datastar-kit-debugger .dsk-debug-actions {
+.datastar-kit-debugger .dsk-debug-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 0.45rem;
@@ -128,78 +111,71 @@ const debuggerStyles = `
 }
 .datastar-kit-debugger input,
 .datastar-kit-debugger button {
-  border: 1px solid var(--dsk-debug-border);
-  border-radius: 0.5rem;
-  background: var(--dsk-debug-panel);
-  color: var(--dsk-debug-text);
+  border: 1px solid #334155;
+  border-radius: 0.45rem;
+  background: #0f172a;
+  color: #e2e8f0;
   font: inherit;
-  padding: 0.42rem 0.6rem;
+  padding: 0.35rem 0.55rem;
 }
-.datastar-kit-debugger input { flex: 1 1 15rem; }
+.datastar-kit-debugger input { flex: 1 1 12rem; }
 .datastar-kit-debugger button { cursor: pointer; }
 .datastar-kit-debugger button:hover,
-.datastar-kit-debugger button[aria-selected="true"] {
-  border-color: var(--dsk-debug-accent);
-  color: white;
-}
+.datastar-kit-debugger button[aria-selected="true"] { border-color: #38bdf8; }
 .datastar-kit-debugger button[aria-pressed="true"] {
-  border-color: var(--dsk-debug-warning);
-  color: var(--dsk-debug-warning);
+  border-color: #fbbf24;
+  color: #fbbf24;
 }
-.datastar-kit-debugger .dsk-debug-tabs button { flex: 1 1 8rem; }
-.datastar-kit-debugger .dsk-debug-panel {
-  display: grid;
-  gap: 0.5rem;
-}
-.datastar-kit-debugger .dsk-debug-help {
-  color: var(--dsk-debug-muted);
-}
-.datastar-kit-debugger .dsk-debug-table-wrap {
-  max-height: 30rem;
-  overflow: auto;
-  border: 1px solid var(--dsk-debug-border);
-  border-radius: 0.6rem;
-  background: var(--dsk-debug-panel-soft);
-}
-.datastar-kit-debugger table {
-  width: 100%;
-  border-collapse: collapse;
+.datastar-kit-debugger .dsk-debug-panel { display: grid; gap: 0.45rem; }
+.datastar-kit-debugger h3 {
+  margin: 0;
+  color: #94a3b8;
   font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
-.datastar-kit-debugger th,
-.datastar-kit-debugger td {
-  border-bottom: 1px solid color-mix(in srgb, var(--dsk-debug-border), transparent 35%);
-  padding: 0.5rem 0.6rem;
-  text-align: left;
-  vertical-align: top;
-}
-.datastar-kit-debugger th {
-  position: sticky;
-  top: 0;
-  z-index: 1;
-  background: var(--dsk-debug-panel);
-  color: var(--dsk-debug-muted);
-  font-weight: 750;
-}
-.datastar-kit-debugger td code,
-.datastar-kit-debugger td pre {
-  font: 11px/1.5 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
-}
-.datastar-kit-debugger td code {
-  overflow-wrap: anywhere;
-  color: var(--dsk-debug-accent);
-}
-.datastar-kit-debugger td pre {
-  max-width: 32rem;
-  max-height: 12rem;
+.datastar-kit-debugger pre {
+  max-height: 18rem;
   overflow: auto;
   margin: 0;
-  color: var(--dsk-debug-text);
+  border: 1px solid #1e293b;
+  border-radius: 0.55rem;
+  background: #0f172a;
+  color: #e2e8f0;
+  padding: 0.6rem;
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 11px/1.45 "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
-.datastar-kit-debugger .dsk-debug-empty {
-  color: var(--dsk-debug-muted);
+.datastar-kit-debugger .dsk-debug-events {
+  display: grid;
+  gap: 0.4rem;
 }
+.datastar-kit-debugger .dsk-debug-event {
+  position: static;
+  width: auto;
+  max-height: none;
+  overflow: visible;
+  border: 1px solid #1e293b;
+  border-radius: 0.55rem;
+  background: #0f172a;
+  box-shadow: none;
+}
+.datastar-kit-debugger .dsk-debug-event summary {
+  padding: 0.5rem 0.6rem;
+  border: 0;
+  font-weight: 500;
+}
+.datastar-kit-debugger .dsk-debug-event pre {
+  max-height: 14rem;
+  border: 0;
+  border-top: 1px solid #1e293b;
+  border-radius: 0;
+}
+.datastar-kit-debugger .dsk-debug-time,
+.datastar-kit-debugger .dsk-debug-source,
+.datastar-kit-debugger .dsk-debug-empty { color: #94a3b8; }
+.datastar-kit-debugger .dsk-debug-kind { color: #38bdf8; }
 `
 
 function assertStateName(stateName: string): asserts stateName is DatastarDebuggerStateName {
@@ -220,10 +196,8 @@ const className = (props: DatastarDebuggerProps): string =>
 
 export const datastarDebuggerDefaults = (): DatastarDebuggerState => ({
   tab: "signals",
-  filter: "",
+  search: "",
   paused: false,
-  status: "",
-  patches: [],
   events: []
 })
 
@@ -232,44 +206,34 @@ const initialSignals = (stateName: DatastarDebuggerStateName): string =>
 
 const signalRef = (stateName: DatastarDebuggerStateName): string => `$${stateName}`
 
-const matcherSource = `
+const jsonTextSource = `
+const text = (value) => {
+  try {
+    const json = JSON.stringify(value, null, 2)
+    return json === undefined ? String(value) : json
+  } catch {
+    return String(value)
+  }
+}
+`
+
+const matcherSource = (stateName: DatastarDebuggerStateName): string => `
+const search = String(${signalRef(stateName)}.search || "").trim()
 const makeMatcher = () => {
-  const raw = String(debug.filter || "").trim()
-  if (!raw) return () => true
-  const regex = raw.match(/^\\/(.*)\\/([a-z]*)$/i)
+  if (!search) return () => true
+  const regex = search.match(/^\\/(.*)\\/([a-z]*)$/i)
   if (regex) {
     try {
       const re = new RegExp(regex[1], regex[2])
-      return (value) => re.test(value)
-    } catch {}
+      return (value) => re.test(String(value))
+    } catch {
+      return () => false
+    }
   }
-  const lowered = raw.toLowerCase()
+  const lowered = search.toLowerCase()
   return (value) => String(value).toLowerCase().includes(lowered)
 }
 const matches = makeMatcher()
-`
-
-const safeValueSource = `
-const seen = new WeakSet()
-const isElement = (value) => typeof Element !== "undefined" && value instanceof Element
-const clean = (value) => {
-  if (isElement(value)) return value.id ? "#" + value.id : "<" + value.tagName.toLowerCase() + ">"
-  if (typeof value === "function") return "[Function]"
-  if (typeof value === "bigint") return String(value) + "n"
-  if (value && typeof value === "object") {
-    if (seen.has(value)) return "[Circular]"
-    seen.add(value)
-    if (Array.isArray(value)) return value.map(clean)
-    const out = {}
-    for (const [key, item] of Object.entries(value)) out[key] = clean(item)
-    return out
-  }
-  return value
-}
-const textValue = (value) => {
-  const text = JSON.stringify(clean(value))
-  return text === undefined ? String(value) : text
-}
 `
 
 const escapeHtmlSource = `
@@ -281,20 +245,52 @@ const escapeHtml = (value) => String(value)
   .replaceAll("'", "&#39;")
 `
 
+const valueToolsSource = `
+const maxStringLength = 2000
+const seen = new WeakSet()
+const clone = (value) => {
+  if (typeof value === "string") {
+    return value.length > maxStringLength ? value.slice(0, maxStringLength) + "… truncated" : value
+  }
+  if (typeof value === "function") return "[Function]"
+  if (typeof value === "bigint") return String(value) + "n"
+  if (typeof Element !== "undefined" && value instanceof Element) {
+    return value.id ? "#" + value.id : "<" + String(value.tagName || "element").toLowerCase() + ">"
+  }
+  if (value && typeof value === "object") {
+    if (seen.has(value)) return "[Circular]"
+    seen.add(value)
+    if (Array.isArray(value)) return value.map(clone)
+    const out = {}
+    for (const [key, item] of Object.entries(value)) out[key] = clone(item)
+    return out
+  }
+  return value
+}
+`
+
+const snapshotSource = (stateName: DatastarDebuggerStateName): string => `
+const snapshotSignals = () => {
+  ${valueToolsSource}
+  const snapshot = {}
+  for (const [key, value] of Object.entries($)) {
+    if (key !== ${JSON.stringify(stateName)}) snapshot[key] = clone(value)
+  }
+  return snapshot
+}
+`
+
 const signalPatchExpression = (stateName: DatastarDebuggerStateName, maxEvents: number): string => `
 (() => {
   const debug = ${signalRef(stateName)}
   if (debug.paused) return
-  const paths = (value, prefix = "") => {
-    if (value && typeof value === "object" && !Array.isArray(value)) {
-      const entries = Object.entries(value)
-      if (entries.length === 0) return [prefix]
-      return entries.flatMap(([key, item]) => paths(item, prefix ? prefix + "." + key : key))
-    }
-    return [prefix]
-  }
-  debug.patches.unshift({ at: new Date().toLocaleTimeString(), paths: paths(patch), patch })
-  debug.patches.length = Math.min(debug.patches.length, ${maxEvents})
+  ${valueToolsSource}
+  debug.events.unshift({
+    at: new Date().toLocaleTimeString(),
+    kind: "signal",
+    patch: clone(patch)
+  })
+  debug.events.length = Math.min(debug.events.length, ${maxEvents})
 })()
 `
 
@@ -303,120 +299,92 @@ const fetchExpression = (stateName: DatastarDebuggerStateName, maxEvents: number
   const debug = ${signalRef(stateName)}
   if (debug.paused) return
   const detail = evt.detail || {}
-  const el = detail.el
-  const element = el ? (el.id ? "#" + el.id : (el.tagName || "").toLowerCase()) : "document"
-  debug.events.unshift({
+  const eventElement = detail.el
+  const element = eventElement
+    ? (eventElement.id ? "#" + eventElement.id : "<" + String(eventElement.tagName || "element").toLowerCase() + ">")
+    : "document"
+  ${valueToolsSource}
+  const entry = {
     at: new Date().toLocaleTimeString(),
+    kind: "fetch",
     type: detail.type || evt.type,
     element,
-    argsRaw: detail.argsRaw || {}
-  })
+    argsRaw: clone(detail.argsRaw || {})
+  }
+  if (entry.type === "started") {
+    const snapshot = {}
+    for (const [key, value] of Object.entries($)) {
+      if (key !== ${JSON.stringify(stateName)}) snapshot[key] = clone(value)
+    }
+    entry.signals = snapshot
+  }
+  debug.events.unshift(entry)
   debug.events.length = Math.min(debug.events.length, ${maxEvents})
 })()
 `
 
-const signalCountExpression = (stateName: DatastarDebuggerStateName): string => `
+const signalCountExpression = (stateName: DatastarDebuggerStateName): string =>
+  `Object.keys($).filter((key) => key !== ${JSON.stringify(stateName)}).length + " signals"`
+
+const signalsTextExpression = (stateName: DatastarDebuggerStateName): string => `
 (() => {
-  const isElement = (value) => typeof Element !== "undefined" && value instanceof Element
-  let count = 0
-  const walk = (value) => {
-    if (value && typeof value === "object" && !Array.isArray(value) && !isElement(value)) {
-      const entries = Object.entries(value)
-      if (entries.length === 0) {
-        count++
-        return
+  ${snapshotSource(stateName)}
+  ${jsonTextSource}
+  ${matcherSource(stateName)}
+  const snapshot = snapshotSignals()
+  if (!search) return text(snapshot)
+
+  const missing = Symbol("missing")
+  const prune = (value, path = "") => {
+    if (matches(path)) return value
+    if (value && typeof value === "object") {
+      const out = Array.isArray(value) ? [] : {}
+      let found = false
+      for (const [key, item] of Object.entries(value)) {
+        const child = prune(item, path ? path + "." + key : key)
+        if (child !== missing) {
+          if (Array.isArray(out)) out.push(child)
+          else out[key] = child
+          found = true
+        }
       }
-      for (const [, item] of entries) walk(item)
-      return
+      return found ? out : missing
     }
-    count++
+    return matches(path + " " + text(value)) ? value : missing
   }
-  for (const [key, value] of Object.entries($)) {
-    if (key !== ${JSON.stringify(stateName)}) walk(value)
-  }
-  return count + " signals"
+
+  const pruned = prune(snapshot)
+  return pruned === missing ? "No signals match search." : text(pruned)
 })()
 `
 
-const signalsRowsExpression = (stateName: DatastarDebuggerStateName): string => `
+const eventsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
 (() => {
-  const debug = ${signalRef(stateName)}
-  ${matcherSource}
-  ${safeValueSource}
+  ${jsonTextSource}
+  ${matcherSource(stateName)}
   ${escapeHtmlSource}
-  const rows = []
-  const walk = (value, path) => {
-    if (value && typeof value === "object" && !Array.isArray(value) && !isElement(value)) {
-      const entries = Object.entries(value)
-      if (entries.length === 0) {
-        rows.push({ path, value: "{}" })
-        return
-      }
-      for (const [key, item] of entries) walk(item, path ? path + "." + key : key)
-      return
-    }
-    rows.push({ path, value: textValue(value) })
+  const events = Array.from(${signalRef(stateName)}.events || [])
+  const rowText = (event) => {
+    if (event.kind === "signal") return [event.at, "signal patch", text(event.patch)].join(" ")
+    return [event.at, event.type, event.element, text(event.argsRaw), text(event.signals || {})].join(" ")
   }
-  for (const [key, value] of Object.entries($)) {
-    if (key !== ${JSON.stringify(stateName)}) walk(value, key)
+  const visible = search ? events.filter((event) => matches(rowText(event))) : events
+  if (visible.length === 0) {
+    el.innerHTML = '<p class="dsk-debug-empty">' + (events.length === 0 ? "No debugger events yet." : "No events match search.") + '</p>'
+    return
   }
-  const visible = rows
-    .filter((row) => matches(row.path + " " + row.value))
-    .sort((left, right) => left.path.localeCompare(right.path))
-  el.innerHTML = visible.length === 0
-    ? '<tr><td class="dsk-debug-empty" colspan="2">' + (rows.length === 0 ? "No signals yet." : "No signals match the current filter.") + '</td></tr>'
-    : visible.map((row) => '<tr><td><code>' + escapeHtml(row.path) + '</code></td><td><pre>' + escapeHtml(row.value) + '</pre></td></tr>').join("")
-})()
-`
-
-const signalPatchRowsExpression = (stateName: DatastarDebuggerStateName): string => `
-(() => {
-  const debug = ${signalRef(stateName)}
-  ${matcherSource}
-  ${escapeHtmlSource}
-  const entries = Array.from(debug.patches || [])
-  const visible = entries.filter((entry) => matches(JSON.stringify(entry)))
-  el.innerHTML = visible.length === 0
-    ? '<tr><td class="dsk-debug-empty" colspan="3">' + (entries.length === 0 ? "No signal patches yet." : "No events match the current filter.") + '</td></tr>'
-    : visible.map((entry) => {
-      const paths = Array.isArray(entry.paths) ? entry.paths.join(", ") : ""
-      const patch = JSON.stringify(entry.patch, null, 2)
-      return '<tr><td>' + escapeHtml(entry.at) + '</td><td><code>' + escapeHtml(paths) + '</code></td><td><pre>' + escapeHtml(patch) + '</pre></td></tr>'
-    }).join("")
-})()
-`
-
-const fetchRowsExpression = (stateName: DatastarDebuggerStateName): string => `
-(() => {
-  const debug = ${signalRef(stateName)}
-  ${matcherSource}
-  ${escapeHtmlSource}
-  const entries = Array.from(debug.events || [])
-  const visible = entries.filter((entry) => matches(JSON.stringify(entry)))
-  el.innerHTML = visible.length === 0
-    ? '<tr><td class="dsk-debug-empty" colspan="4">' + (entries.length === 0 ? "No fetch/SSE events yet." : "No events match the current filter.") + '</td></tr>'
-    : visible.map((entry) => {
-      const payload = JSON.stringify(entry.argsRaw || {}, null, 2)
-      return '<tr><td>' + escapeHtml(entry.at) + '</td><td><code>' + escapeHtml(entry.type) + '</code></td><td>' + escapeHtml(entry.element) + '</td><td><pre>' + escapeHtml(payload) + '</pre></td></tr>'
-    }).join("")
-})()
-`
-
-const copySignalsExpression = (stateName: DatastarDebuggerStateName): string => `
-(() => {
-  const debug = ${signalRef(stateName)}
-  ${safeValueSource}
-  const snapshot = {}
-  for (const [key, value] of Object.entries($)) {
-    if (key !== ${JSON.stringify(stateName)}) snapshot[key] = clean(value)
-  }
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(JSON.stringify(snapshot, null, 2))
-    debug.status = "Copied signals"
-  } else {
-    debug.status = "Clipboard unavailable"
-  }
-  setTimeout(() => { debug.status = "" }, 1500)
+  el.innerHTML = visible.map((event) => {
+    const kind = event.kind === "signal" ? "signal patch" : event.type
+    const source = event.kind === "fetch" ? " " + event.element : ""
+    return '<details class="dsk-debug-event">'
+      + '<summary>'
+      + '<span class="dsk-debug-time">' + escapeHtml(event.at) + '</span>'
+      + '<span class="dsk-debug-kind">' + escapeHtml(kind) + '</span>'
+      + (source ? '<span class="dsk-debug-source">' + escapeHtml(source) + '</span>' : '')
+      + '</summary>'
+      + '<pre>' + escapeHtml(text(event)) + '</pre>'
+      + '</details>'
+  }).join("")
 })()
 `
 
@@ -434,50 +402,6 @@ const tabButton = (
       "data-attr:aria-selected": `${signalRef(stateName)}.tab === ${JSON.stringify(tab)}`
     },
     label
-  )
-
-const tablePanel = (props: {
-  readonly stateName: DatastarDebuggerStateName
-  readonly tab: DatastarDebuggerTab
-  readonly rowsExpression: string
-  readonly headers: readonly string[]
-  readonly emptyMessage: string
-  readonly help: string
-}): HtmlChild =>
-  h(
-    "div",
-    {
-      class: "dsk-debug-panel",
-      role: "tabpanel",
-      "data-show": `${signalRef(props.stateName)}.tab === ${JSON.stringify(props.tab)}`
-    },
-    h("div", { class: "dsk-debug-help" }, props.help),
-    h(
-      "div",
-      { class: "dsk-debug-table-wrap" },
-      h(
-        "table",
-        {},
-        h(
-          "thead",
-          {},
-          h(
-            "tr",
-            {},
-            props.headers.map((header) => h("th", {}, header))
-          )
-        ),
-        h(
-          "tbody",
-          { "data-effect": props.rowsExpression },
-          h(
-            "tr",
-            {},
-            h("td", { class: "dsk-debug-empty", colspan: props.headers.length }, props.emptyMessage)
-          )
-        )
-      )
-    )
   )
 
 /**
@@ -521,17 +445,9 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
           "span",
           {
             class: "dsk-debug-pill",
-            "data-text": `${signalRef(stateName)}.patches.length + " patches"`
+            "data-text": `${signalRef(stateName)}.events.length + " events"`
           },
-          "0 patches"
-        ),
-        h(
-          "span",
-          {
-            class: "dsk-debug-pill",
-            "data-text": `${signalRef(stateName)}.events.length + " fetch"`
-          },
-          "0 fetch"
+          "0 events"
         ),
         h(
           "span",
@@ -541,15 +457,6 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
             "data-show": `${signalRef(stateName)}.paused`
           },
           "paused"
-        ),
-        h(
-          "span",
-          {
-            class: "dsk-debug-pill",
-            "data-show": `${signalRef(stateName)}.status`,
-            "data-text": `${signalRef(stateName)}.status`
-          },
-          ""
         )
       ),
       h(
@@ -557,11 +464,18 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
         { class: "dsk-debug-body" },
         h(
           "div",
+          { class: "dsk-debug-tabs", role: "tablist" },
+          tabButton(stateName, "signals", "Signals"),
+          tabButton(stateName, "events", "Events")
+        ),
+        h(
+          "div",
           { class: "dsk-debug-controls" },
           h("input", {
             type: "search",
-            placeholder: "Filter text or /regex/i",
-            "data-bind": `${stateName}.filter`
+            placeholder: "Search or /regex/i",
+            "aria-label": "Search debugger",
+            "data-bind": `${stateName}.search`
           }),
           h(
             "button",
@@ -577,51 +491,31 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
             "button",
             {
               type: "button",
-              "data-on:click": `${signalRef(stateName)}.patches = []; ${signalRef(stateName)}.events = []`
+              "data-on:click": `${signalRef(stateName)}.events = []`
             },
-            "Clear logs"
+            "Clear"
           )
         ),
         h(
-          "div",
-          { class: "dsk-debug-tabs", role: "tablist" },
-          tabButton(stateName, "signals", "Signals"),
-          tabButton(stateName, "patches", "Signal patches"),
-          tabButton(stateName, "fetch", "Fetch/SSE")
+          "section",
+          {
+            class: "dsk-debug-panel",
+            role: "tabpanel",
+            "data-show": `${signalRef(stateName)}.tab === "signals"`
+          },
+          h("h3", {}, "Signals"),
+          h("pre", { "data-text": signalsTextExpression(stateName) }, "{}")
         ),
         h(
-          "div",
-          { class: "dsk-debug-actions" },
-          h(
-            "button",
-            { type: "button", "data-on:click": copySignalsExpression(stateName) },
-            "Copy signals"
-          )
-        ),
-        tablePanel({
-          stateName,
-          tab: "signals",
-          rowsExpression: signalsRowsExpression(stateName),
-          headers: ["Path", "Value"],
-          emptyMessage: "No signals yet.",
-          help: "Current Datastar signal paths and values."
-        }),
-        tablePanel({
-          stateName,
-          tab: "patches",
-          rowsExpression: signalPatchRowsExpression(stateName),
-          headers: ["Time", "Paths", "Patch"],
-          emptyMessage: "No signal patches yet.",
-          help: "Signal patch events as Datastar applied them."
-        }),
-        tablePanel({
-          stateName,
-          tab: "fetch",
-          rowsExpression: fetchRowsExpression(stateName),
-          headers: ["Time", "Type", "Element", "Payload"],
-          emptyMessage: "No fetch/SSE events yet.",
-          help: "Datastar fetch lifecycle and SSE patch events."
-        })
+          "section",
+          {
+            class: "dsk-debug-panel",
+            role: "tabpanel",
+            "data-show": `${signalRef(stateName)}.tab === "events"`
+          },
+          h("h3", {}, "Events"),
+          h("div", { class: "dsk-debug-events", "data-effect": eventsHtmlExpression(stateName) })
+        )
       )
     )
   )

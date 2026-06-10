@@ -4,7 +4,7 @@
 
 ### Added
 
-- Added the `datastar-kit/debugger` subpath with a development-only `DatastarDebugger` TSX component for inspecting current signals, signal patch events, and Datastar fetch/SSE activity.
+- Added the `datastar-kit/debugger` subpath with a compact development-only `DatastarDebugger` TSX component for inspecting current signals and searchable Datastar event activity.
 
 ### Fixed
 

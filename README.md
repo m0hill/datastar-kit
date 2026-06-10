@@ -84,7 +84,7 @@ For TSX views, set `jsxImportSource`:
 
 ## Development debugger
 
-Render `DatastarDebugger` in development to inspect current signals, signal patch events, and Datastar fetch/SSE activity.
+Render `DatastarDebugger` in development to inspect the current signal snapshot and a compact searchable Datastar event log.
 
 ```tsx
 import { DatastarDebugger } from "datastar-kit/debugger"

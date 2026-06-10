@@ -15,9 +15,12 @@ describe("Datastar debugger", () => {
     expect(html).toContain(DATASTAR_DEBUGGER_STATE_NAME)
     expect(html).toContain("data-on-signal-patch")
     expect(html).toContain("data-on:datastar-fetch__document")
+    expect(html).toContain("data-text")
     expect(html).toContain("data-bind")
-    expect(html).toContain("Signal patches")
-    expect(html).toContain("Fetch/SSE")
+    expect(html).toContain("data-effect")
+    expect(html).toContain("Signals")
+    expect(html).toContain("Events")
+    expect(html).not.toContain("<table")
     expect(html).not.toContain("datastar-debugger")
   })
 
@@ -25,7 +28,8 @@ describe("Datastar debugger", () => {
     const html = renderToString(<DatastarDebugger stateName="_myDebug" />)
 
     expect(html).toContain("_myDebug")
-    expect(html).toContain('data-bind="_myDebug.filter"')
+    expect(html).toContain('data-bind="_myDebug.search"')
+    expect(html).toContain("$_myDebug.events.length")
   })
 
   it("rejects non-local or nested debugger state names", () => {
@@ -40,10 +44,8 @@ describe("Datastar debugger", () => {
   it("exports the signal defaults used by the panel", () => {
     expect(datastarDebuggerDefaults()).toEqual({
       tab: "signals",
-      filter: "",
+      search: "",
       paused: false,
-      status: "",
-      patches: [],
       events: []
     })
   })
