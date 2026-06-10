@@ -30,19 +30,16 @@ export const page = () =>
   )
 ```
 
-Do not ship the debugger in production pages. It mirrors browser-side signal state and records Datastar patch/fetch payloads for developer inspection. If you want to catch `data-init` fetches, render it early in the document body before the components that start those fetches.
+Do not ship the debugger in production pages. It mirrors browser-side signal state and records Datastar event payloads for developer inspection. If you want to catch `data-init` fetches, render it early in the document body before the components that start those fetches.
 
 ## What it shows
 
-The debugger has three simple views:
+The debugger is intentionally plain: a fixed `<details>` panel with two tabs.
 
-| View           | Shows                                                                                                                    |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Signals        | Current signal paths and values, excluding the debugger's own local signal.                                              |
-| Signal patches | Real-time `datastar-signal-patch` payloads and affected paths.                                                           |
-| Fetch/SSE      | Datastar `datastar-fetch` events such as `started`, `finished`, `datastar-patch-elements`, and `datastar-patch-signals`. |
+- **Signals**: the current browser signal snapshot as pretty JSON, excluding the debugger's own local signal.
+- **Events**: a newest-first Datastar event timeline. Rows show time, event type, and source element; expand a row for truncated JSON details. `started` fetch events also capture the signal snapshot at that moment.
 
-The filter box applies to the current view using plain text matching.
+Use **Search** to filter the current tab. Plain text is case-insensitive; `/pattern/i` uses a regular expression. Use **Pause** to stop recording and **Clear** to empty the event log.
 
 ## Props
 
@@ -51,7 +48,7 @@ The filter box applies to the current view using plain text matching.
 | `id`                | `"datastar-kit-debugger"` | Container id.                                                        |
 | `stateName`         | `"_datastarKitDebugger"`  | Local root signal used by the debugger. Must be underscore-prefixed. |
 | `open`              | `true`                    | Whether the `<details>` panel starts expanded.                       |
-| `maxEvents`         | `50`                      | Maximum signal patch and fetch events retained in browser state.     |
+| `maxEvents`         | `100`                     | Maximum debugger events retained in browser state.                   |
 | `title`             | `"Datastar debugger"`     | Summary title.                                                       |
 | `class`/`className` | none                      | Additional container class.                                          |
 | `style`             | none                      | Inline container style.                                              |

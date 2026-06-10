@@ -18,7 +18,7 @@ Start with [Introduction](index.md) if you are new to Datastar Kit. After that, 
 
 7. [Validation](guides/validation-and-errors.md) shows the app-owned decode-then-validate pattern and user-facing error patches.
 8. [Realtime](guides/realtime.md) explains current-state live views with `reply.stream(...)` and app-owned invalidation sources.
-9. [Debugger](guides/debugger.md) adds a development-only web component for inspecting signals, signal patches, and Datastar SSE/fetch traffic.
+9. [Debugger](guides/debugger.md) adds a development-only panel for inspecting signals, signal patches, and Datastar SSE/fetch traffic.
 
 ## Operate it
 

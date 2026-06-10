@@ -84,7 +84,7 @@ The stable `id` is the patch contract. The server returns new HTML for `#count`;
 
 ## Development debugger
 
-Render `DatastarDebugger` in development to inspect current signals, signal patch events, and Datastar fetch/SSE activity.
+Render `DatastarDebugger` in development to inspect the current signal snapshot and a compact searchable Datastar event log.
 
 ```tsx
 import { DatastarDebugger } from "datastar-kit/debugger"
