@@ -123,6 +123,12 @@ describe("HTML rendering boundary", () => {
     )
   })
 
+  it("renders boolean children as empty strings", () => {
+    expect(renderToString(true)).toBe("")
+    expect(renderToString(false)).toBe("")
+    expect(renderToString(h("div", {}, true, "x", false))).toBe("<div>x</div>")
+  })
+
   it("keeps stable patch ids as plain explicit props", () => {
     const node = h("section", { id: "profile" }, "Ada")
 

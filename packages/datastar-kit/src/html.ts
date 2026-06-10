@@ -242,12 +242,8 @@ export const renderToString = (child: HtmlChild): string => {
     return child.map(renderToString).join("")
   }
 
-  if (child === null || child === undefined || child === false) {
+  if (child === null || child === undefined || typeof child === "boolean") {
     return ""
-  }
-
-  if (child === true) {
-    return "true"
   }
 
   if (isRawHtml(child)) {
