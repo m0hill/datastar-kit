@@ -152,6 +152,13 @@ const scriptAttributes = (options: ExecuteScriptOptions): string => {
   return attrs.length === 0 ? "" : ` ${attrs.join(" ")}`
 }
 
+// A trusted script may legitimately contain these sequences inside string,
+// template, or regex literals. Escaping them preserves JavaScript semantics in
+// those contexts while preventing the HTML parser from treating them as script
+// structure.
+const escapeScriptBody = (script: string): string =>
+  script.replaceAll(/<\/(script)/giu, "<\\/$1").replaceAll("<!--", "<\\!--")
+
 /**
  * Encodes a Datastar `datastar-patch-elements` SSE event.
  *
@@ -227,7 +234,7 @@ export const patchSignals = (
  * @returns A complete SSE event string.
  */
 export const executeScript = (script: string, options: ExecuteScriptOptions = {}): string => {
-  const elements = `<script${scriptAttributes(options)}>${script}</script>`
+  const elements = `<script${scriptAttributes(options)}>${escapeScriptBody(script)}</script>`
   return serializeEvent(PATCH_ELEMENTS_EVENT, options, [
     { key: "mode", value: "append" },
     { key: "selector", value: "body" },

@@ -4,6 +4,7 @@
 
 ### Fixed
 
+- Escaped `</script>` and `<!--` sequences in `executeScript(...)` SSE output to prevent script element breakout while preserving trusted JavaScript semantics.
 - Rejected control characters in SSE `id`, `selector`, and `viewTransitionSelector` fields to prevent malformed or injected event stream lines.
 - Split multiline SSE data payloads on CRLF, bare CR, and bare LF while preserving legitimate multiline `elements` and `signals` payloads.
 

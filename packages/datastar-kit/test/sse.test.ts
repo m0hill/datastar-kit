@@ -119,6 +119,33 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
+  it("escapes </script> breakout sequences in the script body", () => {
+    const out = executeScript('console.log("</script>")')
+
+    expect(out).toContain('console.log("<\\/script>")')
+    expect(out.split("</script>")).toHaveLength(2)
+  })
+
+  it("escapes </script> breakout sequences case-insensitively", () => {
+    const out = executeScript("x = '</SCRIPT>'")
+
+    expect(out).toContain("x = '<\\/SCRIPT>'")
+    expect(out.split("</script>")).toHaveLength(2)
+  })
+
+  it("escapes HTML comment openers in the script body", () => {
+    const out = executeScript("x = '<!-- hi'")
+
+    expect(out).toContain("x = '<\\!-- hi'")
+    expect(out).not.toContain("<!-- hi")
+  })
+
+  it("leaves ordinary script bodies unchanged", () => {
+    expect(executeScript("window.answer = 42")).toContain(
+      '<script data-effect="el.remove()">window.answer = 42</script>'
+    )
+  })
+
   it("validates script event attribute names like the HTML renderer", () => {
     expect(() =>
       executeScript("console.log('hello')", {
