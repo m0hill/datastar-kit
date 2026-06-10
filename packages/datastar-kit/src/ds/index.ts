@@ -20,6 +20,8 @@ export type {
   DatastarExpression,
   DatastarExpressionValue,
   DatastarModifiable,
+  DatastarModifiableFor,
+  DatastarModifierOptionsFor,
   DatastarSignalFilterInput,
   DatastarSignalReference
 } from "./attribute-types.js"
