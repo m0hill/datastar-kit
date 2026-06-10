@@ -304,7 +304,7 @@ function assertStateName(stateName: string): asserts stateName is DatastarDebugg
 }
 
 const maxEventsValue = (value: number | undefined): number =>
-  Number.isInteger(value) && value !== undefined && value > 0 ? value : DEFAULT_MAX_EVENTS
+  value !== undefined && Number.isInteger(value) && value > 0 ? value : DEFAULT_MAX_EVENTS
 
 const rootClassName = (props: DatastarDebuggerProps): string =>
   [DEBUGGER_CLASS, props.class, props.className].filter(Boolean).join(" ")
@@ -785,9 +785,9 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
       class: rootClassName(props),
       style: props.style,
       "data-signals__ifmissing": initialSignals(stateName),
-      "data-on-signal-patch": signalPatchExpression(stateName, maxEvents),
       "data-on-signal-patch-filter": `{exclude: /^${stateName}(\\.|$)/}`,
-      "data-on:datastar-fetch__document": fetchExpression(stateName, maxEvents)
+      "data-on-signal-patch": signalPatchExpression(stateName, maxEvents),
+      "data-on:datastar-fetch": fetchExpression(stateName, maxEvents)
     },
     h("style", {}, debuggerStyles),
     h(
@@ -830,6 +830,7 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
             {
               type: "button",
               "aria-label": "Pause debugger",
+              "data-attr:aria-label": `${signalRef(stateName)}.paused ? "Resume debugger" : "Pause debugger"`,
               "data-attr:title": `${signalRef(stateName)}.paused ? "Resume" : "Pause"`,
               "data-on:click": `${signalRef(stateName)}.paused = !${signalRef(stateName)}.paused`,
               "data-attr:aria-pressed": `${signalRef(stateName)}.paused`
@@ -840,7 +841,6 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
             "button",
             {
               type: "button",
-              "data-act": "clear",
               "aria-label": "Clear events",
               title: "Clear events",
               "data-on:click": `${signalRef(stateName)}.events = []`
