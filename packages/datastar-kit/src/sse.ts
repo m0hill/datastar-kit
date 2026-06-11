@@ -123,7 +123,7 @@ const serializeEvent = (
     out.push(`id: ${options.id}`)
   }
 
-  if (options.retry !== undefined) {
+  if (options.retry !== undefined && options.retry !== 1000) {
     out.push(`retry: ${options.retry}`)
   }
 
@@ -167,7 +167,12 @@ const escapeScriptBody = (script: string): string =>
  * @returns A complete SSE event string.
  * @see https://data-star.dev/reference/sse_events#datastar-patch-elements
  */
-export const patchElements = (elements: string, options: PatchElementsOptions = {}): string => {
+export function patchElements(elements: string, options?: PatchElementsOptions): string
+export function patchElements(
+  elements: undefined,
+  options: PatchElementsOptions & { readonly mode: "remove" }
+): string
+export function patchElements(elements = "", options: PatchElementsOptions = {}): string {
   const lines: Array<EventLine> = []
 
   if (options.selector !== undefined) {
@@ -179,17 +184,17 @@ export const patchElements = (elements: string, options: PatchElementsOptions = 
     lines.push({ key: "mode", value: options.mode })
   }
 
-  if (options.namespace !== undefined && options.namespace !== "html") {
-    lines.push({ key: "namespace", value: options.namespace })
-  }
-
   if (options.useViewTransition === true) {
     lines.push({ key: "useViewTransition", value: "true" })
+
+    if (options.viewTransitionSelector !== undefined) {
+      assertSseField("viewTransitionSelector", options.viewTransitionSelector)
+      lines.push({ key: "viewTransitionSelector", value: options.viewTransitionSelector })
+    }
   }
 
-  if (options.viewTransitionSelector !== undefined) {
-    assertSseField("viewTransitionSelector", options.viewTransitionSelector)
-    lines.push({ key: "viewTransitionSelector", value: options.viewTransitionSelector })
+  if (options.namespace !== undefined && options.namespace !== "html") {
+    lines.push({ key: "namespace", value: options.namespace })
   }
 
   if (options.mode !== "remove") {

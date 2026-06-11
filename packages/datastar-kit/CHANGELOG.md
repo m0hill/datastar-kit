@@ -11,6 +11,7 @@
 - Render bare boolean HTML children as empty strings, so `true` no longer leaks visible text into serialized markup.
 - Escaped `</script>` and `<!--` sequences in `executeScript(...)` SSE output to prevent script element breakout while preserving trusted JavaScript semantics.
 - Rejected control characters in SSE `id`, `selector`, and `viewTransitionSelector` fields to prevent malformed or injected event stream lines.
+- Aligned SSE event helpers with Datastar defaults by omitting `retry: 1000`, ignoring `viewTransitionSelector` unless `useViewTransition` is enabled, and allowing remove-mode element patches without an elements payload.
 - Split multiline SSE data payloads on CRLF, bare CR, and bare LF while preserving legitimate multiline `elements` and `signals` payloads.
 
 ## 0.3.0 - 2026-06-07
