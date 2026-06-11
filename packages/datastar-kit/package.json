@@ -2,7 +2,7 @@
   "name": "datastar-kit",
   "version": "0.3.0",
   "description": "Datastar companion SDK for server-driven TypeScript applications",
-  "homepage": "https://datastar-kit.mohil.dev",
+  "homepage": "https://datastar-kit.dev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/m0hill/datastar-kit.git",

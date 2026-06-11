@@ -6,7 +6,7 @@ It provides the Datastar-shaped pieces of an application: typed attributes and a
 
 It is not a framework. Bring your router, auth, database, validation, sessions, and runtime. Use it with Hono, Elysia, Bun, Deno, Cloudflare Workers, Node fetch adapters, or any app layer that can handle a `Request` and return a `Response`.
 
-[Documentation](https://datastar-kit.mohil.dev) · [Examples](examples) · [Datastar](https://data-star.dev/)
+[Documentation](https://datastar-kit.dev) · [Examples](examples) · [Datastar](https://data-star.dev/)
 
 ## Example
 
@@ -91,7 +91,7 @@ import { DatastarDebugger } from "datastar-kit/debugger"
 ;<DatastarDebugger />
 ```
 
-See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for the programming model, guides, API reference, and runnable examples.
+See [datastar-kit.dev](https://datastar-kit.dev) for the programming model, guides, API reference, and runnable examples.
 
 ## Repository
 

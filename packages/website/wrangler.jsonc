@@ -6,7 +6,7 @@
   "preview_urls": false,
   "routes": [
     {
-      "pattern": "datastar-kit.mohil.dev",
+      "pattern": "datastar-kit.dev",
       "custom_domain": true
     }
   ],

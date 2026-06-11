@@ -6,7 +6,7 @@ It provides typed helpers for Datastar actions, expressions, and signal refs; na
 
 It is not a framework. Bring your router, auth, database, validation, sessions, and runtime.
 
-[Documentation](https://datastar-kit.mohil.dev) · [GitHub](https://github.com/m0hill/datastar-kit) · [Datastar](https://data-star.dev/)
+[Documentation](https://datastar-kit.dev) · [GitHub](https://github.com/m0hill/datastar-kit) · [Datastar](https://data-star.dev/)
 
 ## Install
 
@@ -91,7 +91,7 @@ import { DatastarDebugger } from "datastar-kit/debugger"
 ;<DatastarDebugger />
 ```
 
-See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for guides, API reference, and examples.
+See [datastar-kit.dev](https://datastar-kit.dev) for guides, API reference, and examples.
 
 ## License
 
