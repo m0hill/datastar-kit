@@ -1,12 +1,7 @@
 import type { HtmlPropValue } from "../html.js"
-import type { DatastarModifierTarget } from "./attribute-metadata.js"
 import type { Expr } from "./expression.js"
 import type { DatastarModifierKeysFor } from "./modifier-rendering.js"
-import type {
-  DatastarModifiedValue,
-  DatastarModifierKey,
-  DatastarModifierOptions
-} from "./modifiers.js"
+import type { DatastarModifiedValue, DatastarModifierKey } from "./modifiers.js"
 import type { SignalStateInput, SignalValueInput } from "./signals.js"
 
 /**
@@ -21,34 +16,26 @@ export type DatastarExpression = Expr | string
 export type DatastarExpressionValue = Expr | string | number | boolean | null
 
 /**
- * Modifier options restricted to the keys one Datastar attribute accepts.
- *
- * Allowed keys keep their option types; every other modifier key is rejected so incompatible
- * `mod(value, modifiers)` combinations fail to compile.
- */
-export type DatastarModifierOptionsFor<Keys extends DatastarModifierKey> = Pick<
-  DatastarModifierOptions,
-  Keys
-> & {
-  readonly [Key in Exclude<DatastarModifierKey, Keys>]?: never
-}
-
-/**
  * An attribute value optionally wrapped with `mod(value, modifiers)`, restricted to the modifier
- * keys the attribute's modifier target accepts at runtime.
+ * keys the attribute accepts.
  */
 export type DatastarModifiable<Value, Keys extends DatastarModifierKey = DatastarModifierKey> =
   | Value
-  | DatastarModifiedValue<Value, DatastarModifierOptionsFor<Keys>>
+  | DatastarModifiedValue<Value, Keys>
 
-/**
- * An attribute value optionally wrapped with `mod(value, modifiers)` for one Datastar modifier
- * target, allowing exactly the modifiers the runtime accepts for that target.
- */
-export type DatastarModifiableFor<
-  Value,
-  Target extends DatastarModifierTarget
-> = DatastarModifiable<Value, DatastarModifierKeysFor<Target>>
+type DatastarBindModifierKey = DatastarModifierKeysFor<"bind">
+type DatastarBindKeyModifierKey = DatastarModifierKeysFor<"bindKey">
+type DatastarCaseModifierKey = DatastarModifierKeysFor<"case">
+type DatastarComputedModifierKey = DatastarModifierKeysFor<"computed">
+type DatastarIgnoreModifierKey = DatastarModifierKeysFor<"ignore">
+type DatastarInitModifierKey = DatastarModifierKeysFor<"init">
+type DatastarIntersectModifierKey = DatastarModifierKeysFor<"intersect">
+type DatastarIntervalModifierKey = DatastarModifierKeysFor<"interval">
+type DatastarJsonSignalsModifierKey = DatastarModifierKeysFor<"jsonSignals">
+type DatastarOnModifierKey = DatastarModifierKeysFor<"on">
+type DatastarSignalPatchModifierKey = DatastarModifierKeysFor<"signalPatch">
+type DatastarSignalsModifierKey = DatastarModifierKeysFor<"signals">
+type DatastarSignalsKeyModifierKey = DatastarModifierKeysFor<"signalsKey">
 
 /**
  * Value accepted by presence-style Datastar attributes such as `data-ignore`.
@@ -207,7 +194,7 @@ export type DatastarEventName =
  */
 export type DatastarEventAttributes = {
   [Event in DatastarEventName as `data-on:${Event}`]?:
-    | DatastarModifiableFor<DatastarExpressionValue, "on">
+    | DatastarModifiable<DatastarExpressionValue, DatastarOnModifierKey>
     | undefined
 }
 
@@ -224,7 +211,10 @@ export interface DatastarAttributes extends DatastarEventAttributes {
   /** Sets attributes from an object of attribute names to expressions. @see https://data-star.dev/reference/attributes#data-attr */
   "data-attr"?: Readonly<Record<string, DatastarExpressionValue>> | DatastarExpression | undefined
   /** Two-way binds an element value to a signal. @see https://data-star.dev/reference/attributes#data-bind */
-  "data-bind"?: DatastarModifiableFor<DatastarSignalReference | string, "bind"> | null | undefined
+  "data-bind"?:
+    | DatastarModifiable<DatastarSignalReference | string, DatastarBindModifierKey>
+    | null
+    | undefined
   /** Toggles classes from an object of class names to boolean expressions. @see https://data-star.dev/reference/attributes#data-class */
   "data-class"?: Readonly<Record<string, Expr | string | boolean>> | DatastarExpression | undefined
   /** Creates read-only computed signals. @see https://data-star.dev/reference/attributes#data-computed */
@@ -232,26 +222,32 @@ export interface DatastarAttributes extends DatastarEventAttributes {
   /** Runs an expression whenever its signal dependencies change. @see https://data-star.dev/reference/attributes#data-effect */
   "data-effect"?: DatastarExpressionValue | undefined
   /** Skips Datastar processing for this element and its descendants. @see https://data-star.dev/reference/attributes#data-ignore */
-  "data-ignore"?: DatastarModifiableFor<DatastarPresenceValue, "ignore"> | undefined
+  "data-ignore"?: DatastarModifiable<DatastarPresenceValue, DatastarIgnoreModifierKey> | undefined
   /** Preserves this element when morphing. @see https://data-star.dev/reference/attributes#data-ignore-morph */
   "data-ignore-morph"?: DatastarPresenceValue | undefined
   /** Tracks in-flight fetch requests in a boolean signal. @see https://data-star.dev/reference/attributes#data-indicator */
   "data-indicator"?: DatastarSignalReference | string | null | undefined
   /** Runs an expression when the element is initialized. @see https://data-star.dev/reference/attributes#data-init */
-  "data-init"?: DatastarModifiableFor<DatastarExpressionValue, "init"> | undefined
+  "data-init"?: DatastarModifiable<DatastarExpressionValue, DatastarInitModifierKey> | undefined
   /** Renders matching signals as JSON text content. @see https://data-star.dev/reference/attributes#data-json-signals */
   "data-json-signals"?:
-    | DatastarModifiableFor<
+    | DatastarModifiable<
         boolean | null | DatastarSignalFilterInput | DatastarExpression,
-        "jsonSignals"
+        DatastarJsonSignalsModifierKey
       >
     | undefined
   /** Runs an expression when the element intersects the viewport. @see https://data-star.dev/reference/attributes#data-on-intersect */
-  "data-on-intersect"?: DatastarModifiableFor<DatastarExpressionValue, "intersect"> | undefined
+  "data-on-intersect"?:
+    | DatastarModifiable<DatastarExpressionValue, DatastarIntersectModifierKey>
+    | undefined
   /** Runs an expression on a timed interval. @see https://data-star.dev/reference/attributes#data-on-interval */
-  "data-on-interval"?: DatastarModifiableFor<DatastarExpressionValue, "interval"> | undefined
+  "data-on-interval"?:
+    | DatastarModifiable<DatastarExpressionValue, DatastarIntervalModifierKey>
+    | undefined
   /** Runs an expression when signals are patched. @see https://data-star.dev/reference/attributes#data-on-signal-patch */
-  "data-on-signal-patch"?: DatastarModifiableFor<DatastarExpressionValue, "signalPatch"> | undefined
+  "data-on-signal-patch"?:
+    | DatastarModifiable<DatastarExpressionValue, DatastarSignalPatchModifierKey>
+    | undefined
   /** Filters which signal patches trigger `data-on-signal-patch`. @see https://data-star.dev/reference/attributes#data-on-signal-patch-filter */
   "data-on-signal-patch-filter"?: DatastarSignalFilterInput | DatastarExpression | null | undefined
   /** Persists matching signals in web storage. @see https://data-star.dev/reference/attributes#data-persist */
@@ -270,7 +266,7 @@ export interface DatastarAttributes extends DatastarEventAttributes {
   "data-show"?: DatastarExpressionValue | undefined
   /** Patches signals from an object of signal defaults. @see https://data-star.dev/reference/attributes#data-signals */
   "data-signals"?:
-    | DatastarModifiableFor<SignalStateInput | DatastarExpression, "signals">
+    | DatastarModifiable<SignalStateInput | DatastarExpression, DatastarSignalsModifierKey>
     | undefined
   /** Sets inline styles from an object of style properties to expressions. @see https://data-star.dev/reference/attributes#data-style */
   "data-style"?: Readonly<Record<string, DatastarExpressionValue>> | DatastarExpression | undefined
@@ -280,24 +276,34 @@ export interface DatastarAttributes extends DatastarEventAttributes {
   /** Sets a single attribute from an expression, e.g. `data-attr:disabled`. */
   [name: `data-attr:${string}`]: DatastarExpressionValue | undefined
   /** Two-way binds an element value to the signal named by the attribute key, e.g. `data-bind:value`. */
-  [name: `data-bind:${string}`]: DatastarModifiableFor<boolean | null, "bindKey"> | undefined
+  [name: `data-bind:${string}`]:
+    | DatastarModifiable<boolean | null, DatastarBindKeyModifierKey>
+    | undefined
   /** Toggles a single class from a boolean expression, e.g. `data-class:hidden`. */
-  [name: `data-class:${string}`]: DatastarModifiableFor<DatastarExpressionValue, "case"> | undefined
+  [name: `data-class:${string}`]:
+    | DatastarModifiable<DatastarExpressionValue, DatastarCaseModifierKey>
+    | undefined
   /** Creates a read-only computed signal named by the attribute key. */
   [name: `data-computed:${string}`]:
-    | DatastarModifiableFor<DatastarExpressionValue, "computed">
+    | DatastarModifiable<DatastarExpressionValue, DatastarComputedModifierKey>
     | undefined
   /** Tracks in-flight fetch requests in the signal named by the attribute key. */
-  [name: `data-indicator:${string}`]: DatastarModifiableFor<boolean | null, "case"> | undefined
+  [name: `data-indicator:${string}`]:
+    | DatastarModifiable<boolean | null, DatastarCaseModifierKey>
+    | undefined
   /** Runs an expression when the named event fires, e.g. `data-on:click`. */
-  [name: `data-on:${string}`]: DatastarModifiableFor<DatastarExpressionValue, "on"> | undefined
+  [name: `data-on:${string}`]:
+    | DatastarModifiable<DatastarExpressionValue, DatastarOnModifierKey>
+    | undefined
   /** Persists matching signals under the storage key named by the attribute key. */
   [name: `data-persist:${string}`]: boolean | null | DatastarSignalFilterInput | undefined
   /** Stores a reference to this element in the signal named by the attribute key. */
-  [name: `data-ref:${string}`]: DatastarModifiableFor<boolean | null, "case"> | undefined
+  [name: `data-ref:${string}`]:
+    | DatastarModifiable<boolean | null, DatastarCaseModifierKey>
+    | undefined
   /** Patches the signal named by the attribute key, e.g. `data-signals:count`. */
   [name: `data-signals:${string}`]:
-    | DatastarModifiableFor<SignalValueInput, "signalsKey">
+    | DatastarModifiable<SignalValueInput, DatastarSignalsKeyModifierKey>
     | undefined
   /** Sets a single style property from an expression, e.g. `data-style:opacity`. */
   [name: `data-style:${string}`]: DatastarExpressionValue | undefined
