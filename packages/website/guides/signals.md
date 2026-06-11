@@ -20,14 +20,15 @@ const signup = state({
 })
 ```
 
-`state(...)` gives you four useful things:
+`state(...)` gives you five useful things:
 
-| API                 | Use                                                      |
-| ------------------- | -------------------------------------------------------- |
-| `signup.defaults`   | Initial signal values for `data-signals`.                |
-| `signup.refs`       | Typed nested signal refs for attributes and expressions. |
-| `signup.patch(...)` | Type-checked partial signal patches.                     |
-| `signup.reset(...)` | Defaults, optionally merged with overrides.              |
+| API                  | Use                                                                          |
+| -------------------- | ---------------------------------------------------------------------------- |
+| `signup.defaults`    | Cloned, frozen initial signal values for `data-signals`.                     |
+| `signup.refs`        | Typed nested leaf signal refs for attributes and expressions.                |
+| `signup.ref("path")` | A typed ref for any known path, including object-valued paths like `errors`. |
+| `signup.patch(...)`  | Type-checked partial signal patches.                                         |
+| `signup.reset(...)`  | Defaults, optionally merged with overrides.                                  |
 
 Use those refs in Datastar attributes:
 
@@ -74,6 +75,12 @@ Return signal patches for small browser-side state changes:
 
 ```ts
 return reply.signals(signup.patch({ errors: { email: "Enter a valid email" } }))
+```
+
+Use `null` to remove a signal through Datastar's patch semantics:
+
+```ts
+return reply.signals(signup.patch({ errors: { email: null } }))
 ```
 
 Reset a form back to defaults:

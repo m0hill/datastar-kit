@@ -17,14 +17,14 @@ The handler is still yours. Datastar Kit only handles the Datastar-specific part
 
 Use Datastar Kit for:
 
-| Area                            | API                                                                                                 |
-| ------------------------------- | --------------------------------------------------------------------------------------------------- |
-| Datastar attributes and actions | Native `data-*` TSX attributes, `post(...)`, `js`, `state(...)`                                     |
-| Server HTML                     | TSX, `renderToString`, `unsafeHtml`                                                                 |
-| Signal request decoding         | `read.signals(request)`                                                                             |
-| Datastar responses              | `reply.page(...)`, `reply.patch(...)`, `reply.signals(...)`, `reply.stream(...)`, `reply.done(...)` |
-| Stream chunks                   | `event.patch(...)`, `event.signals(...)`, `event.navigate(...)`, `event.script(...)`                |
-| Low-level protocol tests        | `datastar-kit/sse`                                                                                  |
+| Area                            | API                                                                                                        |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Datastar attributes and actions | Native `data-*` TSX attributes, `post(...)`, `js`, `state(...)`                                            |
+| Server HTML                     | TSX, `renderToString`, `unsafeHtml`                                                                        |
+| Signal request decoding         | `read.signals(request)`                                                                                    |
+| Datastar responses              | `reply.page(...)`, `reply.patch(...)`, `reply.signals(...)`, `reply.stream(...)`, `reply.done(...)`        |
+| Stream chunks                   | `event.patch(...)`, `event.signals(...)`, `event.navigate(...)`, `event.script(...)`, `event.comment(...)` |
+| Low-level protocol tests        | `datastar-kit/sse`                                                                                         |
 
 The public APIs stay close to Web Standards: `Request`, `Response`, `Headers`, `URL`, `ReadableStream`, and plain objects.
 

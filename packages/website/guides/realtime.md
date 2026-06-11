@@ -51,7 +51,7 @@ return reply.stream(events, {
 })
 ```
 
-Heartbeats are response behavior, so they live on `reply.stream(...)` options instead of inside the event generator.
+Heartbeats are response behavior, so they live on `reply.stream(...)` options instead of inside the event generator. If a stream source needs to emit an ad-hoc SSE comment, yield `event.comment("note")`; prefer the `heartbeat` option for regular keepalives.
 
 ## Cancellation
 

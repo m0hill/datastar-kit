@@ -32,14 +32,4 @@ Run commands from the repository root. Node, Bun, and Deno examples usually serv
 | `examples/elysia-layout`             | Bun/Elysia app structure, shared shell, named slots, and targeted `#project-list` patches. | `pnpm run dev:elysia-layout`             |
 | `examples/deno-search-list`          | `Deno.serve(...)`, `@std/http` routing, search patches, and appended list items.           | `pnpm run dev:deno-search-list`          |
 
-## Adding examples
-
-When adding a new example:
-
-- make it a standalone workspace package under `examples/*`;
-- keep runtime dependencies in that example's package or runtime config;
-- document what the example demonstrates in its own README;
-- add root scripts for `dev:*` and checks when useful;
-- link it from this catalog and the package README.
-
 Related: [Actions and responses](actions-and-responses.md), [Realtime](realtime.md), [Testing](testing.md).

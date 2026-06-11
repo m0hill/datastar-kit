@@ -15,7 +15,7 @@ This page is for contributors and maintainers. It explains the source layout and
 
 ### Datastar protocol
 
-- `src/sse.ts` encodes low-level Datastar SSE events.
+- `src/sse.ts` encodes low-level Datastar SSE events and comments.
 - `src/event.ts` renders HTML nodes into Datastar SSE chunks for streams.
 - `src/reply.ts` turns rendered HTML and SSE chunks into native `Response` objects.
 - `src/navigation.ts` builds safe navigation scripts used by navigation helpers.

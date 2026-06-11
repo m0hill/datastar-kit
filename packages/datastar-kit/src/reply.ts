@@ -2,6 +2,7 @@ import * as event from "./event.js"
 import { h, renderToString, type HtmlChild } from "./html.js"
 import { navigationScript, type NavigationSafetyOptions } from "./navigation.js"
 import {
+  comment as sseComment,
   type PatchElementsNamespace,
   type PatchElementsMode,
   type PatchElementsOptions,
@@ -184,9 +185,6 @@ async function* toAsyncIterable(source: SseStreamInput): AsyncIterable<string | 
     yield chunk
   }
 }
-
-const sseComment = (comment = ""): string =>
-  comment.length === 0 ? ":\n\n" : `: ${comment.replaceAll("\n", "\n: ")}\n\n`
 
 const encodeChunk = (chunk: string | Uint8Array): Uint8Array =>
   typeof chunk === "string" ? textEncoder.encode(chunk) : chunk

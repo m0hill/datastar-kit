@@ -25,11 +25,12 @@ The root package exports helpers for action expressions, signal refs, typed sign
 
 ### State and signals
 
-| API               | Use                                                                                      |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| `state(defaults)` | Create typed signal refs, defaults, partial patches, and reset payloads from one object. |
-| `signal(name)`    | Create a standalone typed signal ref.                                                    |
-| `local(name)`     | Create an underscore-prefixed local/private signal ref.                                  |
+| API               | Use                                                                                               |
+| ----------------- | ------------------------------------------------------------------------------------------------- |
+| `state(defaults)` | Create typed leaf refs, path refs, frozen defaults, partial patches, and reset payloads.          |
+| `signal(name)`    | Create a standalone typed signal ref.                                                             |
+| `local(name)`     | Create an underscore-prefixed local/private signal ref.                                           |
+| `StatePathError`  | Thrown when `state.ref(path)` receives a syntactically valid path that is not in the state shape. |
 
 ### Actions
 
@@ -127,6 +128,7 @@ Datastar action response helpers own their protocol status codes, so their nativ
 | `event.signals(value, options?)`  | Encode one `datastar-patch-signals` event.                  |
 | `event.navigate(url, options?)`   | Encode a safe navigation event.                             |
 | `event.script(code, options?)`    | Encode trusted JavaScript execution.                        |
+| `event.comment(text?)`            | Encode an SSE comment chunk for manual heartbeats.          |
 
 Use `event.*` when one response needs multiple events or a long-lived stream.
 
@@ -143,7 +145,7 @@ Types exported from the root include `HtmlChild`, `HtmlNode`, `HtmlProps`, `Html
 
 | Subpath                        | Use                                                                         |
 | ------------------------------ | --------------------------------------------------------------------------- |
-| `datastar-kit/sse`             | Low-level Datastar SSE encoders for protocol tests and custom integrations. |
+| `datastar-kit/sse`             | Low-level Datastar SSE encoders and comment chunks for custom integrations. |
 | `datastar-kit/debugger`        | Development-only `DatastarDebugger` TSX component and related types.        |
 | `datastar-kit/jsx-runtime`     | TypeScript automatic JSX runtime entrypoint.                                |
 | `datastar-kit/jsx-dev-runtime` | TypeScript automatic JSX development runtime entrypoint.                    |

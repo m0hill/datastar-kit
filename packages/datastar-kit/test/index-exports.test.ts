@@ -36,6 +36,7 @@ describe("package exports", () => {
       "RegexExpressionError",
       "Signal",
       "SignalNameError",
+      "StatePathError",
       "action",
       "del",
       "event",
@@ -86,6 +87,7 @@ describe("package exports", () => {
   it("keeps helper namespaces small and intentional", () => {
     expect(exportedKeys(event)).toEqual([
       "NavigationUrlError",
+      "comment",
       "navigate",
       "patch",
       "script",
@@ -106,6 +108,7 @@ describe("package exports", () => {
     ])
     expect(exportedKeys(sse)).toEqual([
       "SseFieldError",
+      "comment",
       "executeScript",
       "patchElements",
       "patchSignals"

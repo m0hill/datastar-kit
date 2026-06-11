@@ -79,7 +79,9 @@ describe("Datastar debugger", () => {
       `${DEFAULT_SIGNAL_REF}.tab === "signals"`,
       `${DEFAULT_SIGNAL_REF}.tab === "events"`
     ])
-    expect(attributeValues(html, "data-attr:aria-pressed")).toEqual([`${DEFAULT_SIGNAL_REF}.paused`])
+    expect(attributeValues(html, "data-attr:aria-pressed")).toEqual([
+      `${DEFAULT_SIGNAL_REF}.paused`
+    ])
     expect(attributeValues(html, "data-text")).toEqual([
       `Object.keys($).filter((key) => key !== ${JSON.stringify(
         DATASTAR_DEBUGGER_STATE_NAME

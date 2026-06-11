@@ -5,6 +5,8 @@
 ### Added
 
 - Added the `datastar-kit/debugger` subpath with a compact development-only `DatastarDebugger` TSX component for inspecting current signals and searchable Datastar event activity.
+- Added `state(...).ref(path)` for typed refs to any known state path, including object-valued paths.
+- Added `event.comment(...)` and `datastar-kit/sse` `comment(...)` for manual SSE heartbeat comments in streams.
 
 ### Fixed
 
@@ -13,6 +15,9 @@
 - Rejected control characters in SSE `id`, `selector`, and `viewTransitionSelector` fields to prevent malformed or injected event stream lines.
 - Aligned SSE event helpers with Datastar defaults by omitting `retry: 1000`, ignoring `viewTransitionSelector` unless `useViewTransition` is enabled, and allowing remove-mode element patches without an elements payload.
 - Split multiline SSE data payloads on CRLF, bare CR, and bare LF while preserving legitimate multiline `elements` and `signals` payloads.
+- Deep-froze exposed `state(...).defaults` so runtime mutation cannot change the reset baseline.
+- Preserved explicit literal unions in `state(...)` patches while still widening singleton literal defaults.
+- Allowed `null` in typed `state(...).patch(...)` and `state(...).reset(...)` overrides to remove signals through Datastar patch semantics.
 
 ## 0.3.0 - 2026-06-07
 

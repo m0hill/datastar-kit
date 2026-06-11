@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest"
 import { HtmlNameError } from "../src/html.js"
-import { executeScript, patchElements, patchSignals, SseFieldError } from "../src/sse.js"
+import { comment, executeScript, patchElements, patchSignals, SseFieldError } from "../src/sse.js"
 
 describe("Datastar SSE encoding", () => {
+  it("encodes SSE comments for manual heartbeats", () => {
+    expect(comment()).toBe(":\n\n")
+    expect(comment("heartbeat")).toBe(": heartbeat\n\n")
+    expect(comment("one\r\ntwo\rthree\nfour")).toBe(": one\n: two\n: three\n: four\n\n")
+  })
+
   it("encodes default element patches like the SDK fixture", () => {
     expect(patchElements("<div>Merge</div>")).toBe(
       "event: datastar-patch-elements\ndata: elements <div>Merge</div>\n\n"

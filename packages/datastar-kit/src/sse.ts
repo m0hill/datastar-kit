@@ -108,6 +108,22 @@ const assertSseField = (field: string, value: string): void => {
 const sseLineBreakPattern = /\r\n|\r|\n/u
 const splitLines = (value: string): ReadonlyArray<string> => value.split(sseLineBreakPattern)
 
+/**
+ * Encodes an SSE comment chunk.
+ *
+ * @remarks
+ * Comments are ignored by the browser's `EventSource` parser but are useful as manual heartbeats
+ * in long-lived streams. Multiline comments are split so every physical SSE line remains a
+ * comment line.
+ *
+ * @param text Optional comment text after the `:` SSE comment prefix.
+ * @returns A complete SSE comment chunk.
+ */
+export const comment = (text = ""): string =>
+  `${splitLines(text)
+    .map((line) => (line.length === 0 ? ":" : `: ${line}`))
+    .join("\n")}\n\n`
+
 const dataLines = (key: string, value: string): ReadonlyArray<EventLine> =>
   splitLines(value).map((line) => ({ key, value: line }))
 
