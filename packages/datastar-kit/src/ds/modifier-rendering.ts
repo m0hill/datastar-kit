@@ -35,8 +35,7 @@ const compatibleModifierTargets = {
 } as const satisfies Record<DatastarModifierKey, readonly DatastarModifierTarget[]>
 
 /**
- * Modifier keys the runtime accepts for one modifier target, derived from the same compatibility
- * table the runtime validates against.
+ * Modifier keys accepted by one Datastar attribute modifier target.
  *
  * @internal
  */
