@@ -75,11 +75,11 @@ describe("Datastar debugger", () => {
     expect(attributeValues(html, "data-on:datastar-fetch__document")).toEqual([])
     expect(attributeValue(html, "data-bind")).toBe(`${DATASTAR_DEBUGGER_STATE_NAME}.search`)
     expect(attributeValues(html, "data-effect")).toHaveLength(2)
-    expect(attributeValues(html, "data-attr:data-selected")).toEqual([
+    expect(attributeValues(html, "data-attr:aria-selected")).toEqual([
       `${DEFAULT_SIGNAL_REF}.tab === "signals"`,
       `${DEFAULT_SIGNAL_REF}.tab === "events"`
     ])
-    expect(attributeValues(html, "data-attr:data-paused")).toEqual([`${DEFAULT_SIGNAL_REF}.paused`])
+    expect(attributeValues(html, "data-attr:aria-pressed")).toEqual([`${DEFAULT_SIGNAL_REF}.paused`])
     expect(attributeValues(html, "data-text")).toEqual([
       `Object.keys($).filter((key) => key !== ${JSON.stringify(
         DATASTAR_DEBUGGER_STATE_NAME
@@ -98,8 +98,9 @@ describe("Datastar debugger", () => {
       "data-on:click",
       "data-on-signal-patch",
       "data-on:datastar-fetch",
-      "data-attr:data-paused",
-      "data-attr:data-selected",
+      "data-attr:aria-label",
+      "data-attr:aria-pressed",
+      "data-attr:aria-selected",
       "data-attr:title"
     ]) {
       for (const expression of attributeValues(html, attribute)) {
