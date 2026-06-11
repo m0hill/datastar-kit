@@ -35,6 +35,17 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
+  it("omits scoped view transition selectors when view transitions are disabled", () => {
+    expect(
+      patchElements("<div>Merge</div>", {
+        selector: "#target",
+        viewTransitionSelector: "#transition-scope"
+      })
+    ).toBe(
+      "event: datastar-patch-elements\ndata: selector #target\ndata: elements <div>Merge</div>\n\n"
+    )
+  })
+
   it("encodes non-default element patch namespaces", () => {
     expect(
       patchElements("<circle></circle>", { selector: "#icon", mode: "inner", namespace: "svg" })
@@ -69,15 +80,30 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
-  it("rejects carriage returns in scoped view transition selector fields", () => {
-    expect(() => patchElements("<div/>", { viewTransitionSelector: "#x\r\n" })).toThrow(
-      SseFieldError
-    )
+  it("rejects carriage returns in emitted scoped view transition selector fields", () => {
+    expect(() =>
+      patchElements("<div/>", { useViewTransition: true, viewTransitionSelector: "#x\r\n" })
+    ).toThrow(SseFieldError)
   })
 
   it("encodes element removal through patch options", () => {
     expect(patchElements("", { selector: "#target", mode: "remove" })).toBe(
       "event: datastar-patch-elements\ndata: selector #target\ndata: mode remove\n\n"
+    )
+  })
+
+  it("allows element removal without an elements argument", () => {
+    expect(patchElements(undefined, { selector: "#target", mode: "remove" })).toBe(
+      "event: datastar-patch-elements\ndata: selector #target\ndata: mode remove\n\n"
+    )
+  })
+
+  it("omits default retry durations", () => {
+    expect(patchElements("<div>Merge</div>", { retry: 1000 })).toBe(
+      "event: datastar-patch-elements\ndata: elements <div>Merge</div>\n\n"
+    )
+    expect(patchSignals({ one: 1 }, { retry: 1000 })).toBe(
+      'event: datastar-patch-signals\ndata: signals {"one":1}\n\n'
     )
   })
 
