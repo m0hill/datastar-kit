@@ -1,10 +1,9 @@
 import { mod, unsafeHtml } from "datastar-kit"
-import type { JSX } from "datastar-kit/jsx-runtime"
 import type { DocPage } from "./doc-types"
 import { DATASTAR_URL, GITHUB_URL, flatNav, sidebar } from "./nav"
 import { DocSearch, searchState } from "./search"
 
-export const Logo = (props: { class?: string }): JSX.Element => (
+export const Logo = (props: { class?: string }) => (
   <svg
     viewBox="0 0 24 24"
     aria-hidden="true"
@@ -17,7 +16,7 @@ export const Logo = (props: { class?: string }): JSX.Element => (
   </svg>
 )
 
-const GithubIcon = (): JSX.Element => (
+const GithubIcon = () => (
   <svg
     viewBox="0 0 16 16"
     aria-hidden="true"
@@ -27,7 +26,7 @@ const GithubIcon = (): JSX.Element => (
   </svg>
 )
 
-const HeaderLink = (props: { href: string; label: string; active: boolean }): JSX.Element => (
+const HeaderLink = (props: { href: string; label: string; active: boolean }) => (
   <a
     href={props.href}
     class={
@@ -40,78 +39,65 @@ const HeaderLink = (props: { href: string; label: string; active: boolean }): JS
   </a>
 )
 
-export const SiteHeader = (props: {
-  active?: "docs" | "playground"
-  search?: boolean
-}): JSX.Element => {
-  const hasSearch = props.search === true
-
-  return (
-    <header class="sticky top-0 z-40 border-b border-border-subtle bg-bg/85 backdrop-blur">
+export const SiteHeader = (props: { active?: "docs" | "playground"; search?: boolean }) => (
+  <header class="sticky top-0 z-40 border-b border-border-subtle bg-bg/85 backdrop-blur">
+    <div class="mx-auto flex min-h-14 max-w-350 flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6 md:h-14 md:flex-nowrap md:py-0">
+      <a
+        href="/"
+        class="flex items-center gap-2 text-sm font-semibold tracking-tight text-fg"
+      >
+        <span class="text-accent">
+          <Logo />
+        </span>
+        Datastar Kit
+      </a>
+      <nav class="flex items-center gap-5 max-md:gap-4">
+        <HeaderLink
+          href="/introduction"
+          label="Docs"
+          active={props.active === "docs"}
+        />
+        <HeaderLink
+          href="/playground"
+          label="Playground"
+          active={props.active === "playground"}
+        />
+      </nav>
+      {props.search === true ? (
+        <div class="order-3 w-full md:order-0 md:ml-auto md:w-64">
+          <DocSearch />
+        </div>
+      ) : null}
       <div
         class={
-          hasSearch
-            ? "mx-auto flex max-w-350 flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6 md:h-14 md:flex-nowrap md:py-0"
-            : "mx-auto flex h-14 max-w-350 items-center gap-6 px-4 sm:px-6"
+          props.search === true
+            ? "ml-auto flex items-center gap-4 md:ml-0"
+            : "ml-auto flex items-center gap-4"
         }
       >
         <a
-          href="/"
-          class="flex items-center gap-2 text-sm font-semibold tracking-tight text-fg"
+          href={DATASTAR_URL}
+          target="_blank"
+          rel="noreferrer"
+          class="text-sm font-medium text-fg-secondary transition-colors hover:text-fg max-sm:hidden"
         >
-          <span class="text-accent">
-            <Logo />
-          </span>
-          Datastar Kit
+          Datastar
         </a>
-        <nav class="flex items-center gap-5 max-md:gap-4">
-          <HeaderLink
-            href="/introduction"
-            label="Docs"
-            active={props.active === "docs"}
-          />
-          <HeaderLink
-            href="/playground"
-            label="Playground"
-            active={props.active === "playground"}
-          />
-        </nav>
-        {hasSearch ? (
-          <div class="order-3 w-full md:order-0 md:ml-auto md:w-64">
-            <DocSearch />
-          </div>
-        ) : null}
-        <div
-          class={
-            hasSearch
-              ? "ml-auto flex items-center gap-4 md:ml-0"
-              : "ml-auto flex items-center gap-4"
-          }
+        <a
+          href={GITHUB_URL}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="GitHub repository"
+          class="text-fg-secondary transition-colors hover:text-fg"
         >
-          <a
-            href={DATASTAR_URL}
-            target="_blank"
-            rel="noreferrer"
-            class="text-sm font-medium text-fg-secondary transition-colors hover:text-fg max-sm:hidden"
-          >
-            Datastar
-          </a>
-          <a
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noreferrer"
-            aria-label="GitHub repository"
-            class="text-fg-secondary transition-colors hover:text-fg"
-          >
-            <GithubIcon />
-          </a>
-        </div>
+          <GithubIcon />
+        </a>
       </div>
-    </header>
-  )
-}
+    </div>
+  </header>
+)
 
-export const SiteFooter = (): JSX.Element => (
+export const SiteFooter = () => (
   <footer class="border-t border-border-subtle">
     <div class="mx-auto flex max-w-350 flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm text-fg-muted sm:px-6">
       <p>MIT licensed. Built with Datastar Kit on Cloudflare Workers.</p>
@@ -137,7 +123,7 @@ export const SiteFooter = (): JSX.Element => (
   </footer>
 )
 
-const SidebarNav = (props: { activePath: string }): JSX.Element => (
+const SidebarNav = (props: { activePath: string }) => (
   <nav class="space-y-7">
     {sidebar.map((group) => (
       <div>
@@ -163,7 +149,7 @@ const SidebarNav = (props: { activePath: string }): JSX.Element => (
   </nav>
 )
 
-const PrevNextNav = (props: { activePath: string }): JSX.Element | null => {
+const PrevNextNav = (props: { activePath: string }) => {
   const index = flatNav.findIndex((item) => item.path === props.activePath)
   if (index === -1) {
     return null
@@ -202,7 +188,7 @@ const PrevNextNav = (props: { activePath: string }): JSX.Element | null => {
   )
 }
 
-const OnThisPage = (props: { page: DocPage }): JSX.Element | null => {
+const OnThisPage = (props: { page: DocPage }) => {
   if (props.page.headings.length === 0) {
     return null
   }
@@ -229,7 +215,7 @@ const OnThisPage = (props: { page: DocPage }): JSX.Element | null => {
   )
 }
 
-export const DocsLayout = (props: { page: DocPage }): JSX.Element => (
+export const DocsLayout = (props: { page: DocPage }) => (
   <div
     class="min-h-dvh"
     data-signals={mod(searchState.defaults, { ifMissing: true })}
