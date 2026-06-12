@@ -1,7 +1,8 @@
-import { get, js, reply, unsafeHtml } from "datastar-kit"
+import { event, get, js, reply, unsafeHtml } from "datastar-kit"
 import { pageHead, type App } from "../app"
 import { snippets } from "../generated/docs"
-import { Logo, SiteFooter, SiteHeader } from "../layout"
+import { Icons } from "../icons"
+import { SiteFooter, SiteHeader } from "../layout"
 import { GITHUB_URL } from "../nav"
 
 const runtimes = [
@@ -30,28 +31,6 @@ const loop = [
     body: "Return HTML or signal patches as native Responses. Datastar updates the DOM."
   }
 ] as const
-
-const CopyIcon = () => (
-  <svg
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-    class="h-4 w-4"
-    fill="none"
-    stroke="currentColor"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    stroke-width="1.8"
-  >
-    <rect
-      x="9"
-      y="9"
-      width="11"
-      height="11"
-      rx="2"
-    />
-    <path d="M5 15V6a2 2 0 0 1 2-2h9" />
-  </svg>
-)
 
 const PingResult = () => (
   <p
@@ -87,15 +66,22 @@ const Hero = () => (
       </p>
       <button
         type="button"
-        class="mt-7 flex w-full max-w-xs cursor-pointer items-center justify-between gap-4 rounded-xl border border-border-subtle bg-code px-5 py-3.5 text-left font-mono text-sm text-fg transition-colors hover:border-border-strong focus-visible:ring-2 focus-visible:ring-border-strong/50 focus-visible:outline-none"
-        data-on:click={js`navigator.clipboard.writeText(${"npm i datastar-kit"})`}
+        class="group mt-7 flex w-full max-w-xs cursor-pointer items-center justify-between gap-4 rounded-xl border border-border-subtle bg-code px-5 py-3.5 text-left font-mono text-sm text-fg transition-colors hover:border-border-strong focus-visible:ring-2 focus-visible:ring-border-strong/50 focus-visible:outline-none"
+        data-on:click={js`navigator.clipboard.writeText(${"npm i datastar-kit"}); ${get("/demo/install-copy-feedback", { payload: {} })}`}
         aria-label="Copy npm install command"
       >
         <span>
-          <span class="text-fg-muted">$ </span>npm i datastar-kit
+          <span class="text-fg-muted">$ </span>
+          npm i datastar-kit
         </span>
-        <span class="rounded-md p-1 text-fg-muted transition-colors hover:text-fg">
-          <CopyIcon />
+        <span
+          class="grid h-6 w-6 place-items-center rounded-md text-fg-muted transition-colors group-hover:text-fg"
+          id="install-copy-icon"
+        >
+          <Icons.copy
+            aria-hidden="true"
+            class="h-4 w-4"
+          />
         </span>
       </button>
       <div class="mt-8 flex flex-wrap items-center gap-3">
@@ -171,7 +157,10 @@ const LiveDemoSection = () => (
               Run a round trip
             </button>
             <span class="text-accent">
-              <Logo class="h-5 w-5" />
+              <Icons.logo
+                aria-hidden="true"
+                class="h-5 w-5"
+              />
             </span>
           </div>
           <div class="mt-5 border-t border-border-subtle pt-5">
@@ -278,4 +267,36 @@ export const registerHomePage = (app: App) => {
       />
     )
   })
+
+  app.get("/demo/install-copy-feedback", () =>
+    reply.stream(
+      (async function* () {
+        yield event.patch(
+          <span
+            id="install-copy-icon"
+            class="grid h-6 w-6 place-items-center rounded-md text-accent-bright"
+          >
+            <Icons.check
+              aria-hidden="true"
+              class="h-4 w-4"
+            />
+          </span>,
+          { selector: "#install-copy-icon" }
+        )
+        await new Promise((resolve) => setTimeout(resolve, 1200))
+        yield event.patch(
+          <span
+            id="install-copy-icon"
+            class="grid h-6 w-6 place-items-center rounded-md text-fg-muted transition-colors group-hover:text-fg"
+          >
+            <Icons.copy
+              aria-hidden="true"
+              class="h-4 w-4"
+            />
+          </span>,
+          { selector: "#install-copy-icon" }
+        )
+      })()
+    )
+  )
 }
