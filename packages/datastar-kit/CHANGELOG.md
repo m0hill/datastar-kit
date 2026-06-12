@@ -4,6 +4,7 @@
 
 ### Added
 
+- Exposed the low-level `h(tag, props, ...children)` hyperscript factory from the root package for building `HtmlNode`s without JSX.
 - Added the `datastar-kit/debugger` subpath with a compact development-only `DatastarDebugger` TSX component for inspecting current signals and searchable Datastar event activity.
 - Added `state(...).ref(path)` for typed refs to any known state path, including object-valued paths.
 - Added `event.comment(...)` and `datastar-kit/sse` `comment(...)` for manual SSE heartbeat comments in streams.
