@@ -175,7 +175,7 @@ const BoxSection = () => (
       Request becomes a Response.
     </p>
     <div class="mt-12 grid gap-5 lg:grid-cols-5">
-      <div class="min-w-0 rounded-2xl border border-border-subtle bg-code lg:col-span-3 [&_.code-block]:my-0 [&_.code-block]:border-0">
+      <div class="min-w-0 lg:col-span-3 [&_.code-block]:my-0">
         {unsafeHtml(snippets["signals"] ?? "")}
       </div>
       <div class="grid gap-5 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-1 lg:grid-rows-4">

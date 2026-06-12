@@ -27,16 +27,16 @@
   --color-bg: #0b0b0b;
   --color-surface: #111111;
   --color-surface-raised: #161616;
-  --color-code: #101010;
+  --color-code: #050505;
   --color-border-subtle: #1c1c1c;
   --color-border: #262626;
   --color-border-strong: #3f3f3f;
   --color-fg: #ededed;
   --color-fg-secondary: #a3a3a3;
   --color-fg-muted: #707070;
-  --color-accent: #e5484d;
-  --color-accent-bright: #f2555a;
-  --color-accent-dim: #72232d;
+  --color-accent: #4d8ef0;
+  --color-accent-bright: #6ba4f5;
+  --color-accent-dim: #0f2240;
   --font-sans: "Geist Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
@@ -205,6 +205,10 @@ body {
 
 .code-block pre {
   @apply overflow-x-auto px-4 py-4;
+}
+
+.code-block .shiki {
+  background: var(--color-code) !important;
 }
 
 .code-block code {
