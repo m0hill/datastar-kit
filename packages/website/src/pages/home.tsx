@@ -32,6 +32,25 @@ const loop = [
   }
 ] as const
 
+const InstallCopyIcon = (props: { icon: "copy" | "check"; class?: string }) => {
+  const Icon = Icons[props.icon]
+
+  return (
+    <span
+      id="install-copy-icon"
+      class={
+        props.class ??
+        "grid h-6 w-6 place-items-center rounded-md text-fg-muted transition-colors group-hover:text-fg"
+      }
+    >
+      <Icon
+        aria-hidden="true"
+        class="h-4 w-4"
+      />
+    </span>
+  )
+}
+
 const PingResult = () => (
   <p
     id="ping-result"
@@ -74,15 +93,7 @@ const Hero = () => (
           <span class="text-fg-muted">$ </span>
           npm i datastar-kit
         </span>
-        <span
-          class="grid h-6 w-6 place-items-center rounded-md text-fg-muted transition-colors group-hover:text-fg"
-          id="install-copy-icon"
-        >
-          <Icons.copy
-            aria-hidden="true"
-            class="h-4 w-4"
-          />
-        </span>
+        <InstallCopyIcon icon="copy" />
       </button>
       <div class="mt-8 flex flex-wrap items-center gap-3">
         <a
@@ -272,30 +283,13 @@ export const registerHomePage = (app: App) => {
     reply.stream(
       (async function* () {
         yield event.patch(
-          <span
-            id="install-copy-icon"
+          <InstallCopyIcon
+            icon="check"
             class="grid h-6 w-6 place-items-center rounded-md text-accent-bright"
-          >
-            <Icons.check
-              aria-hidden="true"
-              class="h-4 w-4"
-            />
-          </span>,
-          { selector: "#install-copy-icon" }
+          />
         )
         await new Promise((resolve) => setTimeout(resolve, 1200))
-        yield event.patch(
-          <span
-            id="install-copy-icon"
-            class="grid h-6 w-6 place-items-center rounded-md text-fg-muted transition-colors group-hover:text-fg"
-          >
-            <Icons.copy
-              aria-hidden="true"
-              class="h-4 w-4"
-            />
-          </span>,
-          { selector: "#install-copy-icon" }
-        )
+        yield event.patch(<InstallCopyIcon icon="copy" />)
       })()
     )
   )
