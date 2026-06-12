@@ -75,7 +75,7 @@ const GithubIcon = (): JSX.Element => (
 
 const SearchResultsShell = (): JSX.Element => (
   <div
-    class="absolute top-full right-0 left-0 z-50 mt-2 max-h-[60vh] overflow-y-auto rounded-xl border border-border bg-surface shadow-2xl shadow-black/50 md:left-auto md:w-[28rem]"
+    class="absolute top-full right-0 left-0 z-50 mt-2 max-h-[60vh] overflow-y-auto rounded-xl border border-border bg-surface shadow-2xl shadow-black/50 md:left-auto md:w-md"
     style="display:none"
     data-show={js`${searchState.refs.q} !== ''`}
   >
@@ -125,8 +125,8 @@ export const SiteHeader = (props: {
       <div
         class={
           hasSearch
-            ? "mx-auto flex max-w-[1400px] flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6 md:h-14 md:flex-nowrap md:py-0"
-            : "mx-auto flex h-14 max-w-[1400px] items-center gap-6 px-4 sm:px-6"
+            ? "mx-auto flex max-w-350 flex-wrap items-center gap-x-6 gap-y-3 px-4 py-3 sm:px-6 md:h-14 md:flex-nowrap md:py-0"
+            : "mx-auto flex h-14 max-w-350 items-center gap-6 px-4 sm:px-6"
         }
       >
         <a
@@ -151,7 +151,7 @@ export const SiteHeader = (props: {
           />
         </nav>
         {hasSearch ? (
-          <div class="order-3 w-full md:order-none md:ml-auto md:w-64">
+          <div class="order-3 w-full md:order-0 md:ml-auto md:w-64">
             <DocSearch />
           </div>
         ) : null}
@@ -187,7 +187,7 @@ export const SiteHeader = (props: {
 
 export const SiteFooter = (): JSX.Element => (
   <footer class="border-t border-border-subtle">
-    <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm text-fg-muted sm:px-6">
+    <div class="mx-auto flex max-w-350 flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm text-fg-muted sm:px-6">
       <p>MIT licensed. Built with Datastar Kit on Cloudflare Workers.</p>
       <nav class="flex items-center gap-5">
         <a
@@ -305,14 +305,14 @@ const OnThisPage = (props: { page: DocPage }): JSX.Element | null => {
 
 export const DocsLayout = (props: { page: DocPage }): JSX.Element => (
   <div
-    class="min-h-[100dvh]"
+    class="min-h-dvh"
     data-signals={mod(searchState.defaults, { ifMissing: true })}
   >
     <SiteHeader
       active="docs"
       search
     />
-    <div class="mx-auto max-w-[1400px] px-4 sm:px-6 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_13rem]">
+    <div class="mx-auto max-w-350 px-4 sm:px-6 lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_13rem]">
       <aside class="max-lg:hidden">
         <div class="sticky top-14 max-h-[calc(100dvh-3.5rem)] overflow-y-auto py-10 pr-6">
           <SidebarNav activePath={props.page.path} />

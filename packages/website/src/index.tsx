@@ -129,7 +129,7 @@ app.get("/playground/status", async (c) => {
 
 app.notFound(() =>
   reply.page(
-    <div class="flex min-h-[100dvh] flex-col">
+    <div class="flex min-h-dvh flex-col">
       <SiteHeader />
       <main class="mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center px-4 py-24 text-center">
         <p class="font-mono text-sm text-accent-bright">404</p>

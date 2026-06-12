@@ -52,7 +52,7 @@ export const PingResultPatched = (props: { colo: string; time: string }): JSX.El
 )
 
 const Hero = (): JSX.Element => (
-  <section class="mx-auto grid max-w-[1400px] items-center gap-12 px-4 pt-16 pb-20 sm:px-6 lg:grid-cols-[5fr_4fr] lg:gap-16 lg:pt-24">
+  <section class="mx-auto grid max-w-350 items-center gap-12 px-4 pt-16 pb-20 sm:px-6 lg:grid-cols-[5fr_4fr] lg:gap-16 lg:pt-24">
     <div class="page-enter">
       <h1 class="text-4xl font-semibold tracking-tighter text-fg md:text-5xl lg:text-6xl">
         Server-driven UI
@@ -86,7 +86,7 @@ const Hero = (): JSX.Element => (
 
 const RuntimeStrip = (): JSX.Element => (
   <section class="border-y border-border-subtle">
-    <div class="mx-auto flex max-w-[1400px] flex-wrap items-center justify-center gap-x-12 gap-y-6 px-4 py-10 sm:px-6">
+    <div class="mx-auto flex max-w-350 flex-wrap items-center justify-center gap-x-12 gap-y-6 px-4 py-10 sm:px-6">
       {runtimes.map((runtime) => (
         <img
           src={`https://cdn.simpleicons.org/${runtime.slug}/8f8f8f`}
@@ -102,7 +102,7 @@ const RuntimeStrip = (): JSX.Element => (
 )
 
 const LoopSection = (): JSX.Element => (
-  <section class="mx-auto max-w-[1400px] px-4 py-24 sm:px-6">
+  <section class="mx-auto max-w-350 px-4 py-24 sm:px-6">
     <h2 class="max-w-xl text-3xl font-semibold tracking-tight text-fg">
       One loop, owned by your server.
     </h2>
@@ -119,7 +119,7 @@ const LoopSection = (): JSX.Element => (
 
 const LiveDemoSection = (): JSX.Element => (
   <section class="border-y border-border-subtle bg-surface/40">
-    <div class="mx-auto max-w-[1400px] px-4 py-24 sm:px-6">
+    <div class="mx-auto max-w-350 px-4 py-24 sm:px-6">
       <div class="mx-auto max-w-2xl text-center">
         <h2 class="text-3xl font-semibold tracking-tight text-fg">This page is the demo.</h2>
         <p class="mt-4 text-fg-secondary">
@@ -168,7 +168,7 @@ const inTheBox = [
 ] as const
 
 const BoxSection = (): JSX.Element => (
-  <section class="mx-auto max-w-[1400px] px-4 py-24 sm:px-6">
+  <section class="mx-auto max-w-350 px-4 py-24 sm:px-6">
     <h2 class="max-w-xl text-3xl font-semibold tracking-tight text-fg">A kit, not a framework.</h2>
     <p class="mt-4 max-w-xl text-fg-secondary">
       Datastar Kit owns the Datastar-shaped pieces and nothing else. Everything works anywhere a
@@ -218,7 +218,7 @@ const ClosingSection = (): JSX.Element => (
 )
 
 export const HomePage = (): JSX.Element => (
-  <div class="min-h-[100dvh]">
+  <div class="min-h-dvh">
     <SiteHeader />
     <main>
       <Hero />
