@@ -22,8 +22,8 @@ const SignupStatus = (props: { ok?: boolean }) => (
     class={props.ok === true ? "text-sm text-fg" : "text-sm text-fg-muted"}
   >
     {props.ok === true
-      ? "Valid. The worker accepted this submission."
-      : "Submit the form and the worker validates it with Zod."}
+      ? "Valid. The server accepted this submission."
+      : "Submit the form and the server validates it with Zod."}
   </p>
 )
 

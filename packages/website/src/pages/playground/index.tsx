@@ -16,12 +16,12 @@ interface Demo {
 const demos: Demo[] = [
   {
     title: "Inline validation",
-    body: "Signals carry the form to the worker. Zod validates on the server, and errors come back as signal patches.",
+    body: "Signals carry the form to the server. Zod validates on the server, and errors come back as signal patches.",
     demo: <ValidationDemo />
   },
   {
     title: "Active search",
-    body: "Each keystroke is debounced into a GET request. The worker filters data and patches the list as HTML.",
+    body: "Each keystroke is debounced into a GET request. The server filters data and patches the list as HTML.",
     demo: <StatusSearchDemo />
   },
   {
@@ -49,11 +49,11 @@ const PlaygroundPage = (): JSX.Element => (
         <div>
           <p class="manual-kicker">Playground</p>
           <h1 class="mt-3 font-serif text-5xl leading-none font-medium tracking-tighter text-fg md:text-6xl">
-            Three worker-backed specimens.
+            Three server-backed specimens.
           </h1>
         </div>
         <p class="max-w-2xl self-end font-serif text-xl leading-relaxed text-fg-secondary">
-          Live interactions served by this Cloudflare Worker. The page you are reading is the
+          Live interactions served straight from the server. The page you are reading is the
           application state.
         </p>
       </div>
@@ -93,7 +93,7 @@ export const registerPlaygroundPage = (app: App) => {
       title: "Playground · Datastar Kit",
       head: pageHead({
         description:
-          "Live Datastar Kit interactions served by a stateless Cloudflare Worker: inline validation, active search, and browser-only signals.",
+          "Live Datastar Kit interactions served from a stateless server: inline validation, active search, and browser-only signals.",
         path: "/playground"
       })
     })

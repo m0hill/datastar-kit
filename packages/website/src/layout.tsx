@@ -26,12 +26,6 @@ export const SiteHeader = (props: { active?: "docs" | "playground"; search?: boo
           class="flex items-center gap-2 text-fg"
           aria-label="Datastar Kit home"
         >
-          <span class="grid h-6 w-6 place-items-center border border-accent text-accent">
-            <Icons.logo
-              aria-hidden="true"
-              class="h-3.5 w-3.5"
-            />
-          </span>
           <span class="wordmark">Datastar Kit</span>
         </a>
         <nav class="flex items-center gap-5">
@@ -101,7 +95,7 @@ export const SiteFooter = () => (
             height={14}
             class="h-3.5 w-3.5"
           />
-          Datastar on Cloudflare Workers.
+          Datastar.
         </p>
         <nav class="flex items-center gap-5">
           <a
