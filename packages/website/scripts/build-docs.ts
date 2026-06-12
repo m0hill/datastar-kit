@@ -6,6 +6,7 @@ import MarkdownIt from "markdown-it"
 import anchor from "markdown-it-anchor"
 import { createHighlighter, type Highlighter } from "shiki"
 import type Token from "markdown-it/lib/token.mjs"
+import { h, renderToString, unsafeHtml } from "datastar-kit"
 
 const websiteRoot = path.resolve(import.meta.dirname, "..")
 const contentDir = path.join(websiteRoot, "content")
@@ -69,9 +70,6 @@ const slugify = (text: string): string =>
     .replace(/-+/g, "-")
     .replace(/^-|-$/g, "")
 
-const escapeHtml = (text: string): string =>
-  text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;")
-
 const docPathFromFile = (relativeFile: string): string => {
   const slug = relativeFile.replace(/\\/g, "/").replace(/\.md$/, "")
   return `/${slug}`
@@ -91,6 +89,36 @@ const rewriteDocLink = (href: string, currentDir: string): string => {
   return docPathFromFile(resolved) + hash
 }
 
+const COPY_EXPRESSION =
+  "const btn = evt.currentTarget;" +
+  " navigator.clipboard.writeText(btn.closest('figure').querySelector('pre').innerText);" +
+  " btn.classList.add('copied');" +
+  " setTimeout(() => btn.classList.remove('copied'), 1200)"
+
+const icon = (className: string, ...paths: readonly ReturnType<typeof h>[]): ReturnType<typeof h> =>
+  h(
+    "svg",
+    {
+      class: className,
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      "stroke-width": "1.8",
+      "stroke-linecap": "round",
+      "stroke-linejoin": "round",
+      "aria-hidden": "true"
+    },
+    ...paths
+  )
+
+const copyIcon = icon(
+  "icon-copy",
+  h("rect", { x: "9", y: "9", width: "11", height: "11", rx: "2" }),
+  h("path", { d: "M5 15V6a2 2 0 0 1 2-2h9" })
+)
+
+const checkIcon = icon("icon-check", h("path", { d: "M5 12.5 10 17l9-10" }))
+
 const highlightFence = (highlighter: Highlighter, code: string, lang: string): string => {
   const requested = langAliases[lang] ?? lang
   const language = (FENCE_LANGS as readonly string[]).includes(requested) ? requested : "text"
@@ -99,13 +127,28 @@ const highlightFence = (highlighter: Highlighter, code: string, lang: string): s
     theme: SHIKI_THEME
   })
   const label = lang === "" ? "text" : lang
-  return (
-    `<figure class="code-block">` +
-    `<figcaption class="code-block-bar"><span>${escapeHtml(label)}</span>` +
-    `<button type="button" class="code-copy" aria-label="Copy code" ` +
-    `data-on:click="navigator.clipboard.writeText(evt.target.closest('figure').querySelector('pre').innerText); evt.target.classList.add('copied'); setTimeout(() => evt.target.classList.remove('copied'), 1200)">Copy</button>` +
-    `</figcaption>${highlighted}</figure>\n`
+  const figure = h(
+    "figure",
+    { class: "code-block" },
+    h(
+      "figcaption",
+      { class: "code-block-bar" },
+      h("span", {}, label),
+      h(
+        "button",
+        {
+          type: "button",
+          class: "code-copy",
+          "aria-label": "Copy code",
+          "data-on:click": COPY_EXPRESSION
+        },
+        copyIcon,
+        checkIcon
+      )
+    ),
+    unsafeHtml(highlighted)
   )
+  return `${renderToString(figure)}\n`
 }
 
 const createRenderer = (highlighter: Highlighter, currentDir: string): MarkdownIt => {

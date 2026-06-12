@@ -439,13 +439,12 @@ body {
 }
 
 .code-copy {
+  display: grid;
+  place-items: center;
   cursor: pointer;
   border-radius: 2px;
-  padding: 0.15rem 0.45rem;
+  padding: 0.3rem;
   color: var(--color-fg-muted);
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  text-transform: uppercase;
   transition:
     color 0.15s ease,
     background 0.15s ease;
@@ -455,6 +454,35 @@ body {
 .code-copy.copied {
   background: var(--color-accent-dim);
   color: var(--color-accent-bright);
+}
+
+.code-copy svg {
+  grid-area: 1 / 1;
+  height: 15px;
+  width: 15px;
+}
+
+.code-copy .icon-check,
+.code-copy.copied .icon-copy {
+  display: none;
+}
+
+.code-copy.copied .icon-check {
+  display: block;
+}
+
+.install-copy .icon-check,
+.install-copy.copied .icon-copy {
+  display: none;
+}
+
+.install-copy.copied {
+  color: var(--color-accent);
+}
+
+.install-copy.copied .icon-check {
+  display: block;
+  color: var(--color-accent);
 }
 
 .code-block pre {
