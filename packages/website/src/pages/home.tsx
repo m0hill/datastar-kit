@@ -1,4 +1,4 @@
-import { event, get, js, reply, unsafeHtml } from "datastar-kit"
+import { get, js, reply, unsafeHtml } from "datastar-kit"
 import { pageHead, type App } from "../app"
 import { snippets } from "../generated/docs"
 import { Icons } from "../icons"
@@ -32,24 +32,18 @@ const loop = [
   }
 ] as const
 
-const InstallCopyIcon = (props: { icon: "copy" | "check"; class?: string }) => {
-  const Icon = Icons[props.icon]
-
-  return (
-    <span
-      id="install-copy-icon"
-      class={
-        props.class ??
-        "grid h-6 w-6 place-items-center text-fg-muted transition-colors group-hover:text-accent"
-      }
-    >
-      <Icon
-        aria-hidden="true"
-        class="h-4 w-4"
-      />
-    </span>
-  )
-}
+const InstallCopyIcon = () => (
+  <span class="grid h-6 w-6 place-items-center text-fg-muted transition-colors group-hover:text-accent">
+    <Icons.copy
+      aria-hidden="true"
+      class="icon-copy h-4 w-4"
+    />
+    <Icons.check
+      aria-hidden="true"
+      class="icon-check h-4 w-4"
+    />
+  </span>
+)
 
 const PingResult = () => (
   <p
@@ -113,15 +107,15 @@ const Hero = () => (
       </div>
       <button
         type="button"
-        class="group mt-6 flex w-full max-w-sm cursor-pointer items-center justify-between gap-4 border border-border-strong bg-paper px-4 py-3 text-left font-mono text-sm text-fg transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent"
-        data-on:click={js`navigator.clipboard.writeText(${"npm i datastar-kit"}); ${get("/demo/install-copy-feedback", { payload: {} })}`}
+        class="install-copy group mt-6 flex w-full max-w-sm cursor-pointer items-center justify-between gap-4 border border-border-strong bg-paper px-4 py-3 text-left font-mono text-sm text-fg transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent"
+        data-on:click={js`const btn = evt.currentTarget; navigator.clipboard.writeText(${"npm i datastar-kit"}); btn.classList.add('copied'); setTimeout(() => btn.classList.remove('copied'), 1200)`}
         aria-label="Copy npm install command"
       >
         <span>
           <span class="text-fg-muted">$ </span>
           npm i datastar-kit
         </span>
-        <InstallCopyIcon icon="copy" />
+        <InstallCopyIcon />
       </button>
     </div>
     <div class="min-w-0 [&_.code-block]:my-0">{unsafeHtml(snippets["counter"] ?? "")}</div>
@@ -321,19 +315,4 @@ export const registerHomePage = (app: App) => {
       />
     )
   })
-
-  app.get("/demo/install-copy-feedback", () =>
-    reply.stream(
-      (async function* () {
-        yield event.patch(
-          <InstallCopyIcon
-            icon="check"
-            class="grid h-6 w-6 place-items-center text-accent"
-          />
-        )
-        await new Promise((resolve) => setTimeout(resolve, 1200))
-        yield event.patch(<InstallCopyIcon icon="copy" />)
-      })()
-    )
-  )
 }
