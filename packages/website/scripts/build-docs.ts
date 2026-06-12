@@ -12,7 +12,7 @@ const contentDir = path.join(websiteRoot, "content")
 const snippetsDir = path.join(contentDir, "snippets")
 const outDir = path.join(websiteRoot, "src", "generated")
 
-const SHIKI_THEME = "github-dark"
+const SHIKI_THEME = "github-light"
 
 const FENCE_LANGS = [
   "tsx",
@@ -297,7 +297,7 @@ const generate = async (highlighter: Highlighter): Promise<void> => {
 
 const main = async () => {
   const highlighter = await createHighlighter({
-    themes: ["github-dark"],
+    themes: ["github-light"],
     langs: [...FENCE_LANGS]
   })
   await generate(highlighter)

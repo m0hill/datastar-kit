@@ -3,9 +3,15 @@ import { pageHead, type App } from "../app"
 import { snippets } from "../generated/docs"
 import { Icons } from "../icons"
 import { SiteFooter, SiteHeader } from "../layout"
-import { GITHUB_URL } from "../nav"
+import { DATASTAR_URL, GITHUB_URL } from "../nav"
 
-const runtimes = ["Hono", "Cloudflare Workers", "Bun", "Deno", "Node.js"] as const
+const runtimes = [
+  { slug: "hono", name: "Hono" },
+  { slug: "cloudflare", name: "Cloudflare Workers" },
+  { slug: "bun", name: "Bun" },
+  { slug: "deno", name: "Deno" },
+  { slug: "nodedotjs", name: "Node.js" }
+] as const
 
 const loop = [
   {
@@ -65,36 +71,25 @@ const PingResultPatched = (props: { colo: string; time: string }) => (
   </p>
 )
 
-const BlueprintDiagram = () => (
-  <figure class="blueprint-panel p-4 md:p-6">
-    <div class="flex items-start justify-between gap-4">
-      <figcaption class="frame-label">Figure / server loop</figcaption>
-      <span class="frame-label">Web Standard Request</span>
-    </div>
-    <div
-      class="manual-diagram"
-      aria-hidden="true"
-    >
-      {loop.map((step) => (
-        <div class="diagram-node">{step.verb}</div>
-      ))}
-      <div class="diagram-core">Datastar Kit</div>
-      <div class="diagram-line one" />
-      <div class="diagram-line two" />
-      <div class="diagram-line three" />
-    </div>
-    <div class="flex items-end justify-between gap-4">
-      <span class="frame-label">HTML patches</span>
-      <span class="frame-label">Native Response</span>
-    </div>
-  </figure>
-)
-
 const Hero = () => (
   <section class="site-shell grid items-center gap-10 pt-12 pb-20 lg:grid-cols-[minmax(0,0.92fr)_minmax(30rem,1.08fr)] lg:gap-16 lg:pt-16">
     <div class="page-enter max-w-2xl">
-      <p class="manual-kicker">Datastar Kit</p>
-      <h1 class="mt-4 font-serif text-5xl leading-[0.95] font-medium tracking-tighter text-fg md:text-6xl lg:text-7xl">
+      <a
+        href={DATASTAR_URL}
+        target="_blank"
+        rel="noreferrer"
+        class="inline-flex items-center gap-2 text-fg-secondary transition-colors hover:text-accent"
+      >
+        <img
+          src="/datastar-rocket.png"
+          alt=""
+          width={18}
+          height={18}
+          class="h-[18px] w-[18px]"
+        />
+        <span class="manual-kicker">Built for Datastar</span>
+      </a>
+      <h1 class="font-serif text-5xl leading-[0.95] font-medium tracking-tighter text-fg md:text-6xl lg:text-7xl">
         Server-rendered interfaces, patched like documents.
       </h1>
       <p class="mt-5 max-w-lg font-serif text-xl leading-relaxed text-fg-secondary">
@@ -129,25 +124,32 @@ const Hero = () => (
         <InstallCopyIcon icon="copy" />
       </button>
     </div>
-    <BlueprintDiagram />
+    <div class="min-w-0 [&_.code-block]:my-0">{unsafeHtml(snippets["counter"] ?? "")}</div>
   </section>
 )
 
 const RuntimeSheet = () => (
-  <section class="border-y border-border-subtle bg-paper/45">
-    <div class="site-shell grid gap-6 py-10 md:grid-cols-[15rem_minmax(0,1fr)] md:items-start">
-      <div>
-        <h2 class="font-serif text-2xl leading-tight font-medium tracking-tight text-fg">
-          Runs where you do.
-        </h2>
-        <p class="mt-2 max-w-xs text-sm text-fg-secondary">Bring any Fetch-compatible runtime.</p>
-      </div>
-      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-        {runtimes.map((runtime) => (
-          <div class="border border-border-subtle bg-surface/70 px-3 py-3 font-mono text-[11px] font-semibold uppercase text-fg-secondary">
-            {runtime}
-          </div>
-        ))}
+  <section class="bg-paper/45 [&+section]:border-t-0">
+    <div class="site-shell border-y border-border-subtle">
+      <div class="grid gap-8 py-10 md:grid-cols-[15rem_minmax(0,1fr)] md:items-center">
+        <div>
+          <h2 class="font-serif text-2xl leading-tight font-medium tracking-tight text-fg">
+            Runs where you do.
+          </h2>
+          <p class="mt-2 max-w-xs text-sm text-fg-secondary">Bring any Fetch-compatible runtime.</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-x-10 gap-y-6 md:justify-end">
+          {runtimes.map((runtime) => (
+            <img
+              src={`https://cdn.simpleicons.org/${runtime.slug}/47483e`}
+              alt={runtime.name}
+              title={runtime.name}
+              width={28}
+              height={28}
+              class="h-7 w-7 opacity-75 transition-opacity hover:opacity-100"
+            />
+          ))}
+        </div>
       </div>
     </div>
   </section>
@@ -164,11 +166,13 @@ const LoopSection = () => (
           The browser handles events and patches. Your code keeps the application model.
         </p>
       </div>
-      <ol class="grid gap-4 sm:grid-cols-2">
-        {loop.map((step) => (
-          <li class="blueprint-panel p-5">
-            <p class="frame-label">{step.verb}</p>
-            <p class="mt-4 font-serif text-lg text-fg">{step.body}</p>
+      <ol class="grid gap-px overflow-hidden rounded-[3px] border border-border-subtle bg-border-subtle sm:grid-cols-2">
+        {loop.map((step, i) => (
+          <li class="bg-paper p-5">
+            <p class="font-mono text-[11px] font-semibold tracking-wide text-accent">
+              {String(i + 1).padStart(2, "0")} · {step.verb}
+            </p>
+            <p class="mt-3 font-serif text-lg text-fg">{step.body}</p>
           </li>
         ))}
       </ol>
@@ -177,8 +181,8 @@ const LoopSection = () => (
 )
 
 const LiveDemoSection = () => (
-  <section class="border-y border-border-subtle bg-paper/60">
-    <div class="site-shell py-24">
+  <section class="bg-paper/60">
+    <div class="site-shell border-y border-border-subtle py-24">
       <div class="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(22rem,0.55fr)] lg:items-center">
         <div>
           <p class="manual-kicker">Live patch</p>
@@ -246,21 +250,23 @@ const BoxSection = () => (
         </p>
         <div class="mt-8 min-w-0 [&_.code-block]:my-0">{unsafeHtml(snippets["signals"] ?? "")}</div>
       </div>
-      <div class="spec-table">
+      <dl class="border-t border-border-strong">
         {inTheBox.map((item) => (
-          <div class="spec-row">
-            <span>{item.title}</span>
-            <span class="max-w-52 text-right normal-case">{item.body}</span>
+          <div class="border-b border-border-subtle py-4">
+            <dt class="font-mono text-[11px] font-semibold tracking-wide uppercase text-accent">
+              {item.title}
+            </dt>
+            <dd class="mt-1.5 text-sm leading-relaxed text-fg-secondary">{item.body}</dd>
           </div>
         ))}
-      </div>
+      </dl>
     </div>
   </section>
 )
 
 const ClosingSection = () => (
-  <section class="border-t border-border-subtle">
-    <div class="site-shell py-24 text-center">
+  <section>
+    <div class="site-shell border-t border-border-subtle py-24 text-center">
       <div
         class="paper-rule mx-auto mb-10 max-w-xl"
         aria-hidden="true"

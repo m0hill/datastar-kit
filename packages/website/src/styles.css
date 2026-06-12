@@ -29,7 +29,6 @@
   --color-paper-soft: #f0f1ea;
   --color-surface: #ffffff;
   --color-surface-raised: #f9faf4;
-  --color-code: #080d18;
   --color-border-subtle: #d8d8cd;
   --color-border: #9f9f92;
   --color-border-strong: #1e1f1a;
@@ -173,117 +172,6 @@ body {
   line-height: 1.2;
   text-transform: uppercase;
   color: var(--color-accent-bright);
-}
-
-.manual-diagram {
-  position: relative;
-  min-height: 25rem;
-  color: var(--color-accent);
-}
-
-.diagram-node {
-  position: absolute;
-  display: grid;
-  place-items: center;
-  width: 7.5rem;
-  height: 7.5rem;
-  border: 1px solid currentColor;
-  background: color-mix(in oklab, var(--color-accent-dim) 50%, transparent);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: -0.03em;
-  text-transform: uppercase;
-  box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.46);
-}
-
-.diagram-node:nth-child(1) {
-  top: 2.5rem;
-  left: 9%;
-}
-
-.diagram-node:nth-child(2) {
-  top: 5.6rem;
-  right: 8%;
-}
-
-.diagram-node:nth-child(3) {
-  bottom: 3rem;
-  left: 18%;
-}
-
-.diagram-node:nth-child(4) {
-  right: 18%;
-  bottom: 5rem;
-}
-
-.diagram-line {
-  position: absolute;
-  height: 1px;
-  transform-origin: left center;
-  background: currentColor;
-  opacity: 0.78;
-}
-
-.diagram-line.one {
-  top: 7rem;
-  left: 33%;
-  width: 35%;
-  transform: rotate(8deg);
-}
-
-.diagram-line.two {
-  top: 14rem;
-  left: 27%;
-  width: 42%;
-  transform: rotate(124deg);
-}
-
-.diagram-line.three {
-  right: 27%;
-  bottom: 9.4rem;
-  width: 31%;
-  transform: rotate(18deg);
-}
-
-.diagram-core {
-  position: absolute;
-  inset: 50% auto auto 50%;
-  display: grid;
-  width: 7rem;
-  height: 7rem;
-  translate: -50% -50%;
-  place-items: center;
-  border: 1px dashed currentColor;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.6);
-  font-family: var(--font-mono);
-  font-size: 0.68rem;
-  text-transform: uppercase;
-}
-
-.spec-table {
-  display: grid;
-  border-top: 1px solid var(--color-border-strong);
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  text-transform: uppercase;
-}
-
-.spec-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 1rem;
-  border-bottom: 1px solid var(--color-border-subtle);
-  padding-block: 0.65rem;
-}
-
-.spec-row span:first-child {
-  color: var(--color-fg-muted);
-}
-
-.spec-row span:last-child {
-  color: var(--color-fg);
 }
 
 /* Shared controls */
@@ -525,25 +413,28 @@ body {
 .code-block {
   margin-block: 1.35rem;
   overflow: hidden;
-  border: 1px solid color-mix(in oklab, var(--color-accent) 34%, var(--color-border-strong));
+  border: 1px solid var(--color-border);
   border-radius: 3px;
-  background: var(--color-code);
-  box-shadow: 0 16px 44px rgba(8, 13, 24, 0.12);
+  background: var(--color-surface);
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.7),
+    0 1px 0 rgba(23, 24, 18, 0.04);
 }
 
 .code-block-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(134, 164, 255, 0.2);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent);
+  border-bottom: 1px solid var(--color-border-subtle);
+  background: var(--color-paper-soft);
   padding: 0.45rem 0.75rem;
 }
 
 .code-block-bar > span {
-  color: rgba(214, 224, 255, 0.58);
+  color: var(--color-fg-muted);
   font-family: var(--font-mono);
   font-size: 0.68rem;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -551,7 +442,7 @@ body {
   cursor: pointer;
   border-radius: 2px;
   padding: 0.15rem 0.45rem;
-  color: rgba(214, 224, 255, 0.58);
+  color: var(--color-fg-muted);
   font-family: var(--font-mono);
   font-size: 0.68rem;
   text-transform: uppercase;
@@ -562,8 +453,8 @@ body {
 
 .code-copy:hover,
 .code-copy.copied {
-  background: rgba(134, 164, 255, 0.11);
-  color: #dbe5ff;
+  background: var(--color-accent-dim);
+  color: var(--color-accent-bright);
 }
 
 .code-block pre {
@@ -571,8 +462,9 @@ body {
   padding: 1rem;
 }
 
-.code-block .shiki {
-  background: var(--color-code) !important;
+.code-block .shiki,
+.code-block .shiki span {
+  background: transparent !important;
 }
 
 .code-block code {
@@ -582,21 +474,6 @@ body {
 }
 
 @media (max-width: 47.999rem) {
-  .manual-diagram {
-    min-height: 18rem;
-  }
-
-  .diagram-node {
-    width: 5.75rem;
-    height: 5.75rem;
-    font-size: 0.62rem;
-  }
-
-  .diagram-core {
-    width: 5.75rem;
-    height: 5.75rem;
-  }
-
   .doc {
     font-size: 16px;
   }
@@ -608,37 +485,10 @@ body {
     animation: page-enter 0.28s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  .diagram-node {
-    animation: blueprint-settle 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  .diagram-node:nth-child(2) {
-    animation-delay: 80ms;
-  }
-
-  .diagram-node:nth-child(3) {
-    animation-delay: 140ms;
-  }
-
-  .diagram-node:nth-child(4) {
-    animation-delay: 200ms;
-  }
-
   @keyframes page-enter {
     from {
       opacity: 0;
       transform: translateY(5px);
-    }
-    to {
-      opacity: 1;
-      transform: none;
-    }
-  }
-
-  @keyframes blueprint-settle {
-    from {
-      opacity: 0;
-      transform: translateY(10px) scale(0.98);
     }
     to {
       opacity: 1;
