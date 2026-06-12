@@ -5,10 +5,10 @@ import { SiteFooter, SiteHeader } from "../layout"
 const NotFoundPage = () => (
   <div class="flex min-h-dvh flex-col">
     <SiteHeader />
-    <main class="site-shell flex flex-1 items-center justify-center py-24 text-center">
+    <main class="site-shell flex flex-1 items-center justify-center py-16 text-center sm:py-24">
       <div class="blueprint-panel max-w-xl p-8 sm:p-10">
         <p class="manual-kicker">404</p>
-        <h1 class="mt-3 font-serif text-5xl leading-none font-medium tracking-tighter text-fg">
+        <h1 class="mt-3 font-serif text-4xl leading-[1.05] font-medium tracking-tighter text-fg sm:text-5xl sm:leading-none">
           Page not found.
         </h1>
         <p class="mt-4 font-serif text-lg leading-relaxed text-fg-secondary">

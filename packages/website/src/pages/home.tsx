@@ -83,7 +83,7 @@ const Hero = () => (
         />
         <span class="manual-kicker">Built for Datastar</span>
       </a>
-      <h1 class="font-serif text-5xl leading-[0.95] font-medium tracking-tighter text-fg md:text-6xl lg:text-7xl">
+      <h1 class="font-serif text-[2rem] leading-[1.02] font-medium tracking-tighter text-fg min-[420px]:text-4xl sm:text-5xl sm:leading-[0.95] md:text-6xl lg:text-7xl">
         Server-rendered interfaces, patched like documents.
       </h1>
       <p class="mt-5 max-w-lg font-serif text-xl leading-relaxed text-fg-secondary">
@@ -125,14 +125,14 @@ const Hero = () => (
 const RuntimeSheet = () => (
   <section class="bg-paper/45 [&+section]:border-t-0">
     <div class="site-shell border-y border-border-subtle">
-      <div class="grid gap-8 py-10 md:grid-cols-[15rem_minmax(0,1fr)] md:items-center">
+      <div class="flex flex-col gap-6 py-10 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 class="font-serif text-2xl leading-tight font-medium tracking-tight text-fg">
             Runs where you do.
           </h2>
-          <p class="mt-2 max-w-xs text-sm text-fg-secondary">Bring any Fetch-compatible runtime.</p>
+          <p class="mt-2 text-sm text-fg-secondary">Bring any Fetch-compatible runtime.</p>
         </div>
-        <div class="flex flex-wrap items-center gap-x-10 gap-y-6 md:justify-end">
+        <div class="flex flex-wrap items-center gap-x-8 gap-y-5">
           {runtimes.map((runtime) => (
             <img
               src={`https://cdn.simpleicons.org/${runtime.slug}/47483e`}
@@ -140,7 +140,7 @@ const RuntimeSheet = () => (
               title={runtime.name}
               width={28}
               height={28}
-              class="h-7 w-7 opacity-75 transition-opacity hover:opacity-100"
+              class="h-7 w-7 opacity-75 transition-opacity hover:opacity-100 dark:invert"
             />
           ))}
         </div>
@@ -150,7 +150,7 @@ const RuntimeSheet = () => (
 )
 
 const LoopSection = () => (
-  <section class="site-shell py-24">
+  <section class="site-shell py-16 sm:py-20 lg:py-24">
     <div class="grid gap-10 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-16">
       <div>
         <h2 class="font-serif text-4xl leading-tight font-medium tracking-tight text-fg md:text-5xl">
@@ -176,7 +176,7 @@ const LoopSection = () => (
 
 const LiveDemoSection = () => (
   <section class="bg-paper/60">
-    <div class="site-shell border-y border-border-subtle py-24">
+    <div class="site-shell border-y border-border-subtle py-16 sm:py-20 lg:py-24">
       <div class="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(22rem,0.55fr)] lg:items-center">
         <div>
           <p class="manual-kicker">Live patch</p>
@@ -227,9 +227,9 @@ const inTheBox = [
 ] as const
 
 const BoxSection = () => (
-  <section class="site-shell py-24">
+  <section class="site-shell py-16 sm:py-20 lg:py-24">
     <div class="grid gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)] lg:items-center">
-      <div>
+      <div class="min-w-0">
         <h2 class="font-serif text-4xl leading-tight font-medium tracking-tight text-fg md:text-5xl">
           A kit, not a framework.
         </h2>
@@ -255,7 +255,7 @@ const BoxSection = () => (
 
 const ClosingSection = () => (
   <section>
-    <div class="site-shell border-t border-border-subtle py-24 text-center">
+    <div class="site-shell border-t border-border-subtle py-16 sm:py-20 lg:py-24 text-center">
       <div
         class="paper-rule mx-auto mb-10 max-w-xl"
         aria-hidden="true"

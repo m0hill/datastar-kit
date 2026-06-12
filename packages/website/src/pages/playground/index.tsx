@@ -48,7 +48,7 @@ const PlaygroundPage = (): JSX.Element => (
       <div class="grid gap-8 lg:grid-cols-[18rem_minmax(0,1fr)]">
         <div>
           <p class="manual-kicker">Playground</p>
-          <h1 class="mt-3 font-serif text-5xl leading-none font-medium tracking-tighter text-fg md:text-6xl">
+          <h1 class="mt-3 font-serif text-4xl leading-[1.05] font-medium tracking-tighter text-fg sm:text-5xl sm:leading-none md:text-6xl">
             Three server-backed specimens.
           </h1>
         </div>

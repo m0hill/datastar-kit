@@ -410,12 +410,22 @@ body {
   white-space: nowrap;
 }
 
+.doc-table {
+  margin-block: 1.75rem;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+}
+
 .doc table {
   width: 100%;
-  margin-block: 1.75rem;
+  min-width: 34rem;
   border-collapse: collapse;
   font-family: var(--font-sans);
   font-size: 0.91rem;
+}
+
+.doc-table table {
+  margin-block: 0;
 }
 
 .doc th {
