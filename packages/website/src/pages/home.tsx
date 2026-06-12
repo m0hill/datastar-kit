@@ -1,4 +1,4 @@
-import { get, reply, unsafeHtml } from "datastar-kit"
+import { get, js, reply, unsafeHtml } from "datastar-kit"
 import { pageHead, type App } from "../app"
 import { snippets } from "../generated/docs"
 import { Logo, SiteFooter, SiteHeader } from "../layout"
@@ -30,6 +30,28 @@ const loop = [
     body: "Return HTML or signal patches as native Responses. Datastar updates the DOM."
   }
 ] as const
+
+const CopyIcon = () => (
+  <svg
+    viewBox="0 0 24 24"
+    aria-hidden="true"
+    class="h-4 w-4"
+    fill="none"
+    stroke="currentColor"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    stroke-width="1.8"
+  >
+    <rect
+      x="9"
+      y="9"
+      width="11"
+      height="11"
+      rx="2"
+    />
+    <path d="M5 15V6a2 2 0 0 1 2-2h9" />
+  </svg>
+)
 
 const PingResult = () => (
   <p
@@ -66,11 +88,15 @@ const Hero = () => (
       <button
         type="button"
         class="mt-7 flex w-full max-w-xs cursor-pointer items-center justify-between gap-4 rounded-xl border border-border-subtle bg-code px-5 py-3.5 text-left font-mono text-sm text-fg transition-colors hover:border-border-strong focus-visible:ring-2 focus-visible:ring-border-strong/50 focus-visible:outline-none"
-        data-on:click="navigator.clipboard.writeText('npm i datastar-kit')"
+        data-on:click={js`navigator.clipboard.writeText(${"npm i datastar-kit"})`}
         aria-label="Copy npm install command"
       >
-        <span><span class="text-fg-muted">$ </span>npm i datastar-kit</span>
-        <span class="rounded-md px-2 py-0.5 text-xs text-fg-muted transition-colors hover:text-fg">Copy</span>
+        <span>
+          <span class="text-fg-muted">$ </span>npm i datastar-kit
+        </span>
+        <span class="rounded-md p-1 text-fg-muted transition-colors hover:text-fg">
+          <CopyIcon />
+        </span>
       </button>
       <div class="mt-8 flex flex-wrap items-center gap-3">
         <a
@@ -211,7 +237,6 @@ const ClosingSection = () => (
         The whole SDK is a handful of modules over Web Standards. Install it, read the introduction,
         and ship a page.
       </p>
-
     </div>
   </section>
 )
