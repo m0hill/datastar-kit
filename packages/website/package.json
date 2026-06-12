@@ -9,6 +9,7 @@
     "check": "pnpm run build && pnpm run typecheck",
     "css:build": "pnpm run fonts:copy && tailwindcss -i ./src/styles.css -o ./public/styles.css --minify",
     "css:watch": "tailwindcss -i ./src/styles.css -o ./public/styles.css --watch",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "deploy": "pnpm run build && wrangler deploy --minify",
     "dev": "pnpm run build && (pnpm run css:watch & tsx scripts/build-docs.ts --watch & trap 'kill 0' EXIT; wrangler dev)",
     "docs:build": "tsx scripts/build-docs.ts",

@@ -1,54 +1,8 @@
-import { get, js, mod, state, unsafeHtml, type HtmlChild } from "datastar-kit"
+import { mod, unsafeHtml } from "datastar-kit"
 import type { JSX } from "datastar-kit/jsx-runtime"
 import type { DocPage } from "./doc-types"
 import { DATASTAR_URL, GITHUB_URL, flatNav, sidebar } from "./nav"
-
-const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
-
-const FAVICON =
-  "data:image/svg+xml," +
-  encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#e5484d" d="M12 1.5 14.7 9.3 22.5 12 14.7 14.7 12 22.5 9.3 14.7 1.5 12 9.3 9.3Z"/></svg>`
-  )
-
-export const searchState = state({ q: "" })
-
-export const pageHead = (options: { description?: string; path?: string }): HtmlChild[] => [
-  <meta charset="utf-8" />,
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1"
-  />,
-  ...(options.description === undefined
-    ? []
-    : [
-        <meta
-          name="description"
-          content={options.description}
-        />
-      ]),
-  ...(options.path === undefined
-    ? []
-    : [
-        <link
-          rel="canonical"
-          href={`https://datastar-kit.dev${options.path === "/" ? "" : options.path}`}
-        />
-      ]),
-  <link
-    rel="icon"
-    href={FAVICON}
-  />,
-  <link
-    rel="stylesheet"
-    href="/styles.css"
-  />,
-  <script
-    type="module"
-    src={DATASTAR_RUNTIME}
-  />
-]
+import { DocSearch, searchState } from "./search"
 
 export const Logo = (props: { class?: string }): JSX.Element => (
   <svg
@@ -71,34 +25,6 @@ const GithubIcon = (): JSX.Element => (
   >
     <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
   </svg>
-)
-
-const SearchResultsShell = (): JSX.Element => (
-  <div
-    class="absolute top-full right-0 left-0 z-50 mt-2 max-h-[60vh] overflow-y-auto rounded-xl border border-border bg-surface shadow-2xl shadow-black/50 md:left-auto md:w-md"
-    style="display:none"
-    data-show={js`${searchState.refs.q} !== ''`}
-  >
-    <div id="search-results" />
-  </div>
-)
-
-export const DocSearch = (): JSX.Element => (
-  <div
-    class="relative w-full md:w-64"
-    data-on:click__outside={js`${searchState.refs.q} = ''`}
-  >
-    <input
-      type="search"
-      class="field py-2 text-sm"
-      placeholder="Search docs"
-      aria-label="Search docs"
-      data-bind={searchState.refs.q}
-      data-on:input={mod(get("/search"), { debounce: "150ms" })}
-      data-on:keydown__window={`evt.key === '/' && document.activeElement !== el && (evt.preventDefault(), el.focus())`}
-    />
-    <SearchResultsShell />
-  </div>
 )
 
 const HeaderLink = (props: { href: string; label: string; active: boolean }): JSX.Element => (
