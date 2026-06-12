@@ -3,6 +3,8 @@
 @source "./**/*.{ts,tsx}";
 @source "./generated/docs.ts";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @view-transition {
   navigation: auto;
 }
@@ -49,11 +51,40 @@
   color-scheme: light;
   --paper-grid: rgba(27, 85, 255, 0.055);
   --paper-grain: rgba(23, 24, 18, 0.035);
-  --rule-pattern: repeating-linear-gradient(
-    90deg,
-    rgba(23, 24, 18, 0.24) 0 2px,
-    transparent 2px 10px
-  );
+  --paper-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(246, 246, 241, 0.86));
+  --panel-dots: rgba(27, 85, 255, 0.105);
+  --rule-ink: rgba(23, 24, 18, 0.24);
+  --rule-pattern: repeating-linear-gradient(90deg, var(--rule-ink) 0 2px, transparent 2px 10px);
+  --raise-top: rgba(255, 255, 255, 0.8);
+  --raise-bottom: rgba(23, 24, 18, 0.1);
+}
+
+.dark {
+  color-scheme: dark;
+  --color-bg: #0b0d13;
+  --color-paper: #11141d;
+  --color-paper-soft: #161a24;
+  --color-surface: #14171f;
+  --color-surface-raised: #191d27;
+  --color-border-subtle: #242838;
+  --color-border: #393f51;
+  --color-border-strong: #5b6175;
+  --color-fg: #e9eae2;
+  --color-fg-secondary: #aeb0a3;
+  --color-fg-muted: #797b6c;
+  --color-accent: #5c83ff;
+  --color-accent-bright: #84a1ff;
+  --color-accent-dim: #1a2542;
+  --color-blueprint: #5d79c9;
+  --color-danger: #f2776b;
+
+  --paper-grid: rgba(92, 131, 255, 0.05);
+  --paper-grain: rgba(255, 255, 255, 0.018);
+  --paper-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.015), rgba(0, 0, 0, 0.22));
+  --panel-dots: rgba(92, 131, 255, 0.09);
+  --rule-ink: rgba(233, 234, 226, 0.16);
+  --raise-top: rgba(255, 255, 255, 0.05);
+  --raise-bottom: rgba(0, 0, 0, 0.3);
 }
 
 html {
@@ -70,8 +101,7 @@ body {
   min-height: 100dvh;
   background-color: var(--color-bg);
   background-image:
-    radial-gradient(circle at 1px 1px, var(--paper-grid) 1px, transparent 0),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(246, 246, 241, 0.86)),
+    radial-gradient(circle at 1px 1px, var(--paper-grid) 1px, transparent 0), var(--paper-sheen),
     repeating-linear-gradient(0deg, transparent 0 34px, var(--paper-grain) 34px 35px);
   background-position:
     0 0,
@@ -126,12 +156,9 @@ body {
   overflow: hidden;
   border: 1px solid var(--color-border-subtle);
   border-radius: 2px;
-  background:
-    linear-gradient(0deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.76)),
-    radial-gradient(circle at 1px 1px, rgba(27, 85, 255, 0.105) 1px, transparent 0);
-  background-size:
-    auto,
-    10px 10px;
+  background-color: var(--color-surface);
+  background-image: radial-gradient(circle at 1px 1px, var(--panel-dots) 1px, transparent 0);
+  background-size: 10px 10px;
 }
 
 .blueprint-panel::before,
@@ -203,8 +230,8 @@ body {
   border: 1px solid color-mix(in oklab, var(--color-border-strong) 58%, transparent);
   border-radius: 3px;
   box-shadow:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.8),
-    inset -1px -1px 0 rgba(23, 24, 18, 0.1);
+    inset 1px 1px 0 var(--raise-top),
+    inset -1px -1px 0 var(--raise-bottom);
 }
 
 .btn-secondary:hover {
@@ -417,8 +444,8 @@ body {
   border-radius: 3px;
   background: var(--color-surface);
   box-shadow:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.7),
-    0 1px 0 rgba(23, 24, 18, 0.04);
+    inset 1px 1px 0 var(--raise-top),
+    0 1px 0 var(--raise-bottom);
 }
 
 .code-block-bar {
@@ -479,6 +506,11 @@ body {
 .code-block .shiki,
 .code-block .shiki span {
   background: transparent !important;
+}
+
+.dark .code-block .shiki,
+.dark .code-block .shiki span {
+  color: var(--shiki-dark) !important;
 }
 
 .code-block code {

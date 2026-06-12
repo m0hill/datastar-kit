@@ -72,6 +72,21 @@ export const SiteHeader = (props: { active?: "docs" | "playground"; search?: boo
               class="h-4 w-4 fill-current"
             />
           </a>
+          <button
+            type="button"
+            aria-label="Toggle color theme"
+            class="grid h-4 w-4 cursor-pointer place-items-center text-fg-secondary transition-colors hover:text-accent"
+            data-on:click="const d = document.documentElement.classList.toggle('dark'); try { localStorage.setItem('theme', d ? 'dark' : 'light') } catch (e) {}"
+          >
+            <Icons.moon
+              aria-hidden="true"
+              class="h-4 w-4 dark:hidden"
+            />
+            <Icons.sun
+              aria-hidden="true"
+              class="hidden h-4 w-4 dark:block"
+            />
+          </button>
         </div>
       </div>
     </div>
