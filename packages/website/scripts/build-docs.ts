@@ -13,7 +13,7 @@ const contentDir = path.join(websiteRoot, "content")
 const snippetsDir = path.join(contentDir, "snippets")
 const outDir = path.join(websiteRoot, "src", "generated")
 
-const SHIKI_THEME = "github-light"
+const SHIKI_THEMES = { light: "github-light", dark: "github-dark" } as const
 
 const FENCE_LANGS = [
   "tsx",
@@ -124,7 +124,8 @@ const highlightFence = (highlighter: Highlighter, code: string, lang: string): s
   const language = (FENCE_LANGS as readonly string[]).includes(requested) ? requested : "text"
   const highlighted = highlighter.codeToHtml(code.replace(/\n$/, ""), {
     lang: language,
-    theme: SHIKI_THEME
+    themes: SHIKI_THEMES,
+    defaultColor: "light"
   })
   const label = lang === "" ? "text" : lang
   const figure = h(
@@ -340,7 +341,7 @@ const generate = async (highlighter: Highlighter): Promise<void> => {
 
 const main = async () => {
   const highlighter = await createHighlighter({
-    themes: ["github-light"],
+    themes: [SHIKI_THEMES.light, SHIKI_THEMES.dark],
     langs: [...FENCE_LANGS]
   })
   await generate(highlighter)

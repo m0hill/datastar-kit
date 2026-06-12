@@ -1,4 +1,4 @@
-import type { HtmlChild } from "datastar-kit"
+import { unsafeHtml, type HtmlChild } from "datastar-kit"
 import type { Hono } from "hono"
 
 export type AppBindings = { Bindings: CloudflareBindings }
@@ -7,10 +7,15 @@ export type App = Hono<AppBindings>
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
+const THEME_INIT =
+  "(function(){try{var s=localStorage.getItem('theme');" +
+  "if(s?s==='dark':matchMedia('(prefers-color-scheme: dark)').matches){" +
+  "document.documentElement.classList.add('dark')}}catch(e){}})()"
+
 const FAVICON =
   "data:image/svg+xml," +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="#f6f6f1"/><text x="16" y="22" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="16" font-weight="700" letter-spacing="-1" text-anchor="middle" fill="#1b55ff">DK</text></svg>`
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><text x="16" y="22" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="16" font-weight="700" letter-spacing="-1" text-anchor="middle" fill="#1b55ff">DK</text></svg>`
   )
 
 export const pageHead = (options: { description?: string; path?: string }): HtmlChild[] => [
@@ -19,6 +24,11 @@ export const pageHead = (options: { description?: string; path?: string }): Html
     name="viewport"
     content="width=device-width, initial-scale=1"
   />,
+  <meta
+    name="color-scheme"
+    content="light dark"
+  />,
+  <script>{unsafeHtml(THEME_INIT)}</script>,
   ...(options.description === undefined
     ? []
     : [
