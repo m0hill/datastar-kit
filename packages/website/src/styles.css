@@ -469,18 +469,14 @@ body {
   display: grid;
   place-items: center;
   cursor: pointer;
-  border-radius: 2px;
   padding: 0.3rem;
   color: var(--color-fg-muted);
-  transition:
-    color 0.15s ease,
-    background 0.15s ease;
+  transition: color 0.15s ease;
 }
 
 .code-copy:hover,
 .code-copy.copied {
-  background: var(--color-accent-dim);
-  color: var(--color-accent-bright);
+  color: var(--color-accent);
 }
 
 .code-copy svg {
