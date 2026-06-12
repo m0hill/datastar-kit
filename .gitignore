@@ -4,3 +4,4 @@ node_modules/
 dump.rdb
 auth.json
 *.env
+.claude/
