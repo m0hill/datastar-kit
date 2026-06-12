@@ -85,7 +85,7 @@ const Hero = () => (
           alt=""
           width={18}
           height={18}
-          class="h-[18px] w-[18px]"
+          class="h-4.5 w-4.5"
         />
         <span class="manual-kicker">Built for Datastar</span>
       </a>
@@ -234,7 +234,7 @@ const inTheBox = [
 
 const BoxSection = () => (
   <section class="site-shell py-24">
-    <div class="grid gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)] lg:items-start">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)] lg:items-center">
       <div>
         <h2 class="font-serif text-4xl leading-tight font-medium tracking-tight text-fg md:text-5xl">
           A kit, not a framework.
