@@ -23,7 +23,7 @@ export const SiteHeader = (props: { active?: "docs" | "playground"; search?: boo
       <div class="flex min-h-16 flex-wrap items-center gap-x-6 gap-y-3 py-3 md:h-16 md:flex-nowrap md:py-0">
         <a
           href="/"
-          class="flex items-center gap-2 text-fg"
+          class="flex items-center gap-2 border-b border-transparent pb-1 text-fg"
           aria-label="Datastar Kit home"
         >
           <span class="wordmark">Datastar Kit</span>
