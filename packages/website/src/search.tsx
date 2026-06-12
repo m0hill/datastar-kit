@@ -83,7 +83,7 @@ const searchDocs = (query: string): SearchHit[] => {
 
 const SearchResultsShell = (): JSX.Element => (
   <div
-    class="absolute top-full right-0 left-0 z-50 mt-2 max-h-[60vh] overflow-y-auto rounded-xl border border-border bg-surface shadow-2xl shadow-black/50 md:left-auto md:w-md"
+    class="absolute top-full right-0 left-0 z-50 mt-2 max-h-[60vh] overflow-y-auto border border-border bg-paper shadow-[0_18px_50px_rgba(23,24,18,0.14)] md:left-auto md:w-md"
     style="display:none"
     data-show={js`${searchState.refs.q} !== ''`}
   >
@@ -112,7 +112,7 @@ export const DocSearch = (): JSX.Element => (
 const SearchResults = (props: { query: string; hits: SearchHit[] }): JSX.Element => (
   <div id="search-results">
     {props.hits.length === 0 ? (
-      <p class="px-4 py-6 text-center text-sm text-fg-muted">
+      <p class="px-4 py-6 text-center font-mono text-xs uppercase text-fg-muted">
         No results for "{props.query.trim()}"
       </p>
     ) : (
@@ -125,15 +125,15 @@ const SearchResults = (props: { query: string; hits: SearchHit[] }): JSX.Element
                   ? hit.page.path
                   : `${hit.page.path}#${hit.section.slug}`
               }
-              class="block px-4 py-3 transition-colors hover:bg-surface-raised"
+              class="block px-4 py-3 transition-colors hover:bg-accent-dim/45"
             >
-              <span class="block text-sm font-medium text-fg">
+              <span class="block font-mono text-[11px] font-semibold uppercase text-accent">
                 {hit.section === undefined || hit.section.heading === ""
                   ? hit.page.title
                   : hit.section.heading}
               </span>
               {hit.section === undefined || hit.section.heading === "" ? null : (
-                <span class="block text-xs text-fg-muted">{hit.page.title}</span>
+                <span class="mt-1 block text-xs text-fg-muted">{hit.page.title}</span>
               )}
               {hit.snippet === "" ? null : (
                 <span class="mt-1 block truncate text-xs text-fg-secondary">{hit.snippet}</span>

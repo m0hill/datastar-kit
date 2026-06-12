@@ -43,13 +43,13 @@ const StatusList = (props: { items: StatusCode[] }) => (
     class="max-h-72 space-y-1 overflow-y-auto pr-1"
   >
     {props.items.length === 0 ? (
-      <li class="rounded-lg border border-dashed border-border px-4 py-8 text-center text-sm text-fg-muted">
+      <li class="border border-dashed border-border px-4 py-8 text-center text-sm text-fg-muted">
         No status codes match.
       </li>
     ) : (
       props.items.map((item) => (
-        <li class="flex items-baseline gap-3 rounded-lg border border-border-subtle px-3.5 py-2.5">
-          <span class="font-mono text-sm font-semibold text-accent-bright">{item.code}</span>
+        <li class="flex items-baseline gap-3 border border-border-subtle bg-paper/60 px-3.5 py-2.5">
+          <span class="font-mono text-sm font-semibold text-accent">{item.code}</span>
           <span class="text-sm font-medium text-fg">{item.text}</span>
           <span class="truncate text-xs text-fg-muted max-sm:hidden">{item.blurb}</span>
         </li>
