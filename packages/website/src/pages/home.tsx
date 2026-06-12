@@ -63,6 +63,15 @@ const Hero = () => (
         Typed Datastar attributes, server-rendered TSX, and native Response helpers. Bring your own
         router, database, and runtime.
       </p>
+      <button
+        type="button"
+        class="mt-7 flex w-full max-w-xs cursor-pointer items-center justify-between gap-4 rounded-xl border border-border-subtle bg-code px-5 py-3.5 text-left font-mono text-sm text-fg transition-colors hover:border-border-strong focus-visible:ring-2 focus-visible:ring-border-strong/50 focus-visible:outline-none"
+        data-on:click="navigator.clipboard.writeText('npm i datastar-kit')"
+        aria-label="Copy npm install command"
+      >
+        <span><span class="text-fg-muted">$ </span>npm i datastar-kit</span>
+        <span class="rounded-md px-2 py-0.5 text-xs text-fg-muted transition-colors hover:text-fg">Copy</span>
+      </button>
       <div class="mt-8 flex flex-wrap items-center gap-3">
         <a
           href="/introduction"
@@ -202,17 +211,7 @@ const ClosingSection = () => (
         The whole SDK is a handful of modules over Web Standards. Install it, read the introduction,
         and ship a page.
       </p>
-      <div class="mx-auto mt-8 max-w-xs rounded-xl border border-border bg-code px-5 py-3.5 text-left font-mono text-sm text-fg">
-        <span class="text-fg-muted">$ </span>npm i datastar-kit
-      </div>
-      <div class="mt-8">
-        <a
-          href="/introduction"
-          class="btn-primary"
-        >
-          Get started
-        </a>
-      </div>
+
     </div>
   </section>
 )
