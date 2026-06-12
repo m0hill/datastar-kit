@@ -471,20 +471,6 @@ body {
   display: block;
 }
 
-.install-copy .icon-check,
-.install-copy.copied .icon-copy {
-  display: none;
-}
-
-.install-copy.copied {
-  color: var(--color-accent);
-}
-
-.install-copy.copied .icon-check {
-  display: block;
-  color: var(--color-accent);
-}
-
 .code-block pre {
   overflow-x: auto;
   padding: 1rem;
