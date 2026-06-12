@@ -20,7 +20,7 @@ const HeaderLink = (props: { href: string; label: string; active: boolean }) => 
 export const SiteHeader = (props: { active?: "docs" | "playground"; search?: boolean }) => (
   <header class="sticky top-0 z-40 border-b border-border-subtle bg-bg/92 backdrop-blur">
     <div class="site-shell">
-      <div class="flex min-h-16 flex-wrap items-center gap-x-6 gap-y-3 py-3 md:h-16 md:flex-nowrap md:py-0">
+      <div class="flex min-h-16 flex-wrap items-center gap-x-4 gap-y-3 py-3 sm:gap-x-6 md:h-16 md:flex-nowrap md:py-0">
         <a
           href="/"
           class="flex items-center gap-2 border-b border-transparent pb-1 text-fg"
@@ -28,7 +28,7 @@ export const SiteHeader = (props: { active?: "docs" | "playground"; search?: boo
         >
           <span class="wordmark">Datastar Kit</span>
         </a>
-        <nav class="flex items-center gap-5">
+        <nav class="flex items-center gap-4 sm:gap-5">
           <HeaderLink
             href="/introduction"
             label="Docs"
@@ -112,7 +112,7 @@ export const SiteFooter = () => (
           />
           Datastar.
         </p>
-        <nav class="flex items-center gap-5">
+        <nav class="flex items-center gap-4 sm:gap-5">
           <a
             href={GITHUB_URL}
             target="_blank"

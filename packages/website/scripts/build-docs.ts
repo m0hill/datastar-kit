@@ -174,6 +174,9 @@ const createRenderer = (highlighter: Highlighter, currentDir: string): MarkdownI
     return highlightFence(highlighter, token.content, token.info.trim())
   }
 
+  md.renderer.rules.table_open = () => '<div class="doc-table">\n<table>\n'
+  md.renderer.rules.table_close = () => "</table>\n</div>\n"
+
   const defaultLinkOpen =
     md.renderer.rules.link_open ??
     ((tokens, idx, options, _env, self) => self.renderToken(tokens, idx, options))
