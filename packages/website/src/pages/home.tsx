@@ -65,7 +65,7 @@ const PingResultPatched = (props: { colo: string; time: string }) => (
     id="ping-result"
     class="text-sm text-fg"
   >
-    Patched by the worker
+    Patched by the server
     {props.colo === "" ? "" : ` in ${props.colo}`} at{" "}
     <span class="font-mono text-accent">{props.time}</span>
   </p>
@@ -190,7 +190,7 @@ const LiveDemoSection = () => (
             This page is the demo.
           </h2>
           <p class="mt-4 max-w-2xl font-serif text-lg leading-relaxed text-fg-secondary">
-            Press the button and this Cloudflare Worker sends an HTML patch over SSE.
+            Press the button and the server sends an HTML patch over SSE.
           </p>
         </div>
         <div class="blueprint-panel bg-surface p-5">
@@ -202,12 +202,7 @@ const LiveDemoSection = () => (
             >
               Run round trip
             </button>
-            <span class="grid h-8 w-8 place-items-center border border-accent text-accent">
-              <Icons.logo
-                aria-hidden="true"
-                class="h-4 w-4"
-              />
-            </span>
+            <span class="frame-label">GET /demo/ping</span>
           </div>
           <div class="mt-5 border-t border-border-subtle pt-5">
             <PingResult />

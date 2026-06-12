@@ -3,19 +3,6 @@ import type { JSX } from "datastar-kit/jsx-runtime"
 type IconProps = JSX.IntrinsicElements["svg"]
 
 export const Icons = {
-  logo: (props: IconProps) => (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      {...props}
-    >
-      <path
-        fill="currentColor"
-        d="M12 1.5 14.7 9.3 22.5 12 14.7 14.7 12 22.5 9.3 14.7 1.5 12 9.3 9.3Z"
-      />
-    </svg>
-  ),
-
   gitHub: (props: IconProps) => (
     <svg
       xmlns="http://www.w3.org/2000/svg"

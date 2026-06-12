@@ -10,7 +10,7 @@ const DATASTAR_RUNTIME =
 const FAVICON =
   "data:image/svg+xml," +
   encodeURIComponent(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path fill="#1b55ff" d="M12 1.5 14.7 9.3 22.5 12 14.7 14.7 12 22.5 9.3 14.7 1.5 12 9.3 9.3Z"/></svg>`
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" fill="#f6f6f1"/><text x="16" y="22" font-family="ui-monospace,SFMono-Regular,Menlo,monospace" font-size="16" font-weight="700" letter-spacing="-1" text-anchor="middle" fill="#1b55ff">DK</text></svg>`
   )
 
 export const pageHead = (options: { description?: string; path?: string }): HtmlChild[] => [
