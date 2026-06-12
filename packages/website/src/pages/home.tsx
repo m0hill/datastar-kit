@@ -1,5 +1,5 @@
-import { get, unsafeHtml } from "datastar-kit"
-import type { JSX } from "datastar-kit/jsx-runtime"
+import { get, reply, unsafeHtml } from "datastar-kit"
+import { pageHead, type App } from "../app"
 import { snippets } from "../generated/docs"
 import { Logo, SiteFooter, SiteHeader } from "../layout"
 import { GITHUB_URL } from "../nav"
@@ -31,7 +31,7 @@ const loop = [
   }
 ] as const
 
-const PingResult = (): JSX.Element => (
+const PingResult = () => (
   <p
     id="ping-result"
     class="text-sm text-fg-muted"
@@ -40,7 +40,7 @@ const PingResult = (): JSX.Element => (
   </p>
 )
 
-export const PingResultPatched = (props: { colo: string; time: string }): JSX.Element => (
+const PingResultPatched = (props: { colo: string; time: string }) => (
   <p
     id="ping-result"
     class="text-sm text-fg"
@@ -51,7 +51,7 @@ export const PingResultPatched = (props: { colo: string; time: string }): JSX.El
   </p>
 )
 
-const Hero = (): JSX.Element => (
+const Hero = () => (
   <section class="mx-auto grid max-w-350 items-center gap-12 px-4 pt-16 pb-20 sm:px-6 lg:grid-cols-[5fr_4fr] lg:gap-16 lg:pt-24">
     <div class="page-enter">
       <h1 class="text-4xl font-semibold tracking-tighter text-fg md:text-5xl lg:text-6xl">
@@ -84,7 +84,7 @@ const Hero = (): JSX.Element => (
   </section>
 )
 
-const RuntimeStrip = (): JSX.Element => (
+const RuntimeStrip = () => (
   <section class="border-y border-border-subtle">
     <div class="mx-auto flex max-w-350 flex-wrap items-center justify-center gap-x-12 gap-y-6 px-4 py-10 sm:px-6">
       {runtimes.map((runtime) => (
@@ -101,7 +101,7 @@ const RuntimeStrip = (): JSX.Element => (
   </section>
 )
 
-const LoopSection = (): JSX.Element => (
+const LoopSection = () => (
   <section class="mx-auto max-w-350 px-4 py-24 sm:px-6">
     <h2 class="max-w-xl text-3xl font-semibold tracking-tight text-fg">
       One loop, owned by your server.
@@ -117,7 +117,7 @@ const LoopSection = (): JSX.Element => (
   </section>
 )
 
-const LiveDemoSection = (): JSX.Element => (
+const LiveDemoSection = () => (
   <section class="border-y border-border-subtle bg-surface/40">
     <div class="mx-auto max-w-350 px-4 py-24 sm:px-6">
       <div class="mx-auto max-w-2xl text-center">
@@ -167,7 +167,7 @@ const inTheBox = [
   }
 ] as const
 
-const BoxSection = (): JSX.Element => (
+const BoxSection = () => (
   <section class="mx-auto max-w-350 px-4 py-24 sm:px-6">
     <h2 class="max-w-xl text-3xl font-semibold tracking-tight text-fg">A kit, not a framework.</h2>
     <p class="mt-4 max-w-xl text-fg-secondary">
@@ -190,7 +190,7 @@ const BoxSection = (): JSX.Element => (
   </section>
 )
 
-const ClosingSection = (): JSX.Element => (
+const ClosingSection = () => (
   <section class="relative overflow-hidden border-t border-border-subtle">
     <div
       aria-hidden="true"
@@ -217,7 +217,7 @@ const ClosingSection = (): JSX.Element => (
   </section>
 )
 
-export const HomePage = (): JSX.Element => (
+const HomePage = () => (
   <div class="min-h-dvh">
     <SiteHeader />
     <main>
@@ -231,3 +231,27 @@ export const HomePage = (): JSX.Element => (
     <SiteFooter />
   </div>
 )
+
+export const registerHomePage = (app: App) => {
+  app.get("/", () =>
+    reply.page(<HomePage />, {
+      title: "Datastar Kit · Server-driven UI for TypeScript",
+      head: pageHead({
+        description:
+          "A small TypeScript SDK for building server-driven UI with Datastar: typed attributes, server-rendered TSX, and native Response helpers.",
+        path: "/"
+      })
+    })
+  )
+
+  app.get("/demo/ping", (c) => {
+    const colo = c.req.raw.cf?.colo
+    const time = `${new Date().toISOString().slice(11, 19)} UTC`
+    return reply.patch(
+      <PingResultPatched
+        colo={typeof colo === "string" ? colo : ""}
+        time={time}
+      />
+    )
+  })
+}

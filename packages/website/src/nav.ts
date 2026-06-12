@@ -1,17 +1,17 @@
 export interface NavLink {
-  readonly text: string
-  readonly path: string
+  text: string
+  path: string
 }
 
 export interface NavGroup {
-  readonly text: string
-  readonly items: readonly NavLink[]
+  text: string
+  items: NavLink[]
 }
 
 export const GITHUB_URL = "https://github.com/m0hill/datastar-kit"
 export const DATASTAR_URL = "https://data-star.dev/"
 
-export const sidebar: readonly NavGroup[] = [
+export const sidebar: NavGroup[] = [
   {
     text: "Overview",
     items: [
@@ -57,4 +57,4 @@ export const sidebar: readonly NavGroup[] = [
   }
 ]
 
-export const flatNav: readonly NavLink[] = sidebar.flatMap((group) => group.items)
+export const flatNav: NavLink[] = sidebar.flatMap((group) => group.items)

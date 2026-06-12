@@ -1,12 +1,21 @@
+import { get, js, mod, read, reply, state } from "datastar-kit"
 import type { JSX } from "datastar-kit/jsx-runtime"
+import { z } from "zod"
+import type { App } from "./app"
 import type { DocPage, DocSection } from "./doc-types"
 import { docPages } from "./generated/docs"
 
+export const searchState = state({ q: "" })
+
+const SearchSignals = z.object({
+  q: z.string().optional().default("")
+})
+
 export interface SearchHit {
-  readonly page: DocPage
-  readonly section: DocSection | undefined
-  readonly score: number
-  readonly snippet: string
+  page: DocPage
+  section: DocSection | undefined
+  score: number
+  snippet: string
 }
 
 const SNIPPET_RADIUS = 70
@@ -22,7 +31,7 @@ const makeSnippet = (text: string, term: string): string => {
   return `${start > 0 ? "…" : ""}${text.slice(start, end)}${end < text.length ? "…" : ""}`
 }
 
-export const searchDocs = (query: string): SearchHit[] => {
+const searchDocs = (query: string): SearchHit[] => {
   const terms = query
     .toLowerCase()
     .split(/\s+/)
@@ -72,10 +81,35 @@ export const searchDocs = (query: string): SearchHit[] => {
   return hits.toSorted((a, b) => b.score - a.score).slice(0, MAX_HITS)
 }
 
-export const SearchResults = (props: {
-  query: string
-  hits: readonly SearchHit[]
-}): JSX.Element => (
+const SearchResultsShell = (): JSX.Element => (
+  <div
+    class="absolute top-full right-0 left-0 z-50 mt-2 max-h-[60vh] overflow-y-auto rounded-xl border border-border bg-surface shadow-2xl shadow-black/50 md:left-auto md:w-md"
+    style="display:none"
+    data-show={js`${searchState.refs.q} !== ''`}
+  >
+    <div id="search-results" />
+  </div>
+)
+
+export const DocSearch = (): JSX.Element => (
+  <div
+    class="relative w-full md:w-64"
+    data-on:click__outside={js`${searchState.refs.q} = ''`}
+  >
+    <input
+      type="search"
+      class="field py-2 text-sm"
+      placeholder="Search docs"
+      aria-label="Search docs"
+      data-bind={searchState.refs.q}
+      data-on:input={mod(get("/search"), { debounce: "150ms" })}
+      data-on:keydown__window={js`evt.key === '/' && document.activeElement !== el && (evt.preventDefault(), el.focus())`}
+    />
+    <SearchResultsShell />
+  </div>
+)
+
+const SearchResults = (props: { query: string; hits: SearchHit[] }): JSX.Element => (
   <div id="search-results">
     {props.hits.length === 0 ? (
       <p class="px-4 py-6 text-center text-sm text-fg-muted">
@@ -111,3 +145,19 @@ export const SearchResults = (props: {
     )}
   </div>
 )
+
+export const registerSearchRoute = (app: App) => {
+  app.get("/search", async (c) => {
+    const result = SearchSignals.safeParse(await read.signals(c.req.raw))
+    const query = result.success ? result.data.q.trim() : ""
+    if (query === "") {
+      return reply.patch(<div id="search-results" />)
+    }
+    return reply.patch(
+      <SearchResults
+        query={query}
+        hits={searchDocs(query)}
+      />
+    )
+  })
+}
