@@ -257,7 +257,7 @@ export const DocsLayout = (props: { page: DocPage }) => (
         </div>
       </div>
       <aside class="max-xl:hidden">
-        <div class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto border-l border-border-subtle py-10 pl-6">
+        <div class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto py-10 pl-6">
           <OnThisPage page={props.page} />
         </div>
       </aside>
