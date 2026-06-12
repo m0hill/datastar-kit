@@ -1,6 +1,6 @@
 # Docs map
 
-Start with [Introduction](index.md) if you are new to Datastar Kit. After that, the docs are organized by how people usually adopt the SDK: understand the model, build one interaction, then add validation, realtime behavior, and production concerns.
+Start with [Introduction](introduction.md) if you are new to Datastar Kit. After that, the docs are organized by how people usually adopt the SDK: understand the model, build one interaction, then add validation, realtime behavior, and production concerns.
 
 ## Learn the model
 
