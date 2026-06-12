@@ -3,5 +3,6 @@ dist/
 coverage/
 *.tsbuildinfo
 .wrangler/
-.vitepress/cache/
-.vitepress/dist/
+src/generated/
+public/styles.css
+public/fonts/
