@@ -5,30 +5,24 @@ import { Icons } from "../icons"
 import { SiteFooter, SiteHeader } from "../layout"
 import { GITHUB_URL } from "../nav"
 
-const runtimes = [
-  { slug: "hono", name: "Hono" },
-  { slug: "cloudflare", name: "Cloudflare Workers" },
-  { slug: "bun", name: "Bun" },
-  { slug: "deno", name: "Deno" },
-  { slug: "nodedotjs", name: "Node.js" }
-] as const
+const runtimes = ["Hono", "Cloudflare Workers", "Bun", "Deno", "Node.js"] as const
 
 const loop = [
   {
     verb: "Render",
-    body: "Serve the first page as plain HTML from backend state. No hydration, no client router."
+    body: "Serve the first view as HTML from backend state."
   },
   {
     verb: "Listen",
-    body: "Put typed Datastar attributes on elements. Browser events become ordinary HTTP requests."
+    body: "Attach Datastar attributes to ordinary elements."
   },
   {
     verb: "Handle",
-    body: "Decode signals at the request boundary, run your logic, talk to your own data layer."
+    body: "Decode signals and run normal TypeScript logic."
   },
   {
     verb: "Patch",
-    body: "Return HTML or signal patches as native Responses. Datastar updates the DOM."
+    body: "Return HTML or signals as native Response objects."
   }
 ] as const
 
@@ -40,7 +34,7 @@ const InstallCopyIcon = (props: { icon: "copy" | "check"; class?: string }) => {
       id="install-copy-icon"
       class={
         props.class ??
-        "grid h-6 w-6 place-items-center rounded-md text-fg-muted transition-colors group-hover:text-fg"
+        "grid h-6 w-6 place-items-center text-fg-muted transition-colors group-hover:text-accent"
       }
     >
       <Icon
@@ -67,35 +61,46 @@ const PingResultPatched = (props: { colo: string; time: string }) => (
   >
     Patched by the worker
     {props.colo === "" ? "" : ` in ${props.colo}`} at{" "}
-    <span class="font-mono text-accent-bright">{props.time}</span>
+    <span class="font-mono text-accent">{props.time}</span>
   </p>
 )
 
+const BlueprintDiagram = () => (
+  <figure class="blueprint-panel p-4 md:p-6">
+    <div class="flex items-start justify-between gap-4">
+      <figcaption class="frame-label">Figure / server loop</figcaption>
+      <span class="frame-label">Web Standard Request</span>
+    </div>
+    <div
+      class="manual-diagram"
+      aria-hidden="true"
+    >
+      {loop.map((step) => (
+        <div class="diagram-node">{step.verb}</div>
+      ))}
+      <div class="diagram-core">Datastar Kit</div>
+      <div class="diagram-line one" />
+      <div class="diagram-line two" />
+      <div class="diagram-line three" />
+    </div>
+    <div class="flex items-end justify-between gap-4">
+      <span class="frame-label">HTML patches</span>
+      <span class="frame-label">Native Response</span>
+    </div>
+  </figure>
+)
+
 const Hero = () => (
-  <section class="mx-auto grid max-w-350 items-center gap-12 px-4 pt-16 pb-20 sm:px-6 lg:grid-cols-[5fr_4fr] lg:gap-16 lg:pt-24">
-    <div class="page-enter">
-      <h1 class="text-4xl font-semibold tracking-tighter text-fg md:text-5xl lg:text-6xl">
-        Server-driven UI
-        <br />
-        for TypeScript.
+  <section class="site-shell grid items-center gap-10 pt-12 pb-20 lg:grid-cols-[minmax(0,0.92fr)_minmax(30rem,1.08fr)] lg:gap-16 lg:pt-16">
+    <div class="page-enter max-w-2xl">
+      <p class="manual-kicker">Datastar Kit</p>
+      <h1 class="mt-4 font-serif text-5xl leading-[0.95] font-medium tracking-tighter text-fg md:text-6xl lg:text-7xl">
+        Server-rendered interfaces, patched like documents.
       </h1>
-      <p class="mt-5 max-w-md text-base leading-relaxed text-fg-secondary">
-        Typed Datastar attributes, server-rendered TSX, and native Response helpers. Bring your own
-        router, database, and runtime.
+      <p class="mt-5 max-w-lg font-serif text-xl leading-relaxed text-fg-secondary">
+        Typed Datastar attributes, TSX rendering, and Response helpers for server-driven UI.
       </p>
-      <button
-        type="button"
-        class="group mt-7 flex w-full max-w-xs cursor-pointer items-center justify-between gap-4 rounded-xl border border-border-subtle bg-code px-5 py-3.5 text-left font-mono text-sm text-fg transition-colors hover:border-border-strong focus-visible:ring-2 focus-visible:ring-border-strong/50 focus-visible:outline-none"
-        data-on:click={js`navigator.clipboard.writeText(${"npm i datastar-kit"}); ${get("/demo/install-copy-feedback", { payload: {} })}`}
-        aria-label="Copy npm install command"
-      >
-        <span>
-          <span class="text-fg-muted">$ </span>
-          npm i datastar-kit
-        </span>
-        <InstallCopyIcon icon="copy" />
-      </button>
-      <div class="mt-8 flex flex-wrap items-center gap-3">
+      <div class="mt-7 flex flex-wrap items-center gap-3">
         <a
           href="/introduction"
           class="btn-primary"
@@ -111,66 +116,92 @@ const Hero = () => (
           View on GitHub
         </a>
       </div>
+      <button
+        type="button"
+        class="group mt-6 flex w-full max-w-sm cursor-pointer items-center justify-between gap-4 border border-border-strong bg-paper px-4 py-3 text-left font-mono text-sm text-fg transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent"
+        data-on:click={js`navigator.clipboard.writeText(${"npm i datastar-kit"}); ${get("/demo/install-copy-feedback", { payload: {} })}`}
+        aria-label="Copy npm install command"
+      >
+        <span>
+          <span class="text-fg-muted">$ </span>
+          npm i datastar-kit
+        </span>
+        <InstallCopyIcon icon="copy" />
+      </button>
     </div>
-    <div class="min-w-0 [&_.code-block]:my-0">{unsafeHtml(snippets["counter"] ?? "")}</div>
+    <BlueprintDiagram />
   </section>
 )
 
-const RuntimeStrip = () => (
-  <section class="border-y border-border-subtle">
-    <div class="mx-auto flex max-w-350 flex-wrap items-center justify-center gap-x-12 gap-y-6 px-4 py-10 sm:px-6">
-      {runtimes.map((runtime) => (
-        <img
-          src={`https://cdn.simpleicons.org/${runtime.slug}/8f8f8f`}
-          alt={runtime.name}
-          title={runtime.name}
-          width={28}
-          height={28}
-          class="h-7 w-7 opacity-70"
-        />
-      ))}
+const RuntimeSheet = () => (
+  <section class="border-y border-border-subtle bg-paper/45">
+    <div class="site-shell grid gap-6 py-10 md:grid-cols-[15rem_minmax(0,1fr)] md:items-start">
+      <div>
+        <h2 class="font-serif text-2xl leading-tight font-medium tracking-tight text-fg">
+          Runs where you do.
+        </h2>
+        <p class="mt-2 max-w-xs text-sm text-fg-secondary">Bring any Fetch-compatible runtime.</p>
+      </div>
+      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        {runtimes.map((runtime) => (
+          <div class="border border-border-subtle bg-surface/70 px-3 py-3 font-mono text-[11px] font-semibold uppercase text-fg-secondary">
+            {runtime}
+          </div>
+        ))}
+      </div>
     </div>
   </section>
 )
 
 const LoopSection = () => (
-  <section class="mx-auto max-w-350 px-4 py-24 sm:px-6">
-    <h2 class="max-w-xl text-3xl font-semibold tracking-tight text-fg">
-      One loop, owned by your server.
-    </h2>
-    <div class="mt-12 grid gap-x-8 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
-      {loop.map((step) => (
-        <div class="border-t border-border pt-5">
-          <h3 class="font-mono text-sm font-semibold text-accent-bright">{step.verb}</h3>
-          <p class="mt-2 text-sm leading-relaxed text-fg-secondary">{step.body}</p>
-        </div>
-      ))}
+  <section class="site-shell py-24">
+    <div class="grid gap-10 lg:grid-cols-[18rem_minmax(0,1fr)] lg:gap-16">
+      <div>
+        <h2 class="font-serif text-4xl leading-tight font-medium tracking-tight text-fg md:text-5xl">
+          One loop, owned by your server.
+        </h2>
+        <p class="mt-4 font-serif text-lg leading-relaxed text-fg-secondary">
+          The browser handles events and patches. Your code keeps the application model.
+        </p>
+      </div>
+      <ol class="grid gap-4 sm:grid-cols-2">
+        {loop.map((step) => (
+          <li class="blueprint-panel p-5">
+            <p class="frame-label">{step.verb}</p>
+            <p class="mt-4 font-serif text-lg text-fg">{step.body}</p>
+          </li>
+        ))}
+      </ol>
     </div>
   </section>
 )
 
 const LiveDemoSection = () => (
-  <section class="border-y border-border-subtle bg-surface/40">
-    <div class="mx-auto max-w-350 px-4 py-24 sm:px-6">
-      <div class="mx-auto max-w-2xl text-center">
-        <h2 class="text-3xl font-semibold tracking-tight text-fg">This page is the demo.</h2>
-        <p class="mt-4 text-fg-secondary">
-          You are looking at a Cloudflare Worker rendering TSX with Datastar Kit. Press the button
-          and the worker patches this page over SSE.
-        </p>
-        <div class="mx-auto mt-8 max-w-lg rounded-2xl border border-border bg-bg p-6 text-left shadow-2xl shadow-black/40">
+  <section class="border-y border-border-subtle bg-paper/60">
+    <div class="site-shell py-24">
+      <div class="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(22rem,0.55fr)] lg:items-center">
+        <div>
+          <p class="manual-kicker">Live patch</p>
+          <h2 class="mt-3 font-serif text-4xl leading-tight font-medium tracking-tight text-fg md:text-5xl">
+            This page is the demo.
+          </h2>
+          <p class="mt-4 max-w-2xl font-serif text-lg leading-relaxed text-fg-secondary">
+            Press the button and this Cloudflare Worker sends an HTML patch over SSE.
+          </p>
+        </div>
+        <div class="blueprint-panel bg-surface p-5">
           <div class="flex flex-wrap items-center justify-between gap-4">
             <button
               type="button"
               class="btn-primary"
               data-on:click={get("/demo/ping")}
             >
-              Run a round trip
+              Run round trip
             </button>
-            <span class="text-accent">
+            <span class="grid h-8 w-8 place-items-center border border-accent text-accent">
               <Icons.logo
                 aria-hidden="true"
-                class="h-5 w-5"
+                class="h-4 w-4"
               />
             </span>
           </div>
@@ -186,38 +217,40 @@ const LiveDemoSection = () => (
 const inTheBox = [
   {
     title: "Typed attributes and actions",
-    body: "data-on, data-bind, data-show, and friends are real TSX props. post() and get() build Datastar actions with typed modifiers."
+    body: "data-on, data-bind, data-show, and friends are real TSX props."
   },
   {
     title: "Response helpers",
-    body: "reply.page, reply.patch, reply.signals, reply.stream, and reply.navigate return plain native Responses."
+    body: "reply.page, reply.patch, reply.signals, reply.stream, and reply.navigate return native Responses."
   },
   {
     title: "Signals at the boundary",
-    body: "read.signals(request) decodes Datastar payloads so you can validate them with your own schema library."
+    body: "read.signals(request) decodes Datastar payloads for your own validation layer."
   },
   {
     title: "A development debugger",
-    body: "Drop one component into a page to inspect signals, patches, and SSE traffic while you build."
+    body: "Drop one component into a page to inspect signals, patches, and SSE traffic."
   }
 ] as const
 
 const BoxSection = () => (
-  <section class="mx-auto max-w-350 px-4 py-24 sm:px-6">
-    <h2 class="max-w-xl text-3xl font-semibold tracking-tight text-fg">A kit, not a framework.</h2>
-    <p class="mt-4 max-w-xl text-fg-secondary">
-      Datastar Kit owns the Datastar-shaped pieces and nothing else. Everything works anywhere a
-      Request becomes a Response.
-    </p>
-    <div class="mt-12 grid gap-5 lg:grid-cols-5">
-      <div class="min-w-0 lg:col-span-3 [&_.code-block]:my-0">
-        {unsafeHtml(snippets["signals"] ?? "")}
+  <section class="site-shell py-24">
+    <div class="grid gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)] lg:items-start">
+      <div>
+        <h2 class="font-serif text-4xl leading-tight font-medium tracking-tight text-fg md:text-5xl">
+          A kit, not a framework.
+        </h2>
+        <p class="mt-4 max-w-2xl font-serif text-lg leading-relaxed text-fg-secondary">
+          Datastar Kit owns the Datastar-shaped pieces and nothing else. Everything works anywhere a
+          Request becomes a Response.
+        </p>
+        <div class="mt-8 min-w-0 [&_.code-block]:my-0">{unsafeHtml(snippets["signals"] ?? "")}</div>
       </div>
-      <div class="grid gap-5 sm:grid-cols-2 lg:col-span-2 lg:grid-cols-1 lg:grid-rows-4">
+      <div class="spec-table">
         {inTheBox.map((item) => (
-          <div class="rounded-2xl border border-border-subtle p-5 transition-colors hover:border-border">
-            <h3 class="text-sm font-semibold text-fg">{item.title}</h3>
-            <p class="mt-1.5 text-[13px] leading-relaxed text-fg-secondary">{item.body}</p>
+          <div class="spec-row">
+            <span>{item.title}</span>
+            <span class="max-w-52 text-right normal-case">{item.body}</span>
           </div>
         ))}
       </div>
@@ -226,17 +259,26 @@ const BoxSection = () => (
 )
 
 const ClosingSection = () => (
-  <section class="relative overflow-hidden border-t border-border-subtle">
-    <div
-      aria-hidden="true"
-      class="pointer-events-none absolute inset-x-0 -top-40 mx-auto h-80 max-w-3xl rounded-full bg-accent/10 blur-3xl"
-    />
-    <div class="relative mx-auto max-w-xl px-4 py-24 text-center sm:px-6">
-      <h2 class="text-3xl font-semibold tracking-tight text-fg">Readable in an afternoon.</h2>
-      <p class="mt-4 text-fg-secondary">
-        The whole SDK is a handful of modules over Web Standards. Install it, read the introduction,
-        and ship a page.
+  <section class="border-t border-border-subtle">
+    <div class="site-shell py-24 text-center">
+      <div
+        class="paper-rule mx-auto mb-10 max-w-xl"
+        aria-hidden="true"
+      />
+      <h2 class="mx-auto max-w-xl font-serif text-4xl leading-tight font-medium tracking-tight text-fg md:text-5xl">
+        Readable in an afternoon.
+      </h2>
+      <p class="mx-auto mt-4 max-w-xl font-serif text-lg leading-relaxed text-fg-secondary">
+        Install it, read the introduction, and ship one server-driven page.
       </p>
+      <div class="mt-8">
+        <a
+          href="/introduction"
+          class="btn-secondary"
+        >
+          Open docs
+        </a>
+      </div>
     </div>
   </section>
 )
@@ -246,7 +288,7 @@ const HomePage = () => (
     <SiteHeader />
     <main>
       <Hero />
-      <RuntimeStrip />
+      <RuntimeSheet />
       <LoopSection />
       <LiveDemoSection />
       <BoxSection />
@@ -285,7 +327,7 @@ export const registerHomePage = (app: App) => {
         yield event.patch(
           <InstallCopyIcon
             icon="check"
-            class="grid h-6 w-6 place-items-center rounded-md text-accent-bright"
+            class="grid h-6 w-6 place-items-center text-accent"
           />
         )
         await new Promise((resolve) => setTimeout(resolve, 1200))

@@ -24,21 +24,37 @@
 }
 
 @theme {
-  --color-bg: #0b0b0b;
-  --color-surface: #111111;
-  --color-surface-raised: #161616;
-  --color-code: #050505;
-  --color-border-subtle: #1c1c1c;
-  --color-border: #262626;
-  --color-border-strong: #3f3f3f;
-  --color-fg: #ededed;
-  --color-fg-secondary: #a3a3a3;
-  --color-fg-muted: #707070;
-  --color-accent: #4d8ef0;
-  --color-accent-bright: #6ba4f5;
-  --color-accent-dim: #0f2240;
+  --color-bg: #f6f6f1;
+  --color-paper: #fbfbf7;
+  --color-paper-soft: #f0f1ea;
+  --color-surface: #ffffff;
+  --color-surface-raised: #f9faf4;
+  --color-code: #080d18;
+  --color-border-subtle: #d8d8cd;
+  --color-border: #9f9f92;
+  --color-border-strong: #1e1f1a;
+  --color-fg: #171812;
+  --color-fg-secondary: #47483e;
+  --color-fg-muted: #7c7d70;
+  --color-accent: #1b55ff;
+  --color-accent-bright: #003ef5;
+  --color-accent-dim: #dbe5ff;
+  --color-blueprint: #86a4ff;
+  --color-danger: #b42318;
   --font-sans: "Geist Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
   --font-mono: "Geist Mono Variable", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+:root {
+  color-scheme: light;
+  --paper-grid: rgba(27, 85, 255, 0.055);
+  --paper-grain: rgba(23, 24, 18, 0.035);
+  --rule-pattern: repeating-linear-gradient(
+    90deg,
+    rgba(23, 24, 18, 0.24) 0 2px,
+    transparent 2px 10px
+  );
 }
 
 html {
@@ -52,7 +68,20 @@ html {
 }
 
 body {
-  background: var(--color-bg);
+  min-height: 100dvh;
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(circle at 1px 1px, var(--paper-grid) 1px, transparent 0),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(246, 246, 241, 0.86)),
+    repeating-linear-gradient(0deg, transparent 0 34px, var(--paper-grain) 34px 35px);
+  background-position:
+    0 0,
+    0 0,
+    0 0;
+  background-size:
+    14px 14px,
+    auto,
+    auto;
   color: var(--color-fg);
   font-family: var(--font-sans);
   font-size: 15px;
@@ -63,47 +92,311 @@ body {
 
 ::selection {
   background: var(--color-accent-dim);
-  color: var(--color-fg);
+  color: var(--color-accent-bright);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2a2a2a transparent;
+  scrollbar-color: color-mix(in oklab, var(--color-accent) 38%, var(--color-border)) transparent;
+}
+
+.site-shell {
+  @apply mx-auto w-full px-4 sm:px-6;
+  max-width: 88rem;
+}
+
+.paper-rule {
+  height: 13px;
+  background-image: var(--rule-pattern);
+  opacity: 0.46;
+}
+
+.wordmark {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 650;
+  letter-spacing: -0.075em;
+  line-height: 1;
+  text-transform: uppercase;
+  color: var(--color-accent);
+  text-shadow: 1px 0 0 color-mix(in oklab, var(--color-accent) 70%, transparent);
+}
+
+.blueprint-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 2px;
+  background:
+    linear-gradient(0deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.76)),
+    radial-gradient(circle at 1px 1px, rgba(27, 85, 255, 0.105) 1px, transparent 0);
+  background-size:
+    auto,
+    10px 10px;
+}
+
+.blueprint-panel::before,
+.blueprint-panel::after {
+  content: "";
+  position: absolute;
+  pointer-events: none;
+  background: var(--color-blueprint);
+  opacity: 0.42;
+}
+
+.blueprint-panel::before {
+  inset-inline: 0;
+  top: 0;
+  height: 1px;
+}
+
+.blueprint-panel::after {
+  inset-block: 0;
+  left: 0;
+  width: 1px;
+}
+
+.frame-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-fg-muted) 88%, transparent);
+}
+
+.manual-kicker {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 650;
+  letter-spacing: 0.09em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: var(--color-accent-bright);
+}
+
+.manual-diagram {
+  position: relative;
+  min-height: 25rem;
+  color: var(--color-accent);
+}
+
+.diagram-node {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 7.5rem;
+  height: 7.5rem;
+  border: 1px solid currentColor;
+  background: color-mix(in oklab, var(--color-accent-dim) 50%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 8px rgba(255, 255, 255, 0.46);
+}
+
+.diagram-node:nth-child(1) {
+  top: 2.5rem;
+  left: 9%;
+}
+
+.diagram-node:nth-child(2) {
+  top: 5.6rem;
+  right: 8%;
+}
+
+.diagram-node:nth-child(3) {
+  bottom: 3rem;
+  left: 18%;
+}
+
+.diagram-node:nth-child(4) {
+  right: 18%;
+  bottom: 5rem;
+}
+
+.diagram-line {
+  position: absolute;
+  height: 1px;
+  transform-origin: left center;
+  background: currentColor;
+  opacity: 0.78;
+}
+
+.diagram-line.one {
+  top: 7rem;
+  left: 33%;
+  width: 35%;
+  transform: rotate(8deg);
+}
+
+.diagram-line.two {
+  top: 14rem;
+  left: 27%;
+  width: 42%;
+  transform: rotate(124deg);
+}
+
+.diagram-line.three {
+  right: 27%;
+  bottom: 9.4rem;
+  width: 31%;
+  transform: rotate(18deg);
+}
+
+.diagram-core {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  display: grid;
+  width: 7rem;
+  height: 7rem;
+  translate: -50% -50%;
+  place-items: center;
+  border: 1px dashed currentColor;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.6);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+}
+
+.spec-table {
+  display: grid;
+  border-top: 1px solid var(--color-border-strong);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+}
+
+.spec-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 1rem;
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding-block: 0.65rem;
+}
+
+.spec-row span:first-child {
+  color: var(--color-fg-muted);
+}
+
+.spec-row span:last-child {
+  color: var(--color-fg);
 }
 
 /* Shared controls */
 
 .btn-primary {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg bg-accent px-5 py-2.5 text-sm font-semibold text-white outline-none transition-[background-color,transform];
-  @apply hover:bg-accent-bright focus-visible:ring-2 focus-visible:ring-accent-bright active:translate-y-px;
+  @apply inline-flex items-center justify-center gap-2 bg-accent px-5 py-2.5 text-sm font-semibold text-white outline-none transition-[background-color,transform,box-shadow];
+  border: 1px solid color-mix(in oklab, var(--color-accent) 78%, #000);
+  border-radius: 3px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.38),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.18);
+}
+
+.btn-primary:hover {
+  background: var(--color-accent-bright);
+}
+
+.btn-primary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
 }
 
 .btn-secondary {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg border border-border bg-surface px-5 py-2.5 text-sm font-medium text-fg-secondary outline-none transition-[border-color,color,background-color,transform];
-  @apply hover:border-border-strong hover:bg-surface-raised hover:text-fg focus-visible:ring-2 focus-visible:ring-border-strong active:translate-y-px;
+  @apply inline-flex items-center justify-center gap-2 bg-paper px-5 py-2.5 text-sm font-medium text-fg outline-none transition-[border-color,color,background-color,transform,box-shadow];
+  border: 1px solid color-mix(in oklab, var(--color-border-strong) 58%, transparent);
+  border-radius: 3px;
+  box-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.8),
+    inset -1px -1px 0 rgba(23, 24, 18, 0.1);
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-border-strong);
+  color: var(--color-accent-bright);
+}
+
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
 }
 
 .field {
-  @apply w-full rounded-lg border border-border bg-surface px-3.5 py-2.5 text-sm text-fg outline-none transition-colors placeholder:text-fg-muted;
-  @apply focus:border-border-strong focus-visible:ring-2 focus-visible:ring-border-strong/50;
+  @apply w-full border bg-paper px-3.5 py-2.5 text-sm text-fg outline-none transition-colors placeholder:text-fg-muted;
+  border-color: color-mix(in oklab, var(--color-border-strong) 36%, transparent);
+  border-radius: 3px;
+  box-shadow: inset 0 0 0 2px rgba(23, 24, 18, 0.05);
+}
+
+.field:focus,
+.field:focus-visible {
+  border-color: var(--color-accent);
+  box-shadow:
+    inset 0 0 0 1px var(--color-accent-dim),
+    0 0 0 3px rgba(27, 85, 255, 0.12);
 }
 
 /* Rendered markdown */
 
 .doc {
-  @apply text-[15px] leading-7 text-fg-secondary;
+  color: var(--color-fg-secondary);
+  font-family: var(--font-serif);
+  font-size: 17px;
+  line-height: 1.76;
 }
 
 .doc > h1 {
-  @apply mb-4 text-3xl font-semibold tracking-tight text-fg;
+  margin-bottom: 1.25rem;
+  color: var(--color-fg);
+  font-family: var(--font-serif);
+  font-size: clamp(2.45rem, 6vw, 4.75rem);
+  font-weight: 520;
+  letter-spacing: -0.055em;
+  line-height: 0.98;
+}
+
+.doc > h1::after {
+  content: "";
+  display: block;
+  height: 13px;
+  margin-top: 1.4rem;
+  background-image: var(--rule-pattern);
+  opacity: 0.42;
 }
 
 .doc h2 {
-  @apply mt-12 mb-4 border-t border-border-subtle pt-8 text-xl font-semibold tracking-tight text-fg;
+  margin-top: 4rem;
+  margin-bottom: 1.1rem;
+  border-top: 1px solid var(--color-border-strong);
+  padding-top: 1.35rem;
+  color: var(--color-fg);
+  font-family: var(--font-serif);
+  font-size: clamp(1.7rem, 3vw, 2.5rem);
+  font-weight: 520;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
 }
 
 .doc h3 {
-  @apply mt-8 mb-3 text-base font-semibold text-fg;
+  margin-top: 2.15rem;
+  margin-bottom: 0.75rem;
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: 0.98rem;
+  font-weight: 680;
+  letter-spacing: -0.01em;
 }
 
 .doc h2 a,
@@ -116,47 +409,76 @@ body {
 .doc h3 a:hover::after {
   content: " #";
   color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.72em;
 }
 
 .doc p {
-  @apply my-4;
+  margin-block: 1rem;
 }
 
 .doc a {
-  @apply font-medium text-fg underline decoration-border-strong underline-offset-4 transition-colors;
+  color: var(--color-fg);
+  font-weight: 600;
+  text-decoration-line: underline;
+  text-decoration-color: color-mix(in oklab, var(--color-accent) 45%, transparent);
+  text-decoration-style: dotted;
+  text-underline-offset: 4px;
+  transition:
+    color 0.15s ease,
+    text-decoration-color 0.15s ease;
 }
 
 .doc a:hover {
-  @apply decoration-accent text-accent-bright;
+  color: var(--color-accent-bright);
+  text-decoration-color: var(--color-accent-bright);
 }
 
 .doc strong {
-  @apply font-semibold text-fg;
+  color: var(--color-fg);
+  font-weight: 700;
 }
 
 .doc ul,
 .doc ol {
-  @apply my-4 space-y-1.5 pl-6;
+  margin-block: 1rem;
+  padding-left: 1.35rem;
 }
 
 .doc ul {
-  list-style: disc;
+  list-style: square;
 }
 
 .doc ol {
-  list-style: decimal;
+  list-style: decimal-leading-zero;
+}
+
+.doc li {
+  padding-left: 0.15rem;
+}
+
+.doc li + li {
+  margin-top: 0.35rem;
 }
 
 .doc li::marker {
-  color: var(--color-fg-muted);
+  color: var(--color-accent);
+  font-family: var(--font-mono);
+  font-size: 0.78em;
 }
 
 .doc blockquote {
-  @apply my-5 border-l-2 border-accent/60 pl-4 text-fg-secondary italic;
+  margin-block: 1.35rem;
+  border-left: 2px solid var(--color-accent);
+  background: color-mix(in oklab, var(--color-accent-dim) 38%, transparent);
+  padding: 0.8rem 1rem;
+  color: var(--color-fg-secondary);
+  font-style: italic;
 }
 
 .doc hr {
-  @apply my-10 border-border-subtle;
+  margin-block: 2.75rem;
+  border-color: var(--color-border-subtle);
 }
 
 .doc code {
@@ -165,46 +487,88 @@ body {
 }
 
 .doc :not(pre) > code {
-  @apply rounded-md border border-border-subtle bg-surface px-1.5 py-0.5 whitespace-nowrap text-fg;
+  border: 1px solid color-mix(in oklab, var(--color-accent) 26%, var(--color-border-subtle));
+  border-radius: 3px;
+  background: color-mix(in oklab, var(--color-accent-dim) 42%, var(--color-paper));
+  padding: 0.12rem 0.35rem;
+  color: var(--color-accent-bright);
+  white-space: nowrap;
 }
 
 .doc table {
-  @apply my-6 w-full border-collapse text-sm;
+  width: 100%;
+  margin-block: 1.75rem;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 0.91rem;
 }
 
 .doc th {
-  @apply border-b border-border px-3 py-2 text-left font-semibold text-fg;
+  border-bottom: 1px solid var(--color-border-strong);
+  padding: 0.65rem 0.75rem;
+  text-align: left;
+  color: var(--color-fg);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 650;
+  text-transform: uppercase;
 }
 
 .doc td {
-  @apply border-b border-border-subtle px-3 py-2 align-top;
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding: 0.75rem;
+  vertical-align: top;
 }
 
 /* Code blocks (shared by docs and landing) */
 
 .code-block {
-  @apply my-5 overflow-hidden rounded-xl border border-border-subtle bg-code;
+  margin-block: 1.35rem;
+  overflow: hidden;
+  border: 1px solid color-mix(in oklab, var(--color-accent) 34%, var(--color-border-strong));
+  border-radius: 3px;
+  background: var(--color-code);
+  box-shadow: 0 16px 44px rgba(8, 13, 24, 0.12);
 }
 
 .code-block-bar {
-  @apply flex items-center justify-between border-b border-border-subtle px-4 py-2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(134, 164, 255, 0.2);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent);
+  padding: 0.45rem 0.75rem;
 }
 
 .code-block-bar > span {
+  color: rgba(214, 224, 255, 0.58);
   font-family: var(--font-mono);
-  @apply text-xs text-fg-muted;
+  font-size: 0.68rem;
+  text-transform: uppercase;
 }
 
 .code-copy {
-  @apply cursor-pointer rounded-md px-2 py-0.5 text-xs text-fg-muted transition-colors hover:text-fg;
+  cursor: pointer;
+  border-radius: 2px;
+  padding: 0.15rem 0.45rem;
+  color: rgba(214, 224, 255, 0.58);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
 }
 
+.code-copy:hover,
 .code-copy.copied {
-  @apply text-accent-bright;
+  background: rgba(134, 164, 255, 0.11);
+  color: #dbe5ff;
 }
 
 .code-block pre {
-  @apply overflow-x-auto px-4 py-4;
+  overflow-x: auto;
+  padding: 1rem;
 }
 
 .code-block .shiki {
@@ -217,18 +581,64 @@ body {
   line-height: 1.7;
 }
 
-/* Sidebar + page transitions stay CSS-only */
+@media (max-width: 47.999rem) {
+  .manual-diagram {
+    min-height: 18rem;
+  }
+
+  .diagram-node {
+    width: 5.75rem;
+    height: 5.75rem;
+    font-size: 0.62rem;
+  }
+
+  .diagram-core {
+    width: 5.75rem;
+    height: 5.75rem;
+  }
+
+  .doc {
+    font-size: 16px;
+  }
+}
 
 @media (prefers-reduced-motion: no-preference) {
   .doc,
   .page-enter {
-    animation: page-enter 0.25s ease-out;
+    animation: page-enter 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .diagram-node {
+    animation: blueprint-settle 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .diagram-node:nth-child(2) {
+    animation-delay: 80ms;
+  }
+
+  .diagram-node:nth-child(3) {
+    animation-delay: 140ms;
+  }
+
+  .diagram-node:nth-child(4) {
+    animation-delay: 200ms;
   }
 
   @keyframes page-enter {
     from {
       opacity: 0;
-      transform: translateY(4px);
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes blueprint-settle {
+    from {
+      opacity: 0;
+      transform: translateY(10px) scale(0.98);
     }
     to {
       opacity: 1;

@@ -29,7 +29,7 @@ const SignupStatus = (props: { ok?: boolean }) => (
 
 const FieldError = (props: { signal: Expr<string> }) => (
   <p
-    class="mt-1.5 text-xs text-accent-bright"
+    class="mt-1.5 text-xs text-danger"
     data-text={props.signal}
     data-show={js`${props.signal} !== ''`}
   />

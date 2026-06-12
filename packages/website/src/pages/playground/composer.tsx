@@ -17,7 +17,7 @@ export const ComposerDemo = () => (
         class="font-mono text-fg-muted"
         data-text={js`(${COMPOSER_LIMIT} - ${composerState.refs.note}.length) + ' characters left'`}
         data-class={{
-          "text-accent-bright": js`${composerState.refs.note}.length > ${COMPOSER_LIMIT}`
+          "text-danger": js`${composerState.refs.note}.length > ${COMPOSER_LIMIT}`
         }}
       />
       <button

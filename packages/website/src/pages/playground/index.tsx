@@ -16,17 +16,17 @@ interface Demo {
 const demos: Demo[] = [
   {
     title: "Inline validation",
-    body: "Signals carry the form to the worker. Zod validates on the server, and error messages come back as signal patches. No client-side validation code exists on this page.",
+    body: "Signals carry the form to the worker. Zod validates on the server, and errors come back as signal patches.",
     demo: <ValidationDemo />
   },
   {
     title: "Active search",
-    body: "Each keystroke is debounced into a GET request. The worker filters a constant dataset and patches the list back as HTML. The browser holds no data and no templates.",
+    body: "Each keystroke is debounced into a GET request. The worker filters data and patches the list as HTML.",
     demo: <StatusSearchDemo />
   },
   {
     title: "Browser-only signals",
-    body: "Not everything needs a round trip. These signals never leave the page: the character count and the clear button are plain Datastar expressions on server-rendered elements.",
+    body: "Some state never needs a round trip. These expressions stay in the browser and still start from server-rendered HTML.",
     demo: <ComposerDemo />
   }
 ]
@@ -40,30 +40,43 @@ const PlaygroundPage = (): JSX.Element => (
     )}
   >
     <SiteHeader active="playground" />
-    <main class="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-      <h1 class="text-3xl font-semibold tracking-tight text-fg">Playground</h1>
-      <p class="mt-3 max-w-xl text-fg-secondary">
-        Three live interactions served by this Cloudflare Worker. Everything here is stateless on
-        the server: the page you are reading is the entire application state.
-      </p>
-      <div class="mt-12 space-y-14">
+    <main class="site-shell py-14">
+      <div
+        class="paper-rule mb-10"
+        aria-hidden="true"
+      />
+      <div class="grid gap-8 lg:grid-cols-[18rem_minmax(0,1fr)]">
+        <div>
+          <p class="manual-kicker">Playground</p>
+          <h1 class="mt-3 font-serif text-5xl leading-none font-medium tracking-tighter text-fg md:text-6xl">
+            Three worker-backed specimens.
+          </h1>
+        </div>
+        <p class="max-w-2xl self-end font-serif text-xl leading-relaxed text-fg-secondary">
+          Live interactions served by this Cloudflare Worker. The page you are reading is the
+          application state.
+        </p>
+      </div>
+      <div class="mt-16 grid gap-8">
         {demos.map((item) => (
-          <section class="page-enter">
-            <h2 class="text-lg font-semibold text-fg">{item.title}</h2>
-            <p class="mt-2 max-w-xl text-sm leading-relaxed text-fg-secondary">{item.body}</p>
-            <div class="mt-5 rounded-2xl border border-border bg-surface/50 p-5 sm:p-6">
-              {item.demo}
+          <section class="page-enter grid gap-6 border-t border-border-strong pt-8 lg:grid-cols-[18rem_minmax(0,1fr)]">
+            <div>
+              <h2 class="font-serif text-3xl leading-tight font-medium tracking-tight text-fg">
+                {item.title}
+              </h2>
+              <p class="mt-3 text-sm leading-relaxed text-fg-secondary">{item.body}</p>
             </div>
+            <div class="blueprint-panel bg-surface p-5 sm:p-6">{item.demo}</div>
           </section>
         ))}
       </div>
-      <p class="mt-14 border-t border-border-subtle pt-6 text-sm text-fg-muted">
+      <p class="mt-16 border-t border-border-subtle pt-6 text-sm text-fg-muted">
         Want more? The repository ships{" "}
         <a
           href={`${GITHUB_URL}/tree/main/examples`}
           target="_blank"
           rel="noreferrer"
-          class="font-medium text-fg-secondary underline decoration-border-strong underline-offset-4 transition-colors hover:text-fg"
+          class="font-medium text-fg underline decoration-accent/50 decoration-dotted underline-offset-4 transition-colors hover:text-accent"
         >
           fourteen runnable examples
         </a>{" "}
