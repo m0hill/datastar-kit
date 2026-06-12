@@ -1,10 +1,3 @@
-/**
- * Compiles `content/**.md` into `src/generated/docs.ts` at build time.
- *
- * Each markdown file becomes a typed `DocPage` with rendered HTML, extracted
- * headings, and plain-text sections for search. Code fences are highlighted
- * with Shiki here so the worker never parses markdown or loads a highlighter.
- */
 import { mkdir, readdir, readFile, writeFile } from "node:fs/promises"
 import { watch } from "node:fs"
 import path from "node:path"
@@ -19,30 +12,7 @@ const contentDir = path.join(websiteRoot, "content")
 const snippetsDir = path.join(contentDir, "snippets")
 const outDir = path.join(websiteRoot, "src", "generated")
 
-const SHIKI_THEME = "min-dark"
-const CODE_BACKGROUND = "#101010"
-
-/**
- * Remaps min-dark's purple/blue/orange tokens onto the site's monochrome +
- * deep red palette: keywords in brand red, everything else in neutral grays.
- */
-const CODE_COLOR_REPLACEMENTS: Record<string, string> = {
-  "#1f1f1f": CODE_BACKGROUND,
-  "#b392f0": "#d4d4d4",
-  "#B392F0": "#d4d4d4",
-  "#f97583": "#f2555a",
-  "#F97583": "#f2555a",
-  "#ff7a84": "#f2555a",
-  "#FF7A84": "#f2555a",
-  "#ffab70": "#c4bcb4",
-  "#FFAB70": "#c4bcb4",
-  "#79b8ff": "#f5f5f5",
-  "#79B8FF": "#f5f5f5",
-  "#9db1c5": "#9a9a9a",
-  "#9DB1C5": "#9a9a9a",
-  "#bbbbbb": "#a6a6a6",
-  "#BBBBBB": "#a6a6a6"
-}
+const SHIKI_THEME = "github-dark"
 
 const FENCE_LANGS = [
   "tsx",
@@ -126,8 +96,7 @@ const highlightFence = (highlighter: Highlighter, code: string, lang: string): s
   const language = (FENCE_LANGS as readonly string[]).includes(requested) ? requested : "text"
   const highlighted = highlighter.codeToHtml(code.replace(/\n$/, ""), {
     lang: language,
-    theme: SHIKI_THEME,
-    colorReplacements: CODE_COLOR_REPLACEMENTS
+    theme: SHIKI_THEME
   })
   const label = lang === "" ? "text" : lang
   return (
@@ -328,7 +297,7 @@ const generate = async (highlighter: Highlighter): Promise<void> => {
 
 const main = async () => {
   const highlighter = await createHighlighter({
-    themes: [SHIKI_THEME],
+    themes: ["github-dark"],
     langs: [...FENCE_LANGS]
   })
   await generate(highlighter)
