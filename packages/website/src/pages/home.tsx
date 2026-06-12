@@ -33,14 +33,14 @@ const loop = [
 ] as const
 
 const InstallCopyIcon = () => (
-  <span class="grid h-6 w-6 place-items-center text-fg-muted transition-colors group-hover:text-accent">
+  <span class="grid h-6 w-6 place-items-center text-fg-muted transition-colors group-hover:text-accent group-[.copied]:text-accent">
     <Icons.copy
       aria-hidden="true"
-      class="icon-copy h-4 w-4"
+      class="h-4 w-4 group-[.copied]:hidden"
     />
     <Icons.check
       aria-hidden="true"
-      class="icon-check h-4 w-4"
+      class="hidden h-4 w-4 group-[.copied]:block"
     />
   </span>
 )
@@ -107,7 +107,7 @@ const Hero = () => (
       </div>
       <button
         type="button"
-        class="install-copy group mt-6 flex w-full max-w-sm cursor-pointer items-center justify-between gap-4 border border-border-strong bg-paper px-4 py-3 text-left font-mono text-sm text-fg transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent"
+        class="group mt-6 flex w-full max-w-sm cursor-pointer items-center justify-between gap-4 border border-border-strong bg-paper px-4 py-3 text-left font-mono text-sm text-fg transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent"
         data-on:click={js`const btn = evt.currentTarget; navigator.clipboard.writeText(${"npm i datastar-kit"}); btn.classList.add('copied'); setTimeout(() => btn.classList.remove('copied'), 1200)`}
         aria-label="Copy npm install command"
       >
