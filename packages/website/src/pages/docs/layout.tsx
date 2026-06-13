@@ -107,8 +107,8 @@ export const DocsLayout = (props: { page: DocPage }) => (
         search={<DocSearch />}
       />
       <div class="site-shell lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_13rem]">
-        <aside class="max-lg:hidden">
-          <div class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto border-r border-border-subtle py-10 pr-6">
+        <aside class="border-r border-border-subtle max-lg:hidden">
+          <div class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto py-10 pr-6">
             <SidebarNav activePath={props.page.path} />
           </div>
         </aside>
