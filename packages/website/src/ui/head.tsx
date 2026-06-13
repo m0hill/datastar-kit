@@ -1,8 +1,4 @@
 import { unsafeHtml, type HtmlChild } from "datastar-kit"
-import type { Hono } from "hono"
-
-export type AppBindings = { Bindings: CloudflareBindings }
-export type App = Hono<AppBindings>
 
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"

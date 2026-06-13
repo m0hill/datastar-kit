@@ -1,6 +1,7 @@
 import { get, mod, read, reply, state } from "datastar-kit"
+import type { Context } from "hono"
 import { z } from "zod"
-import type { App } from "../../app"
+import type { Env } from "../../server"
 
 interface StatusCode {
   code: number
@@ -72,19 +73,17 @@ export const StatusSearchDemo = () => (
   </div>
 )
 
-export const registerStatusSearchDemo = (app: App) => {
-  app.get("/playground/status", async (c) => {
-    const result = StatusSignals.safeParse(await read.signals(c.req.raw))
-    const filter = result.success ? result.data.filter.trim().toLowerCase() : ""
-    const items =
-      filter === ""
-        ? statusCodes
-        : statusCodes.filter(
-            (item) =>
-              String(item.code).includes(filter) ||
-              item.text.toLowerCase().includes(filter) ||
-              item.blurb.toLowerCase().includes(filter)
-          )
-    return reply.patch(<StatusList items={items} />)
-  })
+export const statusSearch = async (c: Context<Env>) => {
+  const result = StatusSignals.safeParse(await read.signals(c.req.raw))
+  const filter = result.success ? result.data.filter.trim().toLowerCase() : ""
+  const items =
+    filter === ""
+      ? statusCodes
+      : statusCodes.filter(
+          (item) =>
+            String(item.code).includes(filter) ||
+            item.text.toLowerCase().includes(filter) ||
+            item.blurb.toLowerCase().includes(filter)
+        )
+  return reply.patch(<StatusList items={items} />)
 }
