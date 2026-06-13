@@ -399,6 +399,10 @@ body {
 .doc code {
   font-family: var(--font-mono);
   font-size: 13px;
+  font-variant-ligatures: none;
+  font-feature-settings:
+    "liga" 0,
+    "calt" 0;
 }
 
 .doc :not(pre) > code {
@@ -523,6 +527,10 @@ body {
   font-family: var(--font-mono);
   font-size: 13px;
   line-height: 1.7;
+  font-variant-ligatures: none;
+  font-feature-settings:
+    "liga" 0,
+    "calt" 0;
 }
 
 @media (max-width: 47.999rem) {
