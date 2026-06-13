@@ -5,7 +5,7 @@ import { Icons } from "./icons"
 
 export const AppLayout = (props: { children?: HtmlChild | HtmlChild[] }): HtmlChild => [
   props.children,
-  <DatastarDebugger />
+  <DatastarDebugger open={false} />
 ]
 
 const HeaderLink = (props: { href: string; label: string; active: boolean }) => (

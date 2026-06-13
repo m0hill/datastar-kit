@@ -314,6 +314,12 @@ body {
   letter-spacing: -0.01em;
 }
 
+.doc h1:focus,
+.doc h2:focus,
+.doc h3:focus {
+  outline: none;
+}
+
 .doc h2 a,
 .doc h3 a {
   color: inherit;
