@@ -1,6 +1,7 @@
 import { reply } from "datastar-kit"
-import { pageHead, type App } from "../app"
-import { AppLayout, SiteFooter, SiteHeader } from "../layout"
+import type { NotFoundHandler } from "hono"
+import { pageHead } from "../ui/head"
+import { AppLayout, SiteFooter, SiteHeader } from "../ui/layout"
 
 const NotFoundPage = () => (
   <AppLayout>
@@ -36,12 +37,9 @@ const NotFoundPage = () => (
   </AppLayout>
 )
 
-export const registerNotFoundPage = (app: App) => {
-  app.notFound(() =>
-    reply.page(
-      <NotFoundPage />,
-      { title: "Not found · Datastar Kit", head: pageHead({}) },
-      { status: 404 }
-    )
+export const notFound: NotFoundHandler = () =>
+  reply.page(
+    <NotFoundPage />,
+    { title: "Not found · Datastar Kit", head: pageHead({}) },
+    { status: 404 }
   )
-}

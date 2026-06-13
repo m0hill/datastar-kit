@@ -1,9 +1,10 @@
 import { get, js, mod, read, reply, state } from "datastar-kit"
 import type { JSX } from "datastar-kit/jsx-runtime"
+import type { Context } from "hono"
 import { z } from "zod"
-import type { App } from "./app"
-import type { DocPage, DocSection } from "./doc-types"
-import { docPages } from "./generated/docs"
+import { docPages } from "../../generated/docs"
+import type { Env } from "../../server"
+import type { DocPage, DocSection } from "./types"
 
 export const searchState = state({ q: "" })
 
@@ -102,7 +103,7 @@ export const DocSearch = (): JSX.Element => (
       placeholder="Search docs"
       aria-label="Search docs"
       data-bind={searchState.refs.q}
-      data-on:input={mod(get("/search"), { debounce: "150ms" })}
+      data-on:input={mod(get("/docs/search"), { debounce: "150ms" })}
       data-on:keydown__window={js`evt.key === '/' && document.activeElement !== el && (evt.preventDefault(), el.focus())`}
     />
     <SearchResultsShell />
@@ -146,18 +147,16 @@ const SearchResults = (props: { query: string; hits: SearchHit[] }): JSX.Element
   </div>
 )
 
-export const registerSearchRoute = (app: App) => {
-  app.get("/search", async (c) => {
-    const result = SearchSignals.safeParse(await read.signals(c.req.raw))
-    const query = result.success ? result.data.q.trim() : ""
-    if (query === "") {
-      return reply.patch(<div id="search-results" />)
-    }
-    return reply.patch(
-      <SearchResults
-        query={query}
-        hits={searchDocs(query)}
-      />
-    )
-  })
+export const search = async (c: Context<Env>) => {
+  const result = SearchSignals.safeParse(await read.signals(c.req.raw))
+  const query = result.success ? result.data.q.trim() : ""
+  if (query === "") {
+    return reply.patch(<div id="search-results" />)
+  }
+  return reply.patch(
+    <SearchResults
+      query={query}
+      hits={searchDocs(query)}
+    />
+  )
 }

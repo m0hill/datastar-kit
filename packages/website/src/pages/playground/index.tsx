@@ -1,11 +1,13 @@
 import { mod, reply } from "datastar-kit"
 import type { JSX } from "datastar-kit/jsx-runtime"
-import { pageHead, type App } from "../../app"
-import { AppLayout, SiteFooter, SiteHeader } from "../../layout"
-import { GITHUB_URL } from "../../nav"
+import { Hono } from "hono"
+import { GITHUB_URL } from "../../constants"
+import type { Env } from "../../server"
+import { pageHead } from "../../ui/head"
+import { AppLayout, SiteFooter, SiteHeader } from "../../ui/layout"
 import { ComposerDemo, composerState } from "./composer"
-import { registerStatusSearchDemo, StatusSearchDemo, statusSearchState } from "./status-search"
-import { registerValidationDemo, validationState, ValidationDemo } from "./validation"
+import { StatusSearchDemo, statusSearch, statusSearchState } from "./status-search"
+import { signup, ValidationDemo, validationState } from "./validation"
 
 interface Demo {
   title: string
@@ -89,18 +91,20 @@ const PlaygroundPage = (): JSX.Element => (
   </AppLayout>
 )
 
-export const registerPlaygroundPage = (app: App) => {
-  app.get("/playground", () =>
-    reply.page(<PlaygroundPage />, {
-      title: "Playground · Datastar Kit",
-      head: pageHead({
-        description:
-          "Live Datastar Kit interactions served from a stateless server: inline validation, active search, and browser-only signals.",
-        path: "/playground"
-      })
-    })
-  )
+const playground = new Hono<Env>()
 
-  registerValidationDemo(app)
-  registerStatusSearchDemo(app)
-}
+playground.get("/", () =>
+  reply.page(<PlaygroundPage />, {
+    title: "Playground · Datastar Kit",
+    head: pageHead({
+      description:
+        "Live Datastar Kit interactions served from a stateless server: inline validation, active search, and browser-only signals.",
+      path: "/playground"
+    })
+  })
+)
+
+playground.post("/signup", signup)
+playground.get("/status", statusSearch)
+
+export default playground

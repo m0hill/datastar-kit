@@ -1,6 +1,7 @@
 import { event, js, mod, post, read, reply, state, type Expr } from "datastar-kit"
+import type { Context } from "hono"
 import { z } from "zod"
-import type { App } from "../../app"
+import type { Env } from "../../server"
 
 export const validationState = state({
   name: "",
@@ -84,28 +85,26 @@ export const ValidationDemo = () => (
   </form>
 )
 
-export const registerValidationDemo = (app: App) => {
-  app.post("/playground/signup", async (c) => {
-    const result = SignupSignals.safeParse(await read.signals(c.req.raw))
+export const signup = async (c: Context<Env>) => {
+  const result = SignupSignals.safeParse(await read.signals(c.req.raw))
 
-    if (!result.success) {
-      const { fieldErrors } = z.flattenError(result.error)
-      return reply.stream([
-        event.signals(
-          validationState.patch({
-            errors: {
-              name: fieldErrors.name?.[0] ?? "",
-              email: fieldErrors.email?.[0] ?? ""
-            }
-          })
-        ),
-        event.patch(<SignupStatus ok={false} />)
-      ])
-    }
-
+  if (!result.success) {
+    const { fieldErrors } = z.flattenError(result.error)
     return reply.stream([
-      event.signals(validationState.patch({ errors: validationState.defaults.errors })),
-      event.patch(<SignupStatus ok />)
+      event.signals(
+        validationState.patch({
+          errors: {
+            name: fieldErrors.name?.[0] ?? "",
+            email: fieldErrors.email?.[0] ?? ""
+          }
+        })
+      ),
+      event.patch(<SignupStatus ok={false} />)
     ])
-  })
+  }
+
+  return reply.stream([
+    event.signals(validationState.patch({ errors: validationState.defaults.errors })),
+    event.patch(<SignupStatus ok />)
+  ])
 }

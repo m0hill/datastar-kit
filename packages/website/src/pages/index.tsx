@@ -1,9 +1,11 @@
 import { get, js, reply, unsafeHtml } from "datastar-kit"
-import { pageHead, type App } from "../app"
+import { Hono } from "hono"
+import { DATASTAR_URL, GITHUB_URL } from "../constants"
 import { snippets } from "../generated/docs"
-import { Icons } from "../icons"
-import { AppLayout, SiteFooter, SiteHeader } from "../layout"
-import { DATASTAR_URL, GITHUB_URL } from "../nav"
+import type { Env } from "../server"
+import { pageHead } from "../ui/head"
+import { Icons } from "../ui/icons"
+import { AppLayout, SiteFooter, SiteHeader } from "../ui/layout"
 
 const runtimes = [
   { slug: "hono", name: "Hono" },
@@ -91,7 +93,7 @@ const Hero = () => (
       </p>
       <div class="mt-7 flex flex-wrap items-center gap-3">
         <a
-          href="/introduction"
+          href="/docs/introduction"
           class="btn-primary"
         >
           Get started
@@ -268,7 +270,7 @@ const ClosingSection = () => (
       </p>
       <div class="mt-8">
         <a
-          href="/introduction"
+          href="/docs/introduction"
           class="btn-secondary"
         >
           Open docs
@@ -295,26 +297,28 @@ const HomePage = () => (
   </AppLayout>
 )
 
-export const registerHomePage = (app: App) => {
-  app.get("/", () =>
-    reply.page(<HomePage />, {
-      title: "Datastar Kit · Server-driven UI for TypeScript",
-      head: pageHead({
-        description:
-          "A small TypeScript SDK for building server-driven UI with Datastar: typed attributes, server-rendered TSX, and native Response helpers.",
-        path: "/"
-      })
-    })
-  )
+const index = new Hono<Env>()
 
-  app.get("/demo/ping", (c) => {
-    const colo = c.req.raw.cf?.colo
-    const time = `${new Date().toISOString().slice(11, 19)} UTC`
-    return reply.patch(
-      <PingResultPatched
-        colo={typeof colo === "string" ? colo : ""}
-        time={time}
-      />
-    )
+index.get("/", () =>
+  reply.page(<HomePage />, {
+    title: "Datastar Kit · Server-driven UI for TypeScript",
+    head: pageHead({
+      description:
+        "A small TypeScript SDK for building server-driven UI with Datastar: typed attributes, server-rendered TSX, and native Response helpers.",
+      path: "/"
+    })
   })
-}
+)
+
+index.get("/demo/ping", (c) => {
+  const colo = c.req.raw.cf?.colo
+  const time = `${new Date().toISOString().slice(11, 19)} UTC`
+  return reply.patch(
+    <PingResultPatched
+      colo={typeof colo === "string" ? colo : ""}
+      time={time}
+    />
+  )
+})
+
+export default index
