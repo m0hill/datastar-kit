@@ -1,8 +1,14 @@
-import { mod, unsafeHtml } from "datastar-kit"
+import { mod, unsafeHtml, type HtmlChild } from "datastar-kit"
+import { DatastarDebugger } from "datastar-kit/debugger"
 import type { DocPage } from "./doc-types"
 import { Icons } from "./icons"
 import { DATASTAR_URL, GITHUB_URL, flatNav, sidebar } from "./nav"
 import { DocSearch, searchState } from "./search"
+
+export const AppLayout = (props: { children?: HtmlChild | HtmlChild[] }): HtmlChild => [
+  props.children,
+  <DatastarDebugger />
+]
 
 const HeaderLink = (props: { href: string; label: string; active: boolean }) => (
   <a
@@ -228,40 +234,42 @@ const OnThisPage = (props: { page: DocPage }) => {
 }
 
 export const DocsLayout = (props: { page: DocPage }) => (
-  <div
-    class="min-h-dvh"
-    data-signals={mod(searchState.defaults, { ifMissing: true })}
-  >
-    <SiteHeader
-      active="docs"
-      search
-    />
-    <div class="site-shell lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_13rem]">
-      <aside class="max-lg:hidden">
-        <div class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto border-r border-border-subtle py-10 pr-6">
-          <SidebarNav activePath={props.page.path} />
-        </div>
-      </aside>
-      <div class="min-w-0 py-10 lg:px-10">
-        <details class="mb-6 border border-border-subtle bg-paper lg:hidden">
-          <summary class="cursor-pointer px-4 py-3 font-mono text-xs font-semibold uppercase text-fg-secondary">
-            All pages
-          </summary>
-          <div class="border-t border-border-subtle px-4 py-4">
+  <AppLayout>
+    <div
+      class="min-h-dvh"
+      data-signals={mod(searchState.defaults, { ifMissing: true })}
+    >
+      <SiteHeader
+        active="docs"
+        search
+      />
+      <div class="site-shell lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_13rem]">
+        <aside class="max-lg:hidden">
+          <div class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto border-r border-border-subtle py-10 pr-6">
             <SidebarNav activePath={props.page.path} />
           </div>
-        </details>
-        <article class="doc mx-auto max-w-3xl">{unsafeHtml(props.page.html)}</article>
-        <div class="mx-auto max-w-3xl">
-          <PrevNextNav activePath={props.page.path} />
+        </aside>
+        <div class="min-w-0 py-10 lg:px-10">
+          <details class="mb-6 border border-border-subtle bg-paper lg:hidden">
+            <summary class="cursor-pointer px-4 py-3 font-mono text-xs font-semibold uppercase text-fg-secondary">
+              All pages
+            </summary>
+            <div class="border-t border-border-subtle px-4 py-4">
+              <SidebarNav activePath={props.page.path} />
+            </div>
+          </details>
+          <article class="doc mx-auto max-w-3xl">{unsafeHtml(props.page.html)}</article>
+          <div class="mx-auto max-w-3xl">
+            <PrevNextNav activePath={props.page.path} />
+          </div>
         </div>
+        <aside class="max-xl:hidden">
+          <div class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto py-10 pl-6">
+            <OnThisPage page={props.page} />
+          </div>
+        </aside>
       </div>
-      <aside class="max-xl:hidden">
-        <div class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto py-10 pl-6">
-          <OnThisPage page={props.page} />
-        </div>
-      </aside>
+      <SiteFooter />
     </div>
-    <SiteFooter />
-  </div>
+  </AppLayout>
 )

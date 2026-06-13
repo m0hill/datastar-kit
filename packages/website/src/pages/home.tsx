@@ -2,7 +2,7 @@ import { get, js, reply, unsafeHtml } from "datastar-kit"
 import { pageHead, type App } from "../app"
 import { snippets } from "../generated/docs"
 import { Icons } from "../icons"
-import { SiteFooter, SiteHeader } from "../layout"
+import { AppLayout, SiteFooter, SiteHeader } from "../layout"
 import { DATASTAR_URL, GITHUB_URL } from "../nav"
 
 const runtimes = [
@@ -279,18 +279,20 @@ const ClosingSection = () => (
 )
 
 const HomePage = () => (
-  <div class="min-h-dvh">
-    <SiteHeader />
-    <main>
-      <Hero />
-      <RuntimeSheet />
-      <LoopSection />
-      <LiveDemoSection />
-      <BoxSection />
-      <ClosingSection />
-    </main>
-    <SiteFooter />
-  </div>
+  <AppLayout>
+    <div class="min-h-dvh">
+      <SiteHeader />
+      <main>
+        <Hero />
+        <RuntimeSheet />
+        <LoopSection />
+        <LiveDemoSection />
+        <BoxSection />
+        <ClosingSection />
+      </main>
+      <SiteFooter />
+    </div>
+  </AppLayout>
 )
 
 export const registerHomePage = (app: App) => {

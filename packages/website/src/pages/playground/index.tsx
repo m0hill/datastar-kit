@@ -1,7 +1,7 @@
 import { mod, reply } from "datastar-kit"
 import type { JSX } from "datastar-kit/jsx-runtime"
 import { pageHead, type App } from "../../app"
-import { SiteFooter, SiteHeader } from "../../layout"
+import { AppLayout, SiteFooter, SiteHeader } from "../../layout"
 import { GITHUB_URL } from "../../nav"
 import { ComposerDemo, composerState } from "./composer"
 import { registerStatusSearchDemo, StatusSearchDemo, statusSearchState } from "./status-search"
@@ -32,59 +32,61 @@ const demos: Demo[] = [
 ]
 
 const PlaygroundPage = (): JSX.Element => (
-  <div
-    class="min-h-dvh"
-    data-signals={mod(
-      { ...validationState.defaults, ...statusSearchState.defaults, ...composerState.defaults },
-      { ifMissing: true }
-    )}
-  >
-    <SiteHeader active="playground" />
-    <main class="site-shell py-14">
-      <div
-        class="paper-rule mb-10"
-        aria-hidden="true"
-      />
-      <div class="grid gap-8 lg:grid-cols-[18rem_minmax(0,1fr)]">
-        <div>
-          <p class="manual-kicker">Playground</p>
-          <h1 class="mt-3 font-serif text-4xl leading-[1.05] font-medium tracking-tighter text-fg sm:text-5xl sm:leading-none md:text-6xl">
-            Three server-backed specimens.
-          </h1>
+  <AppLayout>
+    <div
+      class="min-h-dvh"
+      data-signals={mod(
+        { ...validationState.defaults, ...statusSearchState.defaults, ...composerState.defaults },
+        { ifMissing: true }
+      )}
+    >
+      <SiteHeader active="playground" />
+      <main class="site-shell py-14">
+        <div
+          class="paper-rule mb-10"
+          aria-hidden="true"
+        />
+        <div class="grid gap-8 lg:grid-cols-[18rem_minmax(0,1fr)]">
+          <div>
+            <p class="manual-kicker">Playground</p>
+            <h1 class="mt-3 font-serif text-4xl leading-[1.05] font-medium tracking-tighter text-fg sm:text-5xl sm:leading-none md:text-6xl">
+              Three server-backed specimens.
+            </h1>
+          </div>
+          <p class="max-w-2xl self-end font-serif text-xl leading-relaxed text-fg-secondary">
+            Live interactions served straight from the server. The page you are reading is the
+            application state.
+          </p>
         </div>
-        <p class="max-w-2xl self-end font-serif text-xl leading-relaxed text-fg-secondary">
-          Live interactions served straight from the server. The page you are reading is the
-          application state.
+        <div class="mt-16 grid gap-8">
+          {demos.map((item) => (
+            <section class="page-enter grid gap-6 border-t border-border-strong pt-8 lg:grid-cols-[18rem_minmax(0,1fr)]">
+              <div>
+                <h2 class="font-serif text-3xl leading-tight font-medium tracking-tight text-fg">
+                  {item.title}
+                </h2>
+                <p class="mt-3 text-sm leading-relaxed text-fg-secondary">{item.body}</p>
+              </div>
+              <div class="blueprint-panel bg-surface p-5 sm:p-6">{item.demo}</div>
+            </section>
+          ))}
+        </div>
+        <p class="mt-16 border-t border-border-subtle pt-6 text-sm text-fg-muted">
+          Want more? The repository ships{" "}
+          <a
+            href={`${GITHUB_URL}/tree/main/examples`}
+            target="_blank"
+            rel="noreferrer"
+            class="font-medium text-fg underline decoration-accent/50 decoration-dotted underline-offset-4 transition-colors hover:text-accent"
+          >
+            fourteen runnable examples
+          </a>{" "}
+          covering todos, realtime counters, modals, and a Linear-style issue tracker.
         </p>
-      </div>
-      <div class="mt-16 grid gap-8">
-        {demos.map((item) => (
-          <section class="page-enter grid gap-6 border-t border-border-strong pt-8 lg:grid-cols-[18rem_minmax(0,1fr)]">
-            <div>
-              <h2 class="font-serif text-3xl leading-tight font-medium tracking-tight text-fg">
-                {item.title}
-              </h2>
-              <p class="mt-3 text-sm leading-relaxed text-fg-secondary">{item.body}</p>
-            </div>
-            <div class="blueprint-panel bg-surface p-5 sm:p-6">{item.demo}</div>
-          </section>
-        ))}
-      </div>
-      <p class="mt-16 border-t border-border-subtle pt-6 text-sm text-fg-muted">
-        Want more? The repository ships{" "}
-        <a
-          href={`${GITHUB_URL}/tree/main/examples`}
-          target="_blank"
-          rel="noreferrer"
-          class="font-medium text-fg underline decoration-accent/50 decoration-dotted underline-offset-4 transition-colors hover:text-accent"
-        >
-          fourteen runnable examples
-        </a>{" "}
-        covering todos, realtime counters, modals, and a Linear-style issue tracker.
-      </p>
-    </main>
-    <SiteFooter />
-  </div>
+      </main>
+      <SiteFooter />
+    </div>
+  </AppLayout>
 )
 
 export const registerPlaygroundPage = (app: App) => {
