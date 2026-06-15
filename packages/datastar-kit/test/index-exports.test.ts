@@ -7,6 +7,7 @@ import {
   del,
   event,
   get,
+  h,
   js,
   local,
   mod,
@@ -41,6 +42,7 @@ describe("package exports", () => {
       "del",
       "event",
       "get",
+      "h",
       "js",
       "local",
       "mod",
@@ -67,6 +69,7 @@ describe("package exports", () => {
     expect(Root.state).toBe(state)
     expect(Root.local).toBe(local)
     expect(Root.get).toBe(get)
+    expect(Root.h).toBe(h)
     expect(Root.post).toBe(post)
     expect(Root.put).toBe(put)
     expect(Root.patch).toBe(patch)
