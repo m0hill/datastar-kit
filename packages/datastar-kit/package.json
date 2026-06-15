@@ -1,6 +1,6 @@
 {
   "name": "datastar-kit",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Datastar companion SDK for server-driven TypeScript applications",
   "homepage": "https://datastar-kit.dev",
   "repository": {
