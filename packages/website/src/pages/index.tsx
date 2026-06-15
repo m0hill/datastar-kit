@@ -1,6 +1,7 @@
 import { get, js, reply, unsafeHtml } from "datastar-kit"
 import { Hono } from "hono"
-import { DATASTAR_URL, GITHUB_URL } from "../constants"
+import { DATASTAR_URL, GITHUB_URL, SITE_URL } from "../constants"
+import { markdownResponse, prefersMarkdown, varyOnAccept } from "../agent/markdown"
 import { snippets } from "../generated/docs"
 import type { Env } from "../server"
 import { pageHead } from "../ui/head"
@@ -299,16 +300,57 @@ const HomePage = () => (
 
 const index = new Hono<Env>()
 
-index.get("/", () =>
-  reply.page(<HomePage />, {
-    title: "Datastar Kit · Server-driven UI for TypeScript",
-    head: pageHead({
-      description:
-        "A small TypeScript SDK for building server-driven UI with Datastar: typed attributes, server-rendered TSX, and native Response helpers.",
-      path: "/"
+const HOME_LINKS = [
+  `<${SITE_URL}/>; rel="canonical"`,
+  `<${SITE_URL}/docs>; rel="service-doc"`,
+  `<${SITE_URL}/llms.txt>; rel="alternate"; type="text/plain"; title="llms.txt"`,
+  `<${SITE_URL}/sitemap.xml>; rel="describedby"; type="application/xml"`,
+  `<${SITE_URL}/.well-known/agent-skills/index.json>; rel="describedby"; type="application/json"; title="agent-skills"`
+].join(", ")
+
+const homeMarkdown = [
+  "# Datastar Kit",
+  "",
+  "> Server-rendered interfaces, patched like documents.",
+  "",
+  "A small TypeScript SDK for building server-driven UI with Datastar: typed",
+  "attributes, server-rendered TSX, and native Response helpers. Runs anywhere a",
+  "Request becomes a Response (Hono, Cloudflare Workers, Bun, Deno, Node.js).",
+  "",
+  "```sh",
+  "npm i datastar-kit",
+  "```",
+  "",
+  "## What's in the box",
+  "",
+  ...inTheBox.map((item) => `- **${item.title}**: ${item.body}`),
+  "",
+  "## Links",
+  "",
+  `- [Documentation](${SITE_URL}/docs/introduction)`,
+  `- [Playground](${SITE_URL}/playground)`,
+  `- [GitHub](${GITHUB_URL})`,
+  `- [Datastar](${DATASTAR_URL})`,
+  ""
+].join("\n")
+
+index.get("/", (c) => {
+  if (prefersMarkdown(c)) {
+    return markdownResponse(homeMarkdown)
+  }
+  const res = varyOnAccept(
+    reply.page(<HomePage />, {
+      title: "Datastar Kit · Server-driven UI for TypeScript",
+      head: pageHead({
+        description:
+          "A small TypeScript SDK for building server-driven UI with Datastar: typed attributes, server-rendered TSX, and native Response helpers.",
+        path: "/"
+      })
     })
-  })
-)
+  )
+  res.headers.set("Link", HOME_LINKS)
+  return res
+})
 
 index.get("/demo/ping", (c) => {
   const colo = c.req.raw.cf?.colo

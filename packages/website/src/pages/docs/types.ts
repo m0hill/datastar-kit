@@ -16,6 +16,7 @@ export interface DocPage {
   readonly title: string
   readonly description: string
   readonly html: string
+  readonly markdown: string
   readonly headings: readonly DocHeading[]
   readonly sections: readonly DocSection[]
 }

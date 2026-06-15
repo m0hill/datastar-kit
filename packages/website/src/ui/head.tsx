@@ -1,4 +1,5 @@
 import { unsafeHtml, type HtmlChild } from "datastar-kit"
+import { SITE_URL } from "../constants"
 
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
@@ -38,7 +39,7 @@ export const pageHead = (options: { description?: string; path?: string }): Html
     : [
         <link
           rel="canonical"
-          href={`https://datastar-kit.dev${options.path === "/" ? "" : options.path}`}
+          href={`${SITE_URL}${options.path === "/" ? "" : options.path}`}
         />
       ]),
   <link

@@ -7,6 +7,7 @@ import anchor from "markdown-it-anchor"
 import { createHighlighter, type Highlighter } from "shiki"
 import type Token from "markdown-it/lib/token.mjs"
 import { h, renderToString, unsafeHtml } from "datastar-kit"
+import { SITE_URL } from "../src/constants"
 
 const websiteRoot = path.resolve(import.meta.dirname, "..")
 const contentDir = path.join(websiteRoot, "content")
@@ -57,6 +58,7 @@ interface DocPage {
   title: string
   description: string
   html: string
+  markdown: string
   headings: DocHeading[]
   sections: DocSection[]
 }
@@ -91,6 +93,12 @@ const rewriteDocLink = (href: string, currentDir: string): string => {
   const resolved = path.posix.normalize(path.posix.join(currentDir, file))
   return docPathFromFile(resolved) + hash
 }
+
+const rewriteMarkdownLinks = (source: string, currentDir: string): string =>
+  source.replace(/(\]\()([^)\s]+)/g, (_match, open: string, href: string) => {
+    const rewritten = rewriteDocLink(href, currentDir)
+    return `${open}${rewritten.startsWith("/") ? `${SITE_URL}${rewritten}` : rewritten}`
+  })
 
 const COPY_EXPRESSION =
   "const btn = evt.currentTarget;" +
@@ -307,6 +315,7 @@ const buildPages = async (highlighter: Highlighter): Promise<DocPage[]> => {
       title: meta.title,
       description: meta.description,
       html: md.renderer.render(tokens, md.options, {}),
+      markdown: rewriteMarkdownLinks(source, currentDir === "." ? "" : currentDir),
       headings: meta.headings,
       sections: meta.sections
     })
