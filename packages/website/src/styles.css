@@ -475,10 +475,11 @@ body {
   border-bottom: 1px solid var(--color-border-subtle);
   background: var(--color-paper-soft);
   padding: 0.45rem 0.75rem;
+  color: var(--color-fg-secondary);
 }
 
 .code-block-bar > span {
-  color: var(--color-fg-muted);
+  color: inherit;
   font-family: var(--font-mono);
   font-size: 0.68rem;
   letter-spacing: 0.02em;
@@ -490,7 +491,7 @@ body {
   place-items: center;
   cursor: pointer;
   padding: 0.3rem;
-  color: var(--color-fg-muted);
+  color: inherit;
   transition: color 0.15s ease;
 }
 

@@ -49,10 +49,4 @@ See `examples/hono-todos` for a complete app with tests that cover the initial H
 
 Use browser/runtime tests for behavior that unit tests cannot prove, such as how Datastar applies a patch in the DOM.
 
-## Keep examples honest
-
-When changing examples, keep their tests and checks close to the example package. An example should remain copyable and clear about its dependencies.
-
-Observability is app-owned. Test your logging, tracing, metrics, and OpenTelemetry setup through the platform libraries you use in production.
-
 Next: [Examples](examples.md).

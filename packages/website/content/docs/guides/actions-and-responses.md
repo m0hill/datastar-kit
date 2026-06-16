@@ -8,6 +8,7 @@ Use native Datastar event attributes with a fetch action such as `get(...)` or `
 
 ```tsx
 import { post } from "datastar-kit"
+
 ;<button
   type="button"
   data-on:click={post("/todos/add")}
@@ -40,6 +41,7 @@ When an attribute needs Datastar modifiers, wrap the value with `mod(value, modi
 
 ```tsx
 import { mod, post } from "datastar-kit"
+
 ;<form data-on:submit={mod(post("/signup"), { prevent: true })}>...</form>
 ```
 
@@ -132,6 +134,7 @@ For Datastar's form transport, pass `contentType: "form"` in the fetch action op
 
 ```tsx
 import { mod, post } from "datastar-kit"
+
 ;<form
   data-on:submit={mod(post("/upload", { contentType: "form", selector: null }), { prevent: true })}
 >

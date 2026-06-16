@@ -136,16 +136,19 @@ const RuntimeSheet = () => (
           <p class="mt-2 text-sm text-fg-secondary">Bring any Fetch-compatible runtime.</p>
         </div>
         <div class="flex flex-wrap items-center gap-x-8 gap-y-5">
-          {runtimes.map((runtime) => (
-            <img
-              src={`https://cdn.simpleicons.org/${runtime.slug}/47483e`}
-              alt={runtime.name}
-              title={runtime.name}
-              width={28}
-              height={28}
-              class="h-7 w-7 opacity-75 transition-opacity hover:opacity-100 dark:invert"
-            />
-          ))}
+          {runtimes.map((runtime) => {
+            const RuntimeIcon = Icons.runtime[runtime.slug]
+
+            return (
+              <RuntimeIcon
+                role="img"
+                aria-label={runtime.name}
+                width={28}
+                height={28}
+                class="h-7 w-7 text-fg-secondary opacity-75 transition-[color,opacity] hover:text-fg hover:opacity-100"
+              />
+            )
+          })}
         </div>
       </div>
     </div>
