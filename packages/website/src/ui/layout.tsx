@@ -1,11 +1,9 @@
 import type { HtmlChild } from "datastar-kit"
-import { DatastarDebugger } from "datastar-kit/debugger"
 import { DATASTAR_URL, GITHUB_URL } from "../constants"
 import { Icons } from "./icons"
 
 export const AppLayout = (props: { children?: HtmlChild | HtmlChild[] }): HtmlChild => [
-  props.children,
-  <DatastarDebugger open={false} />
+  props.children
 ]
 
 const HeaderLink = (props: { href: string; label: string; active: boolean }) => (
