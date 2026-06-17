@@ -1,6 +1,6 @@
 # Security
 
-Datastar Kit does not provide auth, sessions, CSRF protection, ownership checks, or rate limiting. Apply those policies in your router, middleware, and app services before changing state.
+Auth, sessions, CSRF protection, ownership checks, and rate limiting are app concerns, not SDK ones (see [Runtime boundaries](../concepts/runtime-boundaries.md)). Apply those policies in your router, middleware, and app services before changing state.
 
 ## Command checklist
 

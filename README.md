@@ -104,6 +104,8 @@ pnpm run check
 - Documentation site: [`packages/website`](packages/website)
 - Runnable examples: [`examples`](examples)
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, source layout, and design constraints.
+
 ## License
 
 [MIT](LICENSE) © Mohil

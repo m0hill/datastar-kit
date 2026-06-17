@@ -1,8 +1,8 @@
 # Deployment
 
-Datastar Kit targets fetch-compatible JavaScript runtimes. It does not ship a server adapter, process manager, asset pipeline, session store, database adapter, or live broker.
+Datastar Kit targets fetch-compatible JavaScript runtimes and stays a set of functions inside your handlers. Everything around it — server adapter, process manager, asset pipeline, session store, database, and live broker — is yours; see [Runtime boundaries](../concepts/runtime-boundaries.md) for the full split.
 
-Use the deployment tools that fit your app. The SDK remains a set of functions inside your handlers.
+This page covers the few deployment concerns the SDK does touch: serving the Datastar runtime, SSE behavior through proxies, and a production checklist.
 
 ## Runtime integration
 
@@ -20,21 +20,7 @@ Core helpers use Web Standard primitives such as `Request`, `Response`, `Headers
 
 ## Datastar runtime asset
 
-Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.2`; include a pinned CDN URL or serve a compatible self-hosted copy.
-
-```tsx
-const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
-
-return reply.page(appShell, {
-  head: (
-    <script
-      type="module"
-      src={DATASTAR_RUNTIME}
-    />
-  )
-})
-```
+Datastar Kit does not serve the Datastar browser runtime; you include it yourself with a pinned CDN URL or a self-hosted copy, as shown in the [Introduction](../introduction.md#install).
 
 For self-hosted assets, prefer immutable caching on versioned filenames:
 
@@ -59,7 +45,7 @@ proxy_buffering off;
 
 ## Realtime resources
 
-Datastar Kit does not include a live broker. Redis, NATS, Postgres notifications, in-memory subscribers, Durable Objects, queues, or app-specific channels should remain app-owned and adapt into `reply.stream(...)` event sources.
+Live streams need an app-owned invalidation source — Redis, NATS, Postgres notifications, in-memory subscribers, Durable Objects, or queues — adapted into a `reply.stream(...)` event source. See [Realtime](realtime.md#invalidation-sources) for how those wire in.
 
 ## Production checklist
 

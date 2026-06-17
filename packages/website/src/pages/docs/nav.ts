@@ -11,10 +11,7 @@ export interface NavGroup {
 export const sidebar: NavGroup[] = [
   {
     text: "Overview",
-    items: [
-      { text: "Introduction", path: "/docs/introduction" },
-      { text: "Docs map", path: "/docs" }
-    ]
+    items: [{ text: "Introduction", path: "/docs/introduction" }]
   },
   {
     text: "Concepts",
@@ -48,7 +45,6 @@ export const sidebar: NavGroup[] = [
     items: [
       { text: "API", path: "/docs/reference/api" },
       { text: "Examples", path: "/docs/guides/examples" },
-      { text: "Architecture", path: "/docs/reference/architecture" },
       { text: "Agent setup", path: "/docs/guides/agent" }
     ]
   }

@@ -11,6 +11,8 @@ const docs = new Hono<Env>()
 
 docs.get("/search", search)
 
+docs.get("/", (c) => c.redirect("/docs/introduction"))
+
 for (const page of docPages) {
   docs.get(page.path.slice("/docs".length) || "/", (c) => {
     if (prefersMarkdown(c)) {
