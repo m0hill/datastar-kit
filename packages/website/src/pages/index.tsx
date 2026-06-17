@@ -45,7 +45,7 @@ const JsAsterisk = () => (
     </button>
     <span
       role="tooltip"
-      class="pointer-events-none absolute left-0 top-full z-10 mt-3 w-max max-w-60 whitespace-normal border border-border-strong bg-paper px-3 py-2 text-left font-sans text-sm font-normal leading-snug tracking-normal text-fg-secondary opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
+      class="pointer-events-none invisible absolute right-0 top-full z-10 mt-3 w-max max-w-60 whitespace-normal border border-border-strong bg-paper px-3 py-2 text-left font-sans text-sm font-normal leading-snug tracking-normal text-fg-secondary opacity-0 transition-opacity duration-150 group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100"
     >
       * except on the server, obviously.
     </span>
