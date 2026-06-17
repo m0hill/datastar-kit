@@ -34,6 +34,24 @@ const loop = [
   }
 ] as const
 
+const JsAsterisk = () => (
+  <span class="group relative inline-block">
+    <button
+      type="button"
+      class="cursor-help align-super text-[0.4em] leading-none text-accent transition-opacity hover:opacity-80 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      aria-label="Footnote: except on the server, obviously"
+    >
+      *
+    </button>
+    <span
+      role="tooltip"
+      class="pointer-events-none absolute left-0 top-full z-10 mt-3 w-max max-w-60 whitespace-normal border border-border-strong bg-paper px-3 py-2 text-left font-sans text-sm font-normal leading-snug tracking-normal text-fg-secondary opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-within:opacity-100"
+    >
+      * except on the server, obviously.
+    </span>
+  </span>
+)
+
 const InstallCopyIcon = () => (
   <span class="grid h-6 w-6 place-items-center text-fg-muted transition-colors group-hover:text-accent group-[.copied]:text-accent">
     <Icons.copy
@@ -75,11 +93,12 @@ const Hero = () => (
         <span class="manual-kicker">Built for Datastar</span>
       </a>
       <h1 class="font-serif text-[2rem] leading-[1.02] font-medium tracking-tighter text-fg min-[420px]:text-4xl sm:text-5xl sm:leading-[0.95] md:text-6xl lg:text-7xl">
-        Your server renders the UI. The browser just patches it.
+        Stop shipping JavaScript.
+        <JsAsterisk />
       </h1>
       <p class="mt-5 max-w-lg font-serif text-xl leading-relaxed text-fg-secondary">
-        A typed TypeScript SDK for server-driven UI with Datastar — interactive and realtime, no
-        client framework required.
+        Build interactive Datastar pages from plain TypeScript: typed data-* attributes,
+        server-rendered TSX, signal readers, and native Response helpers.
       </p>
       <div class="mt-7 flex flex-wrap items-center gap-3">
         <a
@@ -229,17 +248,17 @@ const inTheBox = [
 
 const BoxSection = () => (
   <section class="site-shell py-16 sm:py-20 lg:py-24">
-    <div class="grid gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)] lg:items-center">
-      <div class="min-w-0">
-        <h2 class="font-serif text-4xl leading-tight font-medium tracking-tight text-fg md:text-5xl">
-          A kit, not a framework.
-        </h2>
-        <p class="mt-4 max-w-2xl font-serif text-lg leading-relaxed text-fg-secondary">
-          Datastar Kit owns the Datastar-shaped pieces and nothing else. Everything works anywhere a
-          Request becomes a Response.
-        </p>
-        <div class="mt-8 min-w-0 [&_.code-block]:my-0">{unsafeHtml(snippets["signals"] ?? "")}</div>
-      </div>
+    <div class="max-w-2xl">
+      <h2 class="font-serif text-4xl leading-tight font-medium tracking-tight text-fg md:text-5xl">
+        A kit, not a framework.
+      </h2>
+      <p class="mt-4 font-serif text-lg leading-relaxed text-fg-secondary">
+        Datastar Kit owns the Datastar-shaped pieces and nothing else. Everything works anywhere a
+        Request becomes a Response.
+      </p>
+    </div>
+    <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)] lg:items-center lg:gap-16">
+      <div class="min-w-0 [&_.code-block]:my-0">{unsafeHtml(snippets["signals"] ?? "")}</div>
       <dl class="border-t border-border-strong">
         {inTheBox.map((item) => (
           <div class="border-b border-border-subtle py-4">
