@@ -70,4 +70,4 @@ If your editor starts suggesting imports from `repos/`, exclude that directory f
 }
 ```
 
-Related: [Examples](examples.md), [Architecture](../reference/architecture.md).
+Related: [Examples](examples.md), [API reference](../reference/api.md).

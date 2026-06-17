@@ -53,13 +53,7 @@ return reply.patch(<TodoCount count={count} />)
 
 Use explicit selectors only when the target is a container, a sibling position, multiple matches, or an element to remove. The [element patches](../guides/patch-elements.md) guide covers each mode.
 
-## Reconnect safety
-
-For live views, use a current-state rule:
-
-> A client should recover by reconnecting and rendering the latest backend state.
-
-That rule keeps streams simple. An invalidation only means "something changed"; the live handler reloads current state and renders a fresh patch.
+Live views follow a current-state rule: an invalidation only means "something changed," and the handler recovers by reloading and rendering the latest backend state. The [Realtime](../guides/realtime.md#reconnect-safety) guide covers why that keeps streams simple.
 
 ## Route naming
 

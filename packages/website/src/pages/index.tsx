@@ -86,10 +86,11 @@ const Hero = () => (
         <span class="manual-kicker">Built for Datastar</span>
       </a>
       <h1 class="font-serif text-[2rem] leading-[1.02] font-medium tracking-tighter text-fg min-[420px]:text-4xl sm:text-5xl sm:leading-[0.95] md:text-6xl lg:text-7xl">
-        Server-rendered interfaces, patched like documents.
+        Your server renders the UI. The browser just patches it.
       </h1>
       <p class="mt-5 max-w-lg font-serif text-xl leading-relaxed text-fg-secondary">
-        Typed Datastar attributes, TSX rendering, and Response helpers for server-driven UI.
+        A typed TypeScript SDK for server-driven UI with Datastar — interactive and realtime, no
+        client framework required.
       </p>
       <div class="mt-7 flex flex-wrap items-center gap-3">
         <a
@@ -186,7 +187,9 @@ const LiveDemoSection = () => (
             This page is the demo.
           </h2>
           <p class="mt-4 max-w-2xl font-serif text-lg leading-relaxed text-fg-secondary">
-            Press the button and the server sends an HTML patch over SSE.
+            Press the button and the server sends an HTML patch over SSE. The same SSE patch
+            mechanism keeps live views in sync across every open tab — realtime is just a handler
+            that yields.
           </p>
         </div>
         <div class="blueprint-panel bg-surface p-5">
@@ -221,6 +224,10 @@ const inTheBox = [
   {
     title: "Signals at the boundary",
     body: "read.signals(request) decodes Datastar payloads for your own validation layer."
+  },
+  {
+    title: "Realtime in a few lines",
+    body: "reply.stream sends SSE patches, so live multi-tab views are an ordinary handler."
   },
   {
     title: "A development debugger",

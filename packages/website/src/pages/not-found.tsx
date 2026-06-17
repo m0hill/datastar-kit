@@ -14,14 +14,14 @@ const NotFoundPage = () => (
             Page not found.
           </h1>
           <p class="mt-4 font-serif text-lg leading-relaxed text-fg-secondary">
-            Nothing lives at this URL. Try the docs map or head back home.
+            Nothing lives at this URL. Try the docs or head back home.
           </p>
           <div class="mt-8 flex justify-center gap-3">
             <a
-              href="/docs"
+              href="/docs/introduction"
               class="btn-primary"
             >
-              Docs map
+              Read the docs
             </a>
             <a
               href="/"
