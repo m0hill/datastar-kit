@@ -1,4 +1,4 @@
-import { get, js, reply, unsafeHtml } from "datastar-kit"
+import { event, get, js, post, reply, unsafeHtml } from "datastar-kit"
 import { Hono } from "hono"
 import { DATASTAR_URL, GITHUB_URL } from "../constants"
 import { snippets } from "../generated/docs"
@@ -47,24 +47,13 @@ const InstallCopyIcon = () => (
   </span>
 )
 
-const PingResult = () => (
-  <p
-    id="ping-result"
-    class="text-sm text-fg-muted"
+const VisitorCount = (props: { count: number }) => (
+  <span
+    id="visitor-count"
+    class="font-serif text-7xl font-medium tabular-nums leading-none tracking-tight text-accent sm:text-8xl"
   >
-    Waiting for a click.
-  </p>
-)
-
-const PingResultPatched = (props: { colo: string; time: string }) => (
-  <p
-    id="ping-result"
-    class="text-sm text-fg"
-  >
-    Patched by the server
-    {props.colo === "" ? "" : ` in ${props.colo}`} at{" "}
-    <span class="font-mono text-accent">{props.time}</span>
-  </p>
+    {props.count.toLocaleString("en-US")}
+  </span>
 )
 
 const Hero = () => (
@@ -177,34 +166,37 @@ const LoopSection = () => (
   </section>
 )
 
-const LiveDemoSection = () => (
+const LiveDemoSection = (props: { count: number }) => (
   <section class="bg-paper/60">
     <div class="site-shell border-y border-border-subtle py-16 sm:py-20 lg:py-24">
       <div class="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(22rem,0.55fr)] lg:items-center">
         <div>
-          <p class="manual-kicker">Live patch</p>
+          <p class="manual-kicker">Live · Durable Object</p>
           <h2 class="mt-3 font-serif text-4xl leading-tight font-medium tracking-tight text-fg md:text-5xl">
-            This page is the demo.
+            A counter the whole internet shares.
           </h2>
           <p class="mt-4 max-w-2xl font-serif text-lg leading-relaxed text-fg-secondary">
-            Press the button and the server sends an HTML patch over SSE. The same SSE patch
-            mechanism keeps live views in sync across every open tab — realtime is just a handler
-            that yields.
+            Tap it. The count lives in a Cloudflare Durable Object and streams to every open tab
+            over SSE — yours and everyone else's. Open a second tab and watch it move.
           </p>
         </div>
-        <div class="blueprint-panel bg-surface p-5">
-          <div class="flex flex-wrap items-center justify-between gap-4">
+        <div
+          class="blueprint-panel bg-surface p-6"
+          data-init={get("/demo/counter/live")}
+        >
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <span class="frame-label">live count</span>
+            <span class="frame-label">POST /demo/counter/bump</span>
+          </div>
+          <div class="mt-6 flex flex-col items-center gap-6 py-2 text-center">
+            <VisitorCount count={props.count} />
             <button
               type="button"
               class="btn-primary"
-              data-on:click={get("/demo/ping")}
+              data-on:click={post("/demo/counter/bump")}
             >
-              Run round trip
+              +1 · tap to count
             </button>
-            <span class="frame-label">GET /demo/ping</span>
-          </div>
-          <div class="mt-5 border-t border-border-subtle pt-5">
-            <PingResult />
           </div>
         </div>
       </div>
@@ -287,7 +279,7 @@ const ClosingSection = () => (
   </section>
 )
 
-const HomePage = () => (
+const HomePage = (props: { count: number }) => (
   <AppLayout>
     <div class="min-h-dvh">
       <SiteHeader />
@@ -295,7 +287,7 @@ const HomePage = () => (
         <Hero />
         <RuntimeSheet />
         <LoopSection />
-        <LiveDemoSection />
+        <LiveDemoSection count={props.count} />
         <BoxSection />
         <ClosingSection />
       </main>
@@ -304,10 +296,18 @@ const HomePage = () => (
   </AppLayout>
 )
 
+const COUNTER_ROOM = "global"
+
+const visitorCounter = (env: CloudflareBindings) => {
+  return env.VISITOR_COUNTER.get(env.VISITOR_COUNTER.idFromName(COUNTER_ROOM))
+}
+
 const index = new Hono<Env>()
 
-index.get("/", () =>
-  reply.page(<HomePage />, {
+index.get("/", async (c) => {
+  const count = await visitorCounter(c.env).getCount()
+
+  return reply.page(<HomePage count={count} />, {
     title: "Datastar Kit · Server-driven UI for TypeScript",
     head: pageHead({
       description:
@@ -315,17 +315,19 @@ index.get("/", () =>
       path: "/"
     })
   })
-)
+})
 
-index.get("/demo/ping", (c) => {
-  const colo = c.req.raw.cf?.colo
-  const time = `${new Date().toISOString().slice(11, 19)} UTC`
-  return reply.patch(
-    <PingResultPatched
-      colo={typeof colo === "string" ? colo : ""}
-      time={time}
-    />
-  )
+index.get("/demo/counter/live", async (c) => {
+  const room = visitorCounter(c.env)
+  const count = await room.getCount()
+  return room.subscribe(event.patch(<VisitorCount count={count} />))
+})
+
+index.post("/demo/counter/bump", async (c) => {
+  const room = visitorCounter(c.env)
+  const count = await room.bump()
+  c.executionCtx.waitUntil(room.publish(event.patch(<VisitorCount count={count} />)))
+  return reply.done()
 })
 
 export default index

@@ -5,6 +5,8 @@ import index from "./pages/index"
 import { notFound } from "./pages/not-found"
 import playground from "./pages/playground"
 
+export { VisitorCounter } from "./realtime/counter"
+
 export type Env = { Bindings: CloudflareBindings }
 
 const app = new Hono<Env>()
