@@ -151,6 +151,16 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
+  it("renders script boolean attributes with HTML semantics", () => {
+    expect(
+      executeScript("boot()", {
+        attributes: { async: true, defer: false, "data-enabled": false }
+      })
+    ).toBe(
+      'event: datastar-patch-elements\ndata: mode append\ndata: selector body\ndata: elements <script async data-enabled="false" data-effect="el.remove()">boot()</script>\n\n'
+    )
+  })
+
   it("escapes </script> breakout sequences in the script body", () => {
     const out = executeScript('console.log("</script>")')
 

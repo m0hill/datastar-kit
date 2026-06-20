@@ -70,6 +70,21 @@ describe("data-signals", () => {
     )
   })
 
+  it("serializes signal keys named like expression methods as plain data", () => {
+    const node = (
+      <div
+        data-signals={{
+          toDatastarExpression: "literal",
+          nested: { toDatastarExpression: 1 }
+        }}
+      ></div>
+    )
+
+    expect(renderToString(node)).toBe(
+      '<div data-signals="{&quot;toDatastarExpression&quot;: &quot;literal&quot;, &quot;nested&quot;: {&quot;toDatastarExpression&quot;: 1}}"></div>'
+    )
+  })
+
   it("serializes keyed primitive values without treating booleans as presence attributes", () => {
     const node = (
       <div>

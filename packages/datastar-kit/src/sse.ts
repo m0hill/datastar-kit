@@ -1,5 +1,5 @@
 import type { SignalState } from "./types.js"
-import { assertHtmlAttributeName, escapeHtmlAttribute } from "./html.js"
+import { renderHtmlAttributes } from "./html.js"
 
 export type { SignalState, SignalValue } from "./types.js"
 
@@ -154,18 +154,13 @@ const encodeSignals = (value: SignalState | string): string =>
   typeof value === "string" ? value : JSON.stringify(value)
 
 const scriptAttributes = (options: ExecuteScriptOptions): string => {
-  const attrs: Array<string> = []
+  const attrs: Record<string, string | number | boolean> = { ...options.attributes }
 
   if (options.autoRemove !== false) {
-    attrs.push('data-effect="el.remove()"')
+    attrs["data-effect"] = "el.remove()"
   }
 
-  for (const [key, value] of Object.entries(options.attributes ?? {})) {
-    assertHtmlAttributeName(key)
-    attrs.push(`${key}="${escapeHtmlAttribute(String(value))}"`)
-  }
-
-  return attrs.length === 0 ? "" : ` ${attrs.join(" ")}`
+  return renderHtmlAttributes(attrs)
 }
 
 // A trusted script may legitimately contain these sequences inside string,

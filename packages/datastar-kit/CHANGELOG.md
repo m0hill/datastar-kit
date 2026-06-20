@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- Preserved repeated `Set-Cookie` headers when `reply.*` helpers merge default and caller-provided response headers.
+- Rendered `executeScript(...)` script attributes with the shared HTML attribute serializer, including correct boolean attribute semantics.
+- Avoided treating plain signal-state objects with a `toDatastarExpression` key as Datastar expression instances.
+
 ## 0.4.0 - 2026-06-15
 
 ### Added

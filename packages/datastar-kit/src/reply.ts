@@ -106,11 +106,41 @@ export type SseStreamInput =
 const textEncoder = new TextEncoder()
 type Timer = ReturnType<typeof setTimeout>
 
-const mergeHeaders = (defaults: HeadersInit, headers: HeadersInit | undefined): Headers => {
-  const merged = new Headers(defaults)
-  new Headers(headers).forEach((value, key) => {
-    merged.set(key, value)
+const isSetCookieHeader = (name: string): boolean => name.toLowerCase() === "set-cookie"
+
+const getSetCookies = (headers: Headers): readonly string[] => {
+  const cookies: unknown = headers.getSetCookie?.()
+  return Array.isArray(cookies)
+    ? cookies.filter((cookie): cookie is string => typeof cookie === "string")
+    : []
+}
+
+const copyHeaders = (target: Headers, headers: HeadersInit | undefined): void => {
+  if (headers === undefined) {
+    return
+  }
+
+  const source = new Headers(headers)
+  const setCookies = getSetCookies(source)
+
+  source.forEach((value, key) => {
+    if (isSetCookieHeader(key)) {
+      if (setCookies.length === 0) target.append(key, value)
+      return
+    }
+
+    target.set(key, value)
   })
+
+  for (const cookie of setCookies) {
+    target.append("set-cookie", cookie)
+  }
+}
+
+const mergeHeaders = (defaults: HeadersInit, headers: HeadersInit | undefined): Headers => {
+  const merged = new Headers()
+  copyHeaders(merged, defaults)
+  copyHeaders(merged, headers)
   return merged
 }
 
