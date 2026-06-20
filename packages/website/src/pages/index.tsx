@@ -7,6 +7,7 @@ import type { Env } from "../server"
 import { pageHead } from "../ui/head"
 import { Icons } from "../ui/icons"
 import { AppLayout, SiteFooter, SiteHeader } from "../ui/layout"
+import { AsciiBackdrop } from "../ui/ascii-backdrop"
 
 const runtimes = [
   { slug: "hono", name: "Hono" },
@@ -76,8 +77,10 @@ const VisitorCount = (props: { count: number }) => (
 )
 
 const Hero = () => (
-  <section class="site-shell grid items-center gap-10 pt-12 pb-20 lg:grid-cols-[minmax(0,0.92fr)_minmax(30rem,1.08fr)] lg:gap-16 lg:pt-16">
-    <div class="page-enter max-w-2xl">
+  <section class="relative isolate overflow-hidden">
+    <AsciiBackdrop />
+    <div class="site-shell relative z-10 grid items-center gap-10 pt-12 pb-20 lg:grid-cols-[minmax(0,0.92fr)_minmax(30rem,1.08fr)] lg:gap-16 lg:pt-16">
+      <div class="page-enter max-w-2xl">
       <a
         href={DATASTAR_URL}
         target="_blank"
@@ -130,7 +133,8 @@ const Hero = () => (
         <InstallCopyIcon />
       </button>
     </div>
-    <div class="min-w-0 [&_.code-block]:my-0">{unsafeHtml(snippets["counter"] ?? "")}</div>
+      <div class="min-w-0 [&_.code-block]:my-0">{unsafeHtml(snippets["counter"] ?? "")}</div>
+    </div>
   </section>
 )
 

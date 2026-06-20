@@ -140,6 +140,44 @@ body {
   opacity: 0.46;
 }
 
+.ascii-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  margin: 0;
+  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.08;
+  letter-spacing: 0.14em;
+  white-space: pre;
+  color: var(--color-accent);
+  opacity: 0.14;
+  -webkit-mask-image: radial-gradient(135% 120% at 92% 8%, #000 0%, transparent 62%);
+  mask-image: radial-gradient(135% 120% at 92% 8%, #000 0%, transparent 62%);
+}
+
+.dark .ascii-backdrop {
+  opacity: 0.2;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .ascii-backdrop {
+    animation: ascii-drift 36s ease-in-out infinite alternate;
+  }
+}
+
+@keyframes ascii-drift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.02);
+  }
+  to {
+    transform: translate3d(-1.5%, -1%, 0) scale(1.06);
+  }
+}
+
 .wordmark {
   font-family: var(--font-mono);
   font-size: 0.875rem;
