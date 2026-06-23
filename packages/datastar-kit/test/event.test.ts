@@ -8,6 +8,10 @@ if (false) {
 }
 
 describe("Datastar SSE event helpers", () => {
+  it("builds SSE comment chunks for manual heartbeats", () => {
+    expect(event.comment("tick")).toBe(": tick\n\n")
+  })
+
   it("renders HTML nodes into patch events", () => {
     expect(event.patch(h("output", { id: "count" }, 2), { selector: "#count" })).toBe(
       'event: datastar-patch-elements\ndata: selector #count\ndata: elements <output id="count">2</output>\n\n'

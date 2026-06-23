@@ -1,3 +1,4 @@
+import type { HtmlElements } from "./html-attributes.js"
 import type { HtmlChild } from "./html.js"
 import { Fragment, jsx } from "./jsx-runtime.js"
 import type { JsxProps, JsxTag } from "./jsx.js"
@@ -48,8 +49,13 @@ export namespace JSX {
   export interface IntrinsicAttributes {
     key?: string | number
   }
-  /** Intrinsic HTML element props accepted by this runtime. */
-  export interface IntrinsicElements {
+  /**
+   * Intrinsic HTML element props accepted by this runtime.
+   *
+   * Known HTML and SVG tags get typed attributes and editor autocomplete; any other tag (custom
+   * elements included) is accepted with loosely typed props as an escape hatch.
+   */
+  export type IntrinsicElements = HtmlElements & {
     [tagName: string]: JsxProps
   }
 }

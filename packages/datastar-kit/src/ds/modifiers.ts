@@ -53,24 +53,43 @@ export type DatastarModifierOptions = Readonly<{
 /** @internal */
 export type DatastarModifierKey = keyof DatastarModifierOptions
 
+type KnownModifierKeys<Modifiers> = Extract<keyof Modifiers, DatastarModifierKey>
+
+type UnknownModifierMessage<Key extends PropertyKey> = Key extends string
+  ? `Unknown Datastar modifier: ${Key}`
+  : "Unknown Datastar modifier"
+
+type NoUnknownModifierKeys<Modifiers extends DatastarModifierOptions> =
+  Exclude<keyof Modifiers, DatastarModifierKey> extends never
+    ? Modifiers
+    : UnknownModifierMessage<Exclude<keyof Modifiers, DatastarModifierKey>>
+
 const datastarModifiedValueBrand: unique symbol = Symbol("datastar-kit.modified-value")
+const datastarModifiedModifierKeysBrand: unique symbol = Symbol(
+  "datastar-kit.modified-modifier-keys"
+)
 
 /** A value plus Datastar modifiers that should be rendered onto the attribute name. */
-export interface DatastarModifiedValue<Value = unknown> {
+export interface DatastarModifiedValue<
+  Value = unknown,
+  ModifierKeys extends DatastarModifierKey = DatastarModifierKey
+> {
   readonly [datastarModifiedValueBrand]: true
+  readonly [datastarModifiedModifierKeysBrand]: ModifierKeys | undefined
   readonly value: Value
-  readonly modifiers: DatastarModifierOptions
+  readonly modifiers: Readonly<DatastarModifierOptions>
 }
 
 const isModifierOptions = (value: unknown): value is DatastarModifierOptions =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 
-const modifiedValue = <Value>(
+const modifiedValue = <Value, Modifiers extends DatastarModifierOptions>(
   value: Value,
-  modifiers: DatastarModifierOptions
-): DatastarModifiedValue<Value> => {
-  const modified: DatastarModifiedValue<Value> = {
+  modifiers: Modifiers
+): DatastarModifiedValue<Value, KnownModifierKeys<Modifiers>> => {
+  const modified: DatastarModifiedValue<Value, KnownModifierKeys<Modifiers>> = {
     [datastarModifiedValueBrand]: true,
+    [datastarModifiedModifierKeysBrand]: undefined,
     value,
     modifiers: Object.freeze({ ...modifiers })
   }
@@ -91,16 +110,21 @@ const modifiedValue = <Value>(
  * <div data-ignore={mod({ self: true })} />
  * ```
  */
-export function mod(modifiers: DatastarModifierOptions): DatastarModifiedValue<true>
-export function mod<const Value>(
+export function mod<const Modifiers extends DatastarModifierOptions>(
+  modifiers: NoUnknownModifierKeys<Modifiers>
+): DatastarModifiedValue<true, KnownModifierKeys<Modifiers>>
+export function mod<const Value, const Modifiers extends DatastarModifierOptions>(
   value: Value,
-  modifiers: DatastarModifierOptions
-): DatastarModifiedValue<Value>
+  modifiers: NoUnknownModifierKeys<Modifiers>
+): DatastarModifiedValue<Value, KnownModifierKeys<Modifiers>>
 export function mod<const Value>(
   valueOrModifiers: Value,
-  modifiers?: DatastarModifierOptions
+  modifiers?: unknown
 ): DatastarModifiedValue<Value | true> {
   if (modifiers !== undefined) {
+    if (!isModifierOptions(modifiers)) {
+      throw new TypeError("Datastar modifiers must be an object")
+    }
     return modifiedValue(valueOrModifiers, modifiers)
   }
 

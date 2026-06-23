@@ -2,11 +2,11 @@
 
 Datastar Kit is a small TypeScript SDK for building server-driven UI with [Datastar](https://data-star.dev/).
 
-It provides the Datastar-shaped pieces of an application: typed attributes and actions, typed signal refs, server-rendered HTML/TSX, Datastar signal decoding from `Request`, and native `Response` helpers for pages, patches, streams, navigation, and no-content commands.
+It provides the Datastar-shaped pieces of an application: typed attributes and actions, typed signal refs, server-rendered HTML/TSX, Datastar signal decoding from `Request`, native `Response` helpers for pages, patches, streams, navigation, and no-content commands, plus a development-only debugger component.
 
 It is not a framework. Bring your router, auth, database, validation, sessions, and runtime. Use it with Hono, Elysia, Bun, Deno, Cloudflare Workers, Node fetch adapters, or any app layer that can handle a `Request` and return a `Response`.
 
-[Documentation](https://datastar-kit.mohil.dev) · [Examples](examples) · [Datastar](https://data-star.dev/)
+[Documentation](https://datastar-kit.dev) · [Examples](examples) · [Datastar](https://data-star.dev/)
 
 ## Example
 
@@ -82,7 +82,16 @@ For TSX views, set `jsxImportSource`:
 }
 ```
 
-See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for the programming model, guides, API reference, and runnable examples.
+## Development debugger
+
+Render `DatastarDebugger` in development to inspect the current signal snapshot and a compact searchable Datastar event log.
+
+```tsx
+import { DatastarDebugger } from "datastar-kit/debugger"
+;<DatastarDebugger />
+```
+
+See [datastar-kit.dev](https://datastar-kit.dev) for the programming model, guides, API reference, and runnable examples.
 
 ## Repository
 
@@ -94,6 +103,8 @@ pnpm run check
 - SDK package: [`packages/datastar-kit`](packages/datastar-kit)
 - Documentation site: [`packages/website`](packages/website)
 - Runnable examples: [`examples`](examples)
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the development workflow, source layout, and design constraints.
 
 ## License
 

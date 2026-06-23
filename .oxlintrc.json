@@ -15,7 +15,10 @@
     "packages/**/dist/**",
     "examples/**/dist/**",
     "examples/**/static/**",
-    "examples/**/public/**"
+    "examples/**/public/**",
+    "packages/website/content/snippets/**",
+    "packages/website/src/generated/**",
+    "packages/website/public/**"
   ],
   "rules": {
     "no-constant-condition": "off",

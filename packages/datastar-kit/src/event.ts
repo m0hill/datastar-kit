@@ -1,6 +1,7 @@
 import { renderToString, type HtmlChild } from "./html.js"
 import { navigationScript, type NavigationSafetyOptions } from "./navigation.js"
 import {
+  comment as sseComment,
   executeScript,
   patchElements,
   patchSignals,
@@ -11,6 +12,9 @@ import {
 } from "./sse.js"
 
 export { NavigationUrlError } from "./navigation.js"
+
+/** Encodes an SSE comment chunk for manual stream heartbeats or diagnostics. */
+export const comment = (text = ""): string => sseComment(text)
 
 /** Options for a safe navigation event chunk. */
 export type NavigateOptions = ExecuteScriptOptions & NavigationSafetyOptions

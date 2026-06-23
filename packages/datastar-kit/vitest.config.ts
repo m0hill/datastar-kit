@@ -11,6 +11,7 @@ export default defineConfig({
       { find: "datastar-kit/sse", replacement: fromRoot("./src/sse.ts") },
       { find: "datastar-kit/testing/node", replacement: fromRoot("./src/testing/node.ts") },
       { find: "datastar-kit/testing", replacement: fromRoot("./src/testing/index.ts") },
+      { find: "datastar-kit/debugger", replacement: fromRoot("./src/debugger.ts") },
       { find: "datastar-kit", replacement: fromRoot("./src/index.ts") }
     ]
   },

@@ -1,4 +1,5 @@
 import { type HtmlChild } from "datastar-kit"
+import { DatastarDebugger } from "datastar-kit/debugger"
 import type { JSX } from "datastar-kit/jsx-runtime"
 
 const examples = [
@@ -53,6 +54,10 @@ export const Shell = (props: {
   children: HtmlChild | HtmlChild[]
 }): JSX.Element => (
   <main class="shell">
+    <DatastarDebugger
+      open={false}
+      maxEvents={200}
+    />
     <aside class="sidebar">
       <a
         class="brand"

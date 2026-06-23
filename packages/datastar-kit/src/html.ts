@@ -154,7 +154,8 @@ const isBooleanAttribute = (name: string): boolean => {
 const isPresenceAttribute = (name: string): boolean =>
   isBooleanAttribute(name) || isDatastarPresenceAttribute(name)
 
-const renderProps = (props: HtmlProps): string => {
+/** @internal Renders HTML attributes with a leading space when any attributes are present. */
+export const renderHtmlAttributes = (props: HtmlProps): string => {
   const rendered: Array<string> = []
 
   for (const [key, value] of Object.entries(props)) {
@@ -242,12 +243,8 @@ export const renderToString = (child: HtmlChild): string => {
     return child.map(renderToString).join("")
   }
 
-  if (child === null || child === undefined || child === false) {
+  if (child === null || child === undefined || typeof child === "boolean") {
     return ""
-  }
-
-  if (child === true) {
-    return "true"
   }
 
   if (isRawHtml(child)) {
@@ -259,7 +256,7 @@ export const renderToString = (child: HtmlChild): string => {
   }
 
   assertTagName(child.tag)
-  const renderedProps = renderProps(child.props)
+  const renderedProps = renderHtmlAttributes(child.props)
 
   if (voidTags.has(child.tag)) {
     return `<${child.tag}${renderedProps}>`

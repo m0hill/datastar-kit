@@ -2,11 +2,11 @@
 
 `datastar-kit` is a small TypeScript SDK for building server-driven UI with [Datastar](https://data-star.dev/).
 
-It provides typed helpers for Datastar actions, expressions, and signal refs; native Datastar attributes in server-rendered TSX; signal payload reads from `Request`; and native `Response` helpers for Datastar pages, patches, streams, navigation, and command completion.
+It provides typed helpers for Datastar actions, expressions, and signal refs; native Datastar attributes in server-rendered TSX; signal payload reads from `Request`; native `Response` helpers for Datastar pages, patches, streams, navigation, and command completion; and a development-only debugger component.
 
 It is not a framework. Bring your router, auth, database, validation, sessions, and runtime.
 
-[Documentation](https://datastar-kit.mohil.dev) · [GitHub](https://github.com/m0hill/datastar-kit) · [Datastar](https://data-star.dev/)
+[Documentation](https://datastar-kit.dev) · [GitHub](https://github.com/m0hill/datastar-kit) · [Datastar](https://data-star.dev/)
 
 ## Install
 
@@ -111,7 +111,16 @@ The recorder clones requests and responses before inspection, so normal handler 
 
 For real browser debugging, `datastar-kit/testing/node` provides `createDatastarBrowserTestServer({ fetch: (request) => app.fetch(request) })`. It starts an ephemeral local server, wraps your real fetch-compatible app with server-side recording, injects the browser recorder into HTML pages, and lets tests read browser flights with `fixture.browserFlight(page)`.
 
-See [datastar-kit.mohil.dev](https://datastar-kit.mohil.dev) for guides, API reference, and examples.
+## Development debugger
+
+Render `DatastarDebugger` in development to inspect the current signal snapshot and a compact searchable Datastar event log.
+
+```tsx
+import { DatastarDebugger } from "datastar-kit/debugger"
+;<DatastarDebugger />
+```
+
+See [datastar-kit.dev](https://datastar-kit.dev) for guides, API reference, and examples.
 
 ## License
 

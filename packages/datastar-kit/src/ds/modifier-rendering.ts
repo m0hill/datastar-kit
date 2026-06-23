@@ -7,7 +7,7 @@ interface RenderedDatastarModifier {
   readonly suffix: string
 }
 
-const compatibleModifierTargets: Record<DatastarModifierKey, readonly DatastarModifierTarget[]> = {
+const compatibleModifierTargets = {
   capture: ["on"],
   case: ["bindKey", "case", "computed", "on", "signalsKey"],
   debounce: ["on", "intersect", "signalPatch"],
@@ -19,7 +19,7 @@ const compatibleModifierTargets: Record<DatastarModifierKey, readonly DatastarMo
   full: ["intersect"],
   half: ["intersect"],
   ifMissing: ["signals", "signalsKey"],
-  leading: [],
+  leading: ["interval"],
   once: ["on", "intersect"],
   outside: ["on"],
   passive: ["on"],
@@ -32,7 +32,18 @@ const compatibleModifierTargets: Record<DatastarModifierKey, readonly DatastarMo
   throttle: ["on", "intersect", "signalPatch"],
   viewTransition: ["on", "intersect", "init", "interval"],
   window: ["on"]
-}
+} as const satisfies Record<DatastarModifierKey, readonly DatastarModifierTarget[]>
+
+/**
+ * Modifier keys accepted by one Datastar attribute modifier target.
+ *
+ * @internal
+ */
+export type DatastarModifierKeysFor<Target extends DatastarModifierTarget> = {
+  [Key in DatastarModifierKey]: Target extends (typeof compatibleModifierTargets)[Key][number]
+    ? Key
+    : never
+}[DatastarModifierKey]
 
 const caseModifiers = new Set<string>(datastarCaseModifiers)
 
@@ -42,7 +53,10 @@ const isDatastarModifierKey = (key: string): key is DatastarModifierKey =>
 const isCompatibleModifier = (
   target: DatastarModifierTarget,
   modifier: RenderedDatastarModifier
-): boolean => compatibleModifierTargets[modifier.key].includes(target)
+): boolean => {
+  const targets: readonly DatastarModifierTarget[] = compatibleModifierTargets[modifier.key]
+  return targets.includes(target)
+}
 
 const durationModifier = (value: unknown): string => {
   if (typeof value === "number") return `${value}ms`

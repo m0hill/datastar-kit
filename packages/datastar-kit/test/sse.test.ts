@@ -1,8 +1,14 @@
 import { describe, expect, it } from "vitest"
 import { HtmlNameError } from "../src/html.js"
-import { executeScript, patchElements, patchSignals } from "../src/sse.js"
+import { comment, executeScript, patchElements, patchSignals, SseFieldError } from "../src/sse.js"
 
 describe("Datastar SSE encoding", () => {
+  it("encodes SSE comments for manual heartbeats", () => {
+    expect(comment()).toBe(":\n\n")
+    expect(comment("heartbeat")).toBe(": heartbeat\n\n")
+    expect(comment("one\r\ntwo\rthree\nfour")).toBe(": one\n: two\n: three\n: four\n\n")
+  })
+
   it("encodes default element patches like the SDK fixture", () => {
     expect(patchElements("<div>Merge</div>")).toBe(
       "event: datastar-patch-elements\ndata: elements <div>Merge</div>\n\n"
@@ -35,6 +41,17 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
+  it("omits scoped view transition selectors when view transitions are disabled", () => {
+    expect(
+      patchElements("<div>Merge</div>", {
+        selector: "#target",
+        viewTransitionSelector: "#transition-scope"
+      })
+    ).toBe(
+      "event: datastar-patch-elements\ndata: selector #target\ndata: elements <div>Merge</div>\n\n"
+    )
+  })
+
   it("encodes non-default element patch namespaces", () => {
     expect(
       patchElements("<circle></circle>", { selector: "#icon", mode: "inner", namespace: "svg" })
@@ -49,9 +66,50 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
+  it("splits carriage-return payloads into repeated data lines", () => {
+    expect(patchElements("<div>\r  Hello\r</div>")).toBe(
+      "event: datastar-patch-elements\ndata: elements <div>\ndata: elements   Hello\ndata: elements </div>\n\n"
+    )
+    expect(patchSignals('{"safe":true}\rid: injected')).toBe(
+      'event: datastar-patch-signals\ndata: signals {"safe":true}\ndata: signals id: injected\n\n'
+    )
+  })
+
+  it("rejects newlines in SSE event IDs", () => {
+    expect(() => patchElements("<div/>", { id: "a\nb" })).toThrow(SseFieldError)
+    expect(() => patchSignals({ a: 1 }, { id: "bad\nid" })).toThrow(SseFieldError)
+  })
+
+  it("rejects newlines in element selector fields", () => {
+    expect(() => patchElements("<div/>", { selector: "#x\ndata: elements <script>" })).toThrow(
+      SseFieldError
+    )
+  })
+
+  it("rejects carriage returns in emitted scoped view transition selector fields", () => {
+    expect(() =>
+      patchElements("<div/>", { useViewTransition: true, viewTransitionSelector: "#x\r\n" })
+    ).toThrow(SseFieldError)
+  })
+
   it("encodes element removal through patch options", () => {
     expect(patchElements("", { selector: "#target", mode: "remove" })).toBe(
       "event: datastar-patch-elements\ndata: selector #target\ndata: mode remove\n\n"
+    )
+  })
+
+  it("allows element removal without an elements argument", () => {
+    expect(patchElements(undefined, { selector: "#target", mode: "remove" })).toBe(
+      "event: datastar-patch-elements\ndata: selector #target\ndata: mode remove\n\n"
+    )
+  })
+
+  it("omits default retry durations", () => {
+    expect(patchElements("<div>Merge</div>", { retry: 1000 })).toBe(
+      "event: datastar-patch-elements\ndata: elements <div>Merge</div>\n\n"
+    )
+    expect(patchSignals({ one: 1 }, { retry: 1000 })).toBe(
+      'event: datastar-patch-signals\ndata: signals {"one":1}\n\n'
     )
   })
 
@@ -90,6 +148,43 @@ describe("Datastar SSE encoding", () => {
       })
     ).toBe(
       'event: datastar-patch-elements\ndata: mode append\ndata: selector body\ndata: elements <script type="module" data-note="A&amp;B&quot;&#39;">console.log(\'<\')</script>\n\n'
+    )
+  })
+
+  it("renders script boolean attributes with HTML semantics", () => {
+    expect(
+      executeScript("boot()", {
+        attributes: { async: true, defer: false, "data-enabled": false }
+      })
+    ).toBe(
+      'event: datastar-patch-elements\ndata: mode append\ndata: selector body\ndata: elements <script async data-enabled="false" data-effect="el.remove()">boot()</script>\n\n'
+    )
+  })
+
+  it("escapes </script> breakout sequences in the script body", () => {
+    const out = executeScript('console.log("</script>")')
+
+    expect(out).toContain('console.log("<\\/script>")')
+    expect(out.split("</script>")).toHaveLength(2)
+  })
+
+  it("escapes </script> breakout sequences case-insensitively", () => {
+    const out = executeScript("x = '</SCRIPT>'")
+
+    expect(out).toContain("x = '<\\/SCRIPT>'")
+    expect(out.split("</script>")).toHaveLength(2)
+  })
+
+  it("escapes HTML comment openers in the script body", () => {
+    const out = executeScript("x = '<!-- hi'")
+
+    expect(out).toContain("x = '<\\!-- hi'")
+    expect(out).not.toContain("<!-- hi")
+  })
+
+  it("leaves ordinary script bodies unchanged", () => {
+    expect(executeScript("window.answer = 42")).toContain(
+      '<script data-effect="el.remove()">window.answer = 42</script>'
     )
   })
 

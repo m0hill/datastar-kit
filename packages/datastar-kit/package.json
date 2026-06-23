@@ -1,8 +1,8 @@
 {
   "name": "datastar-kit",
-  "version": "0.2.0",
+  "version": "0.4.0",
   "description": "Datastar companion SDK for server-driven TypeScript applications",
-  "homepage": "https://datastar-kit.mohil.dev",
+  "homepage": "https://datastar-kit.dev",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/m0hill/datastar-kit.git",
@@ -39,6 +39,10 @@
     "./testing/node": {
       "types": "./dist/testing/node.d.ts",
       "default": "./dist/testing/node.js"
+    },
+    "./debugger": {
+      "types": "./dist/debugger.d.ts",
+      "default": "./dist/debugger.js"
     },
     "./package.json": "./package.json"
   },

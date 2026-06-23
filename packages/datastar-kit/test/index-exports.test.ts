@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import * as Root from "datastar-kit"
+import * as debuggerModule from "datastar-kit/debugger"
 import * as sse from "datastar-kit/sse"
 import * as testing from "datastar-kit/testing"
 import * as testingNode from "datastar-kit/testing/node"
@@ -8,6 +9,7 @@ import {
   del,
   event,
   get,
+  h,
   js,
   local,
   mod,
@@ -37,10 +39,12 @@ describe("package exports", () => {
       "RegexExpressionError",
       "Signal",
       "SignalNameError",
+      "StatePathError",
       "action",
       "del",
       "event",
       "get",
+      "h",
       "js",
       "local",
       "mod",
@@ -67,6 +71,7 @@ describe("package exports", () => {
     expect(Root.state).toBe(state)
     expect(Root.local).toBe(local)
     expect(Root.get).toBe(get)
+    expect(Root.h).toBe(h)
     expect(Root.post).toBe(post)
     expect(Root.put).toBe(put)
     expect(Root.patch).toBe(patch)
@@ -87,6 +92,7 @@ describe("package exports", () => {
   it("keeps helper namespaces small and intentional", () => {
     expect(exportedKeys(event)).toEqual([
       "NavigationUrlError",
+      "comment",
       "navigate",
       "patch",
       "script",
@@ -105,7 +111,13 @@ describe("package exports", () => {
       "signals",
       "stream"
     ])
-    expect(exportedKeys(sse)).toEqual(["executeScript", "patchElements", "patchSignals"])
+    expect(exportedKeys(sse)).toEqual([
+      "SseFieldError",
+      "comment",
+      "executeScript",
+      "patchElements",
+      "patchSignals"
+    ])
     expect(exportedKeys(testing)).toEqual([
       "DatastarFlightAssertionError",
       "assertDatastarFlight",
@@ -127,6 +139,11 @@ describe("package exports", () => {
       "createDatastarBrowserTestServer",
       "datastarBrowserFlight",
       "waitForDatastarBrowserRecorder"
+    ])
+    expect(exportedKeys(debuggerModule)).toEqual([
+      "DATASTAR_DEBUGGER_STATE_NAME",
+      "DatastarDebugger",
+      "datastarDebuggerDefaults"
     ])
   })
 })
