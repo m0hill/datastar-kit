@@ -317,21 +317,14 @@ const debuggerStyles = `
   accent-color: var(--dsk-blue);
 }
 .${DEBUGGER_CLASS} .dsk-debug-timeline-row input[type="range"]:disabled { opacity: 0.4; }
-.${DEBUGGER_CLASS} .dsk-debug-live {
-  cursor: pointer;
-  flex: 0 0 auto;
-  font-weight: 600;
-  color: var(--dsk-red);
-  border-color: var(--dsk-border-strong);
-}
-.${DEBUGGER_CLASS} .dsk-debug-live:hover { background: #1f1f1f; }
+.${DEBUGGER_CLASS} .dsk-debug-controls button.dsk-debug-live { color: var(--dsk-red); }
+.${DEBUGGER_CLASS} .dsk-debug-controls button.dsk-debug-live:hover { color: var(--dsk-red); }
 .${DEBUGGER_CLASS} .dsk-debug-timeline-status {
   margin: 0;
   font: 11px/1.5 var(--dsk-mono);
   font-variant-numeric: tabular-nums;
   color: var(--dsk-muted);
 }
-.${DEBUGGER_CLASS} .dsk-debug-timeline-hint { margin: 0; color: var(--dsk-faint); }
 .${DEBUGGER_CLASS} ::-webkit-scrollbar { width: 9px; height: 9px; }
 .${DEBUGGER_CLASS} ::-webkit-scrollbar-thumb {
   background: #262626;
@@ -1017,6 +1010,13 @@ const trashIcon = (): HtmlChild =>
     h("path", { d: "M6 6l1 14h10l1-14" })
   )
 
+const liveIcon = (): HtmlChild =>
+  icon(
+    {},
+    h("circle", { cx: "12", cy: "12", r: "4.2", fill: "currentColor", stroke: "none" }),
+    h("circle", { cx: "12", cy: "12", r: "8.5" })
+  )
+
 const tabPanel = ({
   stateName,
   tab,
@@ -1110,6 +1110,7 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
             type: "search",
             placeholder: "Search or /regex/i",
             "aria-label": "Search debugger",
+            "data-attr:disabled": `${signalRef(stateName)}.tab === "timeline"`,
             "data-bind": `${stateName}.search`
           }),
           h(
@@ -1130,9 +1131,33 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
               type: "button",
               "aria-label": "Clear events",
               title: "Clear events",
+              "data-show": `${signalRef(stateName)}.tab === "events"`,
               "data-on:click": `${signalRef(stateName)}.events = []`
             },
             trashIcon()
+          ),
+          h(
+            "button",
+            {
+              type: "button",
+              "aria-label": "Clear snapshots",
+              title: "Clear snapshots",
+              "data-show": `${signalRef(stateName)}.tab === "timeline" && !${signalRef(stateName)}.travel.active`,
+              "data-on:click": `(() => { const debug = ${signalRef(stateName)}; debug.snapshots = []; debug.travel.index = -1; debug.travel.active = false; debug.travel.pending = false })()`
+            },
+            trashIcon()
+          ),
+          h(
+            "button",
+            {
+              type: "button",
+              class: "dsk-debug-live",
+              "aria-label": "Return to live",
+              title: "Return to live",
+              "data-show": `${signalRef(stateName)}.tab === "timeline" && ${signalRef(stateName)}.travel.active`,
+              "data-on:click": goLiveExpression(snapshot)
+            },
+            liveIcon()
           )
         ),
         tabPanel({
@@ -1170,16 +1195,6 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
                 "data-on:input__debounce.100ms": travelExpression(snapshot),
                 "data-effect": timelineSliderExpression(stateName)
               }),
-              h(
-                "button",
-                {
-                  type: "button",
-                  class: "dsk-debug-live",
-                  "data-show": `${signalRef(stateName)}.travel.active`,
-                  "data-on:click": goLiveExpression(snapshot)
-                },
-                "Live"
-              )
             ),
             h(
               "p",
@@ -1188,12 +1203,6 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
                 "data-text": timelineStatusExpression(stateName)
               },
               "0 snapshots"
-            ),
-            h(
-              "p",
-              { class: "dsk-debug-timeline-hint" },
-              "Drag the slider to restore the page and signals from an earlier snapshot. ",
-              "Recording pauses while time traveling; scrub to the end or press Live to resume."
             )
           )
         })

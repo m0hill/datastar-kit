@@ -40,7 +40,7 @@ The debugger is intentionally plain: a fixed `<details>` panel with three tabs.
 - **Events**: a newest-first Datastar event timeline. Rows show time, event type, and the patch target when known; otherwise they show the source element. Expand a row for syntax-highlighted JSON details; element patches show formatted HTML separately. `started` fetch events also capture the signal snapshot at that moment.
 - **Timeline**: snapshots of the page body and browser signals. Drag the slider to restore an earlier snapshot; recording pauses while you are time traveling. Scrub to the newest snapshot or press **Live** to resume.
 
-Use **Search** to filter the Signals and Events tabs. Plain text is case-insensitive; `/pattern/i` uses a regular expression. Use **Pause** to stop recording and **Clear** to empty the event log.
+Use **Search** to filter the Signals and Events tabs. Plain text is case-insensitive; `/pattern/i` uses a regular expression. Search stays visible but is disabled on Timeline. Use **Pause** to stop recording events and timeline snapshots. The **Clear** button appears on the Events tab to empty the event log and on the Timeline tab to delete snapshots while live.
 
 ## Props
 

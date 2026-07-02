@@ -158,6 +158,16 @@ describe("Datastar debugger", () => {
     expect(attributeValues(html, "data-attr:aria-pressed")).toEqual([
       `${DEFAULT_SIGNAL_REF}.paused`
     ])
+    expect(attributeValues(html, "data-attr:disabled")).toContain(
+      `${DEFAULT_SIGNAL_REF}.tab === "timeline"`
+    )
+    expect(attributeValues(html, "data-show")).toContain(`${DEFAULT_SIGNAL_REF}.tab === "events"`)
+    expect(attributeValues(html, "data-show")).toContain(
+      `${DEFAULT_SIGNAL_REF}.tab === "timeline" && !${DEFAULT_SIGNAL_REF}.travel.active`
+    )
+    expect(attributeValues(html, "data-show")).toContain(
+      `${DEFAULT_SIGNAL_REF}.tab === "timeline" && ${DEFAULT_SIGNAL_REF}.travel.active`
+    )
     const textExpressions = attributeValues(html, "data-text")
     expect(textExpressions).toHaveLength(3)
     expect(textExpressions[0]).toBe(
@@ -184,7 +194,8 @@ describe("Datastar debugger", () => {
       "data-attr:aria-label",
       "data-attr:aria-pressed",
       "data-attr:aria-selected",
-      "data-attr:title"
+      "data-attr:title",
+      "data-attr:disabled"
     ]) {
       for (const expression of attributeValues(html, attribute)) {
         expect(() => new Script(expression)).not.toThrow()
@@ -223,6 +234,25 @@ describe("Datastar debugger", () => {
       snapshots: [],
       travel: { index: -1, active: false, pending: false }
     })
+  })
+
+  it("clears timeline snapshots while live", () => {
+    const expression = attributeValues(renderToString(<DatastarDebugger />), "data-on:click").find(
+      (value) => value.includes("debug.snapshots = []")
+    )
+    expect(expression).toBeDefined()
+    const debug = runtimeDebuggerState()
+    debug.snapshots = [
+      { at: "10:00:00", label: "initial", html: "<main>old</main>", signals: { count: 0 } }
+    ]
+    debug.travel = { index: 0, active: false, pending: true }
+
+    runExpression(expression!, {
+      [DEFAULT_SIGNAL_REF]: debug
+    })
+
+    expect(debug.snapshots).toEqual([])
+    expect(debug.travel).toEqual({ index: -1, active: false, pending: false })
   })
 
   it("records signal patches through the Datastar signal-patch handler", () => {
@@ -569,7 +599,7 @@ describe("Datastar debugger", () => {
   it("returns to the newest snapshot and resumes recording via the Live button", () => {
     const html = renderToString(<DatastarDebugger />)
     const expression = attributeValues(html, "data-on:click").find((value) =>
-      value.includes("travel.active = false")
+      value.includes("applySnapshot")
     )
     const signalExpression = attributeValue(html, "data-on-signal-patch")
     expect(expression).toBeDefined()
