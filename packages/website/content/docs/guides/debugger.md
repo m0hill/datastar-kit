@@ -30,16 +30,17 @@ export const page = () =>
   )
 ```
 
-Do not ship the debugger in production pages. It mirrors browser-side signal state and records Datastar event payloads for developer inspection. If you want to catch `data-init` fetches, render it early in the document body before the components that start those fetches.
+Do not ship the debugger in production pages. It mirrors browser-side signal state, records Datastar event payloads, and stores timeline snapshots of the page body for developer inspection. If you want to catch `data-init` fetches, render it early in the document body before the components that start those fetches.
 
 ## What it shows
 
-The debugger is intentionally plain: a fixed `<details>` panel with two tabs.
+The debugger is intentionally plain: a fixed `<details>` panel with three tabs.
 
 - **Signals**: the current browser signal snapshot as syntax-highlighted JSON, excluding the debugger's own local signal.
 - **Events**: a newest-first Datastar event timeline. Rows show time, event type, and the patch target when known; otherwise they show the source element. Expand a row for syntax-highlighted JSON details; element patches show formatted HTML separately. `started` fetch events also capture the signal snapshot at that moment.
+- **Timeline**: snapshots of the page body and browser signals. Drag the slider to restore an earlier snapshot; recording pauses while you are time traveling. Scrub to the newest snapshot or press **Live** to resume.
 
-Use **Search** to filter the current tab. Plain text is case-insensitive; `/pattern/i` uses a regular expression. Use **Pause** to stop recording and **Clear** to empty the event log.
+Use **Search** to filter the Signals and Events tabs. Plain text is case-insensitive; `/pattern/i` uses a regular expression. Use **Pause** to stop recording and **Clear** to empty the event log.
 
 ## Props
 
@@ -49,6 +50,7 @@ Use **Search** to filter the current tab. Plain text is case-insensitive; `/patt
 | `stateName`         | `"_datastarKitDebugger"`  | Local root signal used by the debugger. Must be underscore-prefixed. |
 | `open`              | `true`                    | Whether the `<details>` panel starts expanded.                       |
 | `maxEvents`         | `100`                     | Maximum debugger events retained in browser state.                   |
+| `maxSnapshots`      | `50`                      | Maximum timeline snapshots retained in browser state.                |
 | `class`/`className` | none                      | Additional container class.                                          |
 | `style`             | none                      | Inline container style.                                              |
 
@@ -60,6 +62,6 @@ Because the debugger is just server-rendered HTML with Datastar attributes, you 
 import type { DatastarDebuggerState } from "datastar-kit/debugger"
 ```
 
-The component stores its UI state in one local signal. By default that signal is `_datastarKitDebugger`, so it is excluded from Datastar fetch payloads by Datastar's default underscore convention.
+The component stores its UI state in one local signal. By default that signal is `_datastarKitDebugger`, so it is excluded from Datastar fetch payloads by Datastar's default underscore convention. Timeline snapshots keep rendered body HTML and signal JSON in that local signal, so lower `maxSnapshots` on large pages.
 
 Next: [Testing](testing.md).

@@ -151,7 +151,7 @@ Types exported from the root include `HtmlChild`, `HtmlNode`, `HtmlProps`, `Html
 
 ### `datastar-kit/debugger`
 
-This subpath exports a minimal server-rendered debugger component built from ordinary Datastar attributes. Use it in development pages to inspect the current signal snapshot and a compact searchable event log of `datastar-signal-patch` plus Datastar fetch/SSE activity.
+This subpath exports a minimal server-rendered debugger component built from ordinary Datastar attributes. Use it in development pages to inspect the current signal snapshot, a compact searchable event log of `datastar-signal-patch` plus Datastar fetch/SSE activity, and timeline snapshots for restoring earlier page/signal state.
 
 | API                            | Use                                                |
 | ------------------------------ | -------------------------------------------------- |
@@ -159,6 +159,6 @@ This subpath exports a minimal server-rendered debugger component built from ord
 | `datastarDebuggerDefaults()`   | Initial local signal state used by the panel.      |
 | `DATASTAR_DEBUGGER_STATE_NAME` | Default local signal name, `_datastarKitDebugger`. |
 
-Types include `DatastarDebuggerProps`, `DatastarDebuggerState`, `DatastarDebuggerTab`, `DatastarDebuggerStateName`, `DatastarDebuggerEventEntry`, `DatastarDebuggerSignalPatchEntry`, and `DatastarDebuggerFetchEntry`.
+Types include `DatastarDebuggerProps`, `DatastarDebuggerState`, `DatastarDebuggerTab`, `DatastarDebuggerStateName`, `DatastarDebuggerEventEntry`, `DatastarDebuggerSignalPatchEntry`, `DatastarDebuggerFetchEntry`, `DatastarDebuggerSnapshotEntry`, and `DatastarDebuggerTravelState`.
 
 Related guides: [Actions and responses](../guides/actions-and-responses.md), [Signals](../guides/signals.md), [Debugger](../guides/debugger.md), [HTML and JSX](../guides/html-and-jsx.md).

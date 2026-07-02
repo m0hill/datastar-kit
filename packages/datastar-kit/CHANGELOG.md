@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- Added timeline snapshots to `DatastarDebugger` for restoring earlier page HTML and browser signal state during development.
+
 ### Removed
 
 - Removed `state(...).ref(path)` and its `StatePathError`/path helper types; use `state(...).refs` for known leaf refs or `Signal.path(...)` for dynamic child refs.
