@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { z } from "zod"
 import { post, signal } from "../src/ds/index.js"
-import { h, mergeProps, renderToString } from "../src/html.js"
+import { h, renderToString } from "../src/html.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
 
@@ -15,7 +15,7 @@ const counterView = () => {
   return renderToString(
     h(
       "main",
-      mergeProps({ id: "counter" }, { "data-signals__ifmissing": '{"count": 0}' }),
+      { id: "counter", "data-signals__ifmissing": '{"count": 0}' },
       h(
         "button",
         { type: "button", "data-on:click": post("/increment").toDatastarExpression() },

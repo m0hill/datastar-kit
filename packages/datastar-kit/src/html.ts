@@ -220,15 +220,6 @@ export const unsafeHtml = (html: string): HtmlChild => ({
 })
 
 /**
- * Merges multiple HTML prop objects from left to right.
- *
- * @param groups Prop objects to merge.
- * @returns A new prop object containing all supplied properties.
- */
-export const mergeProps = (...groups: readonly HtmlProps[]): HtmlProps =>
-  Object.assign({}, ...groups)
-
-/**
  * Renders an HTML child tree to a string.
  *
  * @remarks

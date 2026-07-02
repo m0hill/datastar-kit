@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { h, HtmlNameError, mergeProps, renderToString, unsafeHtml } from "../src/html.js"
+import { h, HtmlNameError, renderToString, unsafeHtml } from "../src/html.js"
 
 describe("HTML rendering boundary", () => {
   it("escapes text by default and requires explicit unsafe HTML", () => {
@@ -91,30 +91,6 @@ describe("HTML rendering boundary", () => {
         })
       )
     ).toBe("<div></div>")
-  })
-
-  it("composes props with later values overriding earlier values", () => {
-    expect(mergeProps({ class: "base", id: "old" }, { id: "new", hidden: true })).toEqual({
-      class: "base",
-      id: "new",
-      hidden: true
-    })
-  })
-
-  it("renders composed Datastar props in object insertion order", () => {
-    const node = h(
-      "main",
-      mergeProps(
-        { id: "counter" },
-        { "data-signals__ifmissing": '{"count": 0}' },
-        { "data-text": "$count" }
-      ),
-      "0"
-    )
-
-    expect(renderToString(node)).toBe(
-      '<main id="counter" data-signals__ifmissing="{&quot;count&quot;: 0}" data-text="$count">0</main>'
-    )
   })
 
   it("renders child arrays", () => {

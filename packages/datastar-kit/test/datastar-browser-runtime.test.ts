@@ -4,7 +4,7 @@ import type { AddressInfo } from "node:net"
 import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
 import { post, signal } from "../src/ds/index.js"
-import { h, mergeProps, renderToString, unsafeHtml } from "../src/html.js"
+import { h, renderToString, unsafeHtml } from "../src/html.js"
 
 const execFile = promisify(execFileCallback)
 const agentBrowserAvailable =
@@ -26,7 +26,7 @@ const runtimePage = (): string => {
         {},
         h(
           "main",
-          mergeProps({ id: "app" }, { "data-signals__ifmissing": '{"count": 0}' }),
+          { id: "app", "data-signals__ifmissing": '{"count": 0}' },
           h("output", { id: "count", "data-text": count.toDatastarExpression() }, "0"),
           h(
             "button",
