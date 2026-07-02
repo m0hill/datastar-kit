@@ -7,19 +7,6 @@ const toChildren = (value: HtmlChild | readonly HtmlChild[] | undefined): readon
   return Array.isArray(value) ? value : [value]
 }
 
-const withoutRuntimeProps = (
-  input: Readonly<Record<string, unknown>> | null
-): Readonly<Record<string, unknown>> | null => {
-  if (input === null || input === undefined) return null
-
-  const cleaned: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(input)) {
-    if (key === "children" || key === "key") continue
-    cleaned[key] = value
-  }
-  return cleaned
-}
-
 /**
  * Compiler-only JSX fragment export for the automatic JSX runtime.
  *
@@ -42,7 +29,7 @@ export const jsx = (
     | (Readonly<Record<string, unknown>> & { readonly children?: HtmlChild | readonly HtmlChild[] })
     | null,
   _key?: string | number
-): HtmlChild => createJsxElement(tag, withoutRuntimeProps(input), toChildren(input?.children))
+): HtmlChild => createJsxElement(tag, input, toChildren(input?.children))
 
 /**
  * Compiler-only entrypoint for JSX calls with static children.

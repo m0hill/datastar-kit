@@ -108,7 +108,7 @@ const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): Htm
   const cleaned: Record<string, HtmlPropValue> = {}
 
   for (const [key, value] of Object.entries(input ?? {})) {
-    if (key === "__self" || key === "__source" || key === "children") {
+    if (key === "__self" || key === "__source" || key === "children" || key === "key") {
       continue
     }
 
@@ -135,7 +135,7 @@ const cleanComponentProps = (
   const cleaned: Record<string, unknown> & { children?: HtmlChild | readonly HtmlChild[] } = {}
 
   for (const [key, value] of Object.entries(input ?? {})) {
-    if (key === "__self" || key === "__source" || key === "children") {
+    if (key === "__self" || key === "__source" || key === "children" || key === "key") {
       continue
     }
     cleaned[key] = value
