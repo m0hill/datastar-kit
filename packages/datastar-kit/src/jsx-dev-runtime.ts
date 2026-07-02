@@ -1,7 +1,6 @@
-import type { HtmlElements } from "./html-attributes.js"
 import type { HtmlChild } from "./html.js"
 import { Fragment, jsx } from "./jsx-runtime.js"
-import type { JsxProps, JsxTag } from "./jsx.js"
+import type { JsxTag } from "./jsx.js"
 
 /**
  * Compiler-only JSX fragment export for the automatic development JSX runtime.
@@ -9,6 +8,7 @@ import type { JsxProps, JsxTag } from "./jsx.js"
  * @internal
  */
 export { Fragment }
+export type { JSX } from "./jsx-runtime.js"
 
 /**
  * Compiler-only entrypoint for TypeScript's automatic development JSX runtime.
@@ -32,30 +32,3 @@ export const jsxDEV = (
   _source?: unknown,
   _self?: unknown
 ): HtmlChild => jsx(tag, input, key)
-
-/**
- * TypeScript JSX namespace for `jsxImportSource: "datastar-kit"` in development builds.
- *
- * @internal
- */
-export namespace JSX {
-  /** Renderable JSX element type. */
-  export type Element = HtmlChild
-  /** Tells TypeScript that JSX children are passed through a `children` prop. */
-  export interface ElementChildrenAttribute {
-    children: {}
-  }
-  /** Compiler-managed attributes accepted by all JSX elements. */
-  export interface IntrinsicAttributes {
-    key?: string | number
-  }
-  /**
-   * Intrinsic HTML element props accepted by this runtime.
-   *
-   * Known HTML and SVG tags get typed attributes and editor autocomplete; any other tag (custom
-   * elements included) is accepted with loosely typed props as an escape hatch.
-   */
-  export type IntrinsicElements = HtmlElements & {
-    [tagName: string]: JsxProps
-  }
-}
