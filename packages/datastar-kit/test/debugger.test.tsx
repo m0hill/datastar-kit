@@ -450,6 +450,7 @@ describe("Datastar debugger", () => {
     const runtime = runtimeScope()
     const signals: Record<string, unknown> = {
       count: 2,
+      newSignal: "created later",
       [DATASTAR_DEBUGGER_STATE_NAME]: debug
     }
 
@@ -466,6 +467,8 @@ describe("Datastar debugger", () => {
 
     runtime.flushTimers()
     expect(signals.count).toBe(0)
+    expect(Object.hasOwn(signals, "newSignal")).toBe(false)
+    expect(signals[DATASTAR_DEBUGGER_STATE_NAME]).toBe(debug)
   })
 
   it("ignores slider input at the live position when not time traveling", () => {

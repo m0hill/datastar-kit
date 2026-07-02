@@ -637,7 +637,7 @@ const rememberSnapshot = (label) => {
 }
 `
 
-const applySnapshotSource = (id: string): string => `
+const applySnapshotSource = (id: string, stateName: DatastarDebuggerStateName): string => `
 const applySnapshot = (snapshot) => {
   const root = document.getElementById(${JSON.stringify(id)})
   if (root && root.parentElement !== document.body) document.body.appendChild(root)
@@ -647,6 +647,16 @@ const applySnapshot = (snapshot) => {
   if (root) root.insertAdjacentHTML("beforebegin", snapshot.html)
   else document.body.insertAdjacentHTML("afterbegin", snapshot.html)
   setTimeout(() => {
+    for (const key of Object.keys($)) {
+      if (key !== ${JSON.stringify(stateName)} && !Object.hasOwn(snapshot.signals, key)) {
+        try {
+          delete $[key]
+        } catch {
+          // Ignore signals the runtime refuses to delete.
+        }
+      }
+    }
+
     for (const [key, value] of Object.entries(snapshot.signals)) {
       try {
         $[key] = value
@@ -744,7 +754,7 @@ const travelExpression = (snapshot: SnapshotExpressionOptions): string => `
   const snapshots = debug.snapshots
   if (snapshots.length === 0) return
 
-  ${applySnapshotSource(snapshot.id)}
+  ${applySnapshotSource(snapshot.id, snapshot.stateName)}
 
   const max = snapshots.length - 1
   const raw = Number(evt.target.value)
@@ -763,7 +773,7 @@ const goLiveExpression = (snapshot: SnapshotExpressionOptions): string => `
   const travel = debug.travel
   const snapshots = debug.snapshots
 
-  ${applySnapshotSource(snapshot.id)}
+  ${applySnapshotSource(snapshot.id, snapshot.stateName)}
 
   if (travel.active && snapshots.length > 0) {
     applySnapshot(snapshots[snapshots.length - 1])
