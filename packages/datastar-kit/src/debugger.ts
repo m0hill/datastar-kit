@@ -3,7 +3,7 @@ import { h, type HtmlChild } from "./html.js"
 export const DATASTAR_DEBUGGER_STATE_NAME = "_datastarKitDebugger" as const
 
 export type DatastarDebuggerStateName = `_${string}`
-export type DatastarDebuggerTab = "signals" | "events"
+export type DatastarDebuggerTab = "signals" | "events" | "timeline"
 
 export interface DatastarDebuggerSignalPatchEntry {
   readonly at: string
@@ -25,11 +25,29 @@ export type DatastarDebuggerEventEntry =
   | DatastarDebuggerSignalPatchEntry
   | DatastarDebuggerFetchEntry
 
+export interface DatastarDebuggerSnapshotEntry {
+  readonly at: string
+  readonly label: string
+  readonly html: string
+  readonly signals: Readonly<Record<string, unknown>>
+}
+
+export interface DatastarDebuggerTravelState {
+  /** Snapshot index shown while time traveling; the newest snapshot when live. */
+  readonly index: number
+  /** Whether the page is showing a restored snapshot instead of live state. */
+  readonly active: boolean
+  /** Whether a snapshot capture is already scheduled; coalesces patch bursts. */
+  readonly pending: boolean
+}
+
 export interface DatastarDebuggerState {
   readonly tab: DatastarDebuggerTab
   readonly search: string
   readonly paused: boolean
   readonly events: readonly DatastarDebuggerEventEntry[]
+  readonly snapshots: readonly DatastarDebuggerSnapshotEntry[]
+  readonly travel: DatastarDebuggerTravelState
 }
 
 export interface DatastarDebuggerProps {
@@ -41,6 +59,8 @@ export interface DatastarDebuggerProps {
   readonly open?: boolean
   /** Maximum debugger events retained in browser signal state. @defaultValue `100` */
   readonly maxEvents?: number
+  /** Maximum timeline snapshots retained in browser signal state. @defaultValue `50` */
+  readonly maxSnapshots?: number
   /** Additional class on the debugger container. */
   readonly class?: string
   /** Additional class on the debugger container for JSX callers that prefer `className`. */
@@ -52,7 +72,11 @@ export interface DatastarDebuggerProps {
 const DEBUGGER_CLASS = "datastar-kit-debugger"
 const DEBUGGER_ID = "datastar-kit-debugger"
 const DEFAULT_MAX_EVENTS = 100
+const DEFAULT_MAX_SNAPSHOTS = 50
 const MAX_DEBUG_STRING_LENGTH = 2_000
+// Delay between a recorded patch and its timeline snapshot so the DOM settles
+// first and bursts of patches coalesce into one snapshot.
+const SNAPSHOT_SETTLE_MS = 80
 
 const localStateNamePattern = /^_[A-Za-z][A-Za-z0-9_]*$/
 
@@ -282,6 +306,32 @@ const debuggerStyles = `
 .${DEBUGGER_CLASS} .dsk-token-attr { color: #a7a7a7; }
 .${DEBUGGER_CLASS} .dsk-token-string { color: #d8d19a; }
 .${DEBUGGER_CLASS} .dsk-token-literal { color: #f0f0f0; }
+.${DEBUGGER_CLASS} .dsk-debug-timeline { display: grid; gap: 0.6rem; }
+.${DEBUGGER_CLASS} .dsk-debug-timeline-row { display: flex; gap: 0.6rem; align-items: center; }
+.${DEBUGGER_CLASS} .dsk-debug-timeline-row input[type="range"] {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  accent-color: var(--dsk-blue);
+}
+.${DEBUGGER_CLASS} .dsk-debug-timeline-row input[type="range"]:disabled { opacity: 0.4; }
+.${DEBUGGER_CLASS} .dsk-debug-live {
+  cursor: pointer;
+  flex: 0 0 auto;
+  font-weight: 600;
+  color: var(--dsk-red);
+  border-color: var(--dsk-border-strong);
+}
+.${DEBUGGER_CLASS} .dsk-debug-live:hover { background: #1f1f1f; }
+.${DEBUGGER_CLASS} .dsk-debug-timeline-status {
+  margin: 0;
+  font: 11px/1.5 var(--dsk-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--dsk-muted);
+}
+.${DEBUGGER_CLASS} .dsk-debug-timeline-hint { margin: 0; color: var(--dsk-faint); }
 .${DEBUGGER_CLASS} ::-webkit-scrollbar { width: 9px; height: 9px; }
 .${DEBUGGER_CLASS} ::-webkit-scrollbar-thumb {
   background: #262626;
@@ -306,6 +356,9 @@ function assertStateName(stateName: string): asserts stateName is DatastarDebugg
 const maxEventsValue = (value: number | undefined): number =>
   value !== undefined && Number.isInteger(value) && value > 0 ? value : DEFAULT_MAX_EVENTS
 
+const maxSnapshotsValue = (value: number | undefined): number =>
+  value !== undefined && Number.isInteger(value) && value > 0 ? value : DEFAULT_MAX_SNAPSHOTS
+
 const rootClassName = (props: DatastarDebuggerProps): string =>
   [DEBUGGER_CLASS, props.class, props.className].filter(Boolean).join(" ")
 
@@ -313,7 +366,9 @@ export const datastarDebuggerDefaults = (): DatastarDebuggerState => ({
   tab: "signals",
   search: "",
   paused: false,
-  events: []
+  events: [],
+  snapshots: [],
+  travel: { index: -1, active: false, pending: false }
 })
 
 const initialSignals = (stateName: DatastarDebuggerStateName): string =>
@@ -538,31 +593,117 @@ const rememberEvent = (event) => {
 }
 `
 
-const signalPatchExpression = (stateName: DatastarDebuggerStateName, maxEvents: number): string => `
+const rawSignalSnapshotSource = (stateName: DatastarDebuggerStateName): string => `
+const rawSignalSnapshot = () => {
+  const snapshot = {}
+  for (const key of Object.keys($)) {
+    if (key === ${JSON.stringify(stateName)}) continue
+    try {
+      snapshot[key] = JSON.parse(JSON.stringify($[key]))
+    } catch {
+      // Skip signals that cannot round-trip through JSON.
+    }
+  }
+  return snapshot
+}
+`
+
+const captureSnapshotSource = (id: string): string => `
+const captureSnapshot = (label) => {
+  const bodyClone = document.body.cloneNode(true)
+  const debuggerClone = bodyClone.querySelector("#" + CSS.escape(${JSON.stringify(id)}))
+  if (debuggerClone) debuggerClone.remove()
+  return {
+    at: new Date().toLocaleTimeString(),
+    label,
+    html: bodyClone.innerHTML,
+    signals: rawSignalSnapshot()
+  }
+}
+`
+
+const rememberSnapshotSource = (maxSnapshots: number): string => `
+const rememberSnapshot = (label) => {
+  const travel = debug.travel
+  if (travel.pending) return
+  travel.pending = true
+  setTimeout(() => {
+    travel.pending = false
+    if (debug.paused || travel.active) return
+    debug.snapshots.push(captureSnapshot(label))
+    const excess = debug.snapshots.length - ${maxSnapshots}
+    if (excess > 0) debug.snapshots.splice(0, excess)
+  }, ${SNAPSHOT_SETTLE_MS})
+}
+`
+
+const applySnapshotSource = (id: string): string => `
+const applySnapshot = (snapshot) => {
+  const root = document.getElementById(${JSON.stringify(id)})
+  if (root && root.parentElement !== document.body) document.body.appendChild(root)
+  for (const child of Array.from(document.body.children)) {
+    if (child !== root) child.remove()
+  }
+  if (root) root.insertAdjacentHTML("beforebegin", snapshot.html)
+  else document.body.insertAdjacentHTML("afterbegin", snapshot.html)
+  setTimeout(() => {
+    for (const [key, value] of Object.entries(snapshot.signals)) {
+      try {
+        $[key] = value
+      } catch {
+        // Ignore signals the runtime refuses to patch.
+      }
+    }
+  })
+}
+`
+
+interface SnapshotExpressionOptions {
+  readonly stateName: DatastarDebuggerStateName
+  readonly maxSnapshots: number
+  readonly id: string
+}
+
+const signalPatchExpression = (
+  stateName: DatastarDebuggerStateName,
+  maxEvents: number,
+  snapshot: SnapshotExpressionOptions
+): string => `
 (() => {
   const debug = ${signalRef(stateName)}
-  if (debug.paused) return
+  if (debug.paused || debug.travel.active) return
 
   ${debugValueSource}
   ${rememberEventSource(maxEvents)}
+  ${rawSignalSnapshotSource(snapshot.stateName)}
+  ${captureSnapshotSource(snapshot.id)}
+  ${rememberSnapshotSource(snapshot.maxSnapshots)}
 
   rememberEvent({
     at: new Date().toLocaleTimeString(),
     kind: "signal",
     patch: toDebugValue(patch)
   })
+  rememberSnapshot("signal patch")
 })()
 `
 
-const fetchExpression = (stateName: DatastarDebuggerStateName, maxEvents: number): string => `
+const fetchExpression = (
+  stateName: DatastarDebuggerStateName,
+  maxEvents: number,
+  snapshot: SnapshotExpressionOptions
+): string => `
 (() => {
   const debug = ${signalRef(stateName)}
-  if (debug.paused) return
+  if (debug.paused || debug.travel.active) return
 
   ${debugValueSource}
   ${patchTargetSource}
   ${signalSnapshotSource(stateName)}
   ${rememberEventSource(maxEvents)}
+  ${rawSignalSnapshotSource(snapshot.stateName)}
+  ${captureSnapshotSource(snapshot.id)}
+  ${rememberSnapshotSource(snapshot.maxSnapshots)}
 
   const detail = evt.detail || {}
   const type = detail.type || evt.type
@@ -579,6 +720,80 @@ const fetchExpression = (stateName: DatastarDebuggerStateName, maxEvents: number
 
   if (entry.type === "started") entry.signals = signalSnapshot()
   rememberEvent(entry)
+  if (type === "datastar-patch-elements") rememberSnapshot(type)
+})()
+`
+
+const initialSnapshotExpression = (snapshot: SnapshotExpressionOptions): string => `
+(() => {
+  const debug = ${signalRef(snapshot.stateName)}
+  if (debug.paused || debug.travel.active) return
+
+  ${rawSignalSnapshotSource(snapshot.stateName)}
+  ${captureSnapshotSource(snapshot.id)}
+  ${rememberSnapshotSource(snapshot.maxSnapshots)}
+
+  rememberSnapshot("initial")
+})()
+`
+
+const travelExpression = (snapshot: SnapshotExpressionOptions): string => `
+(() => {
+  const debug = ${signalRef(snapshot.stateName)}
+  const travel = debug.travel
+  const snapshots = debug.snapshots
+  if (snapshots.length === 0) return
+
+  ${applySnapshotSource(snapshot.id)}
+
+  const max = snapshots.length - 1
+  const raw = Number(evt.target.value)
+  const index = Math.min(Math.max(Number.isFinite(raw) ? Math.round(raw) : max, 0), max)
+  if (!travel.active && index === max) return
+
+  travel.index = index
+  travel.active = index < max
+  applySnapshot(snapshots[index])
+})()
+`
+
+const goLiveExpression = (snapshot: SnapshotExpressionOptions): string => `
+(() => {
+  const debug = ${signalRef(snapshot.stateName)}
+  const travel = debug.travel
+  const snapshots = debug.snapshots
+
+  ${applySnapshotSource(snapshot.id)}
+
+  if (travel.active && snapshots.length > 0) {
+    applySnapshot(snapshots[snapshots.length - 1])
+  }
+  travel.index = snapshots.length - 1
+  travel.active = false
+})()
+`
+
+const timelineSliderExpression = (stateName: DatastarDebuggerStateName): string => `
+(() => {
+  const debug = ${signalRef(stateName)}
+  const max = Math.max(debug.snapshots.length - 1, 0)
+  el.max = String(max)
+  el.value = String(debug.travel.active ? debug.travel.index : max)
+  el.disabled = debug.snapshots.length < 2
+})()
+`
+
+const timelineStatusExpression = (stateName: DatastarDebuggerStateName): string => `
+(() => {
+  const debug = ${signalRef(stateName)}
+  const travel = debug.travel
+  const snapshots = debug.snapshots
+  if (!travel.active) {
+    return snapshots.length + (snapshots.length === 1 ? " snapshot" : " snapshots") + " \\u00b7 live"
+  }
+  const snapshot = snapshots[travel.index]
+  if (!snapshot) return "no snapshot"
+  return (travel.index + 1) + "/" + snapshots.length + " \\u00b7 " + snapshot.at + " \\u00b7 " + snapshot.label
 })()
 `
 
@@ -777,17 +992,23 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
   const stateName = props.stateName ?? DATASTAR_DEBUGGER_STATE_NAME
   assertStateName(stateName)
   const maxEvents = maxEventsValue(props.maxEvents)
+  const snapshot: SnapshotExpressionOptions = {
+    stateName,
+    maxSnapshots: maxSnapshotsValue(props.maxSnapshots),
+    id: props.id ?? DEBUGGER_ID
+  }
 
   return h(
     "section",
     {
-      id: props.id ?? DEBUGGER_ID,
+      id: snapshot.id,
       class: rootClassName(props),
       style: props.style,
       "data-signals__ifmissing": initialSignals(stateName),
       "data-on-signal-patch-filter": `{exclude: /^${stateName}(\\.|$)/}`,
-      "data-on-signal-patch": signalPatchExpression(stateName, maxEvents),
-      "data-on:datastar-fetch": fetchExpression(stateName, maxEvents)
+      "data-on-signal-patch": signalPatchExpression(stateName, maxEvents, snapshot),
+      "data-on:datastar-fetch": fetchExpression(stateName, maxEvents, snapshot),
+      "data-init": initialSnapshotExpression(snapshot)
     },
     h("style", {}, debuggerStyles),
     h(
@@ -805,6 +1026,13 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
             "data-show": `${signalRef(stateName)}.paused`
           },
           "paused"
+        ),
+        pill(
+          {
+            "data-kind": "warn",
+            "data-show": `${signalRef(stateName)}.travel.active`
+          },
+          "time travel"
         )
       ),
       h(
@@ -814,7 +1042,8 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
           "div",
           { class: "dsk-debug-tabs", role: "tablist" },
           tabButton({ stateName, tab: "signals", label: "Signals" }),
-          tabButton({ stateName, tab: "events", label: "Events" })
+          tabButton({ stateName, tab: "events", label: "Events" }),
+          tabButton({ stateName, tab: "timeline", label: "Timeline" })
         ),
         h(
           "div",
@@ -862,6 +1091,53 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
             class: "dsk-debug-events",
             "data-effect": eventsHtmlExpression(stateName)
           })
+        }),
+        tabPanel({
+          stateName,
+          tab: "timeline",
+          title: "Timeline",
+          children: h(
+            "div",
+            { class: "dsk-debug-timeline" },
+            h(
+              "div",
+              { class: "dsk-debug-timeline-row" },
+              h("input", {
+                type: "range",
+                min: "0",
+                max: "0",
+                step: "1",
+                value: "0",
+                "aria-label": "Timeline position",
+                "data-on:input__debounce.100ms": travelExpression(snapshot),
+                "data-effect": timelineSliderExpression(stateName)
+              }),
+              h(
+                "button",
+                {
+                  type: "button",
+                  class: "dsk-debug-live",
+                  "data-show": `${signalRef(stateName)}.travel.active`,
+                  "data-on:click": goLiveExpression(snapshot)
+                },
+                "Live"
+              )
+            ),
+            h(
+              "p",
+              {
+                class: "dsk-debug-timeline-status",
+                "data-text": timelineStatusExpression(stateName)
+              },
+              "0 snapshots"
+            ),
+            h(
+              "p",
+              { class: "dsk-debug-timeline-hint" },
+              "Drag the slider to restore the page and signals from an earlier snapshot. ",
+              "Recording pauses while time traveling; scrub to the end or press Live to resume."
+            )
+          )
         })
       )
     )

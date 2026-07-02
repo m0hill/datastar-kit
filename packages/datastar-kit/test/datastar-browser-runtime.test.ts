@@ -3,6 +3,7 @@ import { createServer, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { promisify } from "node:util"
 import { describe, expect, it } from "vitest"
+import { DatastarDebugger } from "../src/debugger.js"
 import { post, signal } from "../src/ds/index.js"
 import { h, renderToString, unsafeHtml } from "../src/html.js"
 
@@ -94,6 +95,59 @@ const keyedPluginPage = (): string =>
       )
     )
   )}`
+
+const timeTravelPage = (): string => {
+  const count = signal<number, "count">("count")
+
+  return `<!doctype html>${renderToString(
+    h(
+      "html",
+      { lang: "en" },
+      h("head", {}, h("script", { type: "module", src: DATASTAR_RUNTIME })),
+      h(
+        "body",
+        {},
+        h(
+          "main",
+          { id: "app", "data-signals__ifmissing": '{"count": 0}' },
+          h("output", { id: "count", "data-text": count.toDatastarExpression() }, "0"),
+          h(
+            "button",
+            {
+              id: "increment",
+              type: "button",
+              "data-on:click": post("/increment").toDatastarExpression()
+            },
+            "+"
+          )
+        ),
+        DatastarDebugger({ open: false })
+      )
+    )
+  )}`
+}
+
+const serveTimeTravelFixture = async (): Promise<{
+  readonly server: Server
+  readonly url: string
+}> => {
+  let serverCount = 0
+  const server = createServer((request, response) => {
+    if (request.url === "/increment") {
+      serverCount += 1
+      response.writeHead(200, { "content-type": "application/json; charset=utf-8" })
+      response.end(JSON.stringify({ count: serverCount }))
+      return
+    }
+
+    response.writeHead(200, { "content-type": "text/html; charset=utf-8" })
+    response.end(timeTravelPage())
+  })
+
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve))
+  const address = server.address() as AddressInfo
+  return { server, url: `http://127.0.0.1:${address.port}` }
+}
 
 const serveRuntimeFixture = async (): Promise<{
   readonly server: Server
@@ -212,6 +266,93 @@ describe("Datastar browser runtime integration", () => {
       }
     },
     30_000
+  )
+
+  browserIt(
+    "time travels through debugger timeline snapshots",
+    async () => {
+      const session = `datastar-kit-time-travel-${process.pid}-${Date.now()}`
+      const { server, url } = await serveTimeTravelFixture()
+      const browser = async (...args: ReadonlyArray<string>): Promise<string> => {
+        const { stdout } = await execFile("agent-browser", ["--session-name", session, ...args], {
+          timeout: 20_000
+        })
+        return stdout.trim()
+      }
+      const statusSelector = ".datastar-kit-debugger .dsk-debug-timeline-status"
+      const waitForState = async (expression: string): Promise<void> => {
+        await browser(
+          "eval",
+          `(async () => {
+            const ready = () => {
+              const count = document.querySelector("#count")?.textContent
+              const status = document.querySelector(${JSON.stringify(statusSelector)})?.textContent
+              return ${expression}
+            }
+            const deadline = Date.now() + 4000
+            while (Date.now() < deadline && !ready()) {
+              await new Promise((resolve) => setTimeout(resolve, 50))
+            }
+            if (!ready()) {
+              const count = document.querySelector("#count")?.textContent
+              const status = document.querySelector(${JSON.stringify(statusSelector)})?.textContent
+              throw new Error("Timed out waiting for ${expression.replaceAll('"', "'")}; count=" + count + " status=" + status)
+            }
+          })()`
+        )
+      }
+
+      try {
+        await browser("open", url)
+        await browser("wait", "--load", "networkidle")
+        await waitForSelector(browser, "#increment")
+
+        await waitForState(`status?.includes("1 snapshot")`)
+
+        await browser("eval", `document.querySelector("#increment").click()`)
+        await waitForState(`count === "1" && status?.includes("2 snapshots")`)
+
+        await browser("eval", `document.querySelector("#increment").click()`)
+        await waitForState(`count === "2" && status?.includes("3 snapshots")`)
+
+        await browser(
+          "eval",
+          `(() => {
+            const slider = document.querySelector(".datastar-kit-debugger input[type=range]")
+            slider.value = "0"
+            slider.dispatchEvent(new Event("input", { bubbles: true }))
+          })()`
+        )
+        await waitForState(`count === "0" && status?.startsWith("1/3")`)
+
+        await browser(
+          "eval",
+          `document.querySelector(".datastar-kit-debugger .dsk-debug-live").click()`
+        )
+        await waitForState(`count === "2" && status?.includes("live")`)
+
+        const afterResume = JSON.parse(
+          await browser(
+            "eval",
+            `(async () => {
+              document.querySelector("#increment").click()
+              const deadline = Date.now() + 4000
+              while (Date.now() < deadline && document.querySelector("#count")?.textContent !== "3") {
+                await new Promise((resolve) => setTimeout(resolve, 50))
+              }
+              return { count: document.querySelector("#count")?.textContent }
+            })()`
+          )
+        ) as { count: string }
+        expect(afterResume.count).toBe("3")
+      } finally {
+        await execFile("agent-browser", ["--session-name", session, "close"], {
+          timeout: 20_000
+        }).catch(() => undefined)
+        await closeServer(server)
+      }
+    },
+    45_000
   )
 
   browserIt(
