@@ -361,6 +361,77 @@ describe("Datastar debugger", () => {
     expect(debug.events[0]?.signals).toBeUndefined()
   })
 
+  it("syntax-highlights inline formatted patch elements", () => {
+    const expression = attributeValues(renderToString(<DatastarDebugger />), "data-effect").find(
+      (value) => value.includes("visibleEvents.map(renderEvent)")
+    )
+    expect(expression).toBeDefined()
+    const debug = runtimeDebuggerState()
+    debug.events = [
+      {
+        at: "9:07:42 PM",
+        kind: "fetch",
+        type: "datastar-patch-elements",
+        element: "<button>",
+        target: "#inline-validation-result",
+        argsRaw: {
+          elements:
+            '<output id="inline-validation-result" class="field-error">Please fix the form.</output>'
+        }
+      }
+    ]
+    const el = { innerHTML: "" }
+
+    runExpression(expression!, {
+      [DEFAULT_SIGNAL_REF]: debug,
+      el,
+      document: {
+        createElement: () => {
+          throw new Error("No DOM parser in this test")
+        }
+      }
+    })
+
+    expect(el.innerHTML).toContain('<span class="dsk-token-tag">output</span>')
+    expect(el.innerHTML).toContain('<span class="dsk-token-attr">id</span>')
+    expect(el.innerHTML).toContain('Please fix the form.')
+  })
+
+  it("formats stringified signal args in fetch event details", () => {
+    const expression = attributeValues(renderToString(<DatastarDebugger />), "data-effect").find(
+      (value) => value.includes("visibleEvents.map(renderEvent)")
+    )
+    expect(expression).toBeDefined()
+    const debug = runtimeDebuggerState()
+    debug.events = [
+      {
+        at: "9:07:42 PM",
+        kind: "fetch",
+        type: "started",
+        element: "<form>",
+        argsRaw: {
+          signals: JSON.stringify({
+            errors: {
+              email: "Enter a valid email address.",
+              firstName: "",
+              lastName: ""
+            }
+          })
+        }
+      }
+    ]
+    const el = { innerHTML: "" }
+
+    runExpression(expression!, {
+      [DEFAULT_SIGNAL_REF]: debug,
+      el
+    })
+
+    expect(el.innerHTML).toContain('<span class="dsk-token-key">&quot;signals&quot;</span>: {')
+    expect(el.innerHTML).toContain('<span class="dsk-token-key">&quot;email&quot;</span>')
+    expect(el.innerHTML).toContain('Enter a valid email address.')
+  })
+
   it("captures a timeline snapshot once the settle timer fires", () => {
     const expression = attributeValue(renderToString(<DatastarDebugger />), "data-on-signal-patch")
     const debug = runtimeDebuggerState()

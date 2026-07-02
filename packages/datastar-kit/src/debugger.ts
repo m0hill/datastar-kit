@@ -302,10 +302,10 @@ const debuggerStyles = `
 .${DEBUGGER_CLASS} .dsk-debug-kind[data-kind="fetch"] { color: var(--dsk-blue); }
 .${DEBUGGER_CLASS} .dsk-token-punct { color: var(--dsk-faint); }
 .${DEBUGGER_CLASS} .dsk-token-key,
-.${DEBUGGER_CLASS} .dsk-token-tag { color: var(--dsk-text); font-weight: 600; }
-.${DEBUGGER_CLASS} .dsk-token-attr { color: #a7a7a7; }
-.${DEBUGGER_CLASS} .dsk-token-string { color: #d8d19a; }
-.${DEBUGGER_CLASS} .dsk-token-literal { color: #f0f0f0; }
+.${DEBUGGER_CLASS} .dsk-token-tag { color: var(--dsk-blue); font-weight: 600; }
+.${DEBUGGER_CLASS} .dsk-token-attr { color: var(--dsk-blue); }
+.${DEBUGGER_CLASS} .dsk-token-string,
+.${DEBUGGER_CLASS} .dsk-token-literal { color: var(--dsk-add); }
 .${DEBUGGER_CLASS} .dsk-debug-timeline { display: grid; gap: 0.6rem; }
 .${DEBUGGER_CLASS} .dsk-debug-timeline-row { display: flex; gap: 0.6rem; align-items: center; }
 .${DEBUGGER_CLASS} .dsk-debug-timeline-row input[type="range"] {
@@ -434,6 +434,19 @@ const highlightHtmlLine = (line) => {
       + '<span class="dsk-token-attr">' + escapeHtml(attrLine[2]) + '</span>'
       + '<span class="dsk-token-punct">=</span>'
       + '<span class="dsk-token-string">' + escapeHtml(attrLine[3]) + '</span>'
+  }
+
+  const inlineElement = line.match(/^(\\s*)<([A-Za-z][A-Za-z0-9:-]*)([^>]*)>([^<]*)<\\/\\2>$/)
+  if (inlineElement) {
+    return escapeHtml(inlineElement[1])
+      + '<span class="dsk-token-punct">&lt;</span>'
+      + '<span class="dsk-token-tag">' + escapeHtml(inlineElement[2]) + '</span>'
+      + highlightAttrs(inlineElement[3])
+      + '<span class="dsk-token-punct">&gt;</span>'
+      + escapeHtml(inlineElement[4])
+      + '<span class="dsk-token-punct">&lt;/</span>'
+      + '<span class="dsk-token-tag">' + escapeHtml(inlineElement[2]) + '</span>'
+      + '<span class="dsk-token-punct">&gt;</span>'
   }
 
   const tagLine = line.match(/^(\\s*)<(\\/?)([A-Za-z][A-Za-z0-9:-]*)([^>]*)>$/)
@@ -874,21 +887,43 @@ const eventsHtmlExpression = (stateName: DatastarDebuggerStateName): string => `
   ${htmlFormatterSource}
 
   const events = Array.from(${signalRef(stateName)}.events || [])
+  const parseJsonObjectString = (value) => {
+    if (typeof value !== "string") return value
+    const trimmed = value.trim()
+    if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) return value
+    try {
+      return JSON.parse(trimmed)
+    } catch {
+      return value
+    }
+  }
+  const eventForDisplay = (event) => {
+    if (event.kind !== "fetch") return event
+    return {
+      ...event,
+      argsRaw: {
+        ...event.argsRaw,
+        signals: parseJsonObjectString(event.argsRaw.signals)
+      }
+    }
+  }
   const eventLabel = (event) => event.kind === "signal" ? "signal patch" : event.type
   const eventSource = (event) => event.kind !== "fetch" ? "" : event.target || event.element
   const eventText = (event) => {
-    if (event.kind === "signal") return [event.at, eventLabel(event), toDebugJson(event.patch)].join(" ")
-    return [event.at, event.type, event.element, event.target || "", toDebugJson(event.argsRaw), toDebugJson(event.signals || {})].join(" ")
+    const displayEvent = eventForDisplay(event)
+    if (displayEvent.kind === "signal") return [displayEvent.at, eventLabel(displayEvent), toDebugJson(displayEvent.patch)].join(" ")
+    return [displayEvent.at, displayEvent.type, displayEvent.element, displayEvent.target || "", toDebugJson(displayEvent.argsRaw), toDebugJson(displayEvent.signals || {})].join(" ")
   }
   const eventDetails = (event) => {
+    const displayEvent = eventForDisplay(event)
     const elements = event.kind === "fetch" && event.type === "datastar-patch-elements" && typeof event.argsRaw.elements === "string"
       ? event.argsRaw.elements
       : undefined
-    if (!elements) return '<pre>' + highlightJson(event) + '</pre>'
+    if (!elements) return '<pre>' + highlightJson(displayEvent) + '</pre>'
 
     const eventWithoutElements = {
-      ...event,
-      argsRaw: { ...event.argsRaw, elements: "[formatted below]" }
+      ...displayEvent,
+      argsRaw: { ...displayEvent.argsRaw, elements: "[formatted below]" }
     }
     return '<pre>' + highlightJson(eventWithoutElements) + '</pre>'
       + '<div class="dsk-debug-divider"></div>'
