@@ -500,6 +500,7 @@ describe("Datastar debugger", () => {
     const expression = attributeValues(html, "data-on:click").find((value) =>
       value.includes("travel.active = false")
     )
+    const signalExpression = attributeValue(html, "data-on-signal-patch")
     expect(expression).toBeDefined()
 
     const debug = runtimeDebuggerState()
@@ -520,10 +521,22 @@ describe("Datastar debugger", () => {
       $: signals
     })
 
-    expect(debug.travel).toMatchObject({ index: 1, active: false })
+    expect(debug.travel).toMatchObject({ index: 1, active: true })
     expect(runtime.inserted).toEqual(["<main>new</main>"])
 
     runtime.flushTimers()
     expect(signals.count).toBe(2)
+    expect(debug.travel).toMatchObject({ index: 1, active: true })
+
+    runExpression(signalExpression, {
+      ...runtime.scope,
+      [DEFAULT_SIGNAL_REF]: debug,
+      $: signals,
+      patch: { count: 2 }
+    })
+    expect(debug.events).toEqual([])
+
+    runtime.flushTimers()
+    expect(debug.travel).toMatchObject({ index: 1, active: false })
   })
 })

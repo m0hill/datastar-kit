@@ -638,7 +638,7 @@ const rememberSnapshot = (label) => {
 `
 
 const applySnapshotSource = (id: string, stateName: DatastarDebuggerStateName): string => `
-const applySnapshot = (snapshot) => {
+const applySnapshot = (snapshot, afterRestore) => {
   const root = document.getElementById(${JSON.stringify(id)})
   if (root && root.parentElement !== document.body) document.body.appendChild(root)
   for (const child of Array.from(document.body.children)) {
@@ -664,6 +664,8 @@ const applySnapshot = (snapshot) => {
         // Ignore signals the runtime refuses to patch.
       }
     }
+
+    if (afterRestore) setTimeout(afterRestore)
   })
 }
 `
@@ -762,8 +764,15 @@ const travelExpression = (snapshot: SnapshotExpressionOptions): string => `
   if (!travel.active && index === max) return
 
   travel.index = index
-  travel.active = index < max
-  applySnapshot(snapshots[index])
+  if (index < max) {
+    travel.active = true
+    applySnapshot(snapshots[index])
+    return
+  }
+
+  applySnapshot(snapshots[index], () => {
+    travel.active = false
+  })
 })()
 `
 
@@ -775,11 +784,15 @@ const goLiveExpression = (snapshot: SnapshotExpressionOptions): string => `
 
   ${applySnapshotSource(snapshot.id, snapshot.stateName)}
 
-  if (travel.active && snapshots.length > 0) {
-    applySnapshot(snapshots[snapshots.length - 1])
-  }
   travel.index = snapshots.length - 1
-  travel.active = false
+  if (!travel.active || snapshots.length === 0) {
+    travel.active = false
+    return
+  }
+
+  applySnapshot(snapshots[snapshots.length - 1], () => {
+    travel.active = false
+  })
 })()
 `
 
