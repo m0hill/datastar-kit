@@ -37,12 +37,6 @@ type WidenSignalObject<T extends SignalObject> = {
   readonly [Key in keyof T & string]: WidenSignalValue<T[Key]>
 }
 
-type SignalChildObject<Value extends SignalValue> = [Value] extends [readonly SignalValue[]]
-  ? never
-  : [Value] extends [SignalObject]
-    ? Value
-    : never
-
 type SignalRefFor<Value extends SignalValue, Name extends string> = [Value] extends [
   readonly SignalValue[]
 ]
@@ -70,37 +64,12 @@ export type StatePatch<T extends SignalObject> = {
   readonly [Key in keyof T & string]?: StatePatchValue<T[Key]>
 }
 
-/** Dot-separated paths available in a `state(...)` object. */
-export type StateSignalPath<T extends SignalObject, Prefix extends string = ""> = {
-  readonly [Key in keyof T & string]:
-    | (Prefix extends "" ? Key : `${Prefix}.${Key}`)
-    | (SignalChildObject<T[Key]> extends never
-        ? never
-        : StateSignalPath<SignalChildObject<T[Key]>, Prefix extends "" ? Key : `${Prefix}.${Key}`>)
-}[keyof T & string]
-
-/** Signal value stored at a dot-separated `state(...)` path. */
-export type StateSignalPathValue<
-  T extends SignalObject,
-  Path extends string
-> = Path extends `${infer Key}.${infer Rest}`
-  ? Key extends keyof T & string
-    ? SignalChildObject<T[Key]> extends SignalObject
-      ? StateSignalPathValue<SignalChildObject<T[Key]>, Rest>
-      : never
-    : never
-  : Path extends keyof T & string
-    ? T[Path]
-    : never
-
 /** A typed signal-state helper created by `state(...)`. */
 export interface State<T extends SignalObject> {
   /** Initial signal values supplied to `state(...)`. */
   readonly defaults: T
   /** Nested typed leaf signal refs. */
   readonly refs: StateSignalRefs<T>
-  /** Returns a typed signal ref for any state path, including object-valued paths. */
-  ref<Path extends StateSignalPath<T>>(path: Path): Signal<StateSignalPathValue<T, Path>, Path>
   /** Returns a type-checked signal patch object for `event.signals(...)` or `reply.signals(...)`. */
   patch(values: StatePatch<T>): SignalState
   /** Returns the default state, optionally deep-merged with overrides. */
@@ -177,26 +146,6 @@ const assertStateKey = (key: string): void => {
   assertSignalName(key)
 }
 
-/** Error thrown when a `state(...)` path does not exist in the defaults object. */
-export class StatePathError extends Error {
-  constructor(readonly path: string) {
-    super(`Unknown Datastar state path: ${JSON.stringify(path)}`)
-  }
-}
-
-const assertStatePath = (state: SignalObject, path: string): void => {
-  assertSignalName(path)
-
-  let current: SignalValue = state
-  for (const key of path.split(".")) {
-    if (!isSignalObject(current) || !Object.hasOwn(current, key)) {
-      throw new StatePathError(path)
-    }
-
-    current = current[key] as SignalValue
-  }
-}
-
 const buildRefs = (value: SignalObject, prefix = ""): Record<string, unknown> => {
   const refs: Record<string, unknown> = {}
 
@@ -207,14 +156,6 @@ const buildRefs = (value: SignalObject, prefix = ""): Record<string, unknown> =>
   }
 
   return refs
-}
-
-const refForStatePath = <T extends SignalObject, Path extends StateSignalPath<T>>(
-  defaults: T,
-  path: Path
-): Signal<StateSignalPathValue<T, Path>, Path> => {
-  assertStatePath(defaults, path)
-  return new Signal(path) as Signal<StateSignalPathValue<T, Path>, Path>
 }
 
 /**
@@ -230,9 +171,6 @@ export const state = <T extends SignalObject>(defaults: T): State<WidenSignalObj
   return {
     defaults: clonedDefaults,
     refs,
-    ref(path) {
-      return refForStatePath(clonedDefaults, path)
-    },
     patch(values) {
       return cloneSignalState(values as SignalObject)
     },

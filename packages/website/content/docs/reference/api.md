@@ -25,12 +25,11 @@ The root package exports helpers for action expressions, signal refs, typed sign
 
 ### State and signals
 
-| API               | Use                                                                                               |
-| ----------------- | ------------------------------------------------------------------------------------------------- |
-| `state(defaults)` | Create typed leaf refs, path refs, frozen defaults, partial patches, and reset payloads.          |
-| `signal(name)`    | Create a standalone typed signal ref.                                                             |
-| `local(name)`     | Create an underscore-prefixed local/private signal ref.                                           |
-| `StatePathError`  | Thrown when `state.ref(path)` receives a syntactically valid path that is not in the state shape. |
+| API               | Use                                                                                      |
+| ----------------- | ---------------------------------------------------------------------------------------- |
+| `state(defaults)` | Create typed leaf refs, frozen defaults, partial patches, and reset payloads.            |
+| `signal(name)`    | Create a standalone typed signal ref.                                                    |
+| `local(name)`     | Create an underscore-prefixed local/private signal ref.                                  |
 
 ### Actions
 

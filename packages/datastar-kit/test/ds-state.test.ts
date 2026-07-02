@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { SignalNameError, StatePathError, state } from "../src/ds/index.js"
+import { SignalNameError, state } from "../src/ds/index.js"
 import type { SignalState } from "../src/types.js"
 
 describe("state helpers", () => {
@@ -49,15 +49,11 @@ describe("state helpers", () => {
     expect(form.reset()).toEqual({ name: "", errors: { name: "" } })
   })
 
-  it("creates nested signal refs from one defaults object", () => {
+  it("creates nested leaf signal refs from one defaults object", () => {
     const form = state({ name: "", errors: { name: "" } })
 
     expect(form.refs.name.toDatastarExpression()).toBe("$name")
     expect(form.refs.errors.name.toDatastarExpression()).toBe("$errors.name")
-    expect(form.ref("name").toDatastarExpression()).toBe("$name")
-    expect(form.ref("errors").toDatastarExpression()).toBe("$errors")
-    expect(form.ref("errors.name").toDatastarExpression()).toBe("$errors.name")
-    expect(() => form.ref("errors.missing" as never)).toThrow(StatePathError)
   })
 
   it("returns type-checked signal patch objects", () => {
@@ -96,8 +92,6 @@ describe("state helpers", () => {
       form.reset({ errors: { email: false } })
       // @ts-expect-error Nested object refs are not signal refs themselves.
       form.refs.errors.toDatastarExpression()
-      // @ts-expect-error State refs must point to known state paths.
-      form.ref("errors.missing")
     }
 
     expect(form.patch({ subscribed: true })).toEqual({ subscribed: true })

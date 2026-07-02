@@ -37,7 +37,6 @@ describe("package exports", () => {
       "RegexExpressionError",
       "Signal",
       "SignalNameError",
-      "StatePathError",
       "action",
       "del",
       "event",

@@ -20,15 +20,14 @@ const signup = state({
 })
 ```
 
-`state(...)` gives you five useful things:
+`state(...)` gives you four useful things:
 
-| API                  | Use                                                                          |
-| -------------------- | ---------------------------------------------------------------------------- |
-| `signup.defaults`    | Cloned, frozen initial signal values for `data-signals`.                     |
-| `signup.refs`        | Typed nested leaf signal refs for attributes and expressions.                |
-| `signup.ref("path")` | A typed ref for any known path, including object-valued paths like `errors`. |
-| `signup.patch(...)`  | Type-checked partial signal patches.                                         |
-| `signup.reset(...)`  | Defaults, optionally merged with overrides.                                  |
+| API                 | Use                                                          |
+| ------------------- | ------------------------------------------------------------ |
+| `signup.defaults`   | Cloned, frozen initial signal values for `data-signals`.     |
+| `signup.refs`       | Typed nested leaf signal refs for attributes and expressions. |
+| `signup.patch(...)` | Type-checked partial signal patches.                         |
+| `signup.reset(...)` | Defaults, optionally merged with overrides.                  |
 
 Use those refs in Datastar attributes:
 

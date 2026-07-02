@@ -35,11 +35,5 @@ export type { CaseModifier, DatastarModifierOptions, TimingModifierOptions } fro
 export { local, Signal, SignalNameError, signal } from "./signals.js"
 export type { SignalStateInput, SignalValueInput } from "./signals.js"
 
-export { state, StatePathError } from "./state.js"
-export type {
-  State,
-  StatePatch,
-  StateSignalPath,
-  StateSignalPathValue,
-  StateSignalRefs
-} from "./state.js"
+export { state } from "./state.js"
+export type { State, StatePatch, StateSignalRefs } from "./state.js"

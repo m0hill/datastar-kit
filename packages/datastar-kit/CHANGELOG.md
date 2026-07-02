@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Removed
+
+- Removed `state(...).ref(path)` and its `StatePathError`/path helper types; use `state(...).refs` for known leaf refs or `Signal.path(...)` for dynamic child refs.
+
 ### Fixed
 
 - Preserved repeated `Set-Cookie` headers when `reply.*` helpers merge default and caller-provided response headers.
