@@ -121,6 +121,50 @@ const runtimeScope = (bodyHtml?: string) => {
 const runExpression = (expression: string, scope: Readonly<Record<string, unknown>>): unknown =>
   runInNewContext(expression, { ...scope })
 
+type SliderHandlers = Record<string, ((...args: unknown[]) => void) | undefined>
+
+const mountSlider = () => {
+  const handlers: SliderHandlers = {}
+  const track = {
+    getBoundingClientRect: () => ({ left: 0, width: 200 }),
+    setAttribute: () => {},
+    removeAttribute: () => {},
+    setPointerCapture: () => {},
+    addEventListener: (type: string, fn: (...args: unknown[]) => void) => {
+      handlers[type] = fn
+    }
+  }
+  const thumb = { style: {} as Record<string, string> }
+  const fill = { style: {} as Record<string, string> }
+  const status = { textContent: "" }
+  const el = {
+    __dskSlider: undefined as boolean | undefined,
+    setAttribute: () => {},
+    removeAttribute: () => {},
+    querySelector: (selector: string): unknown => {
+      if (selector === "[data-dsk-track]") return track
+      if (selector === "[data-dsk-thumb]") return thumb
+      if (selector === "[data-dsk-fill]") return fill
+      if (selector === "[data-dsk-status]") return status
+      return null
+    }
+  }
+  const win = {
+    addEventListener: (type: string, fn: (...args: unknown[]) => void) => {
+      handlers[type] = fn
+    }
+  }
+  return {
+    handlers,
+    el,
+    window: win,
+    requestAnimationFrame: () => 0,
+    ResizeObserver: class {
+      observe(): void {}
+    }
+  }
+}
+
 describe("Datastar debugger", () => {
   it("renders Datastar wiring with local signal state", () => {
     const html = renderToString(
@@ -146,10 +190,12 @@ describe("Datastar debugger", () => {
     )
     expect(attributeValues(html, "data-on:datastar-fetch")).toHaveLength(1)
     expect(attributeValues(html, "data-on:datastar-fetch__document")).toEqual([])
-    expect(attributeValues(html, "data-init")).toHaveLength(1)
+    expect(attributeValues(html, "data-init")).toHaveLength(2)
+    expect(
+      attributeValues(html, "data-init").some((value) => value.includes("__dskSlider"))
+    ).toBe(true)
     expect(attributeValue(html, "data-bind")).toBe(`${DATASTAR_DEBUGGER_STATE_NAME}.search`)
-    expect(attributeValues(html, "data-effect")).toHaveLength(3)
-    expect(attributeValues(html, "data-on:input__debounce.100ms")).toHaveLength(1)
+    expect(attributeValues(html, "data-effect")).toHaveLength(2)
     expect(attributeValues(html, "data-attr:aria-selected")).toEqual([
       `${DEFAULT_SIGNAL_REF}.tab === "signals"`,
       `${DEFAULT_SIGNAL_REF}.tab === "events"`,
@@ -169,14 +215,13 @@ describe("Datastar debugger", () => {
       `${DEFAULT_SIGNAL_REF}.tab === "timeline" && ${DEFAULT_SIGNAL_REF}.travel.active`
     )
     const textExpressions = attributeValues(html, "data-text")
-    expect(textExpressions).toHaveLength(3)
+    expect(textExpressions).toHaveLength(2)
     expect(textExpressions[0]).toBe(
       `Object.keys($).filter((key) => key !== ${JSON.stringify(
         DATASTAR_DEBUGGER_STATE_NAME
       )}).length + " signals"`
     )
     expect(textExpressions[1]).toBe(`${DEFAULT_SIGNAL_REF}.events.length + " events"`)
-    expect(textExpressions[2]).toContain("snapshots")
   })
 
   it("emits parseable Datastar expressions", () => {
@@ -188,7 +233,6 @@ describe("Datastar debugger", () => {
       "data-text",
       "data-show",
       "data-on:click",
-      "data-on:input__debounce.100ms",
       "data-on-signal-patch",
       "data-on:datastar-fetch",
       "data-attr:aria-label",
@@ -539,10 +583,10 @@ describe("Datastar debugger", () => {
   })
 
   it("restores a snapshot when the timeline slider scrubs back", () => {
-    const expression = attributeValue(
+    const expression = attributeValues(
       renderToString(<DatastarDebugger />),
-      "data-on:input__debounce.100ms"
-    )
+      "data-init"
+    ).find((value) => value.includes("__dskSlider"))!
     const debug = runtimeDebuggerState()
     debug.snapshots = [
       { at: "10:00:00", label: "initial", html: "<main>old</main>", signals: { count: 0 } },
@@ -554,13 +598,19 @@ describe("Datastar debugger", () => {
       newSignal: "created later",
       [DATASTAR_DEBUGGER_STATE_NAME]: debug
     }
+    const slider = mountSlider()
 
     runExpression(expression, {
       ...runtime.scope,
       [DEFAULT_SIGNAL_REF]: debug,
       $: signals,
-      evt: { target: { value: "0" } }
+      el: slider.el,
+      window: slider.window,
+      requestAnimationFrame: slider.requestAnimationFrame,
+      ResizeObserver: slider.ResizeObserver
     })
+    slider.handlers.pointerdown!({ clientX: 0, pointerId: 1, preventDefault: () => {} })
+    slider.handlers.pointerup!()
 
     expect(debug.travel).toMatchObject({ index: 0, active: true })
     expect(runtime.otherChild.removed).toBe(true)
@@ -573,27 +623,71 @@ describe("Datastar debugger", () => {
   })
 
   it("ignores slider input at the live position when not time traveling", () => {
-    const expression = attributeValue(
+    const expression = attributeValues(
       renderToString(<DatastarDebugger />),
-      "data-on:input__debounce.100ms"
-    )
+      "data-init"
+    ).find((value) => value.includes("__dskSlider"))!
     const debug = runtimeDebuggerState()
     debug.snapshots = [
       { at: "10:00:00", label: "initial", html: "<main>old</main>", signals: { count: 0 } },
       { at: "10:00:05", label: "signal patch", html: "<main>new</main>", signals: { count: 2 } }
     ]
     const runtime = runtimeScope()
+    const slider = mountSlider()
 
     runExpression(expression, {
       ...runtime.scope,
       [DEFAULT_SIGNAL_REF]: debug,
       $: { count: 2, [DATASTAR_DEBUGGER_STATE_NAME]: debug },
-      evt: { target: { value: "1" } }
+      el: slider.el,
+      window: slider.window,
+      requestAnimationFrame: slider.requestAnimationFrame,
+      ResizeObserver: slider.ResizeObserver
     })
+    slider.handlers.pointerdown!({ clientX: 200, pointerId: 1, preventDefault: () => {} })
+    slider.handlers.pointerup!()
 
     expect(debug.travel).toMatchObject({ index: -1, active: false })
     expect(runtime.inserted).toEqual([])
     expect(runtime.otherChild.removed).toBe(false)
+  })
+
+  it("restores snapshots live while dragging the timeline slider", () => {
+    const expression = attributeValues(
+      renderToString(<DatastarDebugger />),
+      "data-init"
+    ).find((value) => value.includes("__dskSlider"))!
+    const debug = runtimeDebuggerState()
+    debug.snapshots = [
+      { at: "10:00:00", label: "initial", html: "<main>old</main>", signals: { count: 0 } },
+      { at: "10:00:05", label: "signal patch", html: "<main>new</main>", signals: { count: 2 } }
+    ]
+    const runtime = runtimeScope()
+    const signals: Record<string, unknown> = {
+      count: 2,
+      [DATASTAR_DEBUGGER_STATE_NAME]: debug
+    }
+    const slider = mountSlider()
+
+    runExpression(expression, {
+      ...runtime.scope,
+      [DEFAULT_SIGNAL_REF]: debug,
+      $: signals,
+      el: slider.el,
+      window: slider.window,
+      requestAnimationFrame: slider.requestAnimationFrame,
+      ResizeObserver: slider.ResizeObserver
+    })
+    // Start dragging at the live (rightmost) end, then slide left mid-drag.
+    slider.handlers.pointerdown!({ clientX: 200, pointerId: 1, preventDefault: () => {} })
+    slider.handlers.pointermove!({ clientX: 0 })
+
+    // The old snapshot should already be restored before pointerup.
+    expect(debug.travel).toMatchObject({ index: 0, active: true })
+    expect(runtime.inserted).toEqual(["<main>old</main>"])
+
+    slider.handlers.pointerup!()
+    expect(debug.travel).toMatchObject({ index: 0, active: true })
   })
 
   it("returns to the newest snapshot and resumes recording via the Live button", () => {
@@ -639,5 +733,65 @@ describe("Datastar debugger", () => {
 
     runtime.flushTimers()
     expect(debug.travel).toMatchObject({ index: 1, active: false })
+  })
+
+  it("can scrub to the same snapshot again after returning live", () => {
+    const html = renderToString(<DatastarDebugger />)
+    const sliderExpression = attributeValues(html, "data-init").find((value) =>
+      value.includes("__dskSlider")
+    )
+    const liveExpression = attributeValues(html, "data-on:click").find((value) =>
+      value.includes("applySnapshot")
+    )
+    if (!sliderExpression || !liveExpression) {
+      throw new Error("Expected timeline slider and live debugger expressions")
+    }
+
+    const debug = runtimeDebuggerState()
+    debug.snapshots = [
+      { at: "10:00:00", label: "initial", html: "<main>old</main>", signals: { count: 0 } },
+      { at: "10:00:05", label: "signal patch", html: "<main>new</main>", signals: { count: 2 } }
+    ]
+    const runtime = runtimeScope()
+    const signals: Record<string, unknown> = {
+      count: 2,
+      [DATASTAR_DEBUGGER_STATE_NAME]: debug
+    }
+    const slider = mountSlider()
+
+    runExpression(sliderExpression, {
+      ...runtime.scope,
+      [DEFAULT_SIGNAL_REF]: debug,
+      $: signals,
+      el: slider.el,
+      window: slider.window,
+      requestAnimationFrame: slider.requestAnimationFrame,
+      ResizeObserver: slider.ResizeObserver
+    })
+    const pointerDown = slider.handlers.pointerdown
+    const pointerUp = slider.handlers.pointerup
+    if (!pointerDown || !pointerUp) throw new Error("Expected timeline slider handlers")
+
+    pointerDown({ clientX: 0, pointerId: 1, preventDefault: () => {} })
+    pointerUp()
+    expect(debug.travel).toMatchObject({ index: 0, active: true })
+    runtime.flushTimers()
+
+    runExpression(liveExpression, {
+      ...runtime.scope,
+      [DEFAULT_SIGNAL_REF]: debug,
+      $: signals
+    })
+    runtime.flushTimers()
+    runtime.flushTimers()
+    expect(debug.travel).toMatchObject({ index: 1, active: false })
+
+    const insertedBefore = runtime.inserted.length
+    pointerDown({ clientX: 0, pointerId: 1, preventDefault: () => {} })
+    pointerUp()
+
+    expect(debug.travel).toMatchObject({ index: 0, active: true })
+    expect(runtime.inserted).toHaveLength(insertedBefore + 1)
+    expect(runtime.inserted[runtime.inserted.length - 1]).toBe("<main>old</main>")
   })
 })

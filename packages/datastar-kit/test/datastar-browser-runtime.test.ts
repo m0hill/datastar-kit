@@ -318,9 +318,9 @@ describe("Datastar browser runtime integration", () => {
         await browser(
           "eval",
           `(() => {
-            const slider = document.querySelector(".datastar-kit-debugger input[type=range]")
-            slider.value = "0"
-            slider.dispatchEvent(new Event("input", { bubbles: true }))
+            const track = document.querySelector(".datastar-kit-debugger .dsk-slider-track")
+            track.focus()
+            track.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }))
           })()`
         )
         await waitForState(`count === "0" && status?.startsWith("1/3")`)

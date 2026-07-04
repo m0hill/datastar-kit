@@ -306,17 +306,76 @@ const debuggerStyles = `
 .${DEBUGGER_CLASS} .dsk-token-attr { color: var(--dsk-blue); }
 .${DEBUGGER_CLASS} .dsk-token-string,
 .${DEBUGGER_CLASS} .dsk-token-literal { color: var(--dsk-add); }
-.${DEBUGGER_CLASS} .dsk-debug-timeline { display: grid; gap: 0.6rem; }
-.${DEBUGGER_CLASS} .dsk-debug-timeline-row { display: flex; gap: 0.6rem; align-items: center; }
-.${DEBUGGER_CLASS} .dsk-debug-timeline-row input[type="range"] {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  accent-color: var(--dsk-blue);
+.${DEBUGGER_CLASS} .dsk-debug-timeline { display: grid; gap: 0.7rem; }
+.${DEBUGGER_CLASS} .dsk-slider { display: grid; gap: 0.6rem; padding: 0.35rem 0; }
+.${DEBUGGER_CLASS} .dsk-slider-track {
+  position: relative;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  touch-action: none;
+  border-radius: 999px;
+  outline: none;
 }
-.${DEBUGGER_CLASS} .dsk-debug-timeline-row input[type="range"]:disabled { opacity: 0.4; }
+.${DEBUGGER_CLASS} .dsk-slider-track::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--dsk-surface-2);
+  border: 1px solid var(--dsk-border);
+  transform: translateY(-50%);
+}
+.${DEBUGGER_CLASS} .dsk-slider-fill {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--dsk-blue), #9bb8ff);
+  box-shadow: 0 0 10px -2px rgb(122 162 247 / 0.55);
+  transform: translate(0, -50%) scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+  will-change: transform;
+}
+.${DEBUGGER_CLASS} .dsk-slider-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--dsk-blue);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 55%);
+  transform: translate(0, -50%);
+  transition: box-shadow 0.18s ease, border-color 0.16s ease;
+  will-change: transform;
+  pointer-events: none;
+}
+.${DEBUGGER_CLASS} .dsk-slider-track:hover .dsk-slider-thumb {
+  box-shadow: 0 0 0 5px rgb(122 162 247 / 0.18), 0 2px 8px rgb(0 0 0 / 65%);
+}
+.${DEBUGGER_CLASS} .dsk-slider-track:active .dsk-slider-thumb,
+.${DEBUGGER_CLASS} .dsk-slider-track[data-pressed] .dsk-slider-thumb {
+  box-shadow: 0 0 0 6px rgb(122 162 247 / 0.3), 0 2px 10px rgb(0 0 0 / 75%);
+}
+.${DEBUGGER_CLASS} .dsk-slider-track:focus-visible .dsk-slider-thumb {
+  box-shadow: 0 0 0 4px rgb(122 162 247 / 0.35), 0 2px 8px rgb(0 0 0 / 65%);
+}
+.${DEBUGGER_CLASS} .dsk-slider[data-disabled] { opacity: 0.5; }
+.${DEBUGGER_CLASS} .dsk-slider[data-disabled] .dsk-slider-track { cursor: default; }
+.${DEBUGGER_CLASS} .dsk-slider[data-disabled] .dsk-slider-fill {
+  background: var(--dsk-faint);
+  box-shadow: none;
+}
+.${DEBUGGER_CLASS} .dsk-slider[data-disabled] .dsk-slider-thumb { border-color: var(--dsk-faint); }
 .${DEBUGGER_CLASS} .dsk-debug-controls button.dsk-debug-live { color: var(--dsk-red); }
 .${DEBUGGER_CLASS} .dsk-debug-controls button.dsk-debug-live:hover { color: var(--dsk-red); }
 .${DEBUGGER_CLASS} .dsk-debug-timeline-status {
@@ -755,30 +814,151 @@ const initialSnapshotExpression = (snapshot: SnapshotExpressionOptions): string 
 })()
 `
 
-const travelExpression = (snapshot: SnapshotExpressionOptions): string => `
+const timelineSliderInitExpression = (snapshot: SnapshotExpressionOptions): string => `
 (() => {
   const debug = ${signalRef(snapshot.stateName)}
-  const travel = debug.travel
-  const snapshots = debug.snapshots
-  if (snapshots.length === 0) return
+  if (el.__dskSlider) return
+  el.__dskSlider = true
 
   ${applySnapshotSource(snapshot.id, snapshot.stateName)}
 
-  const max = snapshots.length - 1
-  const raw = Number(evt.target.value)
-  const index = Math.min(Math.max(Number.isFinite(raw) ? Math.round(raw) : max, 0), max)
-  if (!travel.active && index === max) return
+  const track = el.querySelector("[data-dsk-track]")
+  const thumb = el.querySelector("[data-dsk-thumb]")
+  const fill = el.querySelector("[data-dsk-fill]")
+  const status = el.querySelector("[data-dsk-status]")
+  const HALF = 8
 
-  travel.index = index
-  if (index < max) {
-    travel.active = true
-    applySnapshot(snapshots[index])
-    return
+  let trackWidth = track.getBoundingClientRect().width
+  let pressed = false
+  let dragging = false
+  let targetPct = 1
+  let viewPct = 1
+
+  const readMax = () => Math.max(debug.snapshots.length - 1, 0)
+  const clampPct = (p) => (p < 0 ? 0 : p > 1 ? 1 : p)
+  const pctToIndex = (p) => {
+    const max = readMax()
+    return max === 0 ? 0 : Math.round(clampPct(p) * max)
+  }
+  const syncFromState = () => {
+    const max = readMax()
+    targetPct = max === 0 ? 0 : (debug.travel.active ? debug.travel.index : max) / max
+  }
+  syncFromState()
+  viewPct = targetPct
+
+  const statusText = (p, scrubbing) => {
+    const snapshots = debug.snapshots
+    const n = snapshots.length
+    if (n === 0) return "0 snapshots"
+    const live = !debug.travel.active && !scrubbing
+    if (live) return n + (n === 1 ? " snapshot" : " snapshots") + " \u00b7 live"
+    const idx = scrubbing ? pctToIndex(p) : (debug.travel.active ? debug.travel.index : n - 1)
+    const s = snapshots[idx]
+    if (!s) return "no snapshot"
+    return (idx + 1) + "/" + n + " \u00b7 " + s.at + " \u00b7 " + s.label + (scrubbing ? " \u00b7 scrubbing" : "")
   }
 
-  applySnapshot(snapshots[index], () => {
-    travel.active = false
-  })
+  const applyIndex = (index) => {
+    const max = readMax()
+    const snapshots = debug.snapshots
+    if (snapshots.length === 0) return
+    const travel = debug.travel
+    if (!travel.active && index === max) return
+    if (travel.active && travel.index === index) return
+    travel.index = index
+    if (index < max) {
+      travel.active = true
+      applySnapshot(snapshots[index])
+    } else {
+      applySnapshot(snapshots[index], () => { travel.active = false })
+    }
+  }
+
+  const pointerPct = (event) => {
+    const rect = track.getBoundingClientRect()
+    trackWidth = rect.width
+    const x = (event.clientX != null ? event.clientX : 0) - rect.left
+    return clampPct(x / rect.width)
+  }
+
+  const onDown = (event) => {
+    if (debug.snapshots.length < 2) return
+    pressed = true
+    dragging = false
+    targetPct = pointerPct(event)
+    track.setAttribute("data-pressed", "")
+    try { track.setPointerCapture(event.pointerId) } catch {}
+    event.preventDefault()
+  }
+  const onMove = (event) => {
+    if (!pressed) return
+    const p = pointerPct(event)
+    if (!dragging && Math.abs(p - targetPct) > 0.006) dragging = true
+    targetPct = p
+    if (dragging) {
+      viewPct = targetPct
+      applyIndex(pctToIndex(targetPct))
+    }
+  }
+  const onUp = () => {
+    if (!pressed) return
+    pressed = false
+    track.removeAttribute("data-pressed")
+    applyIndex(pctToIndex(targetPct))
+    dragging = false
+  }
+  const onKeyDown = (event) => {
+    if (debug.snapshots.length < 2) return
+    const max = readMax()
+    let idx = debug.travel.active ? debug.travel.index : max
+    if (event.key === "ArrowLeft" || event.key === "ArrowDown") idx -= 1
+    else if (event.key === "ArrowRight" || event.key === "ArrowUp") idx += 1
+    else if (event.key === "Home") idx = 0
+    else if (event.key === "End") idx = max
+    else return
+    event.preventDefault()
+    idx = Math.min(Math.max(idx, 0), max)
+    targetPct = max === 0 ? 0 : idx / max
+    applyIndex(idx)
+  }
+
+  track.addEventListener("pointerdown", onDown)
+  track.addEventListener("keydown", onKeyDown)
+  window.addEventListener("pointermove", onMove)
+  window.addEventListener("pointerup", onUp)
+  window.addEventListener("pointercancel", onUp)
+  if (typeof ResizeObserver !== "undefined") {
+    new ResizeObserver(() => { trackWidth = track.getBoundingClientRect().width }).observe(track)
+  }
+
+  const render = () => {
+    if (!pressed) syncFromState()
+    if (dragging) {
+      viewPct = targetPct
+    } else {
+      const d = targetPct - viewPct
+      viewPct += d * 0.22
+      if (Math.abs(d) < 0.0004) viewPct = targetPct
+    }
+
+    let x = viewPct * trackWidth - HALF
+    if (x < 0) x = 0
+    const maxX = Math.max(trackWidth - HALF * 2, 0)
+    if (x > maxX) x = maxX
+    thumb.style.transform = "translate(" + x + "px, -50%)"
+    fill.style.transform = "translate(0, -50%) scaleX(" + (trackWidth > 0 ? (x + HALF) / trackWidth : 0) + ")"
+
+    const disabled = debug.snapshots.length < 2
+    if (disabled) el.setAttribute("data-disabled", "")
+    else el.removeAttribute("data-disabled")
+    track.setAttribute("aria-valuemax", String(debug.snapshots.length))
+    track.setAttribute("aria-valuenow", String(pctToIndex(viewPct) + 1))
+    if (status) status.textContent = statusText(viewPct, pressed || dragging)
+
+    requestAnimationFrame(render)
+  }
+  requestAnimationFrame(render)
 })()
 `
 
@@ -799,30 +979,6 @@ const goLiveExpression = (snapshot: SnapshotExpressionOptions): string => `
   applySnapshot(snapshots[snapshots.length - 1], () => {
     travel.active = false
   })
-})()
-`
-
-const timelineSliderExpression = (stateName: DatastarDebuggerStateName): string => `
-(() => {
-  const debug = ${signalRef(stateName)}
-  const max = Math.max(debug.snapshots.length - 1, 0)
-  el.max = String(max)
-  el.value = String(debug.travel.active ? debug.travel.index : max)
-  el.disabled = debug.snapshots.length < 2
-})()
-`
-
-const timelineStatusExpression = (stateName: DatastarDebuggerStateName): string => `
-(() => {
-  const debug = ${signalRef(stateName)}
-  const travel = debug.travel
-  const snapshots = debug.snapshots
-  if (!travel.active) {
-    return snapshots.length + (snapshots.length === 1 ? " snapshot" : " snapshots") + " \\u00b7 live"
-  }
-  const snapshot = snapshots[travel.index]
-  if (!snapshot) return "no snapshot"
-  return (travel.index + 1) + "/" + snapshots.length + " \\u00b7 " + snapshot.at + " \\u00b7 " + snapshot.label
 })()
 `
 
@@ -1184,25 +1340,30 @@ export const DatastarDebugger = (props: DatastarDebuggerProps = {}): HtmlChild =
             { class: "dsk-debug-timeline" },
             h(
               "div",
-              { class: "dsk-debug-timeline-row" },
-              h("input", {
-                type: "range",
-                min: "0",
-                max: "0",
-                step: "1",
-                value: "0",
-                "aria-label": "Timeline position",
-                "data-on:input__debounce.100ms": travelExpression(snapshot),
-                "data-effect": timelineSliderExpression(stateName)
-              }),
-            ),
-            h(
-              "p",
               {
-                class: "dsk-debug-timeline-status",
-                "data-text": timelineStatusExpression(stateName)
+                class: "dsk-slider",
+                "data-init": timelineSliderInitExpression(snapshot)
               },
-              "0 snapshots"
+              h(
+                "div",
+                {
+                  class: "dsk-slider-track",
+                  "data-dsk-track": "",
+                  tabindex: "0",
+                  role: "slider",
+                  "aria-label": "Timeline position",
+                  "aria-valuemin": "0",
+                  "aria-valuemax": "0",
+                  "aria-valuenow": "0"
+                },
+                h("div", { class: "dsk-slider-fill", "data-dsk-fill": "" }),
+                h("div", { class: "dsk-slider-thumb", "data-dsk-thumb": "" })
+              ),
+              h(
+                "p",
+                { class: "dsk-debug-timeline-status", "data-dsk-status": "" },
+                "0 snapshots"
+              )
             )
           )
         })
