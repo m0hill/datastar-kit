@@ -67,12 +67,14 @@ const InstallCopyIcon = () => (
   </span>
 )
 
-const VisitorCount = (props: { count: number }) => (
+const VisitorCount = (props: { count?: number }) => (
   <span
     id="visitor-count"
     class="font-serif text-7xl font-medium tabular-nums leading-none tracking-tight text-accent sm:text-8xl"
+    aria-busy={props.count === undefined ? "true" : undefined}
+    aria-live="polite"
   >
-    {props.count.toLocaleString("en-US")}
+    {props.count === undefined ? "—" : props.count.toLocaleString("en-US")}
   </span>
 )
 
@@ -193,7 +195,7 @@ const LoopSection = () => (
   </section>
 )
 
-const LiveDemoSection = (props: { count: number }) => (
+const LiveDemoSection = () => (
   <section class="bg-paper/60">
     <div class="site-shell border-y border-border-subtle py-16 sm:py-20 lg:py-24">
       <div class="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(22rem,0.55fr)] lg:items-center">
@@ -216,7 +218,7 @@ const LiveDemoSection = (props: { count: number }) => (
             <span class="frame-label">POST /demo/counter/bump</span>
           </div>
           <div class="mt-6 flex flex-col items-center gap-6 py-2 text-center">
-            <VisitorCount count={props.count} />
+            <VisitorCount />
             <button
               type="button"
               class="btn-primary"
@@ -306,7 +308,7 @@ const ClosingSection = () => (
   </section>
 )
 
-const HomePage = (props: { count: number }) => (
+const HomePage = () => (
   <AppLayout>
     <div class="min-h-dvh">
       <SiteHeader />
@@ -314,7 +316,7 @@ const HomePage = (props: { count: number }) => (
         <Hero />
         <RuntimeSheet />
         <LoopSection />
-        <LiveDemoSection count={props.count} />
+        <LiveDemoSection />
         <BoxSection />
         <ClosingSection />
       </main>
@@ -370,9 +372,8 @@ index.get("/", async (c) => {
     return markdownResponse(homeMarkdown)
   }
 
-  const count = await visitorCounter(c.env).getCount()
   const res = varyOnAccept(
-    reply.page(<HomePage count={count} />, {
+    reply.page(<HomePage />, {
       title: "Datastar Kit · Server-driven UI for TypeScript",
       head: pageHead({
         description:
