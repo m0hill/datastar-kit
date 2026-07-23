@@ -76,7 +76,7 @@ export const debuggerStyles = `
   gap: 0.45rem;
   align-items: stretch;
 }
-:host .dsk-debug-controls input { flex: 1 1 auto; min-width: 0; }
+:host .dsk-debug-controls input { flex: 1 1 auto; min-width: 0; height: 2.25rem; }
 :host .dsk-debug-tabs {
   display: flex;
   gap: 0.3rem;
@@ -108,6 +108,7 @@ export const debuggerStyles = `
   align-items: center;
   justify-content: center;
   width: 2.25rem;
+  height: 2.25rem;
   padding: 0;
   color: var(--dsk-muted);
   background: var(--dsk-surface-2);
@@ -139,14 +140,6 @@ export const debuggerStyles = `
   color: var(--dsk-text);
 }
 :host .dsk-debug-panel { display: grid; gap: 0.6rem; }
-:host h3 {
-  margin: 0;
-  color: var(--dsk-muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
 :host pre {
   max-height: 18rem;
   overflow: auto;
@@ -219,10 +212,8 @@ export const debuggerStyles = `
 :host .dsk-debug-kind { flex: 0 0 auto; font-weight: 600; }
 :host .dsk-debug-kind[data-kind="signal"] { color: var(--dsk-add); }
 :host .dsk-debug-kind[data-kind="fetch"] { color: var(--dsk-blue); }
-:host .dsk-debug-timeline { display: grid; gap: 0.7rem; }
-:host .dsk-slider { display: grid; gap: 0.6rem; padding: 0.35rem 0; }
-:host .dsk-timeline-range {
-  width: 100%;
+:host .dsk-debug-controls .dsk-timeline-range {
+  width: auto;
   padding: 0;
   accent-color: var(--dsk-blue);
   cursor: pointer;

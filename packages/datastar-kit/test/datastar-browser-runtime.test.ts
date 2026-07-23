@@ -346,11 +346,28 @@ describe("Datastar browser runtime integration", () => {
               details?.querySelector("summary")?.click()
               const hiddenPanel = root?.querySelector('[data-panel="events"]')
               const hiddenControl = root?.querySelector('[data-action="clear-events"]')
+              root?.querySelector('[data-tab="events"]')?.click()
+              root?.querySelector('[data-action="clear-events"]')?.click()
+              document.dispatchEvent(new CustomEvent("datastar-fetch", { detail: { type: "started" } }))
+              const eventCount = root?.querySelector('[data-role="event-count"]')?.textContent
+              const search = root?.querySelector('[data-role="search"]')
+              const searchHeight = search?.getBoundingClientRect().height
+              root?.querySelector('[data-tab="timeline"]')?.click()
+              const timelineRange = root?.querySelector('[data-role="timeline-range"]')
+              const timelineButton = root?.querySelector('[data-action="pause"]')
               const result = {
                 collapsedByDefault,
                 bridge: document.querySelector("[data-datastar-kit-debugger-bridge]") !== null,
+                signalCount: root?.querySelector('[data-role="signal-count"]')?.textContent,
+                eventCount,
                 hiddenPanelDisplay: hiddenPanel ? getComputedStyle(hiddenPanel).display : null,
-                hiddenControlDisplay: hiddenControl ? getComputedStyle(hiddenControl).display : null
+                hiddenControlDisplay: hiddenControl ? getComputedStyle(hiddenControl).display : null,
+                timelineSearchDisplay: search ? getComputedStyle(search).display : null,
+                timelineRangeDisplay: timelineRange ? getComputedStyle(timelineRange).display : null,
+                timelineRangeInControls:
+                  timelineRange?.parentElement?.classList.contains("dsk-debug-controls") ?? false,
+                timelineButtonMatchesSearchHeight:
+                  timelineButton?.getBoundingClientRect().height === searchHeight
               }
               details?.querySelector("summary")?.click()
               return result
@@ -359,14 +376,26 @@ describe("Datastar browser runtime integration", () => {
         ) as {
           collapsedByDefault: boolean
           bridge: boolean
+          signalCount: string | null
+          eventCount: string | null
           hiddenPanelDisplay: string | null
           hiddenControlDisplay: string | null
+          timelineSearchDisplay: string | null
+          timelineRangeDisplay: string | null
+          timelineRangeInControls: boolean
+          timelineButtonMatchesSearchHeight: boolean
         }
         expect(mounted).toEqual({
           collapsedByDefault: true,
           bridge: true,
+          signalCount: "1 signal",
+          eventCount: "1 event",
           hiddenPanelDisplay: "none",
-          hiddenControlDisplay: "none"
+          hiddenControlDisplay: "none",
+          timelineSearchDisplay: "none",
+          timelineRangeDisplay: "block",
+          timelineRangeInControls: true,
+          timelineButtonMatchesSearchHeight: true
         })
 
         await browser(

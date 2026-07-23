@@ -51,27 +51,20 @@ const template = `
     </div>
     <div class="dsk-debug-controls">
       <input data-role="search" type="search" placeholder="Search or /regex/i" aria-label="Search debugger">
+      <input class="dsk-timeline-range" data-role="timeline-range" type="range" min="0" max="0" value="0" aria-label="Timeline position" hidden>
       <button type="button" data-action="pause" aria-label="Pause debugger" title="Pause">Ⅱ</button>
       <button type="button" data-action="clear-events" aria-label="Clear events" title="Clear events">⌫</button>
       <button type="button" data-action="clear-snapshots" aria-label="Clear snapshots" title="Clear snapshots">⌫</button>
       <button type="button" class="dsk-debug-live" data-action="live" aria-label="Return to live" title="Return to live">●</button>
     </div>
     <section class="dsk-debug-panel" data-panel="signals" role="tabpanel">
-      <h3>Signals</h3>
       <pre data-role="signals">{}</pre>
     </section>
     <section class="dsk-debug-panel" data-panel="events" role="tabpanel" hidden>
-      <h3>Events</h3>
       <div class="dsk-debug-events" data-role="events"></div>
     </section>
     <section class="dsk-debug-panel" data-panel="timeline" role="tabpanel" hidden>
-      <h3>Timeline</h3>
-      <div class="dsk-debug-timeline">
-        <div class="dsk-slider">
-          <input class="dsk-timeline-range" data-role="timeline-range" type="range" min="0" max="0" value="0" aria-label="Timeline position">
-          <p class="dsk-debug-timeline-status" data-role="timeline-status">0 snapshots</p>
-        </div>
-      </div>
+      <p class="dsk-debug-timeline-status" data-role="timeline-status">0 snapshots</p>
     </section>
   </div>
 </details>
@@ -189,11 +182,15 @@ export const createDatastarDebuggerElementClass = (): CustomElementConstructor =
     private render(): void {
       const state = this.session?.state()
       if (!state) return
-      this.elements.signalCount.textContent = `${Object.keys(state.signals).length} signals`
-      this.elements.eventCount.textContent = `${state.events.length} events`
+      this.elements.signalCount.textContent = countLabel(
+        Object.keys(state.signals).length,
+        "signal"
+      )
+      this.elements.eventCount.textContent = countLabel(state.events.length, "event")
       this.elements.pausedPill.hidden = !state.paused
       this.elements.travelPill.hidden = state.travel._tag === "live"
-      this.elements.search.disabled = state.tab === "timeline"
+      this.elements.search.hidden = state.tab === "timeline"
+      this.elements.timelineRange.hidden = state.tab !== "timeline"
       this.elements.pauseButton.setAttribute("aria-pressed", String(state.paused))
       this.elements.pauseButton.setAttribute(
         "aria-label",
@@ -360,6 +357,9 @@ const readPositiveInteger = (element: HTMLElement, name: string): number | undef
 
 const isDebuggerTab = (value: string | undefined): value is DatastarDebuggerTab =>
   value === "signals" || value === "events" || value === "timeline"
+
+const countLabel = (count: number, noun: string): string =>
+  `${count} ${noun}${count === 1 ? "" : "s"}`
 
 const timelineStatus = (state: DatastarDebuggerState, index: number): string => {
   const count = state.snapshots.length
