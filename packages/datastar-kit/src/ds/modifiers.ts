@@ -69,15 +69,23 @@ const datastarModifiedModifierKeysBrand: unique symbol = Symbol(
   "datastar-kit.modified-modifier-keys"
 )
 
-/** A value plus Datastar modifiers that should be rendered onto the attribute name. */
+/**
+ * A value plus Datastar modifiers that should be rendered onto the attribute name.
+ *
+ * @typeParam Value Wrapped attribute value.
+ * @typeParam ModifierKeys Modifier keys present in the wrapper.
+ * @typeParam Modifiers Exact modifier options, retained so attribute types can recognize semantic
+ * modifiers such as `prop`.
+ */
 export interface DatastarModifiedValue<
   Value = unknown,
-  ModifierKeys extends DatastarModifierKey = DatastarModifierKey
+  ModifierKeys extends DatastarModifierKey = DatastarModifierKey,
+  Modifiers extends DatastarModifierOptions = DatastarModifierOptions
 > {
   readonly [datastarModifiedValueBrand]: true
   readonly [datastarModifiedModifierKeysBrand]: ModifierKeys | undefined
   readonly value: Value
-  readonly modifiers: Readonly<DatastarModifierOptions>
+  readonly modifiers: Modifiers
 }
 
 const isModifierOptions = (value: unknown): value is DatastarModifierOptions =>
@@ -86,8 +94,8 @@ const isModifierOptions = (value: unknown): value is DatastarModifierOptions =>
 const modifiedValue = <Value, Modifiers extends DatastarModifierOptions>(
   value: Value,
   modifiers: Modifiers
-): DatastarModifiedValue<Value, KnownModifierKeys<Modifiers>> => {
-  const modified: DatastarModifiedValue<Value, KnownModifierKeys<Modifiers>> = {
+): DatastarModifiedValue<Value, KnownModifierKeys<Modifiers>, Modifiers> => {
+  const modified: DatastarModifiedValue<Value, KnownModifierKeys<Modifiers>, Modifiers> = {
     [datastarModifiedValueBrand]: true,
     [datastarModifiedModifierKeysBrand]: undefined,
     value,
@@ -112,11 +120,11 @@ const modifiedValue = <Value, Modifiers extends DatastarModifierOptions>(
  */
 export function mod<const Modifiers extends DatastarModifierOptions>(
   modifiers: NoUnknownModifierKeys<Modifiers>
-): DatastarModifiedValue<true, KnownModifierKeys<Modifiers>>
+): DatastarModifiedValue<true, KnownModifierKeys<Modifiers>, Modifiers>
 export function mod<const Value, const Modifiers extends DatastarModifierOptions>(
   value: Value,
   modifiers: NoUnknownModifierKeys<Modifiers>
-): DatastarModifiedValue<Value, KnownModifierKeys<Modifiers>>
+): DatastarModifiedValue<Value, KnownModifierKeys<Modifiers>, Modifiers>
 export function mod<const Value>(
   valueOrModifiers: Value,
   modifiers?: unknown

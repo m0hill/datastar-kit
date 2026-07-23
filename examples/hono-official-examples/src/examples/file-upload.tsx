@@ -31,7 +31,10 @@ const schema = z.object({
 
 type UploadedFile = z.infer<typeof UploadedFile>
 
-const uploadState = state({
+const uploadState = state<{
+  files: readonly UploadedFile[]
+  errors: { readonly files: string }
+}>({
   files: [],
   errors: {
     files: ""

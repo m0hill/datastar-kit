@@ -134,6 +134,169 @@ describe("typed JSX intrinsic elements", () => {
     expect(nodes).toHaveLength(10)
   })
 
+  it("matches file input bindings to encoded file arrays", () => {
+    typecheckOnly(() => {
+      const files =
+        signal<
+          readonly { readonly name: string; readonly contents: string; readonly mime: string }[]
+        >("files")
+      const text = signal<string>("text")
+      const nodes = [
+        <input
+          type="file"
+          data-bind={files}
+        />,
+        // @ts-expect-error File inputs write encoded file arrays, not strings.
+        <input
+          type="file"
+          data-bind={text}
+        />
+      ]
+
+      void nodes
+    })
+
+    expect(true).toBe(true)
+  })
+
+  it("matches input bindings to their native value adapters", () => {
+    typecheckOnly(() => {
+      const text = signal<string>("text")
+      const count = signal<number>("count")
+      const flag = signal<boolean>("flag")
+      const object = signal<{ readonly id: number }>("object")
+      const choices = signal<readonly string[]>("choices")
+      const checks = signal<readonly boolean[]>("checks")
+      const nodes = [
+        <input data-bind={text} />,
+        <input data-bind={count} />,
+        <input
+          type="number"
+          data-bind={count}
+        />,
+        <input
+          type="number"
+          data-bind={text}
+        />,
+        <input
+          type="checkbox"
+          data-bind={flag}
+        />,
+        <input
+          type="checkbox"
+          value="selected"
+          data-bind={text}
+        />,
+        <input
+          type="checkbox"
+          data-bind={checks}
+        />,
+        <input
+          type="radio"
+          data-bind={count}
+        />,
+        <input
+          type="radio"
+          data-bind={choices}
+        />,
+        <input data-bind="uncheckedInput" />,
+        <input data-bind={mod(object, { prop: "customValue", event: "change" })} />,
+        <typed-widget
+          mode="compact"
+          data-bind={object}
+        />,
+        // @ts-expect-error Standard input value adapters do not write objects.
+        <input data-bind={object} />,
+        // @ts-expect-error Number inputs do not write objects.
+        <input
+          type="number"
+          data-bind={object}
+        />,
+        // @ts-expect-error Checkbox adapters write booleans or strings, not numbers.
+        <input
+          type="checkbox"
+          data-bind={count}
+        />,
+        // @ts-expect-error Radio adapters write strings or numbers, not objects.
+        <input
+          type="radio"
+          data-bind={object}
+        />,
+        // @ts-expect-error An event modifier does not replace the native value adapter.
+        <input data-bind={mod(object, { event: "change" })} />
+      ]
+
+      void nodes
+    })
+
+    expect(true).toBe(true)
+  })
+
+  it("matches textarea bindings to string values", () => {
+    typecheckOnly(() => {
+      const text = signal<string>("text")
+      const flag = signal<boolean>("flag")
+      const nodes = [
+        <textarea data-bind={text} />,
+        <textarea data-bind={mod(flag, { prop: "checked", event: "change" })} />,
+        // @ts-expect-error Textarea value binding writes strings, not booleans.
+        <textarea data-bind={flag} />,
+        // @ts-expect-error An event modifier does not change textarea value semantics.
+        <textarea data-bind={mod(flag, { event: "change" })} />
+      ]
+
+      void nodes
+    })
+
+    expect(true).toBe(true)
+  })
+
+  it("matches select bindings to single and multiple selection values", () => {
+    typecheckOnly(() => {
+      const text = signal<string>("text")
+      const count = signal<number>("count")
+      const object = signal<{ readonly id: number }>("object")
+      const strings = signal<readonly string[]>("strings")
+      const numbers = signal<readonly number[]>("numbers")
+      const selections = signal<readonly (string | number)[]>("selections")
+      const nodes = [
+        <select data-bind={text} />,
+        <select data-bind={count} />,
+        <select
+          multiple
+          data-bind={strings}
+        />,
+        <select
+          multiple
+          data-bind={numbers}
+        />,
+        <select
+          multiple
+          data-bind={selections}
+        />,
+        <select
+          multiple
+          data-bind="uncheckedSelection"
+        />,
+        <select
+          multiple
+          data-bind={mod(object, { prop: "customSelection" })}
+        />,
+        // @ts-expect-error Single selects write string or number values, not objects.
+        <select data-bind={object} />,
+        // @ts-expect-error Multiple selects write arrays, not scalar numbers.
+        <select
+          multiple
+          data-bind={count}
+        />
+      ]
+
+      void nodes
+    })
+
+    expect(true).toBe(true)
+  })
+
   it("accepts only effect expressions at effect and lifecycle sites", () => {
     typecheckOnly(() => {
       const count = signal<number>("count")

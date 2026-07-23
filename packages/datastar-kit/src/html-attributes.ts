@@ -1,6 +1,12 @@
 /// <reference lib="dom" preserve="true" />
 
-import type { DatastarAttributes, DatastarAttributeValue } from "./ds/attribute-types.js"
+import type {
+  DatastarAttributes,
+  DatastarAttributeValue,
+  DatastarBindAttribute,
+  DatastarFile,
+  DatastarSignalReference
+} from "./ds/attribute-types.js"
 import type { HtmlChild, HtmlPropValue } from "./html.js"
 
 /**
@@ -859,6 +865,64 @@ interface HtmlElementAttributeDefinitions {
   view: SvgElementAttributes
 }
 
+type FileBindReference = DatastarSignalReference<readonly DatastarFile[], DatastarFile[]>
+type StringBindReference = DatastarSignalReference<string, string>
+type NumberBindReference = DatastarSignalReference<number, number>
+type StringOrNumberBindReference =
+  | StringBindReference
+  | NumberBindReference
+  | DatastarSignalReference<string | number, string | number>
+type StringOrNumberArrayBindReference =
+  | DatastarSignalReference<readonly string[], string[]>
+  | DatastarSignalReference<readonly number[], number[]>
+  | DatastarSignalReference<readonly (string | number)[], (string | number)[]>
+type StringOrNumberInputBindReference =
+  | StringOrNumberBindReference
+  | StringOrNumberArrayBindReference
+type BooleanOrStringInputBindReference =
+  | DatastarSignalReference<boolean, boolean>
+  | StringBindReference
+  | DatastarSignalReference<boolean | string, boolean | string>
+  | DatastarSignalReference<readonly boolean[], boolean[]>
+  | DatastarSignalReference<readonly string[], string[]>
+  | DatastarSignalReference<readonly (boolean | string)[], (boolean | string)[]>
+
+type TypedInputHtmlAttributes = Omit<InputHtmlAttributes, "type" | "data-bind"> &
+  (
+    | {
+        type: "file"
+        "data-bind"?: DatastarBindAttribute<FileBindReference>
+      }
+    | {
+        type: "checkbox"
+        "data-bind"?: DatastarBindAttribute<BooleanOrStringInputBindReference>
+      }
+    | {
+        type: "radio"
+        "data-bind"?: DatastarBindAttribute<StringOrNumberInputBindReference>
+      }
+    | {
+        type?: Exclude<InputHtmlAttributes["type"], "file" | "checkbox" | "radio">
+        "data-bind"?: DatastarBindAttribute<StringOrNumberInputBindReference>
+      }
+  )
+
+type TypedTextareaHtmlAttributes = Omit<TextareaHtmlAttributes, "data-bind"> & {
+  "data-bind"?: DatastarBindAttribute<StringBindReference>
+}
+
+type TypedSelectHtmlAttributes = Omit<SelectHtmlAttributes, "multiple" | "data-bind"> &
+  (
+    | {
+        multiple: true
+        "data-bind"?: DatastarBindAttribute<StringOrNumberArrayBindReference>
+      }
+    | {
+        multiple?: false | undefined
+        "data-bind"?: DatastarBindAttribute<StringOrNumberBindReference>
+      }
+  )
+
 type IntrinsicElementFor<Tag extends keyof HtmlElementAttributeDefinitions> =
   Tag extends keyof HTMLElementTagNameMap
     ? HTMLElementTagNameMap[Tag]
@@ -867,7 +931,13 @@ type IntrinsicElementFor<Tag extends keyof HtmlElementAttributeDefinitions> =
       : never
 
 type TypedHtmlElements = {
-  [Tag in keyof HtmlElementAttributeDefinitions]: HtmlElementAttributeDefinitions[Tag] &
+  [Tag in keyof HtmlElementAttributeDefinitions]: (Tag extends "input"
+    ? TypedInputHtmlAttributes
+    : Tag extends "select"
+      ? TypedSelectHtmlAttributes
+      : Tag extends "textarea"
+        ? TypedTextareaHtmlAttributes
+        : HtmlElementAttributeDefinitions[Tag]) &
     DatastarAttributes<IntrinsicElementFor<Tag>>
 }
 

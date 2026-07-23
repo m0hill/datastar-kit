@@ -1,7 +1,11 @@
 import type { HtmlPropValue } from "../html.js"
 import type { Expr } from "./expression.js"
 import type { DatastarModifierKeysFor } from "./modifier-rendering.js"
-import type { DatastarModifiedValue, DatastarModifierKey } from "./modifiers.js"
+import type {
+  DatastarModifiedValue,
+  DatastarModifierKey,
+  DatastarModifierOptions
+} from "./modifiers.js"
 import type { SignalStateInput, SignalTarget, SignalValueInput } from "./signals.js"
 
 /**
@@ -146,6 +150,37 @@ export interface DatastarSignalReference<out ReadValue = unknown, in WriteValue 
   /** Dotted signal path rendered as the attribute value. */
   readonly name: string
 }
+
+/** Encoded file value written by Datastar's native file-input binding adapter. */
+export interface DatastarFile {
+  /** Original browser file name. */
+  readonly name: string
+  /** Base64-encoded file contents without the data-URI prefix. */
+  readonly contents: string
+  /** Browser-reported media type. */
+  readonly mime: string
+}
+
+type DatastarPropBindModifiedValue = DatastarModifiedValue<
+  DatastarSignalReference | string,
+  DatastarBindModifierKey,
+  DatastarModifierOptions & { readonly prop: string }
+>
+
+/**
+ * Native `data-bind` value constrained to references compatible with the element's standard bind
+ * adapter. Raw signal names remain unchecked, while an explicit `prop` modifier opts into custom
+ * property semantics.
+ *
+ * @typeParam Reference Signal reference accepted by the native element adapter.
+ */
+export type DatastarBindAttribute<Reference extends DatastarSignalReference> =
+  | Reference
+  | string
+  | DatastarModifiedValue<Reference | string, DatastarBindModifierKey>
+  | DatastarPropBindModifiedValue
+  | null
+  | undefined
 
 /**
  * Signal filter accepted by filter-valued Datastar attributes such as `data-json-signals` and
@@ -302,10 +337,7 @@ export interface DatastarAttributes<RefElement = never> extends DatastarEventAtt
     | string
     | undefined
   /** Two-way binds an element value to a signal. @see https://data-star.dev/reference/attributes#data-bind */
-  "data-bind"?:
-    | DatastarModifiable<DatastarSignalReference | string, DatastarBindModifierKey>
-    | null
-    | undefined
+  "data-bind"?: DatastarBindAttribute<DatastarSignalReference>
   /** Toggles classes from an object of class names to truthy expressions. @see https://data-star.dev/reference/attributes#data-class */
   "data-class"?:
     | Readonly<Record<string, DatastarTruthyExpression>>

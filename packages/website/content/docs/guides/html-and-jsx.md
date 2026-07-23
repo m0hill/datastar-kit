@@ -89,9 +89,12 @@ import { preserve } from "datastar-kit"
 
 Intrinsic elements have typed common attributes. Your editor autocompletes HTML tag names,
 per-tag HTML attributes (`<input accept maxlength>`, `<form method enctype>`, ...), ARIA
-attributes, and every Datastar attribute. Known attribute values are checked too: `data-bind`
-expects a signal ref or name, `data-show` expects an expression, `data-signals` expects a signal
-object, and `<button type="...">` only accepts real button types.
+attributes, and every Datastar attribute. Known attribute values are checked too: `data-bind` expects a compatible signal ref or raw name,
+`data-show` expects an expression, `data-signals` expects a signal object, and
+`<button type="...">` only accepts real button types. Native binding follows Datastar's adapters:
+textareas write strings, file inputs write encoded file arrays, checkboxes write booleans or strings,
+and multiple selects write string/number arrays. Custom elements remain loosely bound, and an
+explicit `mod(ref, { prop: "..." })` opts into looser custom-property binding semantics.
 
 Keyed Datastar attributes are typed through template patterns, so `data-on:click` and common event
 names are suggested while custom events such as `data-on:widget-loaded` still type-check.
