@@ -8,7 +8,7 @@ export interface DatastarDebuggerBridgeSink {
   readonly initialise: (signals: Record<string, unknown>) => void
   readonly signalPatch: (patch: unknown, signals: Record<string, unknown>) => void
   readonly capture: (label: string, signals: Record<string, unknown>) => void
-  readonly restored: () => void
+  readonly restored: (restoreId: number | undefined) => void
 }
 
 declare global {
@@ -39,7 +39,7 @@ const signalRestoreExpression = `(() => {
   for (const [key, value] of Object.entries(signals)) {
     try { $[key] = value } catch {}
   }
-  window.${GLOBAL_NAME}?.restored()
+  window.${GLOBAL_NAME}?.restored(evt.detail?.restoreId)
 })()`
 
 /** Connects browser code to Datastar's signal scope through a hidden element. */
@@ -84,10 +84,10 @@ export class DatastarDebuggerBridge {
   }
 
   /** Restores a signal snapshot through Datastar. */
-  restore(signals: Readonly<Record<string, unknown>>): boolean {
+  restore(signals: Readonly<Record<string, unknown>>, restoreId: number): boolean {
     const bridge = this.bridgeElement
     if (!bridge?.isConnected) return false
-    bridge.dispatchEvent(new CustomEvent(RESTORE_EVENT, { detail: { signals } }))
+    bridge.dispatchEvent(new CustomEvent(RESTORE_EVENT, { detail: { signals, restoreId } }))
     return true
   }
 

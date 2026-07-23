@@ -1,14 +1,9 @@
-import {
-  DATASTAR_DEBUGGER_BRIDGE_SELECTOR,
-  DatastarDebuggerBridge,
-  type DatastarDebuggerBridgeSink
-} from "./bridge.js"
+import { DatastarDebuggerBrowserEnvironment } from "./browser-environment.js"
 import { DebuggerFormat } from "./format.js"
-import { DatastarDebuggerRecorder, type TimelineCommand } from "./recorder.js"
+import { DatastarDebuggerSession, type DatastarDebuggerSessionIntent } from "./session.js"
 import { debuggerStyles } from "./styles.js"
 import type {
   DatastarDebuggerEventEntry,
-  DatastarDebuggerFetchEntry,
   DatastarDebuggerState,
   DatastarDebuggerTab
 } from "./types.js"
@@ -19,8 +14,6 @@ export const DATASTAR_DEBUGGER_ELEMENT_NAME = "datastar-kit-debugger" as const
 const OPEN_ATTRIBUTE = "open"
 const MAX_EVENTS_ATTRIBUTE = "max-events"
 const MAX_SNAPSHOTS_ATTRIBUTE = "max-snapshots"
-const SNAPSHOT_SETTLE_MS = 80
-const RESTORE_FALLBACK_MS = 100
 interface DebuggerElements {
   readonly details: HTMLDetailsElement
   readonly signalCount: HTMLElement
@@ -38,12 +31,6 @@ interface DebuggerElements {
   readonly events: HTMLElement
   readonly timelineRange: HTMLInputElement
   readonly timelineStatus: HTMLElement
-}
-
-interface DatastarFetchDetail {
-  readonly type?: string
-  readonly el?: unknown
-  readonly argsRaw?: Readonly<Record<string, unknown>>
 }
 
 const template = `
@@ -98,15 +85,9 @@ export const createDatastarDebuggerElementClass = (): CustomElementConstructor =
     }
 
     private readonly elements: DebuggerElements
-    private recorder: DatastarDebuggerRecorder | undefined
-    private bridge: DatastarDebuggerBridge | undefined
+    private session: DatastarDebuggerSession | undefined
     private readonly cleanup: Array<() => void> = []
     private connected = false
-    private snapshotTimer: number | undefined
-    private restoreTimer: number | undefined
-    private restoreFallbackTimer: number | undefined
-    private restoreVersion = 0
-    private afterRestore: (() => void) | undefined
 
     constructor() {
       super()
@@ -148,23 +129,15 @@ export const createDatastarDebuggerElementClass = (): CustomElementConstructor =
       this.connected = true
       const maxEvents = readPositiveInteger(this, MAX_EVENTS_ATTRIBUTE)
       const maxSnapshots = readPositiveInteger(this, MAX_SNAPSHOTS_ATTRIBUTE)
-      this.recorder = new DatastarDebuggerRecorder({
-        ...(maxEvents === undefined ? {} : { maxEvents }),
-        ...(maxSnapshots === undefined ? {} : { maxSnapshots })
-      })
       this.elements.details.open = readOpen(this)
-
-      const sink: DatastarDebuggerBridgeSink = {
-        initialise: (signals) => this.handleInitialSignals(signals),
-        signalPatch: (patch, signals) => this.handleSignalPatch(patch, signals),
-        capture: (label, signals) => this.captureSnapshot(label, signals),
-        restored: () => this.finishRestore()
-      }
-      this.bridge = new DatastarDebuggerBridge(sink)
-      this.bridge.connect()
-      document.addEventListener("datastar-fetch", this.handleFetchEvent)
-      this.cleanup.push(() => document.removeEventListener("datastar-fetch", this.handleFetchEvent))
+      this.session = new DatastarDebuggerSession({
+        environment: new DatastarDebuggerBrowserEnvironment(this),
+        ...(maxEvents === undefined ? {} : { maxEvents }),
+        ...(maxSnapshots === undefined ? {} : { maxSnapshots }),
+        onStateChange: () => this.render()
+      })
       this.bindControls()
+      this.session.start()
       this.render()
     }
 
@@ -172,43 +145,35 @@ export const createDatastarDebuggerElementClass = (): CustomElementConstructor =
       if (!this.connected && this.cleanup.length === 0) return
       this.connected = false
       for (const remove of this.cleanup.splice(0)) remove()
-      this.clearSnapshotTimer()
-      this.clearRestoreTimers()
-      this.bridge?.disconnect()
-      this.bridge = undefined
-      this.recorder = undefined
-      this.afterRestore = undefined
+      this.session?.dispose()
+      this.session = undefined
     }
 
     private bindControls(): void {
       for (const button of this.elements.tabButtons) {
         this.listen(button, "click", () => {
           const tab = button.dataset.tab
-          if (isDebuggerTab(tab)) {
-            this.recorder?.setTab(tab)
-            this.render()
-          }
+          if (isDebuggerTab(tab)) this.send({ _tag: "setTab", tab })
         })
       }
       this.listen(this.elements.search, "input", () => {
-        this.recorder?.setSearch(this.elements.search.value)
-        this.render()
+        this.send({ _tag: "setSearch", search: this.elements.search.value })
       })
       this.listen(this.elements.pauseButton, "click", () => {
-        this.recorder?.togglePaused()
-        this.render()
+        this.send({ _tag: "togglePaused" })
       })
       this.listen(this.elements.clearEventsButton, "click", () => {
-        this.recorder?.clearEvents()
-        this.render()
+        this.send({ _tag: "clearEvents" })
       })
       this.listen(this.elements.clearSnapshotsButton, "click", () => {
-        if (this.recorder?.clearSnapshots()) this.clearSnapshotTimer()
-        this.render()
+        this.send({ _tag: "clearSnapshots" })
       })
-      this.listen(this.elements.liveButton, "click", () => this.restore(this.recorder?.goLive()))
+      this.listen(this.elements.liveButton, "click", () => this.send({ _tag: "goLive" }))
       this.listen(this.elements.timelineRange, "input", () => {
-        this.restore(this.recorder?.selectSnapshot(this.elements.timelineRange.valueAsNumber))
+        this.send({
+          _tag: "selectSnapshot",
+          index: this.elements.timelineRange.valueAsNumber
+        })
       })
     }
 
@@ -217,141 +182,12 @@ export const createDatastarDebuggerElementClass = (): CustomElementConstructor =
       this.cleanup.push(() => target.removeEventListener(type, listener))
     }
 
-    private handleInitialSignals(signals: Record<string, unknown>): void {
-      this.recorder?.setSignals(signals)
-      this.scheduleSnapshot("initial")
-      this.render()
-    }
-
-    private handleSignalPatch(patch: unknown, signals: Record<string, unknown>): void {
-      const recorded = this.recorder?.recordSignalPatch(signals, {
-        at: DebuggerFormat.nowLabel(),
-        kind: "signal",
-        patch: DebuggerFormat.toDebugValue(patch)
-      })
-      if (recorded) this.scheduleSnapshot("signal patch")
-      this.render()
-    }
-
-    private readonly handleFetchEvent = (event: Event): void => {
-      const detail = readFetchDetail("detail" in event ? event.detail : undefined)
-      const type = detail.type ?? "datastar-fetch"
-      const argsRaw = detail.argsRaw ?? {}
-      const target = DebuggerFormat.patchTarget(type, argsRaw)
-      const entry: DatastarDebuggerFetchEntry = {
-        at: DebuggerFormat.nowLabel(),
-        kind: "fetch",
-        type,
-        element: DebuggerFormat.toElementLabel(detail.el),
-        ...(target ? { target } : {}),
-        argsRaw: DebuggerFormat.toDebugRecord(argsRaw),
-        ...(type === "started" && this.recorder
-          ? { signals: DebuggerFormat.cloneSignals(this.recorder.signals) }
-          : {})
-      }
-      if (this.recorder?.recordFetch(entry) && type === "datastar-patch-elements") {
-        this.scheduleSnapshot(type)
-      }
-      this.render()
-    }
-
-    private scheduleSnapshot(label: string): void {
-      if (this.snapshotTimer !== undefined || !this.recorder?.isRecording) return
-      this.snapshotTimer = window.setTimeout(() => {
-        this.snapshotTimer = undefined
-        if (!this.recorder?.isRecording) return
-        const countBefore = this.recorder.snapshots.length
-        const requested = this.bridge?.requestSnapshot(label) ?? false
-        if (!requested || this.recorder.snapshots.length === countBefore) {
-          this.captureSnapshot(label, DebuggerFormat.cloneSignals(this.recorder.signals))
-        }
-      }, SNAPSHOT_SETTLE_MS)
-    }
-
-    private captureSnapshot(label: string, signals: Record<string, unknown>): void {
-      const recorder = this.recorder
-      if (!recorder) return
-      if (
-        recorder.recordSnapshot({
-          at: DebuggerFormat.nowLabel(),
-          label,
-          html: this.captureBodyHtml(),
-          signals: DebuggerFormat.cloneSignals(signals)
-        })
-      ) {
-        this.render()
-      }
-    }
-
-    private captureBodyHtml(): string {
-      const clone = document.body.cloneNode(true)
-      if (!(clone instanceof HTMLElement)) return ""
-      for (const element of Array.from(
-        clone.querySelectorAll(
-          `${DATASTAR_DEBUGGER_ELEMENT_NAME}, ${DATASTAR_DEBUGGER_BRIDGE_SELECTOR}`
-        )
-      )) {
-        element.remove()
-      }
-      return clone.innerHTML
-    }
-
-    private restore(command: TimelineCommand | undefined): void {
-      if (!command || command._tag === "none") return
-      this.applySnapshot(
-        command.snapshot,
-        command.resumeLive
-          ? () => {
-              this.recorder?.completeLiveRestore()
-              this.render()
-            }
-          : undefined
-      )
-      this.render()
-    }
-
-    private applySnapshot(
-      snapshot: { readonly html: string; readonly signals: Readonly<Record<string, unknown>> },
-      afterRestore?: () => void
-    ): void {
-      const bridge = this.bridge
-      if (!bridge) return
-      const bridgeElement = bridge.connect()
-      const { body } = document
-      if (this.parentElement !== body) body.appendChild(this)
-      if (bridgeElement.parentElement !== body) body.appendChild(bridgeElement)
-
-      for (const child of Array.from(body.children)) {
-        if (child !== this && child !== bridgeElement) child.remove()
-      }
-      this.insertAdjacentHTML("beforebegin", snapshot.html)
-
-      const version = ++this.restoreVersion
-      this.clearRestoreTimers()
-      this.afterRestore = afterRestore
-      this.restoreTimer = window.setTimeout(() => {
-        this.restoreTimer = undefined
-        if (!this.connected || version !== this.restoreVersion) return
-        this.restoreFallbackTimer = window.setTimeout(
-          () => this.finishRestore(),
-          RESTORE_FALLBACK_MS
-        )
-        if (!bridge.restore(snapshot.signals)) this.finishRestore()
-      })
-    }
-
-    private finishRestore(): void {
-      if (this.restoreFallbackTimer !== undefined) {
-        window.clearTimeout(this.restoreFallbackTimer)
-        this.restoreFallbackTimer = undefined
-      }
-      const afterRestore = this.afterRestore
-      this.afterRestore = undefined
-      afterRestore?.()
+    private send(intent: DatastarDebuggerSessionIntent): void {
+      this.session?.send(intent)
     }
 
     private render(): void {
-      const state = this.recorder?.state()
+      const state = this.session?.state()
       if (!state) return
       this.elements.signalCount.textContent = `${Object.keys(state.signals).length} signals`
       this.elements.eventCount.textContent = `${state.events.length} events`
@@ -413,19 +249,6 @@ export const createDatastarDebuggerElementClass = (): CustomElementConstructor =
       this.elements.timelineRange.value = String(index)
       this.elements.timelineRange.disabled = state.snapshots.length < 2
       this.elements.timelineStatus.textContent = timelineStatus(state, index)
-    }
-
-    private clearSnapshotTimer(): void {
-      if (this.snapshotTimer === undefined) return
-      window.clearTimeout(this.snapshotTimer)
-      this.snapshotTimer = undefined
-    }
-
-    private clearRestoreTimers(): void {
-      if (this.restoreTimer !== undefined) window.clearTimeout(this.restoreTimer)
-      if (this.restoreFallbackTimer !== undefined) window.clearTimeout(this.restoreFallbackTimer)
-      this.restoreTimer = undefined
-      this.restoreFallbackTimer = undefined
     }
   }
 
@@ -537,26 +360,6 @@ const readPositiveInteger = (element: HTMLElement, name: string): number | undef
 
 const isDebuggerTab = (value: string | undefined): value is DatastarDebuggerTab =>
   value === "signals" || value === "events" || value === "timeline"
-
-const readFetchDetail = (value: unknown): DatastarFetchDetail => {
-  if (!value || typeof value !== "object") return {}
-  const type = "type" in value ? value.type : undefined
-  const element = "el" in value ? value.el : undefined
-  const argsRaw = "argsRaw" in value ? value.argsRaw : undefined
-  return {
-    ...(typeof type === "string" ? { type } : {}),
-    ...("el" in value ? { el: element } : {}),
-    ...(argsRaw && typeof argsRaw === "object" && !Array.isArray(argsRaw)
-      ? { argsRaw: copyUnknownRecord(argsRaw) }
-      : {})
-  }
-}
-
-const copyUnknownRecord = (value: object): Record<string, unknown> => {
-  const output: Record<string, unknown> = {}
-  for (const [key, item] of Object.entries(value)) output[key] = item
-  return output
-}
 
 const timelineStatus = (state: DatastarDebuggerState, index: number): string => {
   const count = state.snapshots.length
