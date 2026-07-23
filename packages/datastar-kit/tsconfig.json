@@ -9,7 +9,7 @@
       "datastar-kit/jsx-runtime": ["./src/jsx-runtime.ts"],
       "datastar-kit/jsx-dev-runtime": ["./src/jsx-dev-runtime.ts"],
       "datastar-kit/sse": ["./src/sse.ts"],
-      "datastar-kit/debugger": ["./src/debugger.ts"]
+      "datastar-kit/debugger": ["./src/debugger/index.ts"]
     }
   },
   "include": ["src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"],

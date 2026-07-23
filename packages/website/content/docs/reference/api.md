@@ -25,11 +25,11 @@ The root package exports helpers for action expressions, signal refs, typed sign
 
 ### State and signals
 
-| API               | Use                                                                                      |
-| ----------------- | ---------------------------------------------------------------------------------------- |
-| `state(defaults)` | Create typed leaf refs, frozen defaults, partial patches, and reset payloads.            |
-| `signal(name)`    | Create a standalone typed signal ref.                                                    |
-| `local(name)`     | Create an underscore-prefixed local/private signal ref.                                  |
+| API               | Use                                                                           |
+| ----------------- | ----------------------------------------------------------------------------- |
+| `state(defaults)` | Create typed leaf refs, frozen defaults, partial patches, and reset payloads. |
+| `signal(name)`    | Create a standalone typed signal ref.                                         |
+| `local(name)`     | Create an underscore-prefixed local/private signal ref.                       |
 
 ### Actions
 
@@ -145,20 +145,12 @@ Types exported from the root include `HtmlChild`, `HtmlNode`, `HtmlProps`, `Html
 | Subpath                        | Use                                                                         |
 | ------------------------------ | --------------------------------------------------------------------------- |
 | `datastar-kit/sse`             | Low-level Datastar SSE encoders and comment chunks for custom integrations. |
-| `datastar-kit/debugger`        | Development-only `DatastarDebugger` TSX component and related types.        |
+| `datastar-kit/debugger`        | Development-only browser entry that installs the debugger Web Component.    |
 | `datastar-kit/jsx-runtime`     | TypeScript automatic JSX runtime entrypoint.                                |
 | `datastar-kit/jsx-dev-runtime` | TypeScript automatic JSX development runtime entrypoint.                    |
 
 ### `datastar-kit/debugger`
 
-This subpath exports a minimal server-rendered debugger component built from ordinary Datastar attributes. Use it in development pages to inspect the current signal snapshot, a compact searchable event log of `datastar-signal-patch` plus Datastar fetch/SSE activity, and timeline snapshots for restoring earlier page/signal state.
-
-| API                            | Use                                                |
-| ------------------------------ | -------------------------------------------------- |
-| `DatastarDebugger(props?)`     | TSX/server-rendered debugger panel.                |
-| `datastarDebuggerDefaults()`   | Initial local signal state used by the panel.      |
-| `DATASTAR_DEBUGGER_STATE_NAME` | Default local signal name, `_datastarKitDebugger`. |
-
-Types include `DatastarDebuggerProps`, `DatastarDebuggerState`, `DatastarDebuggerTab`, `DatastarDebuggerStateName`, `DatastarDebuggerEventEntry`, `DatastarDebuggerSignalPatchEntry`, `DatastarDebuggerFetchEntry`, `DatastarDebuggerSnapshotEntry`, and `DatastarDebuggerTravelState`.
+Import this side-effect-only browser entry from development pages to register and add the `<datastar-kit-debugger>` Web Component. It inspects signals, Datastar events, and best-effort timeline snapshots. The subpath has no programmatic API.
 
 Related guides: [Actions and responses](../guides/actions-and-responses.md), [Signals](../guides/signals.md), [Debugger](../guides/debugger.md), [HTML and JSX](../guides/html-and-jsx.md).

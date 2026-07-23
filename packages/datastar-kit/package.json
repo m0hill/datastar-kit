@@ -33,8 +33,8 @@
       "default": "./dist/sse.js"
     },
     "./debugger": {
-      "types": "./dist/debugger.d.ts",
-      "default": "./dist/debugger.js"
+      "types": "./dist/debugger/index.d.ts",
+      "default": "./dist/debugger/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -47,9 +47,11 @@
   "publishConfig": {
     "access": "public"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "./dist/debugger/index.js"
+  ],
   "scripts": {
-    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json && esbuild src/debugger/index.ts --bundle --format=esm --target=es2022 --sourcemap --outfile=dist/debugger/index.js",
     "check": "pnpm run typecheck && pnpm run test && pnpm run build",
     "pack:dry-run": "pnpm pack --dry-run",
     "prepack": "pnpm run build",
@@ -67,6 +69,7 @@
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "esbuild": "^0.28.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14",
     "zod": "^4.4.3"

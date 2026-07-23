@@ -4,10 +4,11 @@
 
 ### Added
 
-- Added timeline snapshots to `DatastarDebugger` for restoring earlier page HTML and browser signal state during development.
+- Added a browser-installed debugger Web Component with timeline snapshots for restoring earlier page HTML and browser signal state during development.
 
 ### Removed
 
+- Removed the server-rendered `DatastarDebugger` component. Load the development-only Web Component from `datastar-kit/debugger` instead.
 - Removed `state(...).ref(path)` and its `StatePathError`/path helper types; use `state(...).refs` for known leaf refs or `Signal.path(...)` for dynamic child refs.
 
 ### Fixed

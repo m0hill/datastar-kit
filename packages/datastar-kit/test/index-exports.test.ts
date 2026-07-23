@@ -115,10 +115,6 @@ describe("package exports", () => {
       "patchElements",
       "patchSignals"
     ])
-    expect(exportedKeys(debuggerModule)).toEqual([
-      "DATASTAR_DEBUGGER_STATE_NAME",
-      "DatastarDebugger",
-      "datastarDebuggerDefaults"
-    ])
+    expect(exportedKeys(debuggerModule)).toEqual([])
   })
 })

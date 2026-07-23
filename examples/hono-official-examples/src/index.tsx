@@ -3,6 +3,7 @@ import { serveStatic } from "@hono/node-server/serve-static"
 import { fileURLToPath } from "node:url"
 import { Hono } from "hono"
 import { reply } from "datastar-kit"
+import { debuggerDevelopment } from "./debugger-development.js"
 import { Shell, pageHead } from "./layout.js"
 import { example as activeSearch } from "./examples/active-search.js"
 import { example as animations } from "./examples/animations.js"
@@ -33,6 +34,7 @@ import { example as todomvc } from "./examples/todomvc.js"
 import { example as webComponent } from "./examples/web-component.js"
 
 const app = new Hono()
+const debuggerScript = await debuggerDevelopment.loadScript()
 
 export const indexPage = (): Response =>
   reply.page(
@@ -56,6 +58,14 @@ app.use(
     }
   })
 )
+
+if (debuggerScript !== undefined) {
+  app.get(debuggerDevelopment.scriptPath, (c) => {
+    c.header("Cache-Control", "no-store")
+    c.header("Content-Type", "text/javascript; charset=utf-8")
+    return c.body(debuggerScript)
+  })
+}
 
 app.get("/", () => indexPage())
 

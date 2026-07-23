@@ -83,7 +83,7 @@ Documentation pages live in `packages/website/content/docs/*.md` and are compile
 
 ### Other
 
-- `debugger.ts` — the development-only `DatastarDebugger` component.
+- `debugger/` — the development-only debugger Web Component, recorder, and Datastar signal bridge.
 - `index.ts` / `types.ts` — public root exports and shared types.
 
 ## Design constraints

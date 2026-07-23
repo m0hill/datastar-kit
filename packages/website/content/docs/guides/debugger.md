@@ -1,67 +1,76 @@
 # Debugger
 
-`datastar-kit/debugger` provides a small development-only debugger component built with the same TSX and Datastar attribute authoring model as the rest of Datastar Kit.
+`datastar-kit/debugger` provides a development-only Web Component for inspecting Datastar pages.
 
-It renders ordinary HTML. There is no custom element to register and no separate client bundle to serve.
+The debugger runs in browser JavaScript, renders its UI in Shadow DOM, and keeps recorded data out of your application signals. Do not load it in production: events and timeline snapshots may contain sensitive page data.
 
-## Add it to a page
+## Add it to development pages
 
-```tsx
-import { reply } from "datastar-kit"
-import { DatastarDebugger } from "datastar-kit/debugger"
+Load the debugger from a browser entrypoint that your application includes only in development:
 
-const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
-
-export const page = () =>
-  reply.page(
-    <>
-      <main>{/* your app */}</main>
-      {process.env.NODE_ENV === "development" ? <DatastarDebugger /> : null}
-    </>,
-    {
-      head: (
-        <script
-          type="module"
-          src={DATASTAR_RUNTIME}
-        />
-      )
-    }
-  )
+```ts
+// browser-development.ts
+import "datastar-kit/debugger"
 ```
 
-Do not ship the debugger in production pages. It mirrors browser-side signal state, records Datastar event payloads, and stores timeline snapshots of the page body for developer inspection. If you want to catch `data-init` fetches, render it early in the document body before the components that start those fetches.
+The import registers and adds a collapsed debugger with bounded history. How the development entrypoint is selected is up to your application or build tool; keep it out of production builds and pages.
+
+For a server-rendered page without an application bundle, copy the built `datastar-kit/debugger` browser file to your development assets and load it before Datastar:
+
+```html
+<script
+  type="module"
+  src="/__dev/datastar-kit-debugger.js"
+></script>
+<script
+  type="module"
+  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
+></script>
+```
+
+For custom settings, add an element before loading the debugger script:
+
+```html
+<datastar-kit-debugger
+  open
+  max-events="200"
+  max-snapshots="50"
+></datastar-kit-debugger>
+```
+
+A pinned CDN package can also provide the debugger during development:
+
+```html
+<script
+  type="module"
+  src="https://esm.sh/datastar-kit@x.y.z/debugger"
+></script>
+```
+
+Replace `x.y.z` with the exact package version you use.
 
 ## What it shows
 
-The debugger is intentionally plain: a fixed `<details>` panel with three tabs.
+- **Signals** shows the current browser signal snapshot as searchable JSON.
+- **Events** records signal patches and Datastar fetch activity, newest first.
+- **Timeline** records page HTML and signal snapshots. Moving the slider restores an earlier snapshot and pauses recording until you return to Live.
 
-- **Signals**: the current browser signal snapshot as syntax-highlighted JSON, excluding the debugger's own local signal.
-- **Events**: a newest-first Datastar event timeline. Rows show time, event type, and the patch target when known; otherwise they show the source element. Expand a row for syntax-highlighted JSON details; element patches show formatted HTML separately. `started` fetch events also capture the signal snapshot at that moment.
-- **Timeline**: snapshots of the page body and browser signals. Drag the slider to restore an earlier snapshot; recording pauses while you are time traveling. Scrub to the newest snapshot or press **Live** to resume.
+Plain search text is case-insensitive. A value such as `/user.*email/i` uses a regular expression. Pause stops event and snapshot recording. Clear removes the history for the selected tab.
 
-Use **Search** to filter the Signals and Events tabs. Plain text is case-insensitive; `/pattern/i` uses a regular expression. Search stays visible but is disabled on Timeline. Use **Pause** to stop recording events and timeline snapshots. The **Clear** button appears on the Events tab to empty the event log and on the Timeline tab to delete snapshots while live.
+## Element attributes
 
-## Props
+| Attribute       | Default | Use                                   |
+| --------------- | ------- | ------------------------------------- |
+| `open`          | absent  | Add it to start with the panel open.  |
+| `max-events`    | `100`   | Maximum events retained in memory.    |
+| `max-snapshots` | `50`    | Maximum snapshots retained in memory. |
 
-| Prop                | Default                   | Use                                                                  |
-| ------------------- | ------------------------- | -------------------------------------------------------------------- |
-| `id`                | `"datastar-kit-debugger"` | Container id.                                                        |
-| `stateName`         | `"_datastarKitDebugger"`  | Local root signal used by the debugger. Must be underscore-prefixed. |
-| `open`              | `true`                    | Whether the `<details>` panel starts expanded.                       |
-| `maxEvents`         | `100`                     | Maximum debugger events retained in browser state.                   |
-| `maxSnapshots`      | `50`                      | Maximum timeline snapshots retained in browser state.                |
-| `class`/`className` | none                      | Additional container class.                                          |
-| `style`             | none                      | Inline container style.                                              |
+Only one debugger element should be connected to a page.
 
-## Customizing
+## Time travel limitations
 
-Because the debugger is just server-rendered HTML with Datastar attributes, you can copy it, style it, or use the exported state shape as a starting point:
+Time travel is a best-effort development aid. It restores body HTML and Datastar signals, not the complete browser process.
 
-```tsx
-import type { DatastarDebuggerState } from "datastar-kit/debugger"
-```
-
-The component stores its UI state in one local signal. By default that signal is `_datastarKitDebugger`, so it is excluded from Datastar fetch payloads by Datastar's default underscore convention. Timeline snapshots keep rendered body HTML and signal JSON in that local signal, so lower `maxSnapshots` on large pages.
+Restoring a snapshot can restart `data-init` requests or streams. It cannot restore imperative event listeners, focus, scroll position, canvas or media state, or state held by third-party widgets. Computed signals may also update the restored page immediately.
 
 Next: [Testing](testing.md).

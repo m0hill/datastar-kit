@@ -1,9 +1,10 @@
 import { execFile as execFileCallback, spawnSync } from "node:child_process"
 import { createServer, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
+import { fileURLToPath } from "node:url"
 import { promisify } from "node:util"
+import { build } from "esbuild"
 import { describe, expect, it } from "vitest"
-import { DatastarDebugger } from "../src/debugger.js"
 import { post, signal } from "../src/ds/index.js"
 import { h, renderToString, unsafeHtml } from "../src/html.js"
 
@@ -13,6 +14,7 @@ const agentBrowserAvailable =
 const browserIt = agentBrowserAvailable ? it : it.skip
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
+const DEBUGGER_AUTO_SCRIPT = "/datastar-kit-debugger.js"
 
 const runtimePage = (): string => {
   const count = signal<number, "count">("count")
@@ -103,7 +105,12 @@ const timeTravelPage = (): string => {
     h(
       "html",
       { lang: "en" },
-      h("head", {}, h("script", { type: "module", src: DATASTAR_RUNTIME })),
+      h(
+        "head",
+        {},
+        h("script", { type: "module", src: DEBUGGER_AUTO_SCRIPT }),
+        h("script", { type: "module", src: DATASTAR_RUNTIME })
+      ),
       h(
         "body",
         {},
@@ -120,11 +127,24 @@ const timeTravelPage = (): string => {
             },
             "+"
           )
-        ),
-        DatastarDebugger({ open: false })
+        )
       )
     )
   )}`
+}
+
+const buildDebuggerScript = async (): Promise<string> => {
+  const result = await build({
+    entryPoints: [fileURLToPath(new URL("../src/debugger/index.ts", import.meta.url))],
+    bundle: true,
+    format: "esm",
+    platform: "browser",
+    target: "es2022",
+    write: false
+  })
+  const output = result.outputFiles[0]
+  if (!output) throw new Error("Debugger browser bundle was not produced")
+  return output.text
 }
 
 const serveTimeTravelFixture = async (): Promise<{
@@ -132,7 +152,14 @@ const serveTimeTravelFixture = async (): Promise<{
   readonly url: string
 }> => {
   let serverCount = 0
+  const debuggerScript = await buildDebuggerScript()
   const server = createServer((request, response) => {
+    if (request.url === DEBUGGER_AUTO_SCRIPT) {
+      response.writeHead(200, { "content-type": "text/javascript; charset=utf-8" })
+      response.end(debuggerScript)
+      return
+    }
+
     if (request.url === "/increment") {
       serverCount += 1
       response.writeHead(200, { "content-type": "application/json; charset=utf-8" })
@@ -279,14 +306,15 @@ describe("Datastar browser runtime integration", () => {
         })
         return stdout.trim()
       }
-      const statusSelector = ".datastar-kit-debugger .dsk-debug-timeline-status"
+      const statusSelector = ".dsk-debug-timeline-status"
       const waitForState = async (expression: string): Promise<void> => {
         await browser(
           "eval",
           `(async () => {
+            const debuggerRoot = () => document.querySelector("datastar-kit-debugger")?.shadowRoot
             const ready = () => {
               const count = document.querySelector("#count")?.textContent
-              const status = document.querySelector(${JSON.stringify(statusSelector)})?.textContent
+              const status = debuggerRoot()?.querySelector(${JSON.stringify(statusSelector)})?.textContent
               return ${expression}
             }
             const deadline = Date.now() + 4000
@@ -295,7 +323,7 @@ describe("Datastar browser runtime integration", () => {
             }
             if (!ready()) {
               const count = document.querySelector("#count")?.textContent
-              const status = document.querySelector(${JSON.stringify(statusSelector)})?.textContent
+              const status = debuggerRoot()?.querySelector(${JSON.stringify(statusSelector)})?.textContent
               throw new Error("Timed out waiting for ${expression.replaceAll('"', "'")}; count=" + count + " status=" + status)
             }
           })()`
@@ -308,9 +336,60 @@ describe("Datastar browser runtime integration", () => {
         await waitForSelector(browser, "#increment")
 
         await waitForState(`status?.includes("1 snapshot")`)
+        const mounted = JSON.parse(
+          await browser(
+            "eval",
+            `(() => {
+              const root = document.querySelector("datastar-kit-debugger")?.shadowRoot
+              const details = root?.querySelector("details")
+              const collapsedByDefault = details?.open === false
+              details?.querySelector("summary")?.click()
+              const hiddenPanel = root?.querySelector('[data-panel="events"]')
+              const hiddenControl = root?.querySelector('[data-action="clear-events"]')
+              const result = {
+                collapsedByDefault,
+                bridge: document.querySelector("[data-datastar-kit-debugger-bridge]") !== null,
+                hiddenPanelDisplay: hiddenPanel ? getComputedStyle(hiddenPanel).display : null,
+                hiddenControlDisplay: hiddenControl ? getComputedStyle(hiddenControl).display : null
+              }
+              details?.querySelector("summary")?.click()
+              return result
+            })()`
+          )
+        ) as {
+          collapsedByDefault: boolean
+          bridge: boolean
+          hiddenPanelDisplay: string | null
+          hiddenControlDisplay: string | null
+        }
+        expect(mounted).toEqual({
+          collapsedByDefault: true,
+          bridge: true,
+          hiddenPanelDisplay: "none",
+          hiddenControlDisplay: "none"
+        })
+
+        await browser(
+          "eval",
+          `document.querySelector("#app")?.append(document.querySelector("datastar-kit-debugger"))`
+        )
 
         await browser("eval", `document.querySelector("#increment").click()`)
         await waitForState(`count === "1" && status?.includes("2 snapshots")`)
+        const recorded = JSON.parse(
+          await browser(
+            "eval",
+            `(() => {
+              const root = document.querySelector("datastar-kit-debugger")?.shadowRoot
+              return {
+                signals: root?.querySelector('[data-role="signals"]')?.textContent,
+                events: root?.querySelector('[data-role="event-count"]')?.textContent
+              }
+            })()`
+          )
+        ) as { signals: string; events: string }
+        expect(recorded.signals).toContain('"count": 1')
+        expect(recorded.events).not.toBe("0 events")
 
         await browser("eval", `document.querySelector("#increment").click()`)
         await waitForState(`count === "2" && status?.includes("3 snapshots")`)
@@ -318,16 +397,16 @@ describe("Datastar browser runtime integration", () => {
         await browser(
           "eval",
           `(() => {
-            const track = document.querySelector(".datastar-kit-debugger .dsk-slider-track")
-            track.focus()
-            track.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }))
+            const range = document.querySelector("datastar-kit-debugger")?.shadowRoot?.querySelector(".dsk-timeline-range")
+            range.value = "0"
+            range.dispatchEvent(new InputEvent("input", { bubbles: true }))
           })()`
         )
         await waitForState(`count === "0" && status?.startsWith("1/3")`)
 
         await browser(
           "eval",
-          `document.querySelector(".datastar-kit-debugger .dsk-debug-live").click()`
+          `document.querySelector("datastar-kit-debugger")?.shadowRoot?.querySelector(".dsk-debug-live").click()`
         )
         await waitForState(`count === "2" && status?.includes("live")`)
 
@@ -345,6 +424,49 @@ describe("Datastar browser runtime integration", () => {
           )
         ) as { count: string }
         expect(afterResume.count).toBe("3")
+
+        const formattedEvent = JSON.parse(
+          await browser(
+            "eval",
+            `(() => {
+              document.dispatchEvent(new CustomEvent("datastar-fetch", {
+                detail: { type: "started", argsRaw: { value: '<img src=x onerror="window.__injected=true">' } }
+              }))
+              document.dispatchEvent(new CustomEvent("datastar-fetch", {
+                detail: {
+                  type: "datastar-patch-elements",
+                  argsRaw: { elements: '<section id="result"><strong>Updated</strong></section>' }
+                }
+              }))
+              const root = document.querySelector("datastar-kit-debugger")?.shadowRoot
+              const patchEvent = Array.from(root?.querySelectorAll(".dsk-debug-event") ?? [])
+                .find((element) => element.querySelector("summary")?.textContent?.includes("datastar-patch-elements"))
+              return {
+                formattedPatch: patchEvent?.querySelector('pre[data-content="html"]')?.textContent,
+                injectedElement: root?.querySelector(".dsk-debug-event img") !== null
+              }
+            })()`
+          )
+        ) as { formattedPatch: string; injectedElement: boolean }
+        expect(formattedEvent.formattedPatch).toBe(
+          '<section id="result">\n  <strong>Updated</strong>\n</section>'
+        )
+        expect(formattedEvent.injectedElement).toBe(false)
+
+        const afterRemoval = JSON.parse(
+          await browser(
+            "eval",
+            `(async () => {
+              document.querySelector("datastar-kit-debugger")?.remove()
+              await Promise.resolve()
+              return {
+                bridge: document.querySelector("[data-datastar-kit-debugger-bridge]") !== null,
+                callback: window.__datastarKitDebugger !== undefined
+              }
+            })()`
+          )
+        ) as { bridge: boolean; callback: boolean }
+        expect(afterRemoval).toEqual({ bridge: false, callback: false })
       } finally {
         await execFile("agent-browser", ["--session-name", session, "close"], {
           timeout: 20_000
