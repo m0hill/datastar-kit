@@ -20,6 +20,7 @@ export const negativeFixture = (
       aria-labl="misspelled"
       data-shwo={count}
     />
+    <my-widget data-ref={signal<boolean>("wrongRef")} />
     <div
       // @ts-expect-error intentional id value error
       id={42}

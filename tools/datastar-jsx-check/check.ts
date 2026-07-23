@@ -18,6 +18,7 @@ export type DatastarJsxDiagnosticCode =
   | "invalid-datastar-modifier"
   | "unsupported-rich-attribute"
   | "unregistered-rich-data-attribute"
+  | "unregistered-custom-element-ref"
   | "unknown-vendor-attribute"
 
 /** A source-anchored Datastar JSX checker diagnostic. */
@@ -227,7 +228,7 @@ const checkAttribute = (
   sourceFile: ts.SourceFile,
   propsType: ts.Type,
   attribute: CheckedAttribute,
-  allowUnknownVendorAttributes: boolean
+  looseCustomElement: boolean
 ): DatastarJsxDiagnostic | undefined => {
   const { name } = attribute
   if (
@@ -268,7 +269,19 @@ const checkAttribute = (
   if (name.startsWith("data-")) {
     const knownIssue = checkKnownDatastarAttribute(sourceFile, attribute, name)
     if (knownIssue !== undefined) return knownIssue
-    if (resolveDatastarAttributeRoot(datastarAttributeRoot(name)) !== undefined) return undefined
+
+    const resolved = resolveDatastarAttributeRoot(datastarAttributeRoot(name))
+    if (resolved !== undefined) {
+      if (looseCustomElement && resolved.definition.name === "data-ref") {
+        return diagnostic(
+          sourceFile,
+          attribute,
+          "unregistered-custom-element-ref",
+          'Attribute "data-ref" on an unregistered custom element requires registration in CustomJsxElements'
+        )
+      }
+      return undefined
+    }
     if (propsType.getProperty(name) !== undefined) return undefined
 
     const root = datastarAttributeRoot(name)
@@ -297,7 +310,7 @@ const checkAttribute = (
   }
 
   if (propsType.getProperty(name) !== undefined) return undefined
-  if (allowUnknownVendorAttributes) return undefined
+  if (looseCustomElement) return undefined
   if (checker.getIndexTypeOfType(propsType, ts.IndexKind.String) !== undefined) return undefined
   return diagnostic(
     sourceFile,

@@ -119,7 +119,9 @@ custom-element hyphen convention. An unregistered `<my-widget>` remains loosely 
 module augmentation can give custom attributes and elements exact props:
 
 ```tsx
-import { dataAttrs, js, type Expr } from "datastar-kit"
+import { dataAttrs, js, signal, type Expr } from "datastar-kit"
+
+const statusWidget = signal<HTMLElement>("statusWidget")
 
 declare module "datastar-kit/jsx-runtime" {
   interface CustomJsxAttributes {
@@ -142,12 +144,17 @@ declare module "datastar-kit/jsx-runtime" {
   class="panel"
   aria-label="Status"
   mode="compact"
+  data-ref={statusWidget}
   data-show={ready}
 >
   Ready
 </status-widget>
 <my-widget anything="loose" />
 ```
+
+Register a custom element before using `data-ref`. TypeScript intentionally gives unregistered
+custom elements loose props, so it cannot verify that a reference signal accepts the element written
+by Datastar.
 
 Direct primitive dataset attributes such as `<li data-id={todo.id}>` remain valid. Use
 `dataAttrs(...)` when composing a dynamic primitive attribute bag; custom Datastar plugins that

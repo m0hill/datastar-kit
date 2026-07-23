@@ -12,6 +12,7 @@ declare module "datastar-kit/jsx-runtime" {
 }
 
 const visible = signal<boolean>("visible")
+const widget = signal<HTMLElement>("widget")
 const todo = { id: 1 }
 const RichComponent = (_props: { readonly payload: { readonly id: number } }) => <div />
 
@@ -31,6 +32,7 @@ export const positiveFixture = (
       class="panel"
       aria-label="Status"
       mode="compact"
+      data-ref={widget}
       data-show={visible}
     >
       Child

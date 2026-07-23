@@ -35,6 +35,7 @@ describe("Datastar JSX checker", () => {
       "invalid-datastar-modifier",
       "unknown-aria-attribute",
       "unknown-datastar-attribute",
+      "unregistered-custom-element-ref",
       "unknown-datastar-attribute",
       "unsupported-rich-attribute",
       "unsupported-rich-attribute",
@@ -51,7 +52,7 @@ describe("Datastar JSX checker", () => {
     expect(diagnostics[1]?.suggestion).toBe("data-show")
     expect(diagnostics[7]?.suggestion).toBe("aria-label")
     expect(diagnostics[8]?.suggestion).toBe("data-show")
-    expect(diagnostics[9]?.suggestion).toBe("data-show")
+    expect(diagnostics[10]?.suggestion).toBe("data-show")
     expect(
       diagnostics
         .filter((diagnostic) => diagnostic.code === "unsupported-rich-attribute")
