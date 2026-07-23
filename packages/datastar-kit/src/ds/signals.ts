@@ -24,7 +24,7 @@ export interface SignalTarget<in T = never> {
 export type SignalValueInput =
   | SignalValue
   | undefined
-  | Expr
+  | Expr<SignalValue | undefined>
   | readonly SignalValueInput[]
   | { readonly [key: string]: SignalValueInput }
 

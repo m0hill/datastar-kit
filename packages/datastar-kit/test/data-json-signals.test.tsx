@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { js, mod, regex } from "../src/ds/index.js"
+import { mod, regex } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
 import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
@@ -54,12 +54,6 @@ describe("data-json-signals", () => {
     expect(renderToString(node)).toBe(
       '<pre data-json-signals="{&quot;include&quot;: new RegExp(&quot;user&quot;, &quot;i&quot;), &quot;exclude&quot;: &quot;temp$&quot;}"></pre>'
     )
-  })
-
-  it("renders raw expression helpers for filter objects", () => {
-    const node = <pre data-json-signals={js("{include: /^counter$/}")}></pre>
-
-    expect(renderToString(node)).toBe('<pre data-json-signals="{include: /^counter$/}"></pre>')
   })
 
   it("renders terse modifier for display-all and filtered forms", () => {

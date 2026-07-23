@@ -43,22 +43,20 @@ describe("data-init", () => {
     expect(renderToString(node)).toBe('<div id="bar" data-init="$label = el.id"></div>')
   })
 
-  it("serializes primitive expression values without omitting falsey values", () => {
-    const node = (
-      <div>
-        <div data-init></div>
-        <div data-init={false}></div>
-        <div data-init={0}></div>
-      </div>
-    )
+  it("keeps the runtime defensive for untyped primitive values", () => {
+    const nodes = [
+      runtimeJsx("div", { "data-init": true } as unknown as JsxProps),
+      runtimeJsx("div", { "data-init": false } as unknown as JsxProps),
+      runtimeJsx("div", { "data-init": 0 } as unknown as JsxProps)
+    ]
 
-    expect(renderToString(node)).toBe(
-      '<div><div data-init="true"></div><div data-init="false"></div><div data-init="0"></div></div>'
+    expect(renderToString(nodes)).toBe(
+      '<div data-init="true"></div><div data-init="false"></div><div data-init="0"></div>'
     )
   })
 
   it("renders delay modifiers from number, numeric string, duration string, and boolean forms", () => {
-    const expr = js("$count = 1")
+    const expr = js<void>("$count = 1")
 
     const node = (
       <div>
@@ -76,7 +74,7 @@ describe("data-init", () => {
 
   it("renders view transition modifier and combines it with delay in authored order", () => {
     const node = (
-      <div data-init={mod(js("$count = 1"), { delay: "500ms", viewTransition: true })}></div>
+      <div data-init={mod(js<void>("$count = 1"), { delay: "500ms", viewTransition: true })}></div>
     )
 
     expect(renderToString(node)).toBe(

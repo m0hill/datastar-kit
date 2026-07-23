@@ -85,6 +85,13 @@ Use helpers for Datastar attributes that are defined as space-separated strings.
 | `regex(...)`           | Build a regular expression expression value.                                           |
 | `RegexExpressionError` | Thrown when regex pattern or flags cannot create a `RegExp`.                           |
 
+JSX attributes use semantic expression types rather than one universal expression union. Effect
+sites require `DatastarEffectExpression`; text sites use `DatastarTextExpression`; truthy sites use
+`DatastarTruthyExpression`; and dynamic attributes and styles use `DatastarAttributeExpression`
+and `DatastarStyleExpression`. Static signal filters accept structured filter objects or raw strings,
+not reactive expressions. Raw strings remain an escape hatch, and extracted `js(...)` expressions
+can declare their result with `js<T>(...)`.
+
 ## `read`
 
 `read` contains request-boundary helpers.

@@ -11,20 +11,13 @@ describe("data-effect", () => {
     expect(renderToString(node)).toBe('<div data-effect="$foo = $bar + $baz"></div>')
   })
 
-  it("renders JSX effect values from signal refs and expression helpers", () => {
+  it("renders JSX effect values from expression helpers", () => {
     const bar = signal<number>("bar")
     const baz = signal<number>("baz")
 
-    const node = (
-      <div>
-        <div data-effect={js`${signal<number>("foo")} = ${bar} + ${baz}`}></div>
-        <div data-effect={signal<boolean>("ready")}></div>
-      </div>
-    )
+    const node = <div data-effect={js`${signal<number>("foo")} = ${bar} + ${baz}`}></div>
 
-    expect(renderToString(node)).toBe(
-      '<div><div data-effect="$foo = $bar + $baz"></div><div data-effect="$ready"></div></div>'
-    )
+    expect(renderToString(node)).toBe('<div data-effect="$foo = $bar + $baz"></div>')
   })
 
   it("keeps string JSX values as raw Datastar expressions", () => {
@@ -59,17 +52,15 @@ describe("data-effect", () => {
     expect(renderToString(node)).toBe('<div id="bar" data-effect="$foo = $prefix + el.id"></div>')
   })
 
-  it("serializes primitive expression values without omitting falsey values", () => {
-    const node = (
-      <div>
-        <div data-effect></div>
-        <div data-effect={false}></div>
-        <div data-effect={0}></div>
-      </div>
-    )
+  it("keeps the runtime defensive for untyped primitive values", () => {
+    const nodes = [
+      runtimeJsx("div", { "data-effect": true } as unknown as JsxProps),
+      runtimeJsx("div", { "data-effect": false } as unknown as JsxProps),
+      runtimeJsx("div", { "data-effect": 0 } as unknown as JsxProps)
+    ]
 
-    expect(renderToString(node)).toBe(
-      '<div><div data-effect="true"></div><div data-effect="false"></div><div data-effect="0"></div></div>'
+    expect(renderToString(nodes)).toBe(
+      '<div data-effect="true"></div><div data-effect="false"></div><div data-effect="0"></div>'
     )
   })
 

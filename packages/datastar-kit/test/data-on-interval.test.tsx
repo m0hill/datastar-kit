@@ -38,22 +38,20 @@ describe("data-on-interval", () => {
     )
   })
 
-  it("serializes primitive expression values without omitting falsey values", () => {
-    const node = (
-      <div>
-        <div data-on-interval></div>
-        <div data-on-interval={false}></div>
-        <div data-on-interval={0}></div>
-      </div>
-    )
+  it("keeps the runtime defensive for untyped primitive values", () => {
+    const nodes = [
+      runtimeJsx("div", { "data-on-interval": true } as unknown as JsxProps),
+      runtimeJsx("div", { "data-on-interval": false } as unknown as JsxProps),
+      runtimeJsx("div", { "data-on-interval": 0 } as unknown as JsxProps)
+    ]
 
-    expect(renderToString(node)).toBe(
-      '<div><div data-on-interval="true"></div><div data-on-interval="false"></div><div data-on-interval="0"></div></div>'
+    expect(renderToString(nodes)).toBe(
+      '<div data-on-interval="true"></div><div data-on-interval="false"></div><div data-on-interval="0"></div>'
     )
   })
 
   it("renders duration modifiers from number, numeric string, and duration string forms", () => {
-    const expr = js("$count++")
+    const expr = js<void>("$count++")
 
     const node = (
       <div>
@@ -71,7 +69,7 @@ describe("data-on-interval", () => {
   it("renders leading and view transition modifiers", () => {
     const node = (
       <div
-        data-on-interval={mod(js("$count++"), {
+        data-on-interval={mod(js<void>("$count++"), {
           duration: "500ms",
           leading: true,
           viewTransition: true

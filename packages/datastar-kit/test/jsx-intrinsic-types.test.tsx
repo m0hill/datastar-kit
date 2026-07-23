@@ -7,6 +7,7 @@ import {
   signal,
   type DatastarAttributes,
   type DatastarAttributeValue,
+  type DatastarSignalFilterInput,
   type DatastarSignalReference,
   type Expr,
   type SignalTarget
@@ -131,6 +132,198 @@ describe("typed JSX intrinsic elements", () => {
     ]
 
     expect(nodes).toHaveLength(10)
+  })
+
+  it("accepts only effect expressions at effect and lifecycle sites", () => {
+    typecheckOnly(() => {
+      const count = signal<number>("count")
+      const effect = js<void>("$count++")
+      const nodes = [
+        <button data-on:click={effect} />,
+        <div data-effect={effect} />,
+        <div data-init={effect} />,
+        <div data-on-intersect={effect} />,
+        <div data-on-interval={effect} />,
+        <div data-on-signal-patch={effect} />,
+        <button data-on:click="$count++" />,
+        // @ts-expect-error Effect sites reject readable expressions with no declared side effect.
+        <div data-effect={count} />,
+        // @ts-expect-error Lifecycle sites reject readable expressions with no declared side effect.
+        <div data-init={count} />,
+        // @ts-expect-error Intersect handlers require an effect expression.
+        <div data-on-intersect={count} />,
+        // @ts-expect-error Interval handlers require an effect expression.
+        <div data-on-interval={count} />,
+        // @ts-expect-error Signal-patch handlers require an effect expression.
+        <div data-on-signal-patch={count} />,
+        // @ts-expect-error Primitive values are not effect expressions.
+        <button data-on:click={false} />,
+        // @ts-expect-error Primitive values are not lifecycle effect expressions.
+        <div data-init={0} />
+      ]
+
+      void nodes
+    })
+
+    expect(true).toBe(true)
+  })
+
+  it("keeps readable and truthy expressions distinct from effects", () => {
+    typecheckOnly(() => {
+      const message = signal<string>("message")
+      const count = signal<number>("count")
+      const effect = get("/refresh")
+      const invalidClassCondition: DatastarAttributes = {
+        // @ts-expect-error Class conditions require truthy expressions, not effects.
+        "data-class:visible": effect
+      }
+      const nodes = [
+        <output data-text={message} />,
+        <output data-text={count} />,
+        <div data-show={message} />,
+        <div data-show={count} />,
+        <div data-class:visible={message} />,
+        <div data-class={{ visible: message, populated: count }} />,
+        // @ts-expect-error Text content requires a readable expression, not an effect.
+        <output data-text={effect} />,
+        // @ts-expect-error Visibility requires a truthy expression, not an effect.
+        <div data-show={effect} />,
+        // @ts-expect-error Class maps reject effect expressions.
+        <div data-class={{ visible: effect }} />
+      ]
+
+      void invalidClassCondition
+      void nodes
+    })
+
+    expect(true).toBe(true)
+  })
+
+  it("types dynamic attributes and styles by their serialization semantics", () => {
+    typecheckOnly(() => {
+      const payload = signal<{ readonly id: number }>("payload")
+      const opacity = signal<number>("opacity")
+      const styles = signal<Readonly<Record<string, string | number>>>("styles")
+      const symbolicText = signal<symbol>("symbolicText")
+      const bigintAttribute = signal<bigint>("bigintAttribute")
+      const effect = get("/refresh")
+      const invalidStyleProperty: DatastarAttributes = {
+        // @ts-expect-error CSS properties reject object-valued expressions.
+        "data-style:opacity": payload
+      }
+      const invalidDynamicAttribute: DatastarAttributes = {
+        // @ts-expect-error Dynamic attribute serialization cannot render bigints.
+        "data-attr:data-id": bigintAttribute
+      }
+      const nodes = [
+        <div data-attr={{ "data-payload": payload }} />,
+        <div data-style={{ opacity, display: "'block'" }} />,
+        <div data-style={styles} />,
+        // @ts-expect-error Text interpolation cannot render symbols.
+        <output data-text={symbolicText} />,
+        // @ts-expect-error Dynamic attribute maps cannot serialize bigint values.
+        <div data-attr={{ "data-id": bigintAttribute }} />,
+        // @ts-expect-error CSS property expressions reject structured objects.
+        <div data-style={{ opacity: payload }} />,
+        // @ts-expect-error Dynamic attributes require readable values, not effects.
+        <div data-attr={{ title: effect }} />,
+        // @ts-expect-error Style maps require readable CSS values, not effects.
+        <div data-style={{ opacity: effect }} />,
+        // @ts-expect-error Whole style expressions must produce a style map.
+        <div data-style={opacity} />
+      ]
+
+      void invalidStyleProperty
+      void invalidDynamicAttribute
+      void nodes
+    })
+
+    expect(true).toBe(true)
+  })
+
+  it("restricts signal initialization to structured signal values", () => {
+    typecheckOnly(() => {
+      const count = signal<number>("count")
+      const effect = get("/refresh")
+      const invalidKeyedSignal: DatastarAttributes = {
+        // @ts-expect-error Signal initialization cannot store a void effect result.
+        "data-signals:count": effect
+      }
+      const nodes = [
+        <div data-signals={{ count, nested: { ready: true } }} />,
+        <div data-signals={js<Readonly<Record<string, number>>>("{count: 1}")} />,
+        <div data-signals:count={count} />,
+        // @ts-expect-error Signal maps reject effect expressions as values.
+        <div data-signals={{ count: effect }} />,
+        // @ts-expect-error Whole data-signals expressions must produce a signal map.
+        <div data-signals={count} />
+      ]
+
+      void invalidKeyedSignal
+      void nodes
+    })
+
+    expect(true).toBe(true)
+  })
+
+  it("distinguishes computed values from computed maps", () => {
+    typecheckOnly(() => {
+      const count = signal<number>("count")
+      const effect = get("/refresh")
+      const nodes = [
+        <div data-computed:double={js<number>`${count} * 2`} />,
+        <div data-computed={{ double: js`() => ${count} * 2` }} />,
+        <div data-computed="{double: () => $count * 2}" />,
+        // @ts-expect-error Whole data-computed expressions must produce a computed map.
+        <div data-computed={effect} />,
+        // @ts-expect-error Computed-map leaves must be callable expressions.
+        <div data-computed={{ double: count }} />,
+        // @ts-expect-error Structured computed-map strings serialize as string values, not functions.
+        <div data-computed={{ double: "() => $count * 2" }} />
+      ]
+
+      void nodes
+    })
+
+    expect(true).toBe(true)
+  })
+
+  it("restricts signal filters to static filter sources", () => {
+    typecheckOnly(() => {
+      const filter: DatastarSignalFilterInput = { include: "^public\\." }
+      const filterSource = "{include: /^public\\./}"
+      const expressionFilter = js<DatastarSignalFilterInput>(filterSource)
+      const reactiveFilter = signal<DatastarSignalFilterInput>("filter")
+      const effect = get("/refresh")
+      const nodes = [
+        <pre data-json-signals={filter} />,
+        <div data-on-signal-patch-filter={filterSource} />,
+        <div data-persist={filter} />,
+        <div data-query-string={filterSource} />,
+        // @ts-expect-error Static filters reject general expressions, even with a filter result type.
+        <pre data-json-signals={expressionFilter} />,
+        // @ts-expect-error Static filters cannot read a reactive filter signal.
+        <pre data-json-signals={reactiveFilter} />,
+        // @ts-expect-error Static patch filters cannot read a reactive filter signal.
+        <div data-on-signal-patch-filter={reactiveFilter} />,
+        // @ts-expect-error Static persistence filters cannot read a reactive filter signal.
+        <div data-persist={reactiveFilter} />,
+        // @ts-expect-error Static query-string filters cannot read a reactive filter signal.
+        <div data-query-string={reactiveFilter} />,
+        // @ts-expect-error JSON signal options reject effect expressions.
+        <pre data-json-signals={effect} />,
+        // @ts-expect-error Signal-patch filters reject effect expressions.
+        <div data-on-signal-patch-filter={effect} />,
+        // @ts-expect-error Persistence filters reject effect expressions.
+        <div data-persist={effect} />,
+        // @ts-expect-error Query-string filters reject effect expressions.
+        <div data-query-string={effect} />
+      ]
+
+      void nodes
+    })
+
+    expect(true).toBe(true)
   })
 
   it("renders registered extensions and unregistered hyphenated custom elements", () => {

@@ -96,6 +96,21 @@ object, and `<button type="...">` only accepts real button types.
 Keyed Datastar attributes are typed through template patterns, so `data-on:click` and common event
 names are suggested while custom events such as `data-on:widget-loaded` still type-check.
 
+Datastar expression props are typed by what the browser will do with their result:
+
+- `data-on:*`, `data-effect`, `data-init`, and lifecycle handlers require an `Expr<void>` effect.
+- `data-text` accepts readable expressions, while `data-show` and `data-class:*` accept values that
+  Datastar evaluates using JavaScript truthiness.
+- `data-style` accepts CSS-compatible values, and whole style expressions must produce a style map.
+- `data-signals` and computed maps require their corresponding structured shapes. Static signal
+  filters accept structured filter objects or raw strings, not reactive expressions.
+
+Action helpers such as `get(...)` and `post(...)` already produce `Expr<void>`. A `js(...)` call used
+directly in JSX is contextually typed; when storing it in a variable, provide its result type, such
+as `js<void>("$count++")` or `js<string>("$label")`. Raw strings remain the explicit escape hatch for
+hand-written Datastar source. Primitive values such as `false` and `0` are not accepted at effect
+sites because they cannot perform an effect.
+
 Known elements reject misspelled normal attributes, and unknown element names must use the HTML
 custom-element hyphen convention. An unregistered `<my-widget>` remains loosely typed, while a
 module augmentation can give custom attributes and elements exact props:

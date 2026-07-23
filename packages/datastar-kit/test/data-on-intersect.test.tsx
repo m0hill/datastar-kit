@@ -38,22 +38,20 @@ describe("data-on-intersect", () => {
     )
   })
 
-  it("serializes primitive expression values without omitting falsey values", () => {
-    const node = (
-      <div>
-        <div data-on-intersect></div>
-        <div data-on-intersect={false}></div>
-        <div data-on-intersect={0}></div>
-      </div>
-    )
+  it("keeps the runtime defensive for untyped primitive values", () => {
+    const nodes = [
+      runtimeJsx("div", { "data-on-intersect": true } as unknown as JsxProps),
+      runtimeJsx("div", { "data-on-intersect": false } as unknown as JsxProps),
+      runtimeJsx("div", { "data-on-intersect": 0 } as unknown as JsxProps)
+    ]
 
-    expect(renderToString(node)).toBe(
-      '<div><div data-on-intersect="true"></div><div data-on-intersect="false"></div><div data-on-intersect="0"></div></div>'
+    expect(renderToString(nodes)).toBe(
+      '<div data-on-intersect="true"></div><div data-on-intersect="false"></div><div data-on-intersect="0"></div>'
     )
   })
 
   it("renders visibility behavior modifiers", () => {
-    const expr = js("$intersected = true")
+    const expr = js<void>("$intersected = true")
 
     const node = (
       <div>
@@ -70,7 +68,7 @@ describe("data-on-intersect", () => {
   })
 
   it("renders timing and view transition modifiers", () => {
-    const expr = js("$intersected = true")
+    const expr = js<void>("$intersected = true")
 
     const node = (
       <div>

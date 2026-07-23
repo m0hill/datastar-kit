@@ -14,15 +14,24 @@ export {
 export type { FetchActionOptions, SignalFilter } from "./actions.js"
 
 export type {
+  DatastarAttributeExpression,
   DatastarAttributes,
   DatastarAttributeValue,
+  DatastarDynamicAttributeValue,
   DatastarEffectExpression,
   DatastarEventName,
   DatastarExpression,
   DatastarExpressionValue,
   DatastarModifiable,
+  DatastarReadableExpression,
+  DatastarReadableValue,
   DatastarSignalFilterInput,
-  DatastarSignalReference
+  DatastarSignalReference,
+  DatastarStyleExpression,
+  DatastarStyleValue,
+  DatastarTextExpression,
+  DatastarTextValue,
+  DatastarTruthyExpression
 } from "./attribute-types.js"
 
 export { preserve } from "./attributes.js"

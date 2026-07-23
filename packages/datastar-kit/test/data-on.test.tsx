@@ -45,17 +45,15 @@ describe("data-on", () => {
     )
   })
 
-  it("serializes primitive expression values without omitting falsey values", () => {
-    const node = (
-      <div>
-        <button data-on:click></button>
-        <button data-on:click={false}></button>
-        <button data-on:click={0}></button>
-      </div>
-    )
+  it("keeps the runtime defensive for untyped primitive values", () => {
+    const nodes = [
+      runtimeJsx("button", { "data-on:click": true } as unknown as JsxProps),
+      runtimeJsx("button", { "data-on:click": false } as unknown as JsxProps),
+      runtimeJsx("button", { "data-on:click": 0 } as unknown as JsxProps)
+    ]
 
-    expect(renderToString(node)).toBe(
-      '<div><button data-on:click="true"></button><button data-on:click="false"></button><button data-on:click="0"></button></div>'
+    expect(renderToString(nodes)).toBe(
+      '<button data-on:click="true"></button><button data-on:click="false"></button><button data-on:click="0"></button>'
     )
   })
 

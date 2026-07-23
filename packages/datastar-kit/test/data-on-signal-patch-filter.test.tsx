@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { js, mod, regex } from "../src/ds/index.js"
+import { mod, regex } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
 import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
@@ -47,12 +47,6 @@ describe("data-on-signal-patch-filter", () => {
     expect(renderToString(node)).toBe(
       '<div data-on-signal-patch-filter="{&quot;include&quot;: new RegExp(&quot;user&quot;, &quot;i&quot;), &quot;exclude&quot;: &quot;password&quot;}"></div>'
     )
-  })
-
-  it("renders raw expression helpers for filter objects", () => {
-    const node = <div data-on-signal-patch-filter={js("{include: /^app/}")}></div>
-
-    expect(renderToString(node)).toBe('<div data-on-signal-patch-filter="{include: /^app/}"></div>')
   })
 
   it("renders the filter alongside data-on-signal-patch", () => {

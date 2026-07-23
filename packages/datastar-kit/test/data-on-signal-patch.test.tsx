@@ -46,22 +46,20 @@ describe("data-on-signal-patch", () => {
     )
   })
 
-  it("serializes primitive expression values without omitting falsey values", () => {
-    const node = (
-      <div>
-        <div data-on-signal-patch></div>
-        <div data-on-signal-patch={false}></div>
-        <div data-on-signal-patch={0}></div>
-      </div>
-    )
+  it("keeps the runtime defensive for untyped primitive values", () => {
+    const nodes = [
+      runtimeJsx("div", { "data-on-signal-patch": true } as unknown as JsxProps),
+      runtimeJsx("div", { "data-on-signal-patch": false } as unknown as JsxProps),
+      runtimeJsx("div", { "data-on-signal-patch": 0 } as unknown as JsxProps)
+    ]
 
-    expect(renderToString(node)).toBe(
-      '<div><div data-on-signal-patch="true"></div><div data-on-signal-patch="false"></div><div data-on-signal-patch="0"></div></div>'
+    expect(renderToString(nodes)).toBe(
+      '<div data-on-signal-patch="true"></div><div data-on-signal-patch="false"></div><div data-on-signal-patch="0"></div>'
     )
   })
 
   it("renders timing modifiers", () => {
-    const expr = js("console.log(patch)")
+    const expr = js<void>("console.log(patch)")
 
     const node = (
       <div>
