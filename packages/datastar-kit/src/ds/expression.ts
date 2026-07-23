@@ -1,11 +1,14 @@
+/** Type-only brand for the value produced by a Datastar expression. */
+export declare const expressionValue: unique symbol
+
 /**
  * A value that can render itself as Datastar expression source.
  *
  * @typeParam T The JavaScript value produced when Datastar evaluates the expression.
  */
-export interface Expr<T = unknown> {
+export interface Expr<out T = unknown> {
   /** Phantom type marker for the JavaScript value produced by this expression. */
-  readonly valueType?: T
+  readonly [expressionValue]: T
   /** Serializes this value into Datastar expression source. */
   toDatastarExpression(): string
 }
@@ -25,6 +28,8 @@ export type ExprInput<T> = Expr<T> | T
 export type DatastarFunction<T = unknown> = (...args: ReadonlyArray<unknown>) => T
 
 class RawExpr<T = unknown> implements Expr<T> {
+  declare readonly [expressionValue]: T
+
   constructor(private readonly code: string) {}
 
   toDatastarExpression(): string {

@@ -83,6 +83,7 @@ export type DatastarSignalFilterInput = {
 export type DatastarAttributeValue =
   | HtmlPropValue
   | Expr
+  | DatastarSignalReference
   | DatastarModifiedValue
   | RegExp
   | readonly DatastarAttributeValue[]

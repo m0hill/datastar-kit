@@ -1,5 +1,6 @@
 import type { SignalValue } from "../types.js"
-import type { Expr } from "./expression.js"
+// oxlint-disable-next-line no-unused-vars -- The unique symbol is used as a non-emitting class property key.
+import type { Expr, expressionValue } from "./expression.js"
 
 /**
  * Authoring-time signal value accepted by Datastar authoring helpers.
@@ -45,6 +46,8 @@ export const assertSignalName = (name: string): void => {
  * @typeParam Name Signal path represented by this reference.
  */
 export class Signal<T, Name extends string = string> implements Expr<T> {
+  declare readonly [expressionValue]: T
+
   constructor(readonly name: Name) {
     assertSignalName(name)
   }

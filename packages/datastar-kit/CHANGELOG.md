@@ -13,6 +13,7 @@
 
 ### Fixed
 
+- Preserved `Expr<T>` and `Signal<T>` value types during assignment, preventing incompatible signals and expressions from being passed to typed helpers.
 - Preserved repeated `Set-Cookie` headers when `reply.*` helpers merge default and caller-provided response headers.
 - Rendered `executeScript(...)` script attributes with the shared HTML attribute serializer, including correct boolean attribute semantics.
 - Avoided treating plain signal-state objects with a `toDatastarExpression` key as Datastar expression instances.
