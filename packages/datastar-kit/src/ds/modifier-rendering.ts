@@ -50,13 +50,48 @@ const caseModifiers = new Set<string>(datastarCaseModifiers)
 const isDatastarModifierKey = (key: string): key is DatastarModifierKey =>
   key in compatibleModifierTargets
 
-const isCompatibleModifier = (
+/** @internal Returns whether a modifier key is supported by an attribute modifier target. */
+export const isDatastarModifierCompatible = (
   target: DatastarModifierTarget,
-  modifier: RenderedDatastarModifier
+  key: DatastarModifierKey
 ): boolean => {
-  const targets: readonly DatastarModifierTarget[] = compatibleModifierTargets[modifier.key]
+  const targets: readonly DatastarModifierTarget[] = compatibleModifierTargets[key]
   return targets.includes(target)
 }
+
+const modifierKeysBySuffix = {
+  capture: "capture",
+  case: "case",
+  debounce: "debounce",
+  delay: "delay",
+  document: "document",
+  duration: "duration",
+  event: "event",
+  exit: "exit",
+  full: "full",
+  half: "half",
+  ifmissing: "ifMissing",
+  leading: "leading",
+  once: "once",
+  outside: "outside",
+  passive: "passive",
+  prevent: "prevent",
+  prop: "prop",
+  self: "self",
+  stop: "stop",
+  terse: "terse",
+  threshold: "threshold",
+  throttle: "throttle",
+  viewtransition: "viewTransition",
+  window: "window"
+} as const satisfies Readonly<Record<string, DatastarModifierKey>>
+
+const isModifierSuffix = (suffix: string): suffix is keyof typeof modifierKeysBySuffix =>
+  Object.hasOwn(modifierKeysBySuffix, suffix)
+
+/** @internal Resolves a rendered modifier suffix to its typed modifier key. */
+export const datastarModifierKeyForSuffix = (suffix: string): DatastarModifierKey | undefined =>
+  isModifierSuffix(suffix) ? modifierKeysBySuffix[suffix] : undefined
 
 const durationModifier = (value: unknown): string => {
   if (typeof value === "number") return `${value}ms`
@@ -242,7 +277,7 @@ export const renderDatastarModifierSuffixes = (
 
     const modifier = renderDatastarModifier(key, modifierValue)
     if (modifier === undefined) continue
-    if (!isCompatibleModifier(target, modifier)) {
+    if (!isDatastarModifierCompatible(target, modifier.key)) {
       throw new TypeError(
         `Datastar modifier ${JSON.stringify(key)} is not valid on ${JSON.stringify(name)}`
       )

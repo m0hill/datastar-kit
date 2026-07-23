@@ -14,8 +14,6 @@ type AriaBoolean = boolean | "true" | "false" | undefined
 
 /**
  * WAI-ARIA attributes accepted by every intrinsic JSX element.
- *
- * Unrecognized `aria-*` attributes are accepted through the template signature escape hatch.
  */
 export interface AriaAttributes {
   "aria-activedescendant"?: string | undefined
@@ -75,9 +73,6 @@ export interface AriaAttributes {
   "aria-valuemin"?: number | string | undefined
   "aria-valuenow"?: number | string | undefined
   "aria-valuetext"?: string | undefined
-
-  /** Escape hatch: any other `aria-*` attribute. */
-  [name: `aria-${string}`]: HtmlPropValue
 }
 
 /** WAI-ARIA role values, with autocomplete for the standard roles. */
@@ -207,11 +202,11 @@ type AutocompleteValue = Loose<
 
 /**
  * Global HTML attributes accepted by every intrinsic JSX element, including Datastar attributes.
+ *
+ * @typeParam RefElement Element value written by `data-ref`.
  */
-export interface HtmlGlobalAttributes extends DatastarAttributes, AriaAttributes {
-  /** Escape hatch for custom, vendor, and future HTML attributes. */
-  [attribute: string]: HtmlAttributeValue
-
+export interface HtmlGlobalAttributes<RefElement = never>
+  extends DatastarAttributes<RefElement>, AriaAttributes {
   /** JSX list key consumed by the compiler/runtime boundary; never rendered. */
   key?: string | number | undefined
   /** Element children. */
@@ -447,30 +442,28 @@ export interface InputHtmlAttributes extends HtmlVoidGlobalAttributes {
   src?: string | undefined
   step?: number | string | undefined
   type?:
-    | Loose<
-        | "button"
-        | "checkbox"
-        | "color"
-        | "date"
-        | "datetime-local"
-        | "email"
-        | "file"
-        | "hidden"
-        | "image"
-        | "month"
-        | "number"
-        | "password"
-        | "radio"
-        | "range"
-        | "reset"
-        | "search"
-        | "submit"
-        | "tel"
-        | "text"
-        | "time"
-        | "url"
-        | "week"
-      >
+    | "button"
+    | "checkbox"
+    | "color"
+    | "date"
+    | "datetime-local"
+    | "email"
+    | "file"
+    | "hidden"
+    | "image"
+    | "month"
+    | "number"
+    | "password"
+    | "radio"
+    | "range"
+    | "reset"
+    | "search"
+    | "submit"
+    | "tel"
+    | "text"
+    | "time"
+    | "url"
+    | "week"
     | undefined
   value?: string | number | undefined
   width?: number | string | undefined

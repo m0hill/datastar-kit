@@ -72,7 +72,7 @@ describe("data-on", () => {
   })
 
   it("renders event case modifiers", () => {
-    const expr = js("$foo = ''")
+    const expr = js<void>("$foo = ''")
 
     const node = (
       <div>
@@ -89,7 +89,7 @@ describe("data-on", () => {
   })
 
   it("renders timing and view transition modifiers", () => {
-    const expr = js("$foo = ''")
+    const expr = js<void>("$foo = ''")
 
     const node = (
       <div>
@@ -114,7 +114,7 @@ describe("data-on", () => {
   })
 
   it("renders event target and event side-effect modifiers", () => {
-    const expr = js("$foo = ''")
+    const expr = js<void>("$foo = ''")
 
     const node = (
       <div>

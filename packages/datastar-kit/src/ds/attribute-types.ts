@@ -16,6 +16,14 @@ export type DatastarExpression = Expr | string
 export type DatastarExpressionValue = Expr | string | number | boolean | null
 
 /**
+ * Side-effecting expression accepted by Datastar event attributes.
+ *
+ * Typed expressions must produce `void`; raw primitive values remain available for hand-authored
+ * Datastar expression source and falsey-value serialization.
+ */
+export type DatastarEffectExpression = Expr<void> | string | number | boolean | null
+
+/**
  * An attribute value optionally wrapped with `mod(value, modifiers)`, restricted to the modifier
  * keys the attribute accepts.
  */
@@ -79,10 +87,10 @@ export type DatastarSignalFilterInput = {
 }
 
 /**
- * Escape-hatch value union accepted by arbitrary `data-*` attributes.
+ * Serializable Datastar value union used by loose JSX and SVG prop bags.
  *
- * Known Datastar attributes are typed precisely; everything else under `data-` accepts any value
- * the JSX runtime can serialize.
+ * Known intrinsic elements type Datastar attributes precisely. Custom plugins on known elements
+ * should register an exact attribute through `CustomJsxAttributes`.
  */
 export type DatastarAttributeValue =
   | HtmlPropValue
@@ -199,16 +207,16 @@ export type DatastarEventName =
  */
 export type DatastarEventAttributes = {
   [Event in DatastarEventName as `data-on:${Event}`]?:
-    | DatastarModifiable<DatastarExpressionValue, DatastarOnModifierKey>
+    | DatastarModifiable<DatastarEffectExpression, DatastarOnModifierKey>
     | undefined
 }
 
 /**
  * Datastar attributes accepted by every intrinsic JSX element.
  *
- * Exact attributes are typed with their precise value shapes; keyed attributes (`data-on:*`,
- * `data-signals:*`, ...) are typed through template signatures, and unrecognized `data-*`
- * attributes fall back to {@link DatastarAttributeValue} as an escape hatch.
+ * Exact attributes are typed with their precise value shapes, and keyed attributes (`data-on:*`,
+ * `data-signals:*`, ...) are typed through template signatures. Custom rich `data-*` attributes
+ * must be registered through `CustomJsxAttributes`; primitive dataset bags can use `dataAttrs`.
  *
  * @typeParam RefElement Element value written by `data-ref`; defaults to an unconstrained target
  * when no intrinsic-element context is available.
@@ -300,7 +308,7 @@ export interface DatastarAttributes<RefElement = never> extends DatastarEventAtt
     | undefined
   /** Runs an expression when the named event fires, e.g. `data-on:click`. */
   [name: `data-on:${string}`]:
-    | DatastarModifiable<DatastarExpressionValue, DatastarOnModifierKey>
+    | DatastarModifiable<DatastarEffectExpression, DatastarOnModifierKey>
     | undefined
   /** Persists matching signals under the storage key named by the attribute key. */
   [name: `data-persist:${string}`]: boolean | null | DatastarSignalFilterInput | undefined
@@ -314,6 +322,4 @@ export interface DatastarAttributes<RefElement = never> extends DatastarEventAtt
     | undefined
   /** Sets a single style property from an expression, e.g. `data-style:opacity`. */
   [name: `data-style:${string}`]: DatastarExpressionValue | undefined
-  /** Escape hatch: any other `data-*` attribute accepts any serializable value. */
-  [name: `data-${string}`]: DatastarAttributeValue
 }

@@ -13,7 +13,7 @@ import type { HtmlChild, HtmlProps, HtmlPropValue } from "./html.js"
 import { h } from "./html.js"
 
 /**
- * Loosely typed JSX props accepted by unknown intrinsic elements such as custom elements.
+ * Loosely typed prop bag accepted by the low-level JSX runtime boundary.
  */
 export type JsxProps = Readonly<
   Record<string, HtmlPropValue | HtmlChild | readonly HtmlChild[] | DatastarAttributeValue>

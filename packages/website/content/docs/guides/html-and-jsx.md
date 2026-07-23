@@ -96,28 +96,49 @@ object, and `<button type="...">` only accepts real button types.
 Keyed Datastar attributes are typed through template patterns, so `data-on:click` and common event
 names are suggested while custom events such as `data-on:widget-loaded` still type-check.
 
-Escape hatches keep server-side JSX flexible:
-
-- Unknown attributes on known tags are accepted for custom, vendor, and future HTML attributes.
-- Unknown tags (custom elements such as `<my-widget>`, and anything else) accept loosely typed
-  props, so any attribute the runtime can serialize is allowed.
-- Unrecognized `data-*` and `aria-*` attributes are always accepted on every element.
+Known elements reject misspelled normal attributes, and unknown element names must use the HTML
+custom-element hyphen convention. An unregistered `<my-widget>` remains loosely typed, while a
+module augmentation can give custom attributes and elements exact props:
 
 ```tsx
-<my-widget
-  theme="dark"
-  data-on:widget-loaded={js`${ready} = true`}
+import { dataAttrs, js, type Expr } from "datastar-kit"
+
+declare module "datastar-kit/jsx-runtime" {
+  interface CustomJsxAttributes {
+    "data-focus-when"?: Expr<boolean>
+    "hx-get"?: string
+  }
+
+  interface CustomJsxElements {
+    "status-widget": { mode: "compact" | "full" }
+  }
+}
+
+<div
+  {...dataAttrs({ "data-id": 42, "data-state": "ready" })}
+  data-focus-when={ready}
+  hx-get="/fragment"
+/>
+<status-widget
+  id="status"
+  class="panel"
+  aria-label="Status"
+  mode="compact"
+  data-show={ready}
 >
-  <svg viewBox="0 0 10 10">
-    <circle
-      cx={5}
-      cy={5}
-      r={4}
-      data-show={ready}
-    />
-  </svg>
-</my-widget>
+  Ready
+</status-widget>
+<my-widget anything="loose" />
 ```
+
+Direct primitive dataset attributes such as `<li data-id={todo.id}>` remain valid. Use
+`dataAttrs(...)` when composing a dynamic primitive attribute bag; custom Datastar plugins that
+accept expressions or objects should be registered exactly.
+
+TypeScript itself deliberately accepts unknown JSX attribute names containing a hyphen, even when
+an element has no matching property. It therefore cannot diagnose names such as `aria-labl` or
+`data-shwo` on its own. Review hyphenated standard and Datastar names carefully, and use exact
+module-augmentation registrations for custom rich attributes.
 
 ## Pages
 

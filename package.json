@@ -6,7 +6,7 @@
   "packageManager": "pnpm@10.33.4",
   "scripts": {
     "build": "pnpm --filter datastar-kit build && pnpm --filter @datastar-kit/example-hono-counter build:only && pnpm --filter @datastar-kit/example-hono-todos build:only && pnpm --filter @datastar-kit/example-hono-live-counter build:only && pnpm --filter @datastar-kit/example-hono-live-counter-redis build:only && pnpm --filter @datastar-kit/example-hono-modal build:only && pnpm --filter @datastar-kit/example-hono-form-validation build:only && pnpm --filter @datastar-kit/example-hono-custom-actions build:only && pnpm --filter @datastar-kit/example-hono-linear-clone build:only && pnpm --filter @datastar-kit/example-hono-official-examples build:only && pnpm --filter @datastar-kit/example-elysia-layout build:only && pnpm run check:deno-search-list && pnpm --filter @datastar-kit/website build",
-    "check": "pnpm run build && pnpm run typecheck && pnpm run test",
+    "check": "pnpm run build && pnpm run typecheck && pnpm run check:jsx-attributes && pnpm run test",
     "dev:website": "pnpm --filter @datastar-kit/website dev",
     "dev:hono-counter": "pnpm --filter @datastar-kit/example-hono-counter dev",
     "dev:hono-todos": "pnpm --filter @datastar-kit/example-hono-todos dev",
@@ -27,8 +27,10 @@
     "website:deploy": "pnpm --filter @datastar-kit/website run deploy",
     "website:preview": "pnpm --filter @datastar-kit/website preview",
     "examples:check": "pnpm --filter @datastar-kit/example-hono-counter check && pnpm --filter @datastar-kit/example-hono-todos check && pnpm --filter @datastar-kit/example-hono-live-counter check && pnpm --filter @datastar-kit/example-hono-live-counter-redis check && pnpm --filter @datastar-kit/example-hono-modal check && pnpm --filter @datastar-kit/example-hono-form-validation check && pnpm --filter @datastar-kit/example-hono-custom-actions check && pnpm --filter @datastar-kit/example-hono-linear-clone check && pnpm --filter @datastar-kit/example-hono-official-examples check && pnpm --filter @datastar-kit/example-worker-hono-counter check && pnpm --filter @datastar-kit/example-worker-hono-live-todos check && pnpm --filter @datastar-kit/example-worker-do-hono-live-todos check && pnpm --filter @datastar-kit/example-elysia-layout check && pnpm --filter @datastar-kit/example-syntax-check typecheck && pnpm run check:deno-search-list",
-    "test": "pnpm --filter datastar-kit test && pnpm --filter @datastar-kit/example-hono-todos test",
-    "typecheck": "pnpm --filter datastar-kit typecheck && pnpm --filter @datastar-kit/example-hono-counter typecheck && pnpm --filter @datastar-kit/example-hono-todos typecheck && pnpm --filter @datastar-kit/example-hono-live-counter typecheck && pnpm --filter @datastar-kit/example-hono-live-counter-redis typecheck && pnpm --filter @datastar-kit/example-hono-modal typecheck && pnpm --filter @datastar-kit/example-hono-form-validation typecheck && pnpm --filter @datastar-kit/example-hono-custom-actions typecheck && pnpm --filter @datastar-kit/example-hono-linear-clone typecheck && pnpm --filter @datastar-kit/example-hono-official-examples typecheck && pnpm --filter @datastar-kit/example-worker-hono-counter typecheck && pnpm --filter @datastar-kit/example-worker-hono-live-todos typecheck && pnpm --filter @datastar-kit/example-worker-do-hono-live-todos typecheck && pnpm --filter @datastar-kit/example-elysia-layout typecheck && pnpm --filter @datastar-kit/example-syntax-check typecheck && pnpm run check:deno-search-list && pnpm --filter @datastar-kit/website typecheck",
+    "test": "pnpm run test:jsx-attributes && pnpm --filter datastar-kit test && pnpm --filter @datastar-kit/example-hono-todos test",
+    "test:jsx-attributes": "vitest run tools/datastar-jsx-check/check.test.ts",
+    "check:jsx-attributes": "tsx tools/datastar-jsx-check/cli.ts",
+    "typecheck": "tsc -p tools/datastar-jsx-check/tsconfig.json --noEmit && pnpm --filter datastar-kit typecheck && pnpm --filter @datastar-kit/example-hono-counter typecheck && pnpm --filter @datastar-kit/example-hono-todos typecheck && pnpm --filter @datastar-kit/example-hono-live-counter typecheck && pnpm --filter @datastar-kit/example-hono-live-counter-redis typecheck && pnpm --filter @datastar-kit/example-hono-modal typecheck && pnpm --filter @datastar-kit/example-hono-form-validation typecheck && pnpm --filter @datastar-kit/example-hono-custom-actions typecheck && pnpm --filter @datastar-kit/example-hono-linear-clone typecheck && pnpm --filter @datastar-kit/example-hono-official-examples typecheck && pnpm --filter @datastar-kit/example-worker-hono-counter typecheck && pnpm --filter @datastar-kit/example-worker-hono-live-todos typecheck && pnpm --filter @datastar-kit/example-worker-do-hono-live-todos typecheck && pnpm --filter @datastar-kit/example-elysia-layout typecheck && pnpm --filter @datastar-kit/example-syntax-check typecheck && pnpm run check:deno-search-list && pnpm --filter @datastar-kit/website typecheck",
     "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt"
@@ -38,6 +40,7 @@
     "oxfmt": "^0.51.0",
     "oxlint": "^1.66.0",
     "oxlint-tsgolint": "^0.23.0",
+    "tsx": "^4.22.3",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14"
   }

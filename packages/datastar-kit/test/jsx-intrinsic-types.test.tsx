@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { dataAttrs } from "../src/data-attributes.js"
 import {
   get,
   js,
@@ -10,6 +11,21 @@ import {
   type SignalTarget
 } from "../src/ds/index.js"
 import { renderToString } from "../src/html.js"
+
+declare module "datastar-kit/jsx-runtime" {
+  interface CustomJsxAttributes {
+    "data-focus-when"?: Expr<boolean>
+    "hx-get"?: string
+    "x-data"?: string
+  }
+
+  interface CustomJsxElements {
+    "typed-widget": {
+      mode: "compact" | "full"
+      count?: number
+    }
+  }
+}
 
 const typecheckOnly = (testCases: () => void): void => {
   void testCases
@@ -111,15 +127,27 @@ describe("typed JSX intrinsic elements", () => {
     expect(nodes).toHaveLength(10)
   })
 
-  it("renders unknown tags and attributes through the escape hatches", () => {
+  it("renders registered extensions and unregistered hyphenated custom elements", () => {
     const ready = signal<boolean, "ready">("ready")
 
     const nodes = [
       <div
-        unknownattr="x"
+        {...dataAttrs({ "data-rows": 3 })}
         hx-get="/fragment"
         x-data="{ open: false }"
       />,
+      <typed-widget
+        id="status"
+        class="panel"
+        aria-label="Status"
+        mode="compact"
+        count={2}
+        data-show={ready}
+        data-focus-when={ready}
+      >
+        Child
+      </typed-widget>,
+      <button data-focus-when={ready} />,
       <my-widget
         theme="dark"
         data-on:widget-loaded={js`${ready} = true`}
@@ -141,14 +169,18 @@ describe("typed JSX intrinsic elements", () => {
     ]
 
     expect(renderToString(nodes)).toBe(
-      '<div unknownattr="x" hx-get="/fragment" x-data="{ open: false }"></div>' +
+      '<div data-rows="3" hx-get="/fragment" x-data="{ open: false }"></div>' +
+        '<typed-widget id="status" class="panel" aria-label="Status" mode="compact" count="2" data-show="$ready" data-focus-when="$ready">Child</typed-widget>' +
+        '<button data-focus-when="$ready"></button>' +
         '<my-widget theme="dark" data-on:widget-loaded="$ready = true" data-rows="3" aria-roledescription="widget">' +
         '<svg viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="4" data-show="$ready"></circle></svg>' +
         "</my-widget>"
     )
   })
 
-  it("rejects mistyped attribute values at compile time", () => {
+  it("rejects mistyped tags, attributes, and event expressions at compile time", () => {
+    const count = signal<number>("count")
+
     const nodes = [
       <a
         // @ts-expect-error href must be a string
@@ -165,10 +197,29 @@ describe("typed JSX intrinsic elements", () => {
       // @ts-expect-error data-on values must be expressions, not objects
       <div data-on:click={{ handler: true }} />,
       // @ts-expect-error void elements accept no children
-      <input type="text">text</input>
+      <input type="text">text</input>,
+      // @ts-expect-error unknown intrinsic names must use the custom-element hyphen convention
+      <butotn tyep="sumbit" />,
+      // @ts-expect-error href is not valid on div elements
+      <div href="/not-valid-on-div" />,
+      // @ts-expect-error input types must be valid keywords
+      <input type="serach" />,
+      // @ts-expect-error event handlers require effect expressions
+      <button data-on:click={count} />,
+      // @ts-expect-error registered plugin attributes use their exact expression type
+      <button data-focus-when={count} />,
+      // @ts-expect-error registered vendor attributes use their exact value type
+      <div hx-get={42} />,
+      // @ts-expect-error registered custom elements use their exact props
+      <typed-widget mode="wide" />,
+      // @ts-expect-error registered custom elements validate official Datastar attribute values
+      <typed-widget
+        mode="compact"
+        data-show={/pattern/}
+      />
     ]
 
-    expect(nodes).toHaveLength(6)
+    expect(nodes).toHaveLength(14)
   })
 
   it("renders per-attribute modifier combinations the runtime accepts", () => {

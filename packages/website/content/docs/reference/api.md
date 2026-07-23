@@ -133,12 +133,17 @@ Use `event.*` when one response needs multiple events or a long-lived stream.
 
 ## HTML helpers
 
-| API                    | Use                                               |
-| ---------------------- | ------------------------------------------------- |
-| `renderToString(node)` | Serialize Datastar Kit HTML nodes and TSX output. |
-| `unsafeHtml(html)`     | Mark trusted HTML as already safe.                |
+| API                    | Use                                                          |
+| ---------------------- | ------------------------------------------------------------ |
+| `renderToString(node)` | Serialize Datastar Kit HTML nodes and TSX output.            |
+| `unsafeHtml(html)`     | Mark trusted HTML as already safe.                           |
+| `dataAttrs(values)`    | Type-check a primitive custom `data-*` attribute spread bag. |
 
-Types exported from the root include `HtmlChild`, `HtmlNode`, `HtmlProps`, `HtmlPropValue`, `SignalState`, and `SignalValue`.
+Types exported from the root include `CustomJsxAttributes`, `CustomJsxElements`, `DataAttributes`,
+`HtmlChild`, `HtmlNode`, `HtmlProps`, `HtmlPropValue`, `SignalState`, and `SignalValue`. Augment
+`CustomJsxAttributes` and `CustomJsxElements` in `datastar-kit/jsx-runtime` to register exact custom
+HTML or Datastar plugin attributes and custom-element props. Registered custom elements also retain
+global HTML, ARIA, children, and typed Datastar attributes.
 
 ## Explicit subpaths
 

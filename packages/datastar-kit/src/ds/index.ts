@@ -16,6 +16,7 @@ export type { FetchActionOptions, SignalFilter } from "./actions.js"
 export type {
   DatastarAttributes,
   DatastarAttributeValue,
+  DatastarEffectExpression,
   DatastarEventName,
   DatastarExpression,
   DatastarExpressionValue,

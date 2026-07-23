@@ -150,7 +150,13 @@ import { mod, post } from "datastar-kit"
 Inline Datastar expressions are fine for small behavior. When browser-only behavior needs DOM APIs, branching, or comments, register a Datastar action or plugin in a browser module and call it from TSX with `action(...)` or the plugin's native `data-*` attribute:
 
 ```tsx
-import { action, js, signal } from "datastar-kit"
+import { action, js, signal, type Expr } from "datastar-kit"
+
+declare module "datastar-kit/jsx-runtime" {
+  interface CustomJsxAttributes {
+    "data-focus-when"?: Expr<boolean>
+  }
+}
 
 const modalOpen = signal<boolean>("modalOpen")
 

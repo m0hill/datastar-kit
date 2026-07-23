@@ -4,6 +4,7 @@
 
 ### Added
 
+- Added `dataAttrs(...)` for type-safe primitive custom dataset spreads and `CustomJsxAttributes`/`CustomJsxElements` module-augmentation seams for exact custom attributes and elements.
 - Added a browser-installed debugger Web Component with timeline snapshots for restoring earlier page HTML and browser signal state during development.
 
 ### Removed
@@ -15,6 +16,7 @@
 
 - Preserved `Expr<T>` and `Signal<T>` value types during assignment, preventing incompatible signals and expressions from being passed to typed helpers.
 - Checked signal write types for mutating attributes: `data-indicator` requires a boolean-capable target, known-element `data-ref` values use the concrete DOM element type, and `data-bind` requires a readable and writable signal.
+- Tightened JSX authoring so normal attribute typos and non-hyphenated unknown elements fail type checking, registered custom elements retain typed global attributes, input types use valid keywords, and `data-on:*` typed expressions must produce `void`.
 - Preserved repeated `Set-Cookie` headers when `reply.*` helpers merge default and caller-provided response headers.
 - Rendered `executeScript(...)` script attributes with the shared HTML attribute serializer, including correct boolean attribute semantics.
 - Avoided treating plain signal-state objects with a `toDatastarExpression` key as Datastar expression instances.

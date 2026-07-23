@@ -4,6 +4,7 @@ import * as debuggerModule from "datastar-kit/debugger"
 import * as sse from "datastar-kit/sse"
 import {
   action,
+  dataAttrs,
   del,
   event,
   get,
@@ -38,6 +39,7 @@ describe("package exports", () => {
       "Signal",
       "SignalNameError",
       "action",
+      "dataAttrs",
       "del",
       "event",
       "get",
@@ -66,6 +68,7 @@ describe("package exports", () => {
   it("wires root helpers to their public implementations", () => {
     expect(Root.signal).toBe(signal)
     expect(Root.state).toBe(state)
+    expect(Root.dataAttrs).toBe(dataAttrs)
     expect(Root.local).toBe(local)
     expect(Root.get).toBe(get)
     expect(Root.h).toBe(h)
