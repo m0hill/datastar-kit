@@ -1,6 +1,6 @@
 import type { HtmlPropValue } from "../html.js"
+import type { DatastarModifierKeysFor } from "./attribute-authoring.js"
 import type { Expr } from "./expression.js"
-import type { DatastarModifierKeysFor } from "./modifier-rendering.js"
 import type {
   DatastarModifiedValue,
   DatastarModifierKey,

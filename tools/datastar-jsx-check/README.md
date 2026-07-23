@@ -21,9 +21,10 @@ check a selected project.
 
 The checker uses TypeScript's contextual JSX types, so module-augmented `CustomJsxAttributes` and
 `CustomJsxElements` are the registration seam. It also rejects rich non-`data-*` values that the
-server renderer cannot serialize. Canonical Datastar names and modifier compatibility come from the
-same metadata modules used by the JSX runtime. Modifier value-tag grammar is deferred
-until the runtime and checker can share one parser instead of maintaining parallel rules.
+server renderer cannot serialize. Canonical Datastar names, keys, typo suggestions, and modifier
+compatibility come through the same attribute-authoring module used by the JSX runtime and HTML
+renderer. Modifier value-tag grammar is deferred until the runtime and checker can share one parser
+instead of maintaining parallel rules.
 
 The checker requires custom elements to be registered through `CustomJsxElements` before they use
 `data-ref`; otherwise their loose JSX props cannot prove that the signal accepts the element value.

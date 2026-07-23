@@ -1,14 +1,5 @@
-import {
-  datastarModifierTarget,
-  isDatastarAttribute,
-  isDatastarExpressionAttribute,
-  isDatastarSignalNameAttribute
-} from "./ds/attribute-metadata.js"
+import { normalizeDatastarAttribute } from "./ds/attribute-authoring.js"
 import type { DatastarAttributeValue } from "./ds/attribute-types.js"
-import { isExpr, toJs } from "./ds/expression.js"
-import { renderDatastarModifierSuffixes } from "./ds/modifier-rendering.js"
-import { isDatastarModifiedValue } from "./ds/modifiers.js"
-import { Signal } from "./ds/signals.js"
 import type { HtmlChild, HtmlProps, HtmlPropValue } from "./html.js"
 import { h } from "./html.js"
 
@@ -60,50 +51,6 @@ const isPropValue = (value: unknown): value is HtmlPropValue =>
   typeof value === "number" ||
   typeof value === "boolean"
 
-const isDatastarSerializableValue = (name: string, value: unknown): boolean =>
-  isExpr(value) ||
-  Array.isArray(value) ||
-  (typeof value === "object" && value !== null) ||
-  (isDatastarExpressionAttribute(name) &&
-    (typeof value === "number" || typeof value === "boolean" || value === null))
-
-const cleanDatastarValue = (name: string, value: unknown): unknown => {
-  if (value instanceof Signal && isDatastarSignalNameAttribute(name)) {
-    return value.name
-  }
-
-  if (isDatastarSerializableValue(name, value)) {
-    return toJs(value)
-  }
-
-  return value
-}
-
-const cleanDatastarProp = (
-  name: string,
-  value: unknown
-): { readonly name: string; readonly value: unknown } => {
-  if (!isDatastarAttribute(name)) {
-    return { name, value }
-  }
-
-  if (isDatastarModifiedValue(value)) {
-    const target = datastarModifierTarget(name)
-    if (target === undefined) {
-      throw new TypeError(`Datastar attribute ${JSON.stringify(name)} does not accept modifiers`)
-    }
-
-    const suffixes = renderDatastarModifierSuffixes(target, name, value.modifiers)
-
-    return {
-      name: suffixes.length === 0 ? name : `${name}__${suffixes.join("__")}`,
-      value: cleanDatastarValue(name, value.value)
-    }
-  }
-
-  return { name, value: cleanDatastarValue(name, value) }
-}
-
 const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): HtmlProps => {
   const cleaned: Record<string, HtmlPropValue> = {}
 
@@ -113,7 +60,7 @@ const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): Htm
     }
 
     const propName = normalizePropName(key)
-    const prop = cleanDatastarProp(propName, value)
+    const prop = normalizeDatastarAttribute(propName, value)
     if (key === "className" && cleaned.class !== undefined) {
       continue
     }

@@ -1,4 +1,4 @@
-import { isDatastarPresenceAttribute } from "./ds/attribute-metadata.js"
+import { isDatastarPresenceAttribute } from "./ds/attribute-authoring.js"
 
 /**
  * A primitive value that can be serialized as an HTML attribute value.

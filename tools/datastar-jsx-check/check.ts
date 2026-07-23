@@ -1,14 +1,5 @@
 import ts from "typescript"
-import {
-  datastarAttributeDefinitions,
-  datastarAttributeRoot,
-  datastarModifierTarget,
-  resolveDatastarAttributeRoot
-} from "../../packages/datastar-kit/src/ds/attribute-metadata.js"
-import {
-  datastarModifierKeyForSuffix,
-  isDatastarModifierCompatible
-} from "../../packages/datastar-kit/src/ds/modifier-rendering.js"
+import { inspectDatastarAttributeName } from "../../packages/datastar-kit/src/ds/attribute-authoring.js"
 
 /** Stable diagnostic identifiers produced by the Datastar JSX checker. */
 export type DatastarJsxDiagnosticCode =
@@ -144,85 +135,6 @@ const diagnostic = (
   }
 }
 
-const checkModifiers = (
-  sourceFile: ts.SourceFile,
-  attribute: CheckedAttribute,
-  name: string
-): DatastarJsxDiagnostic | undefined => {
-  const [, ...modifiers] = name.split("__")
-  if (modifiers.length === 0) return undefined
-
-  const target = datastarModifierTarget(name)
-  if (target === undefined) {
-    return diagnostic(
-      sourceFile,
-      attribute,
-      "invalid-datastar-modifier",
-      `${JSON.stringify(datastarAttributeRoot(name))} does not accept modifiers`
-    )
-  }
-
-  for (const modifier of modifiers) {
-    const [suffix = ""] = modifier.split(".")
-    const key = datastarModifierKeyForSuffix(suffix)
-    if (key === undefined) {
-      return diagnostic(
-        sourceFile,
-        attribute,
-        "invalid-datastar-modifier",
-        `Unknown Datastar modifier ${JSON.stringify(suffix)}`
-      )
-    }
-    if (!isDatastarModifierCompatible(target, key)) {
-      return diagnostic(
-        sourceFile,
-        attribute,
-        "invalid-datastar-modifier",
-        `Modifier ${JSON.stringify(suffix)} is not valid on ${JSON.stringify(datastarAttributeRoot(name))}`
-      )
-    }
-  }
-
-  return undefined
-}
-
-const checkKnownDatastarAttribute = (
-  sourceFile: ts.SourceFile,
-  attribute: CheckedAttribute,
-  name: string
-): DatastarJsxDiagnostic | undefined => {
-  const root = datastarAttributeRoot(name)
-  const resolved = resolveDatastarAttributeRoot(root)
-  if (resolved === undefined) return undefined
-
-  if (resolved.form === "exact" && resolved.definition.key === "required") {
-    return diagnostic(
-      sourceFile,
-      attribute,
-      "invalid-datastar-key",
-      `${JSON.stringify(resolved.definition.name)} requires a key after ':'`
-    )
-  }
-  if (resolved.form === "key" && resolved.definition.key === "forbidden") {
-    return diagnostic(
-      sourceFile,
-      attribute,
-      "invalid-datastar-key",
-      `${JSON.stringify(resolved.definition.name)} does not accept a key`
-    )
-  }
-  if (resolved.form === "key" && resolved.key.length === 0) {
-    return diagnostic(
-      sourceFile,
-      attribute,
-      "invalid-datastar-key",
-      `${JSON.stringify(resolved.definition.name)} has an empty key`
-    )
-  }
-
-  return checkModifiers(sourceFile, attribute, name)
-}
-
 const checkAttribute = (
   checker: ts.TypeChecker,
   sourceFile: ts.SourceFile,
@@ -267,12 +179,17 @@ const checkAttribute = (
   }
 
   if (name.startsWith("data-")) {
-    const knownIssue = checkKnownDatastarAttribute(sourceFile, attribute, name)
-    if (knownIssue !== undefined) return knownIssue
-
-    const resolved = resolveDatastarAttributeRoot(datastarAttributeRoot(name))
-    if (resolved !== undefined) {
-      if (looseCustomElement && resolved.definition.name === "data-ref") {
+    const inspection = inspectDatastarAttributeName(name)
+    if (inspection._tag === "invalid") {
+      return diagnostic(
+        sourceFile,
+        attribute,
+        inspection.category === "key" ? "invalid-datastar-key" : "invalid-datastar-modifier",
+        inspection.message
+      )
+    }
+    if (inspection._tag === "known") {
+      if (looseCustomElement && inspection.name === "data-ref") {
         return diagnostic(
           sourceFile,
           attribute,
@@ -284,19 +201,13 @@ const checkAttribute = (
     }
     if (propsType.getProperty(name) !== undefined) return undefined
 
-    const root = datastarAttributeRoot(name)
-    const baseName = root.split(":", 1)[0] ?? root
-    const suggestion = closestName(
-      baseName,
-      datastarAttributeDefinitions.map((definition) => definition.name)
-    )
-    if (suggestion !== undefined) {
+    if (inspection.suggestion !== undefined) {
       return diagnostic(
         sourceFile,
         attribute,
         "unknown-datastar-attribute",
-        `Unknown Datastar attribute ${JSON.stringify(baseName)}`,
-        suggestion
+        `Unknown Datastar attribute ${JSON.stringify(inspection.baseName)}`,
+        inspection.suggestion
       )
     }
 
