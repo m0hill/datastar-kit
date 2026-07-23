@@ -13,11 +13,13 @@ declare module "datastar-kit/jsx-runtime" {
 
 const visible = signal<boolean>("visible")
 const todo = { id: 1 }
+const RichComponent = (_props: { readonly payload: { readonly id: number } }) => <div />
 
 export const positiveFixture = (
   <main>
     <div data-show={visible} />
     <li data-id={todo.id} />
+    <div children={<span>Child</span>} />
     <button data-focus-when={visible} />
     <button data-on:click={js`${visible} = false`} />
     <div
@@ -34,6 +36,7 @@ export const positiveFixture = (
       Child
     </typed-widget>
     <button data-on:click__delay="$count++" />
+    <RichComponent payload={{ id: 1 }} />
     <unregistered-widget
       anything="loose"
       aria-label="Widget"

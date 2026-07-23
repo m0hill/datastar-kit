@@ -7,20 +7,22 @@ attribute names containing hyphens.
 pnpm check:jsx-attributes
 ```
 
-The default CLI run checks all TypeScript projects under `packages/` and `examples/`. Pass explicit
-tsconfig paths to check a selected project.
+The default CLI run checks all TypeScript projects under `packages/` and `examples/`; the root
+`pnpm typecheck` command runs it after ordinary TypeScript checks. Pass explicit tsconfig paths to
+check a selected project.
 
 ## Module shape
 
 - `check.ts` is the functional core: `checkProgram(program)` returns structured diagnostics.
 - `load-project.ts` adapts a tsconfig into a TypeScript `Program`.
 - `cli.ts` owns workspace defaults, diagnostic rendering, and the process exit code.
-- `fixtures/` and `check.test.ts` cover registrations, path mappings, primitive dataset values,
-  typo suggestions, keys, modifier names and compatibility, and source locations.
+- `fixtures/` and `check.test.ts` cover registrations, path mappings, runtime-safe direct and spread
+  attributes, primitive datasets, typo suggestions, keys, modifier compatibility, and locations.
 
 The checker uses TypeScript's contextual JSX types, so module-augmented `CustomJsxAttributes` and
-`CustomJsxElements` are the registration seam. Canonical Datastar names and modifier compatibility
-come from the same metadata modules used by the JSX runtime. Modifier value-tag grammar is deferred
+`CustomJsxElements` are the registration seam. It also rejects rich non-`data-*` values that the
+server renderer cannot serialize. Canonical Datastar names and modifier compatibility come from the
+same metadata modules used by the JSX runtime. Modifier value-tag grammar is deferred
 until the runtime and checker can share one parser instead of maintaining parallel rules.
 
 This remains workspace-private until its CLI, configuration, TypeScript compatibility, project

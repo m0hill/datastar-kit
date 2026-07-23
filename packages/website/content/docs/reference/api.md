@@ -143,7 +143,9 @@ Types exported from the root include `CustomJsxAttributes`, `CustomJsxElements`,
 `HtmlChild`, `HtmlNode`, `HtmlProps`, `HtmlPropValue`, `SignalState`, and `SignalValue`. Augment
 `CustomJsxAttributes` and `CustomJsxElements` in `datastar-kit/jsx-runtime` to register exact custom
 HTML or Datastar plugin attributes and custom-element props. Registered custom elements also retain
-global HTML, ARIA, children, and typed Datastar attributes.
+global HTML, ARIA, children, and typed Datastar attributes. Non-`data-*` custom attributes must use
+primitive `HtmlPropValue` values so their static types match server-rendering behavior. Modifier
+wrappers remain limited to built-in Datastar attributes with modifier metadata.
 
 ## Explicit subpaths
 

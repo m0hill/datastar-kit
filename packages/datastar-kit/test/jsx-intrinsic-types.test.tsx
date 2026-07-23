@@ -6,14 +6,19 @@ import {
   mod,
   signal,
   type DatastarAttributes,
+  type DatastarAttributeValue,
   type DatastarSignalReference,
   type Expr,
   type SignalTarget
 } from "../src/ds/index.js"
 import { renderToString } from "../src/html.js"
+import type { JSX as DatastarJsx } from "../src/jsx-runtime.js"
 
 declare module "datastar-kit/jsx-runtime" {
   interface CustomJsxAttributes {
+    "custom-expression"?: Expr
+    "custom-object"?: { readonly id: number }
+    "data-custom"?: DatastarAttributeValue
     "data-focus-when"?: Expr<boolean>
     "hx-get"?: string
     "x-data"?: string
@@ -23,6 +28,7 @@ declare module "datastar-kit/jsx-runtime" {
     "typed-widget": {
       mode: "compact" | "full"
       count?: number
+      payload?: { readonly id: number }
     }
   }
 }
@@ -180,6 +186,27 @@ describe("typed JSX intrinsic elements", () => {
 
   it("rejects mistyped tags, attributes, and event expressions at compile time", () => {
     const count = signal<number>("count")
+    const invalidCustomObject: DatastarJsx.IntrinsicElements["div"] = {
+      // @ts-expect-error rich ordinary custom attributes cannot be serialized at runtime
+      "custom-object": { id: 1 }
+    }
+    const invalidCustomExpression: DatastarJsx.IntrinsicElements["div"] = {
+      // @ts-expect-error expressions require a data-* attribute for runtime serialization
+      "custom-expression": js`$count`
+    }
+    const invalidCustomElement: DatastarJsx.IntrinsicElements["typed-widget"] = {
+      mode: "compact",
+      // @ts-expect-error rich custom-element props cannot be serialized as HTML attributes
+      payload: { id: 1 }
+    }
+    const invalidCustomModifier: DatastarJsx.IntrinsicElements["div"] = {
+      // @ts-expect-error custom data attributes have no modifier metadata target
+      "data-custom": mod("$count", { prevent: true })
+    }
+    void invalidCustomObject
+    void invalidCustomExpression
+    void invalidCustomElement
+    void invalidCustomModifier
 
     const nodes = [
       <a

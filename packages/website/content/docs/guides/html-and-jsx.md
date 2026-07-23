@@ -133,7 +133,10 @@ declare module "datastar-kit/jsx-runtime" {
 
 Direct primitive dataset attributes such as `<li data-id={todo.id}>` remain valid. Use
 `dataAttrs(...)` when composing a dynamic primitive attribute bag; custom Datastar plugins that
-accept expressions or objects should be registered exactly.
+accept expressions or objects should be registered exactly. Ordinary HTML and custom-element
+attributes must remain primitive because server rendering writes attributes, not JavaScript DOM
+properties; put expressions or structured values behind a `data-*` attribute. Modifier wrappers
+remain limited to built-in Datastar attributes with known modifier metadata.
 
 TypeScript itself deliberately accepts unknown JSX attribute names containing a hyphen, even when
 an element has no matching property. It therefore cannot diagnose names such as `aria-labl` or

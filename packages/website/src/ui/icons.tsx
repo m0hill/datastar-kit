@@ -1,6 +1,12 @@
 import type { JSX } from "datastar-kit/jsx-runtime"
 
-type IconProps = JSX.IntrinsicElements["svg"]
+type IconProps = Pick<
+  JSX.IntrinsicElements["svg"],
+  "aria-hidden" | "aria-label" | "class" | "role"
+> & {
+  readonly height?: number | string
+  readonly width?: number | string
+}
 
 export const Icons = {
   gitHub: (props: IconProps) => (

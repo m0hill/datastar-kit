@@ -16,6 +16,7 @@ export type DatastarJsxDiagnosticCode =
   | "unknown-datastar-attribute"
   | "invalid-datastar-key"
   | "invalid-datastar-modifier"
+  | "unsupported-rich-attribute"
   | "unregistered-rich-data-attribute"
   | "unknown-vendor-attribute"
 
@@ -33,6 +34,7 @@ type CheckedAttribute = {
   readonly nameNode: ts.Node
   readonly name: string
   readonly value: ts.Expression | undefined
+  readonly valueType?: ts.Type
   readonly primitiveLiteral: boolean
 }
 
@@ -46,6 +48,7 @@ const primitiveTypeFlags =
 
 const isPrimitiveType = (checker: ts.TypeChecker, type: ts.Type): boolean => {
   if (type.isUnion()) return type.types.every((member) => isPrimitiveType(checker, member))
+  if (type.isIntersection()) return type.types.some((member) => isPrimitiveType(checker, member))
   if ((type.flags & primitiveTypeFlags) !== 0) return true
   if ((type.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) !== 0) return false
 
@@ -53,10 +56,17 @@ const isPrimitiveType = (checker: ts.TypeChecker, type: ts.Type): boolean => {
   return constraint !== undefined && constraint !== type && isPrimitiveType(checker, constraint)
 }
 
-const isPrimitiveAttributeValue = (checker: ts.TypeChecker, attribute: CheckedAttribute): boolean =>
-  attribute.primitiveLiteral ||
-  attribute.value === undefined ||
-  isPrimitiveType(checker, checker.getTypeAtLocation(attribute.value))
+const isPrimitiveAttributeValue = (
+  checker: ts.TypeChecker,
+  attribute: CheckedAttribute
+): boolean => {
+  if (attribute.primitiveLiteral) return true
+  if (attribute.valueType !== undefined) return isPrimitiveType(checker, attribute.valueType)
+  return (
+    attribute.value === undefined ||
+    isPrimitiveType(checker, checker.getTypeAtLocation(attribute.value))
+  )
+}
 
 const damerauLevenshteinDistance = (left: string, right: string): number => {
   const rows = left.length + 1
@@ -220,6 +230,21 @@ const checkAttribute = (
   allowUnknownVendorAttributes: boolean
 ): DatastarJsxDiagnostic | undefined => {
   const { name } = attribute
+  if (
+    name !== "children" &&
+    name !== "key" &&
+    name !== "__self" &&
+    name !== "__source" &&
+    !name.startsWith("data-") &&
+    !isPrimitiveAttributeValue(checker, attribute)
+  ) {
+    return diagnostic(
+      sourceFile,
+      attribute,
+      "unsupported-rich-attribute",
+      `Attribute ${JSON.stringify(name)} only accepts primitive values; expressions, arrays, and objects require a data-* attribute`
+    )
+  }
   if (!name.includes("-")) return undefined
 
   if (name.startsWith("aria-")) {
@@ -301,49 +326,56 @@ const checkedJsxAttribute = (
   }
 }
 
-const propertyNameText = (name: ts.PropertyName): string | undefined => {
-  if (
-    ts.isIdentifier(name) ||
-    ts.isStringLiteral(name) ||
-    ts.isNoSubstitutionTemplateLiteral(name)
-  ) {
-    return name.text
+const checkedSpreadAttributes = (
+  checker: ts.TypeChecker,
+  spread: ts.JsxSpreadAttribute
+): readonly CheckedAttribute[] => {
+  const propertyTypes = new Map<string, ts.Type>()
+
+  const collectProperties = (type: ts.Type): void => {
+    if (type.isUnion()) {
+      for (const member of type.types) collectProperties(member)
+      return
+    }
+
+    for (const property of checker.getPropertiesOfType(type)) {
+      const propertyType = checker.getTypeOfSymbolAtLocation(property, spread.expression)
+      const currentType = propertyTypes.get(property.name)
+      if (
+        currentType === undefined ||
+        (isPrimitiveType(checker, currentType) && !isPrimitiveType(checker, propertyType))
+      ) {
+        propertyTypes.set(property.name, propertyType)
+      }
+    }
+
+    for (const index of checker.getIndexInfosOfType(type)) {
+      if (isPrimitiveType(checker, index.type)) continue
+      const keyType = checker.typeToString(index.keyType)
+      const name = keyType.startsWith("`data-") ? "data-<computed>" : "<computed attribute>"
+      propertyTypes.set(name, index.type)
+    }
   }
-  return undefined
-}
 
-const checkedSpreadAttributes = (spread: ts.JsxSpreadAttribute): readonly CheckedAttribute[] => {
-  if (!ts.isObjectLiteralExpression(spread.expression)) return []
-
-  return spread.expression.properties.flatMap((property) => {
-    if (!ts.isPropertyAssignment(property)) return []
-    const name = propertyNameText(property.name)
-    return name === undefined
-      ? []
-      : [
-          {
-            nameNode: property.name,
-            name,
-            value: property.initializer,
-            primitiveLiteral:
-              ts.isStringLiteral(property.initializer) ||
-              ts.isNumericLiteral(property.initializer) ||
-              property.initializer.kind === ts.SyntaxKind.TrueKeyword ||
-              property.initializer.kind === ts.SyntaxKind.FalseKeyword ||
-              property.initializer.kind === ts.SyntaxKind.NullKeyword
-          }
-        ]
-  })
+  collectProperties(checker.getTypeAtLocation(spread.expression))
+  return [...propertyTypes].map(([name, valueType]) => ({
+    nameNode: spread.expression,
+    name,
+    value: undefined,
+    valueType,
+    primitiveLiteral: false
+  }))
 }
 
 const checkedAttributes = (
+  checker: ts.TypeChecker,
   sourceFile: ts.SourceFile,
   attributes: ts.JsxAttributes
 ): readonly CheckedAttribute[] =>
   attributes.properties.flatMap((property) =>
     ts.isJsxAttribute(property)
       ? [checkedJsxAttribute(sourceFile, property)]
-      : checkedSpreadAttributes(property)
+      : checkedSpreadAttributes(checker, property)
   )
 
 const checkSourceFile = (
@@ -365,15 +397,17 @@ const checkSourceFile = (
     if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
       const contextualPropsType = checker.getContextualType(node.attributes)
       const tagName = node.tagName.getText(sourceFile)
-      const looseCustomElement = tagName.includes("-") && !intrinsicTagNames.has(tagName)
+      const registeredIntrinsicElement = intrinsicTagNames.has(tagName)
+      const looseCustomElement = tagName.includes("-") && !registeredIntrinsicElement
       const propsType =
         looseCustomElement && globalPropsType !== undefined ? globalPropsType : contextualPropsType
 
       if (
+        (registeredIntrinsicElement || looseCustomElement) &&
         propsType !== undefined &&
         (propsType.flags & (ts.TypeFlags.Any | ts.TypeFlags.Unknown)) === 0
       ) {
-        for (const attribute of checkedAttributes(sourceFile, node.attributes)) {
+        for (const attribute of checkedAttributes(checker, sourceFile, node.attributes)) {
           const issue = checkAttribute(
             checker,
             sourceFile,

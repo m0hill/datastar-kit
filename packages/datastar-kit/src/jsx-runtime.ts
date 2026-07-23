@@ -1,5 +1,7 @@
+import type { DatastarAttributeValue } from "./ds/attribute-types.js"
+import type { DatastarModifiedValue } from "./ds/modifiers.js"
 import type { HtmlElements, HtmlGlobalAttributes } from "./html-attributes.js"
-import type { HtmlChild } from "./html.js"
+import type { HtmlChild, HtmlPropValue } from "./html.js"
 import { createJsxElement, type JsxTag } from "./jsx.js"
 
 /**
@@ -7,7 +9,9 @@ import { createJsxElement, type JsxTag } from "./jsx.js"
  *
  * Augment this interface in `datastar-kit/jsx-runtime` for custom HTML attributes and Datastar
  * plugins. Registration gives the attribute an exact value type despite TypeScript deliberately
- * permitting unknown hyphenated JSX attribute names.
+ * permitting unknown hyphenated JSX attribute names. Non-`data-*` attributes must be primitive
+ * HTML values; rich values are supported only where the runtime can serialize them. Custom
+ * `data-*` plugins cannot use modifier wrappers because they have no modifier metadata target.
  */
 export interface CustomJsxAttributes {}
 
@@ -16,18 +20,34 @@ export interface CustomJsxAttributes {}
  *
  * Augment this interface in `datastar-kit/jsx-runtime`. Registered elements also receive global
  * HTML and ARIA attributes, typed Datastar attributes, children, and every property from
- * {@link CustomJsxAttributes}.
+ * {@link CustomJsxAttributes}. Element-specific HTML attributes must use primitive values because
+ * server-rendered custom elements cannot receive JavaScript objects as DOM properties.
  */
 export interface CustomJsxElements {}
 
-type KnownIntrinsicElements = {
-  [Tag in keyof HtmlElements]: HtmlElements[Tag] & CustomJsxAttributes
+// Custom extension declarations are open interfaces, so project their values onto the exact
+// serialization domains enforced by cleanElementProps before exposing them through JSX.
+type CustomDataAttributeValue = Exclude<DatastarAttributeValue, DatastarModifiedValue>
+
+type RuntimeSerializableAttributes<Attributes> = {
+  [Name in keyof Attributes]: Name extends "children"
+    ? Extract<Attributes[Name], HtmlChild>
+    : Name extends `data-${string}`
+      ? Attributes[Name] & CustomDataAttributeValue
+      : Extract<Attributes[Name], HtmlPropValue>
 }
 
-type CustomElementGlobalAttributes = HtmlGlobalAttributes<HTMLElement> & CustomJsxAttributes
+type RegisteredCustomAttributes = RuntimeSerializableAttributes<CustomJsxAttributes>
+
+type KnownIntrinsicElements = {
+  [Tag in keyof HtmlElements]: HtmlElements[Tag] & RegisteredCustomAttributes
+}
+
+type CustomElementGlobalAttributes = HtmlGlobalAttributes<HTMLElement> & RegisteredCustomAttributes
 
 type RegisteredCustomElements = {
-  [Tag in keyof CustomJsxElements]: CustomJsxElements[Tag] & CustomElementGlobalAttributes
+  [Tag in keyof CustomJsxElements]: RuntimeSerializableAttributes<CustomJsxElements[Tag]> &
+    CustomElementGlobalAttributes
 }
 
 const toChildren = (value: HtmlChild | readonly HtmlChild[] | undefined): readonly HtmlChild[] => {

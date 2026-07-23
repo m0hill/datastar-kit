@@ -36,6 +36,15 @@ describe("Datastar JSX checker", () => {
       "unknown-aria-attribute",
       "unknown-datastar-attribute",
       "unknown-datastar-attribute",
+      "unsupported-rich-attribute",
+      "unsupported-rich-attribute",
+      "unsupported-rich-attribute",
+      "unsupported-rich-attribute",
+      "unsupported-rich-attribute",
+      "unsupported-rich-attribute",
+      "unsupported-rich-attribute",
+      "unsupported-rich-attribute",
+      "unsupported-rich-attribute",
       "unknown-vendor-attribute"
     ])
     expect(diagnostics[0]?.suggestion).toBe("aria-label")
@@ -43,6 +52,21 @@ describe("Datastar JSX checker", () => {
     expect(diagnostics[7]?.suggestion).toBe("aria-label")
     expect(diagnostics[8]?.suggestion).toBe("data-show")
     expect(diagnostics[9]?.suggestion).toBe("data-show")
+    expect(
+      diagnostics
+        .filter((diagnostic) => diagnostic.code === "unsupported-rich-attribute")
+        .map((diagnostic) => diagnostic.message)
+    ).toEqual([
+      'Attribute "custom-object" only accepts primitive values; expressions, arrays, and objects require a data-* attribute',
+      'Attribute "custom-expression" only accepts primitive values; expressions, arrays, and objects require a data-* attribute',
+      'Attribute "payload" only accepts primitive values; expressions, arrays, and objects require a data-* attribute',
+      'Attribute "payload" only accepts primitive values; expressions, arrays, and objects require a data-* attribute',
+      'Attribute "custom-object" only accepts primitive values; expressions, arrays, and objects require a data-* attribute',
+      'Attribute "payload" only accepts primitive values; expressions, arrays, and objects require a data-* attribute',
+      'Attribute "custom-expression" only accepts primitive values; expressions, arrays, and objects require a data-* attribute',
+      'Attribute "<computed attribute>" only accepts primitive values; expressions, arrays, and objects require a data-* attribute',
+      'Attribute "custom-object" only accepts primitive values; expressions, arrays, and objects require a data-* attribute'
+    ])
     expect(diagnostics.every((diagnostic) => diagnostic.start >= 0)).toBe(true)
   })
 })

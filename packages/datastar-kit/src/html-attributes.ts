@@ -709,7 +709,8 @@ export interface VideoHtmlAttributes extends HtmlGlobalAttributes {
 
 /**
  * Loosely typed props for SVG elements: global and Datastar attributes are typed, and any other
- * attribute accepts a serializable value.
+ * SVG attribute name is accepted. Ordinary attributes serialize primitive `HtmlPropValue` values;
+ * `data-*` attributes may use structured Datastar values.
  */
 export interface SvgElementAttributes extends HtmlGlobalAttributes {
   [attribute: string]: HtmlAttributeValue
