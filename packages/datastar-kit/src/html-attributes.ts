@@ -1,3 +1,5 @@
+/// <reference lib="dom" preserve="true" />
+
 import type { DatastarAttributes, DatastarAttributeValue } from "./ds/attribute-types.js"
 import type { HtmlChild, HtmlPropValue } from "./html.js"
 
@@ -720,10 +722,7 @@ export interface SvgElementAttributes extends HtmlGlobalAttributes {
   [attribute: string]: HtmlAttributeValue
 }
 
-/**
- * Intrinsic HTML and SVG elements with typed attributes, used by `JSX.IntrinsicElements`.
- */
-export interface HtmlElements {
+interface HtmlElementAttributeDefinitions {
   a: AnchorHtmlAttributes
   abbr: HtmlGlobalAttributes
   address: HtmlGlobalAttributes
@@ -865,3 +864,20 @@ export interface HtmlElements {
   use: SvgElementAttributes
   view: SvgElementAttributes
 }
+
+type IntrinsicElementFor<Tag extends keyof HtmlElementAttributeDefinitions> =
+  Tag extends keyof HTMLElementTagNameMap
+    ? HTMLElementTagNameMap[Tag]
+    : Tag extends keyof SVGElementTagNameMap
+      ? SVGElementTagNameMap[Tag]
+      : never
+
+type TypedHtmlElements = {
+  [Tag in keyof HtmlElementAttributeDefinitions]: HtmlElementAttributeDefinitions[Tag] &
+    DatastarAttributes<IntrinsicElementFor<Tag>>
+}
+
+/**
+ * Intrinsic HTML and SVG elements with typed attributes, used by `JSX.IntrinsicElements`.
+ */
+export interface HtmlElements extends TypedHtmlElements {}

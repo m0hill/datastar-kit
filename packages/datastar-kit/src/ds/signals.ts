@@ -2,6 +2,18 @@ import type { SignalValue } from "../types.js"
 // oxlint-disable-next-line no-unused-vars -- The unique symbol is used as a non-emitting class property key.
 import type { Expr, expressionValue } from "./expression.js"
 
+declare const signalTargetValue: unique symbol
+
+/**
+ * A typed signal reference that can receive values from a mutating Datastar attribute.
+ *
+ * @typeParam T Value that may be written to the signal.
+ */
+export interface SignalTarget<in T = never> {
+  /** Contravariant phantom marker for values this signal can receive. */
+  readonly [signalTargetValue]: (value: T) => void
+}
+
 /**
  * Authoring-time signal value accepted by Datastar authoring helpers.
  *
@@ -45,8 +57,9 @@ export const assertSignalName = (name: string): void => {
  * @typeParam T Runtime value stored at this signal path.
  * @typeParam Name Signal path represented by this reference.
  */
-export class Signal<T, Name extends string = string> implements Expr<T> {
+export class Signal<T, Name extends string = string> implements Expr<T>, SignalTarget<T> {
   declare readonly [expressionValue]: T
+  declare readonly [signalTargetValue]: (value: T) => void
 
   constructor(readonly name: Name) {
     assertSignalName(name)

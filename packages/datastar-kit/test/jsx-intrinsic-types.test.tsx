@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest"
-import { get, js, mod, signal, type DatastarAttributes } from "../src/ds/index.js"
+import {
+  get,
+  js,
+  mod,
+  signal,
+  type DatastarAttributes,
+  type DatastarSignalReference,
+  type Expr,
+  type SignalTarget
+} from "../src/ds/index.js"
 import { renderToString } from "../src/html.js"
 
 const typecheckOnly = (testCases: () => void): void => {
@@ -53,6 +62,53 @@ describe("typed JSX intrinsic elements", () => {
     expect(renderToString(node)).toBe(
       '<input type="search" data-bind="query" data-on:input__debounce.300ms="@get(&quot;/search&quot;)" data-attr:aria-busy="$query.length &gt; 0">'
     )
+  })
+
+  it("checks values written by mutating Datastar attributes", () => {
+    const text = signal<string>("fetching")
+    const flag = signal<boolean>("element")
+    const maybeFetching = signal<boolean | undefined>("maybeFetching")
+    const form = signal<HTMLFormElement>("form")
+    const anyElement = signal<Element>("anyElement")
+    const button = signal<HTMLButtonElement>("button")
+    const count = signal<number>("count")
+    const structuralReference = {
+      name: "structural",
+      toDatastarExpression: () => "$structural"
+    }
+
+    const indicatorTarget: SignalTarget<boolean> = maybeFetching
+    const readOnlyText: Expr<string> = text
+    const writeOnlyText: SignalTarget<string> = text
+    const textBinding: DatastarSignalReference<string, string> = text
+    // @ts-expect-error A boolean signal cannot satisfy a string read/write binding.
+    const invalidTextBinding: DatastarSignalReference<string, string> = flag
+    void indicatorTarget
+    void readOnlyText
+    void writeOnlyText
+    void textBinding
+    void invalidTextBinding
+
+    const nodes = [
+      <button data-indicator={flag} />,
+      <form data-ref={form} />,
+      <form data-ref={anyElement} />,
+      <select data-bind={count} />,
+      // @ts-expect-error A readable expression alone cannot be used for two-way binding.
+      <input data-bind={readOnlyText} />,
+      // @ts-expect-error A write target alone cannot be used for two-way binding.
+      <input data-bind={writeOnlyText} />,
+      // @ts-expect-error data-indicator writes booleans, not strings.
+      <button data-indicator={text} />,
+      // @ts-expect-error data-ref writes the concrete element, not a boolean.
+      <div data-ref={flag} />,
+      // @ts-expect-error A form element cannot be written to a button-only signal.
+      <form data-ref={button} />,
+      // @ts-expect-error data-bind requires a branded readable and writable signal.
+      <input data-bind={structuralReference} />
+    ]
+
+    expect(nodes).toHaveLength(10)
   })
 
   it("renders unknown tags and attributes through the escape hatches", () => {

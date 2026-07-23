@@ -2,7 +2,7 @@ import type { HtmlPropValue } from "../html.js"
 import type { Expr } from "./expression.js"
 import type { DatastarModifierKeysFor } from "./modifier-rendering.js"
 import type { DatastarModifiedValue, DatastarModifierKey } from "./modifiers.js"
-import type { SignalStateInput, SignalValueInput } from "./signals.js"
+import type { SignalStateInput, SignalTarget, SignalValueInput } from "./signals.js"
 
 /**
  * Datastar expression source accepted by expression-valued attributes: a typed expression built
@@ -53,14 +53,18 @@ export type DatastarComputedInput =
   | { readonly [key: string]: DatastarComputedInput }
 
 /**
- * A typed signal reference (or raw signal-name string) accepted by signal-name attributes such as
- * `data-bind`, `data-ref`, and `data-indicator`.
+ * A readable and writable typed signal reference accepted by two-way binding attributes.
+ *
+ * The default broad read and write bounds encode a signal of some value type while preserving both
+ * capabilities. Mutation-only attributes use a precise {@link SignalTarget} type instead.
+ *
+ * @typeParam ReadValue Value callers may read from the signal.
+ * @typeParam WriteValue Value Datastar may write to the signal.
  */
-export interface DatastarSignalReference {
+export interface DatastarSignalReference<out ReadValue = unknown, in WriteValue = never>
+  extends Expr<ReadValue>, SignalTarget<WriteValue> {
   /** Dotted signal path rendered as the attribute value. */
   readonly name: string
-  /** Serializes this reference as Datastar expression source. */
-  toDatastarExpression(): string
 }
 
 /**
@@ -83,7 +87,7 @@ export type DatastarSignalFilterInput = {
 export type DatastarAttributeValue =
   | HtmlPropValue
   | Expr
-  | DatastarSignalReference
+  | SignalTarget
   | DatastarModifiedValue
   | RegExp
   | readonly DatastarAttributeValue[]
@@ -206,9 +210,11 @@ export type DatastarEventAttributes = {
  * `data-signals:*`, ...) are typed through template signatures, and unrecognized `data-*`
  * attributes fall back to {@link DatastarAttributeValue} as an escape hatch.
  *
+ * @typeParam RefElement Element value written by `data-ref`; defaults to an unconstrained target
+ * when no intrinsic-element context is available.
  * @see https://data-star.dev/reference/attributes
  */
-export interface DatastarAttributes extends DatastarEventAttributes {
+export interface DatastarAttributes<RefElement = never> extends DatastarEventAttributes {
   /** Sets attributes from an object of attribute names to expressions. @see https://data-star.dev/reference/attributes#data-attr */
   "data-attr"?: Readonly<Record<string, DatastarExpressionValue>> | DatastarExpression | undefined
   /** Two-way binds an element value to a signal. @see https://data-star.dev/reference/attributes#data-bind */
@@ -227,7 +233,7 @@ export interface DatastarAttributes extends DatastarEventAttributes {
   /** Preserves this element when morphing. @see https://data-star.dev/reference/attributes#data-ignore-morph */
   "data-ignore-morph"?: DatastarPresenceValue | undefined
   /** Tracks in-flight fetch requests in a boolean signal. @see https://data-star.dev/reference/attributes#data-indicator */
-  "data-indicator"?: DatastarSignalReference | string | null | undefined
+  "data-indicator"?: SignalTarget<boolean> | string | null | undefined
   /** Runs an expression when the element is initialized. @see https://data-star.dev/reference/attributes#data-init */
   "data-init"?: DatastarModifiable<DatastarExpressionValue, DatastarInitModifierKey> | undefined
   /** Renders matching signals as JSON text content. @see https://data-star.dev/reference/attributes#data-json-signals */
@@ -258,7 +264,7 @@ export interface DatastarAttributes extends DatastarEventAttributes {
   /** Syncs matching signals with the URL query string. @see https://data-star.dev/reference/attributes#data-query-string */
   "data-query-string"?: boolean | null | DatastarSignalFilterInput | DatastarExpression | undefined
   /** Stores a reference to this element in a signal. @see https://data-star.dev/reference/attributes#data-ref */
-  "data-ref"?: DatastarSignalReference | string | null | undefined
+  "data-ref"?: SignalTarget<RefElement> | string | null | undefined
   /** Scopes signals to this element's descendants. @see https://data-star.dev/reference/attributes#data-scope-children */
   "data-scope-children"?: DatastarPresenceValue | undefined
   /** Scrolls the element into view. @see https://data-star.dev/reference/attributes#data-scroll-into-view */
