@@ -1,12 +1,25 @@
-import { readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { executeScript, patchElements, patchSignals } from "../src/sse.js"
 
-const fixture = (name: string): string =>
-  readFileSync(
-    new URL(`../../../../datastar/sdk/test/get-cases/${name}/output.txt`, import.meta.url),
-    "utf8"
-  )
+const fixtures = {
+  patchElementsWithMultilineElements:
+    "event: datastar-patch-elements\ndata: elements <div>\ndata: elements   <span>Merge</span>\ndata: elements </div>\n\n",
+  patchSignalsWithMultilineSignals:
+    'event: datastar-patch-signals\ndata: signals {"one":"first\\n signal","two":"second signal"}\n\n',
+  patchSignalsWithMultilineJson:
+    'event: datastar-patch-signals\ndata: signals {\ndata: signals "one": "first signal",\ndata: signals "two":  \ndata: signals "second signal"}\n\n',
+  removeElementsWithAllOptions:
+    "event: datastar-patch-elements\nid: event1\nretry: 2000\ndata: selector #target\ndata: mode remove\ndata: useViewTransition true\n\n",
+  removeSignalsWithDefaults: 'event: datastar-patch-signals\ndata: signals {"one":null}\n\n',
+  removeSignalsWithAllOptions:
+    'event: datastar-patch-signals\nid: event1\nretry: 2000\ndata: signals {"one":null,"two":{"alpha":null}}\n\n',
+  executeScriptWithDefaults:
+    "event: datastar-patch-elements\ndata: mode append\ndata: selector body\ndata: elements <script data-effect=\"el.remove()\">console.log('hello');</script>\n\n",
+  executeScriptWithAllOptions:
+    'event: datastar-patch-elements\nid: event1\nretry: 2000\ndata: mode append\ndata: selector body\ndata: elements <script type="text/javascript" blocking="false">console.log(\'hello\');</script>\n\n'
+} as const
+
+const fixture = (name: keyof typeof fixtures): string => fixtures[name]
 
 describe("additional Datastar SDK fixtures", () => {
   it("matches the multiline patch-elements fixture", () => {
