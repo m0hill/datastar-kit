@@ -1,5 +1,7 @@
 # Datastar Kit
 
+[![npm version](https://img.shields.io/npm/v/datastar-kit.svg)](https://www.npmjs.com/package/datastar-kit)
+
 Datastar Kit is a small TypeScript SDK for building server-driven UI with [Datastar](https://data-star.dev/).
 
 It provides the Datastar-shaped pieces of an application: typed attributes and actions, typed signal refs, server-rendered HTML/TSX, Datastar signal decoding from `Request`, native `Response` helpers for pages, patches, streams, navigation, and no-content commands, plus a development-only debugger Web Component.
