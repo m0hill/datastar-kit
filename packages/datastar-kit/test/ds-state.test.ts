@@ -27,7 +27,8 @@ describe("state helpers", () => {
     expect(Object.isFrozen(model.defaults.tags)).toBe(true)
 
     expect(() => {
-      ;(model.defaults as { profile: { name: string } }).profile.name = "Grace"
+      // @ts-expect-error defaults are readonly
+      model.defaults.profile.name = "Grace"
     }).toThrow(TypeError)
 
     expect(model.reset()).toEqual({ profile: { name: "Ada" }, tags: ["admin"] })
@@ -43,10 +44,11 @@ describe("state helpers", () => {
     expect(patch).toEqual({ errors: { name: "Enter your name" } })
 
     const reset = form.reset()
-    const resetErrors = reset.errors as { name: string }
-    resetErrors.name = "Changed reset result"
+    const nextReset = form.reset()
 
-    expect(form.reset()).toEqual({ name: "", errors: { name: "" } })
+    expect(nextReset).toEqual(reset)
+    expect(nextReset).not.toBe(reset)
+    expect(nextReset.errors).not.toBe(reset.errors)
   })
 
   it("creates nested leaf signal refs from one defaults object", () => {
@@ -98,12 +100,14 @@ describe("state helpers", () => {
   })
 
   it("widens singleton literal defaults but preserves explicit unions", () => {
-    const view = state({
-      attempt: 0 as const,
-      name: "" as const,
-      status: "idle" as "idle" | "saving",
-      tags: ["admin" as "admin" | "editor"]
-    })
+    type ViewDefaults = {
+      readonly attempt: 0
+      readonly name: ""
+      readonly status: "idle" | "saving"
+      readonly tags: readonly ("admin" | "editor")[]
+    }
+    const defaults: ViewDefaults = { attempt: 0, name: "", status: "idle", tags: ["admin"] }
+    const view = state(defaults)
 
     if (false) {
       view.patch({ attempt: 1 })

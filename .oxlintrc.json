@@ -48,7 +48,7 @@
     "typescript/no-explicit-any": "off",
     "vitest/no-standalone-expect": "off",
     "no-underscore-dangle": "off",
-    "anti-slop/no-chained-type-assertions": "off",
+    "anti-slop/no-chained-type-assertions": "error",
     "anti-slop/no-conditional-empty-object-spread": "error",
     "anti-slop/no-known-value-widening": "error",
     "anti-slop/no-module-mocking": "error",
@@ -62,7 +62,7 @@
     "anti-slop/no-unknown-type-aliases": "error",
     "anti-slop/no-unsafe-dictionary-type": "error",
     "anti-slop/no-widen-then-assert": "error",
-    "anti-slop/require-safety-comment-for-type-assertion": "off"
+    "anti-slop/require-safety-comment-for-type-assertion": "error"
   },
   "overrides": [
     {
@@ -87,7 +87,6 @@
     {
       "files": ["packages/datastar-kit/test/**/*.ts", "packages/datastar-kit/test/**/*.tsx"],
       "rules": {
-        "typescript/no-unsafe-type-assertion": "off",
         "unicorn/consistent-function-scoping": "off"
       }
     },

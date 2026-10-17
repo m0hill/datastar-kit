@@ -33,6 +33,8 @@ const FENCE_LANGS = [
   "text"
 ] as const
 
+const fenceLangs: ReadonlySet<string> = new Set(FENCE_LANGS)
+
 const langAliases = new Map([
   ["md", "markdown"],
   ["bash", "shellscript"],
@@ -132,7 +134,7 @@ const checkIcon = icon("icon-check", h("path", { d: "M5 12.5 10 17l9-10" }))
 
 const highlightFence = (highlighter: Highlighter, code: string, lang: string): string => {
   const requested = langAliases.get(lang) ?? lang
-  const language = (FENCE_LANGS as readonly string[]).includes(requested) ? requested : "text"
+  const language = fenceLangs.has(requested) ? requested : "text"
   const highlighted = highlighter.codeToHtml(code.replace(/\n$/, ""), {
     lang: language,
     themes: SHIKI_THEMES,

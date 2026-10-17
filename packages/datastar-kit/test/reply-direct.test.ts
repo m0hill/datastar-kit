@@ -33,12 +33,16 @@ describe("reply direct Datastar responses", () => {
   })
 
   it("preserves repeated Set-Cookie headers while merging response defaults", () => {
-    const response = reply.page(h("main", {}, "OK"), {}, {
-      headers: new Headers([
-        ["set-cookie", "session=abc; Path=/; HttpOnly"],
-        ["set-cookie", "theme=dark; Path=/"]
-      ])
-    })
+    const response = reply.page(
+      h("main", {}, "OK"),
+      {},
+      {
+        headers: new Headers([
+          ["set-cookie", "session=abc; Path=/; HttpOnly"],
+          ["set-cookie", "theme=dark; Path=/"]
+        ])
+      }
+    )
 
     expect(response.headers.get("content-type")).toContain("text/html")
     expect(response.headers.getSetCookie()).toEqual([

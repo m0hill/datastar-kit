@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { get, js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-init", () => {
   it("renders init expressions with the hyperscript factory", () => {
@@ -45,9 +43,12 @@ describe("data-init", () => {
 
   it("keeps the runtime defensive for untyped primitive values", () => {
     const nodes = [
-      runtimeJsx("div", { "data-init": true } as unknown as JsxProps),
-      runtimeJsx("div", { "data-init": false } as unknown as JsxProps),
-      runtimeJsx("div", { "data-init": 0 } as unknown as JsxProps)
+      // @ts-expect-error data-init requires an expression, not true
+      <div data-init={true} />,
+      // @ts-expect-error data-init requires an expression, not false
+      <div data-init={false} />,
+      // @ts-expect-error data-init requires an expression, not 0
+      <div data-init={0} />
     ]
 
     expect(renderToString(nodes)).toBe(
@@ -104,10 +105,9 @@ describe("data-init", () => {
   })
 
   it("rejects explicit modifiers that data-init does not support", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-init": mod(js("$count = 1"), { debounce: "500ms" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "debounce" is not valid on "data-init"')
+    expect(() => (
+      // @ts-expect-error data-init does not accept the debounce modifier
+      <div data-init={mod(js("$count = 1"), { debounce: "500ms" })} />
+    )).toThrow('Datastar modifier "debounce" is not valid on "data-init"')
   })
 })

@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod, regex } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-json-signals", () => {
   it("renders display-all presence form with the hyperscript factory", () => {
@@ -89,10 +87,9 @@ describe("data-json-signals", () => {
   })
 
   it("rejects explicit modifiers that data-json-signals does not support", () => {
-    expect(() =>
-      runtimeJsx("pre", {
-        "data-json-signals": mod({ include: /^counter$/ }, { prevent: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "prevent" is not valid on "data-json-signals"')
+    expect(() => (
+      // @ts-expect-error data-json-signals does not accept the prevent modifier
+      <pre data-json-signals={mod({ include: /^counter$/ }, { prevent: true })} />
+    )).toThrow('Datastar modifier "prevent" is not valid on "data-json-signals"')
   })
 })

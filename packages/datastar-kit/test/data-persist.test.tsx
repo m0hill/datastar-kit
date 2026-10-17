@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-persist", () => {
@@ -44,10 +43,8 @@ describe("data-persist", () => {
   })
 
   it("rejects explicit modifier wrappers because data-persist has no supported modifiers", () => {
-    expect(() =>
-      runtimeJsx("form", {
-        "data-persist:profile": mod({ case: "camel" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-persist:profile" does not accept modifiers')
+    expect(() => runtimeJsx("form", { "data-persist:profile": mod({ case: "camel" }) })).toThrow(
+      'Datastar attribute "data-persist:profile" does not accept modifiers'
+    )
   })
 })

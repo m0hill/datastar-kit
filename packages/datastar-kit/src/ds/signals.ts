@@ -101,5 +101,7 @@ export const local = <T = unknown, Name extends string = string>(
   name: Name
 ): Signal<T, Name extends `_${string}` ? Name : `_${Name}`> =>
   signal<T, Name extends `_${string}` ? Name : `_${Name}`>(
+    // SAFETY: names that already start with "_" pass through and others gain the prefix, which is
+    // exactly the conditional type; TypeScript cannot evaluate it for a generic Name.
     (name.startsWith("_") ? name : `_${name}`) as Name extends `_${string}` ? Name : `_${Name}`
   )

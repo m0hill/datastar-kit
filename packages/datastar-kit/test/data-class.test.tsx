@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-class", () => {
@@ -132,15 +131,14 @@ describe("data-class", () => {
     expect(() =>
       runtimeJsx("div", {
         "data-class:font-bold": mod(signal<boolean>("strong"), { prevent: true })
-      } as unknown as JsxProps)
+      })
     ).toThrow('Datastar modifier "prevent" is not valid on "data-class:font-bold"')
   })
 
   it("rejects explicit modifiers on unkeyed data-class because modifiers only affect class keys", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-class": mod({ success: true }, { case: "camel" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-class" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-class does not accept the case modifier
+      <div data-class={mod({ success: true }, { case: "camel" })} />
+    )).toThrow('Datastar attribute "data-class" does not accept modifiers')
   })
 })

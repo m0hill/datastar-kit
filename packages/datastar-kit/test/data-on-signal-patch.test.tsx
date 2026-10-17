@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-on-signal-patch", () => {
   it("renders signal-patch expressions with the hyperscript factory", () => {
@@ -48,9 +46,12 @@ describe("data-on-signal-patch", () => {
 
   it("keeps the runtime defensive for untyped primitive values", () => {
     const nodes = [
-      runtimeJsx("div", { "data-on-signal-patch": true } as unknown as JsxProps),
-      runtimeJsx("div", { "data-on-signal-patch": false } as unknown as JsxProps),
-      runtimeJsx("div", { "data-on-signal-patch": 0 } as unknown as JsxProps)
+      // @ts-expect-error data-on-signal-patch requires an expression, not true
+      <div data-on-signal-patch={true} />,
+      // @ts-expect-error data-on-signal-patch requires an expression, not false
+      <div data-on-signal-patch={false} />,
+      // @ts-expect-error data-on-signal-patch requires an expression, not 0
+      <div data-on-signal-patch={0} />
     ]
 
     expect(renderToString(nodes)).toBe(
@@ -118,10 +119,9 @@ describe("data-on-signal-patch", () => {
   })
 
   it("rejects explicit modifiers that data-on-signal-patch does not support", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-on-signal-patch": mod(js("console.log(patch)"), { viewTransition: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "viewTransition" is not valid on "data-on-signal-patch"')
+    expect(() => (
+      // @ts-expect-error data-on-signal-patch does not accept the viewTransition modifier
+      <div data-on-signal-patch={mod(js("console.log(patch)"), { viewTransition: true })} />
+    )).toThrow('Datastar modifier "viewTransition" is not valid on "data-on-signal-patch"')
   })
 })

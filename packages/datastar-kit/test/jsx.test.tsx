@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod, post, preserve, signal, state } from "../src/ds/index.js"
 import { renderToString, type HtmlChild } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
 import { jsxDEV as runtimeJsxDev } from "../src/jsx-dev-runtime.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
@@ -207,39 +206,38 @@ describe("automatic JSX runtime", () => {
   })
 
   it("rejects wrapped modifiers on incompatible Datastar attributes", () => {
-    expect(() =>
-      runtimeJsx("main", {
-        "data-signals": mod({ ready: false }, { prevent: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "prevent" is not valid on "data-signals"')
+    expect(() => (
+      // @ts-expect-error data-signals does not accept the prevent modifier
+      <main data-signals={mod({ ready: false }, { prevent: true })} />
+    )).toThrow('Datastar modifier "prevent" is not valid on "data-signals"')
   })
 
   it("rejects unknown wrapped modifier names", () => {
-    expect(() =>
-      runtimeJsx("button", {
-        "data-on:click": mod(post("/save"), { preevent: true } as never)
-      } as unknown as JsxProps)
-    ).toThrow('Unknown Datastar modifier "preevent"')
+    expect(() => (
+      // @ts-expect-error data-on:click rejects the modified value
+      <button
+        // @ts-expect-error mod() rejects the unknown preevent modifier
+        data-on:click={mod(post("/save"), { preevent: true })}
+      />
+    )).toThrow('Unknown Datastar modifier "preevent"')
   })
 
   it("rejects Datastar modifiers that are not listed for the attribute", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-init": mod("$count = 1", { debounce: "500ms" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "debounce" is not valid on "data-init"')
+    expect(() => (
+      // @ts-expect-error data-init does not accept the debounce modifier
+      <div data-init={mod("$count = 1", { debounce: "500ms" })} />
+    )).toThrow('Datastar modifier "debounce" is not valid on "data-init"')
 
-    expect(() =>
-      runtimeJsx("div", {
-        "data-on-signal-patch": mod("console.log(patch)", { viewTransition: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "viewTransition" is not valid on "data-on-signal-patch"')
+    expect(() => (
+      // @ts-expect-error data-on-signal-patch does not accept the viewTransition modifier
+      <div data-on-signal-patch={mod("console.log(patch)", { viewTransition: true })} />
+    )).toThrow('Datastar modifier "viewTransition" is not valid on "data-on-signal-patch"')
   })
 
   it("still rejects expression objects on ordinary JSX props", () => {
-    expect(() =>
-      runtimeJsx("output", { id: signal<number>("count") } as unknown as JsxProps)
-    ).toThrow('Unsupported JSX prop value for "id"')
+    expect(() => runtimeJsx("output", { id: signal<number>("count") })).toThrow(
+      'Unsupported JSX prop value for "id"'
+    )
   })
 
   it("does not render compiler-managed JSX runtime props", () => {

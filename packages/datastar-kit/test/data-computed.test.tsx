@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-computed", () => {
@@ -127,17 +126,14 @@ describe("data-computed", () => {
 
   it("rejects explicit modifiers that data-computed does not support", () => {
     expect(() =>
-      runtimeJsx("div", {
-        "data-computed:foo": mod(js("$bar + $baz"), { prevent: true })
-      } as unknown as JsxProps)
+      runtimeJsx("div", { "data-computed:foo": mod(js("$bar + $baz"), { prevent: true }) })
     ).toThrow('Datastar modifier "prevent" is not valid on "data-computed:foo"')
   })
 
   it("rejects explicit modifiers on unkeyed data-computed because upstream only applies case to keys", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-computed": mod({ foo: js`() => $bar + $baz` }, { case: "camel" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-computed" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-computed does not accept the case modifier
+      <div data-computed={mod({ foo: js`() => $bar + $baz` }, { case: "camel" })} />
+    )).toThrow('Datastar attribute "data-computed" does not accept modifiers')
   })
 })

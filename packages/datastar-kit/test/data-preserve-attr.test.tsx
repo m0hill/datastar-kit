@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod, preserve } from "../src/ds/index.js"
 import { h, HtmlNameError, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-preserve-attr", () => {
   it("renders single preserved attribute with the hyperscript factory", () => {
@@ -75,10 +73,9 @@ describe("data-preserve-attr", () => {
   })
 
   it("rejects explicit modifier wrappers because data-preserve-attr has no supported modifiers", () => {
-    expect(() =>
-      runtimeJsx("details", {
-        "data-preserve-attr": mod("open", { prevent: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-preserve-attr" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-preserve-attr does not accept the prevent modifier
+      <details data-preserve-attr={mod("open", { prevent: true })} />
+    )).toThrow('Datastar attribute "data-preserve-attr" does not accept modifiers')
   })
 })

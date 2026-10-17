@@ -19,7 +19,7 @@ export const query = (selector: string, root: ParentNode = document): HTMLElemen
 export const nextFetchFinished = (): Promise<void> =>
   new Promise((resolve) => {
     const listener = (event: Event) => {
-      if ((event as CustomEvent<{ readonly type?: string }>).detail.type !== "finished") return
+      if (!(event instanceof CustomEvent) || event.detail.type !== "finished") return
       document.removeEventListener("datastar-fetch", listener)
       resolve()
     }

@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { get, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-indicator", () => {
@@ -106,17 +105,14 @@ describe("data-indicator", () => {
 
   it("rejects explicit modifiers that data-indicator does not support", () => {
     expect(() =>
-      runtimeJsx("button", {
-        "data-indicator:fetching": mod({ prevent: true })
-      } as unknown as JsxProps)
+      runtimeJsx("button", { "data-indicator:fetching": mod({ prevent: true }) })
     ).toThrow('Datastar modifier "prevent" is not valid on "data-indicator:fetching"')
   })
 
   it("rejects case modifiers on unkeyed data-indicator because upstream only applies case to keys", () => {
-    expect(() =>
-      runtimeJsx("button", {
-        "data-indicator": mod(signal<boolean>("fetching"), { case: "camel" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-indicator" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-indicator does not accept the case modifier
+      <button data-indicator={mod(signal<boolean>("fetching"), { case: "camel" })} />
+    )).toThrow('Datastar attribute "data-indicator" does not accept modifiers')
   })
 })

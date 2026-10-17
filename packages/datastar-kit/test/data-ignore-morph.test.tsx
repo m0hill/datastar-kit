@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-ignore-morph", () => {
   it("renders presence form with the hyperscript factory", () => {
@@ -54,10 +52,9 @@ describe("data-ignore-morph", () => {
   })
 
   it("rejects explicit modifier wrappers because data-ignore-morph has no supported modifiers", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-ignore-morph": mod({ self: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-ignore-morph" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-ignore-morph does not accept the self modifier
+      <div data-ignore-morph={mod({ self: true })} />
+    )).toThrow('Datastar attribute "data-ignore-morph" does not accept modifiers')
   })
 })

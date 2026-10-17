@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-on-intersect", () => {
   it("renders intersect expressions with the hyperscript factory", () => {
@@ -40,9 +38,12 @@ describe("data-on-intersect", () => {
 
   it("keeps the runtime defensive for untyped primitive values", () => {
     const nodes = [
-      runtimeJsx("div", { "data-on-intersect": true } as unknown as JsxProps),
-      runtimeJsx("div", { "data-on-intersect": false } as unknown as JsxProps),
-      runtimeJsx("div", { "data-on-intersect": 0 } as unknown as JsxProps)
+      // @ts-expect-error data-on-intersect requires an expression, not true
+      <div data-on-intersect={true} />,
+      // @ts-expect-error data-on-intersect requires an expression, not false
+      <div data-on-intersect={false} />,
+      // @ts-expect-error data-on-intersect requires an expression, not 0
+      <div data-on-intersect={0} />
     ]
 
     expect(renderToString(nodes)).toBe(
@@ -115,10 +116,9 @@ describe("data-on-intersect", () => {
   })
 
   it("rejects explicit modifiers that data-on-intersect does not support", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-on-intersect": mod(js("$intersected = true"), { capture: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "capture" is not valid on "data-on-intersect"')
+    expect(() => (
+      // @ts-expect-error data-on-intersect does not accept the capture modifier
+      <div data-on-intersect={mod(js("$intersected = true"), { capture: true })} />
+    )).toThrow('Datastar modifier "capture" is not valid on "data-on-intersect"')
   })
 })

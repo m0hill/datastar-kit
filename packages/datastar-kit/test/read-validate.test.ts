@@ -38,7 +38,7 @@ describe("read.validate", () => {
         version: 1,
         vendor: "test",
         validate: async (value) =>
-          (value as { readonly count: number }).count % 2 === 0
+          CounterSignals.parse(value).count % 2 === 0
             ? { value: { even: true } }
             : { issues: [{ message: "Count must be even", path: ["count"] }] }
       }

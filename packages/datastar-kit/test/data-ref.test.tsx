@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-ref", () => {
@@ -92,18 +91,15 @@ describe("data-ref", () => {
   })
 
   it("rejects explicit modifiers that data-ref does not support", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-ref:panel": mod({ prevent: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "prevent" is not valid on "data-ref:panel"')
+    expect(() => runtimeJsx("div", { "data-ref:panel": mod({ prevent: true }) })).toThrow(
+      'Datastar modifier "prevent" is not valid on "data-ref:panel"'
+    )
   })
 
   it("rejects case modifiers on unkeyed data-ref because upstream only applies case to keys", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-ref": mod(signal<HTMLElement>("panel"), { case: "camel" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-ref" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-ref does not accept the case modifier
+      <div data-ref={mod(signal<HTMLElement>("panel"), { case: "camel" })} />
+    )).toThrow('Datastar attribute "data-ref" does not accept modifiers')
   })
 })

@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-show", () => {
   it("renders show expressions with the hyperscript factory", () => {
@@ -83,10 +81,9 @@ describe("data-show", () => {
   })
 
   it("rejects explicit modifier wrappers because data-show has no supported modifiers", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-show": mod(signal<boolean>("foo"), { delay: "100ms" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-show" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-show does not accept the delay modifier
+      <div data-show={mod(signal<boolean>("foo"), { delay: "100ms" })} />
+    )).toThrow('Datastar attribute "data-show" does not accept modifiers')
   })
 })

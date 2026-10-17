@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-scope-children", () => {
   it("renders the presence form with the hyperscript factory", () => {
@@ -42,10 +40,9 @@ describe("data-scope-children", () => {
   })
 
   it("rejects explicit modifier wrappers because data-scope-children has no supported modifiers", () => {
-    expect(() =>
-      runtimeJsx("section", {
-        "data-scope-children": mod({ self: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-scope-children" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-scope-children does not accept the self modifier
+      <section data-scope-children={mod({ self: true })} />
+    )).toThrow('Datastar attribute "data-scope-children" does not accept modifiers')
   })
 })

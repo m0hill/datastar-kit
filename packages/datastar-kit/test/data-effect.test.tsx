@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-effect", () => {
   it("renders effect expressions with the hyperscript factory", () => {
@@ -54,9 +52,12 @@ describe("data-effect", () => {
 
   it("keeps the runtime defensive for untyped primitive values", () => {
     const nodes = [
-      runtimeJsx("div", { "data-effect": true } as unknown as JsxProps),
-      runtimeJsx("div", { "data-effect": false } as unknown as JsxProps),
-      runtimeJsx("div", { "data-effect": 0 } as unknown as JsxProps)
+      // @ts-expect-error data-effect requires an expression, not true
+      <div data-effect={true} />,
+      // @ts-expect-error data-effect requires an expression, not false
+      <div data-effect={false} />,
+      // @ts-expect-error data-effect requires an expression, not 0
+      <div data-effect={0} />
     ]
 
     expect(renderToString(nodes)).toBe(
@@ -79,10 +80,9 @@ describe("data-effect", () => {
   })
 
   it("rejects explicit modifier wrappers because data-effect has no supported modifiers", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-effect": mod(js("$foo = $bar + $baz"), { delay: "100ms" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-effect" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-effect does not accept the delay modifier
+      <div data-effect={mod(js("$foo = $bar + $baz"), { delay: "100ms" })} />
+    )).toThrow('Datastar attribute "data-effect" does not accept modifiers')
   })
 })

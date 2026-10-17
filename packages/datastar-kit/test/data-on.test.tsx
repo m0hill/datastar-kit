@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, post, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-on", () => {
@@ -47,9 +46,12 @@ describe("data-on", () => {
 
   it("keeps the runtime defensive for untyped primitive values", () => {
     const nodes = [
-      runtimeJsx("button", { "data-on:click": true } as unknown as JsxProps),
-      runtimeJsx("button", { "data-on:click": false } as unknown as JsxProps),
-      runtimeJsx("button", { "data-on:click": 0 } as unknown as JsxProps)
+      // @ts-expect-error data-on:click requires an expression, not true
+      <button data-on:click={true} />,
+      // @ts-expect-error data-on:click requires an expression, not false
+      <button data-on:click={false} />,
+      // @ts-expect-error data-on:click requires an expression, not 0
+      <button data-on:click={0} />
     ]
 
     expect(renderToString(nodes)).toBe(
@@ -153,18 +155,15 @@ describe("data-on", () => {
   })
 
   it("rejects explicit modifiers that data-on does not support", () => {
-    expect(() =>
-      runtimeJsx("button", {
-        "data-on:click": mod(js("$foo = ''"), { prop: "value" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "prop" is not valid on "data-on:click"')
+    expect(() => (
+      // @ts-expect-error data-on:click does not accept the prop modifier
+      <button data-on:click={mod(js("$foo = ''"), { prop: "value" })} />
+    )).toThrow('Datastar modifier "prop" is not valid on "data-on:click"')
   })
 
   it("rejects explicit modifiers on unkeyed data-on because event names are required", () => {
     expect(() =>
-      runtimeJsx("button", {
-        "data-on": mod(js("$foo = ''"), { prevent: true })
-      } as unknown as JsxProps)
+      runtimeJsx("button", { "data-on": mod(js("$foo = ''"), { prevent: true }) })
     ).toThrow('Datastar attribute "data-on" does not accept modifiers')
   })
 })

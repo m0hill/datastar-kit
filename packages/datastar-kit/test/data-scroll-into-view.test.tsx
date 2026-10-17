@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-scroll-into-view", () => {
   it("renders the presence form with the hyperscript factory", () => {
@@ -38,10 +36,9 @@ describe("data-scroll-into-view", () => {
   })
 
   it("rejects explicit modifier wrappers because data-scroll-into-view has no supported modifiers", () => {
-    expect(() =>
-      runtimeJsx("section", {
-        "data-scroll-into-view": mod({ viewTransition: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-scroll-into-view" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-scroll-into-view does not accept the viewTransition modifier
+      <section data-scroll-into-view={mod({ viewTransition: true })} />
+    )).toThrow('Datastar attribute "data-scroll-into-view" does not accept modifiers')
   })
 })

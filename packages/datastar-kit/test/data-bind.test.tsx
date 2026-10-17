@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-bind", () => {
   it("renders keyed presence form with the hyperscript factory", () => {
@@ -147,18 +145,16 @@ describe("data-bind", () => {
   })
 
   it("rejects explicit modifiers that data-bind does not support", () => {
-    expect(() =>
-      runtimeJsx("input", {
-        "data-bind": mod("foo", { prevent: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "prevent" is not valid on "data-bind"')
+    expect(() => (
+      // @ts-expect-error data-bind does not accept the prevent modifier
+      <input data-bind={mod("foo", { prevent: true })} />
+    )).toThrow('Datastar modifier "prevent" is not valid on "data-bind"')
   })
 
   it("rejects case modifiers on unkeyed data-bind because upstream only applies case to keys", () => {
-    expect(() =>
-      runtimeJsx("input", {
-        "data-bind": mod(signal<string>("fooBar"), { case: "kebab" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "case" is not valid on "data-bind"')
+    expect(() => (
+      // @ts-expect-error data-bind does not accept the case modifier
+      <input data-bind={mod(signal<string>("fooBar"), { case: "kebab" })} />
+    )).toThrow('Datastar modifier "case" is not valid on "data-bind"')
   })
 })

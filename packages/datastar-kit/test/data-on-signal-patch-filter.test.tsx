@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod, regex } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-on-signal-patch-filter", () => {
   it("renders raw filter expressions with the hyperscript factory", () => {
@@ -77,10 +75,9 @@ describe("data-on-signal-patch-filter", () => {
   })
 
   it("rejects explicit modifier wrappers because data-on-signal-patch-filter has no supported modifiers", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-on-signal-patch-filter": mod({ include: /^counter$/ }, { debounce: "500ms" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-on-signal-patch-filter" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-on-signal-patch-filter does not accept the debounce modifier
+      <div data-on-signal-patch-filter={mod({ include: /^counter$/ }, { debounce: "500ms" })} />
+    )).toThrow('Datastar attribute "data-on-signal-patch-filter" does not accept modifiers')
   })
 })

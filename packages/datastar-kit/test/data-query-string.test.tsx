@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-query-string", () => {
   it("renders the presence form with the hyperscript factory", () => {
@@ -36,10 +34,9 @@ describe("data-query-string", () => {
   })
 
   it("rejects explicit modifier wrappers because data-query-string has no supported modifiers", () => {
-    expect(() =>
-      runtimeJsx("main", {
-        "data-query-string": mod({ ifMissing: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-query-string" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-query-string does not accept the ifMissing modifier
+      <main data-query-string={mod({ ifMissing: true })} />
+    )).toThrow('Datastar attribute "data-query-string" does not accept modifiers')
   })
 })

@@ -55,6 +55,7 @@ describe("Datastar signal refs", () => {
   it("throws early for invalid nested paths", () => {
     const form = signal<{ email: string }, "form">("form")
 
-    expect(() => form.path("bad-key" as never)).toThrow(SignalNameError)
+    // @ts-expect-error bad-key is not a key of the signal value
+    expect(() => form.path("bad-key")).toThrow(SignalNameError)
   })
 })

@@ -145,19 +145,24 @@ const buildRefs = (value: SignalObject, prefix = ""): SignalRefTree =>
  * derived from one object. It does not read requests or perform schema validation.
  */
 export const state = <T extends SignalObject>(defaults: T): State<WidenSignalObject<T>> => {
+  // SAFETY: WidenSignalObject<T> only widens literal types, so the cloned defaults still match it.
   const clonedDefaults = freezeSignalState(structuredClone(defaults)) as WidenSignalObject<T>
+  // SAFETY: buildRefs mirrors the defaults tree with a Signal per leaf and a subtree per object.
   const refs = buildRefs(clonedDefaults) as StateSignalRefs<WidenSignalObject<T>>
 
   return {
     defaults: clonedDefaults,
     refs,
     patch(values) {
+      // SAFETY: every StatePatch value is a SignalValue or null; TypeScript cannot prove that for a
+      // generic mapped type.
       return structuredClone(values as SignalObject)
     },
     reset(overrides) {
       return overrides === undefined
         ? structuredClone(clonedDefaults)
-        : mergeSignalState(clonedDefaults, overrides as SignalObject)
+        : // SAFETY: as in patch(), StatePatch values are always SignalValues or null.
+          mergeSignalState(clonedDefaults, overrides as SignalObject)
     }
   }
 }

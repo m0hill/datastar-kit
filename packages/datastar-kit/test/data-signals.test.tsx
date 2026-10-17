@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, local, mod, state } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-signals", () => {
@@ -157,18 +156,15 @@ describe("data-signals", () => {
   })
 
   it("rejects explicit modifiers that data-signals does not support", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-signals:foo": mod(1, { prevent: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "prevent" is not valid on "data-signals:foo"')
+    expect(() => runtimeJsx("div", { "data-signals:foo": mod(1, { prevent: true }) })).toThrow(
+      'Datastar modifier "prevent" is not valid on "data-signals:foo"'
+    )
   })
 
   it("rejects case modifiers on unkeyed data-signals because upstream only applies case to keys", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-signals": mod({ mySignal: 1 }, { case: "kebab" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "case" is not valid on "data-signals"')
+    expect(() => (
+      // @ts-expect-error data-signals does not accept the case modifier
+      <div data-signals={mod({ mySignal: 1 }, { case: "kebab" })} />
+    )).toThrow('Datastar modifier "case" is not valid on "data-signals"')
   })
 })

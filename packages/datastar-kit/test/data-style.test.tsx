@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-style", () => {
@@ -124,9 +123,7 @@ describe("data-style", () => {
 
   it("rejects explicit modifier wrappers because data-style has no supported modifiers", () => {
     expect(() =>
-      runtimeJsx("div", {
-        "data-style:display": mod(signal<boolean>("hiding"), { case: "camel" })
-      } as unknown as JsxProps)
+      runtimeJsx("div", { "data-style:display": mod(signal<boolean>("hiding"), { case: "camel" }) })
     ).toThrow('Datastar attribute "data-style:display" does not accept modifiers')
   })
 })

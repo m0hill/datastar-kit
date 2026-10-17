@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-text", () => {
   it("renders text expressions with the hyperscript factory", () => {
@@ -77,10 +75,9 @@ describe("data-text", () => {
   })
 
   it("rejects explicit modifier wrappers because data-text has no supported modifiers", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-text": mod(signal<string>("foo"), { case: "camel" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar attribute "data-text" does not accept modifiers')
+    expect(() => (
+      // @ts-expect-error data-text does not accept the case modifier
+      <div data-text={mod(signal<string>("foo"), { case: "camel" })} />
+    )).toThrow('Datastar attribute "data-text" does not accept modifiers')
   })
 })

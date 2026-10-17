@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-on-interval", () => {
   it("renders interval expressions with the hyperscript factory", () => {
@@ -40,9 +38,12 @@ describe("data-on-interval", () => {
 
   it("keeps the runtime defensive for untyped primitive values", () => {
     const nodes = [
-      runtimeJsx("div", { "data-on-interval": true } as unknown as JsxProps),
-      runtimeJsx("div", { "data-on-interval": false } as unknown as JsxProps),
-      runtimeJsx("div", { "data-on-interval": 0 } as unknown as JsxProps)
+      // @ts-expect-error data-on-interval requires an expression, not true
+      <div data-on-interval={true} />,
+      // @ts-expect-error data-on-interval requires an expression, not false
+      <div data-on-interval={false} />,
+      // @ts-expect-error data-on-interval requires an expression, not 0
+      <div data-on-interval={0} />
     ]
 
     expect(renderToString(nodes)).toBe(
@@ -103,10 +104,9 @@ describe("data-on-interval", () => {
   })
 
   it("rejects explicit modifiers that data-on-interval does not support", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-on-interval": mod(js("$count++"), { delay: "500ms" })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "delay" is not valid on "data-on-interval"')
+    expect(() => (
+      // @ts-expect-error data-on-interval does not accept the delay modifier
+      <div data-on-interval={mod(js("$count++"), { delay: "500ms" })} />
+    )).toThrow('Datastar modifier "delay" is not valid on "data-on-interval"')
   })
 })

@@ -1,8 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { mod } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
-import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-ignore", () => {
   it("renders presence form with the hyperscript factory", () => {
@@ -84,10 +82,9 @@ describe("data-ignore", () => {
   })
 
   it("rejects explicit modifiers that data-ignore does not support", () => {
-    expect(() =>
-      runtimeJsx("div", {
-        "data-ignore": mod({ prevent: true })
-      } as unknown as JsxProps)
-    ).toThrow('Datastar modifier "prevent" is not valid on "data-ignore"')
+    expect(() => (
+      // @ts-expect-error data-ignore does not accept the prevent modifier
+      <div data-ignore={mod({ prevent: true })} />
+    )).toThrow('Datastar modifier "prevent" is not valid on "data-ignore"')
   })
 })

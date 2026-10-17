@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, mod, signal } from "../src/ds/index.js"
 import { h, renderToString } from "../src/html.js"
-import type { JsxProps } from "../src/jsx.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
 describe("data-attr", () => {
@@ -168,7 +167,7 @@ describe("data-attr", () => {
     expect(() =>
       runtimeJsx("button", {
         "data-attr:aria-label": mod(signal<string>("label"), { case: "camel" })
-      } as unknown as JsxProps)
+      })
     ).toThrow('Datastar attribute "data-attr:aria-label" does not accept modifiers')
   })
 })
