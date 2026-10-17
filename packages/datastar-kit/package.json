@@ -32,6 +32,10 @@
       "types": "./dist/sse.d.ts",
       "default": "./dist/sse.js"
     },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "default": "./dist/node.js"
+    },
     "./debugger": {
       "types": "./dist/debugger/index.d.ts",
       "default": "./dist/debugger/index.js"

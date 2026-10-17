@@ -18,6 +18,28 @@ export default {
 
 Core helpers use Web Standard primitives such as `Request`, `Response`, `Headers`, `URL`, and `ReadableStream`.
 
+### Node `(req, res)` servers
+
+For `node:http`, Express, and other servers that use Node's `(req, res)` signature, wrap handlers with `nodeHandler` from `datastar-kit/node`:
+
+```ts
+import { createServer } from "node:http"
+import { nodeHandler } from "datastar-kit/node"
+
+createServer(nodeHandler(handle)).listen(3000)
+```
+
+```ts
+import express from "express"
+import { nodeHandler } from "datastar-kit/node"
+
+const app = express()
+app.get("/", nodeHandler(home))
+app.post("/increment", nodeHandler(increment))
+```
+
+The adapter streams SSE responses with backpressure and cancels them when the client disconnects. It reuses bodies already parsed by middleware such as `express.json()`.
+
 ## Datastar runtime asset
 
 Datastar Kit does not serve the Datastar browser runtime; you include it yourself with a pinned CDN URL or a self-hosted copy, as shown in the [Introduction](../introduction.md#install).
