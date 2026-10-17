@@ -10,6 +10,8 @@
 
 - Narrowed whole-map expressions: `data-class` expression maps must produce booleans, and `data-attr` expression maps must produce JSON values instead of any object.
 - Unregistered hyphenated custom elements now accept only props the JSX runtime can render, matching the runtime error for other values.
+- `reply.stream(...)` accepts iterables and async iterables of chunks. Pass a single event as `[chunk]`. A `ReadableStream` still works where it is async-iterable (Workers, Node, Bun, Deno); its TypeScript type needs the `DOM.AsyncIterable` lib or the platform's types.
+- Datastar expressions are recognized by class instead of by a `toDatastarExpression` method, so only expressions created by Datastar Kit helpers are treated as expressions.
 
 ### Removed
 

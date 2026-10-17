@@ -1,4 +1,11 @@
-import { raw, toJs, type DatastarFunction, type Expr, type ExprInput } from "./expression.js"
+import {
+  isExpr,
+  raw,
+  toJs,
+  type DatastarFunction,
+  type Expr,
+  type ExprInput
+} from "./expression.js"
 import type { SignalStateInput } from "./signals.js"
 
 /**
@@ -73,7 +80,7 @@ const escapeTemplateText = (value: string): string =>
   value.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("${", "\\${")
 
 const urlToJs = (url: ExprInput<string>): string =>
-  typeof url === "string" ? JSON.stringify(url) : url.toDatastarExpression()
+  isExpr(url) ? url.toDatastarExpression() : JSON.stringify(url)
 
 const splitHash = (path: string) => {
   const hashIndex = path.indexOf("#")

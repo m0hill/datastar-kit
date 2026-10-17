@@ -6,16 +6,6 @@ describe("reply SSE responses", () => {
   afterEach(() => {
     vi.useRealTimers()
   })
-  it("serves Datastar SSE streams from a single event string", async () => {
-    const response = reply.stream("event: ready\n\n", {}, { headers: { "x-sse": "yes" } })
-
-    expect(response.status).toBe(200)
-    expect(response.headers.get("content-type")).toBe("text/event-stream")
-    expect(response.headers.get("cache-control")).toBe("no-cache")
-    expect(response.headers.get("x-sse")).toBe("yes")
-    expect(await response.text()).toBe("event: ready\n\n")
-  })
-
   it("serves Datastar signal patch responses", async () => {
     const response = reply.signals({ count: 1 }, {}, { headers: { "x-signals": "yes" } })
 
@@ -84,6 +74,27 @@ describe("reply SSE responses", () => {
     expect(response.headers.get("x-stream")).toBe("web")
     expect(response.headers.get("cache-control")).toBe("no-cache")
     expect(await response.text()).toBe("event: meta\n\n")
+  })
+
+  it("runs the event source cleanup when the client cancels", async () => {
+    let cleanedUp: () => void = () => undefined
+    const cleanup = new Promise<void>((resolve) => {
+      cleanedUp = resolve
+    })
+    async function* events() {
+      try {
+        yield "event: first\n\n"
+        yield "event: second\n\n"
+      } finally {
+        cleanedUp()
+      }
+    }
+
+    const reader = reply.stream(events()).body!.getReader()
+    await reader.read()
+    await reader.cancel()
+
+    await expect(cleanup).resolves.toBeUndefined()
   })
 
   it("starts heartbeat timers on first pull and clears them on cancel", async () => {

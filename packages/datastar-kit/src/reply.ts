@@ -97,23 +97,12 @@ type SseChunkInput = string | Uint8Array
 /**
  * Input accepted by `reply.stream()` for Datastar SSE responses.
  */
-export type SseStreamInput =
-  | string
-  | Iterable<SseChunkInput>
-  | AsyncIterable<SseChunkInput>
-  | ReadableStream<SseChunkInput>
+export type SseStreamInput = Iterable<SseChunkInput> | AsyncIterable<SseChunkInput>
 
 const textEncoder = new TextEncoder()
 type Timer = ReturnType<typeof setTimeout>
 
 const isSetCookieHeader = (name: string): boolean => name.toLowerCase() === "set-cookie"
-
-const getSetCookies = (headers: Headers): readonly string[] => {
-  const cookies: unknown = headers.getSetCookie?.()
-  return Array.isArray(cookies)
-    ? cookies.filter((cookie): cookie is string => typeof cookie === "string")
-    : []
-}
 
 const copyHeaders = (target: Headers, headers: HeadersInit | undefined): void => {
   if (headers === undefined) {
@@ -121,18 +110,12 @@ const copyHeaders = (target: Headers, headers: HeadersInit | undefined): void =>
   }
 
   const source = new Headers(headers)
-  const setCookies = getSetCookies(source)
 
   source.forEach((value, key) => {
-    if (isSetCookieHeader(key)) {
-      if (setCookies.length === 0) target.append(key, value)
-      return
-    }
-
-    target.set(key, value)
+    if (!isSetCookieHeader(key)) target.set(key, value)
   })
 
-  for (const cookie of setCookies) {
+  for (const cookie of source.getSetCookie()) {
     target.append("set-cookie", cookie)
   }
 }
@@ -184,46 +167,16 @@ const htmlDocument = (body: HtmlChild | readonly HtmlChild[], options: PageOptio
     )
   )}`
 
-async function* toAsyncIterable(source: SseStreamInput): AsyncIterable<string | Uint8Array> {
-  if (typeof source === "string") {
-    yield source
-    return
-  }
-
-  if (typeof source === "object" && source !== null && "getReader" in source) {
-    const reader = source.getReader()
-    try {
-      while (true) {
-        const result = await reader.read()
-        if (result.done) return
-        yield result.value
-      }
-    } finally {
-      reader.releaseLock()
-    }
-    return
-  }
-
-  if (typeof source === "object" && source !== null && Symbol.asyncIterator in source) {
-    for await (const chunk of source as AsyncIterable<SseChunkInput>) {
-      yield chunk
-    }
-    return
-  }
-
-  for (const chunk of source) {
-    yield chunk
-  }
-}
-
-const encodeChunk = (chunk: string | Uint8Array): Uint8Array =>
-  typeof chunk === "string" ? textEncoder.encode(chunk) : chunk
+const encodeChunk = (chunk: SseChunkInput): Uint8Array =>
+  chunk instanceof Uint8Array ? chunk : textEncoder.encode(chunk)
 
 const readableStreamFrom = (
-  source: AsyncIterable<string | Uint8Array>,
+  source: SseStreamInput,
   heartbeat?: SseHeartbeatOptions
 ): ReadableStream<Uint8Array> => {
-  const iterator = source[Symbol.asyncIterator]()
+  const iterator = (async function* () {
+    yield* source
+  })()
   let closed = false
   let started = false
   let initial: Timer | undefined
@@ -332,7 +285,7 @@ export const stream = (
   init: StreamResponseInit = {}
 ): Response => {
   const { heartbeat } = options
-  return response(readableStreamFrom(toAsyncIterable(events), heartbeat), init, 200, sseHeaders)
+  return response(readableStreamFrom(events, heartbeat), init, 200, sseHeaders)
 }
 
 /**

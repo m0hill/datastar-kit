@@ -97,7 +97,7 @@ Validate the result with your own layer (e.g. Zod). It throws
 | \`reply.page(body, options?)\`      | caller-defined | Full HTML document.                              |
 | \`reply.patch(elements, options?)\` | 200            | One SSE element patch.                           |
 | \`reply.signals(value, options?)\`  | 200            | One SSE signal patch.                            |
-| \`reply.stream(events, options?)\`  | 200            | SSE stream from chunks/iterables/ReadableStream. |
+| \`reply.stream(events, options?)\`  | 200            | SSE stream from (async) iterables of chunks. |
 | \`reply.done(init?)\`               | 204            | Complete a command with no body.                 |
 | \`reply.navigate(url, options?)\`   | 200            | Safe client navigation.                          |
 

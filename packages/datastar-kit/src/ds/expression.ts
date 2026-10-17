@@ -27,27 +27,29 @@ export type ExprInput<T> = Expr<T> | T
  */
 export type DatastarFunction<T = unknown> = (...args: ReadonlyArray<unknown>) => T
 
-class RawExpr<T = unknown> implements Expr<T> {
+export abstract class ExprBase<T = unknown> implements Expr<T> {
   declare readonly [expressionValue]: T
 
-  constructor(private readonly code: string) {}
-
-  toDatastarExpression(): string {
-    return this.code
-  }
+  abstract toDatastarExpression(): string
 
   toString(): string {
+    return this.toDatastarExpression()
+  }
+}
+
+class RawExpr<T = unknown> extends ExprBase<T> {
+  constructor(private readonly code: string) {
+    super()
+  }
+
+  toDatastarExpression(): string {
     return this.code
   }
 }
 
 export const raw = <T = unknown>(code: string): Expr<T> => new RawExpr<T>(code)
 
-export const isExpr = (value: unknown): value is Expr =>
-  typeof value === "object" &&
-  value !== null &&
-  "toDatastarExpression" in value &&
-  typeof value.toDatastarExpression === "function"
+export const isExpr = (value: unknown): value is Expr => value instanceof ExprBase
 
 export const toJs = (value: ExprInput<unknown>): string => {
   if (isExpr(value)) {

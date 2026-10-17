@@ -1,6 +1,5 @@
 import type { SignalValue } from "../types.js"
-// oxlint-disable-next-line no-unused-vars -- The unique symbol is used as a non-emitting class property key.
-import type { Expr, expressionValue } from "./expression.js"
+import { ExprBase, type Expr } from "./expression.js"
 
 declare const signalTargetValue: unique symbol
 
@@ -57,20 +56,19 @@ export const assertSignalName = (name: string): void => {
  * @typeParam T Runtime value stored at this signal path.
  * @typeParam Name Signal path represented by this reference.
  */
-export class Signal<T, Name extends string = string> implements Expr<T>, SignalTarget<T> {
-  declare readonly [expressionValue]: T
+export class Signal<T, Name extends string = string>
+  extends ExprBase<T>
+  implements SignalTarget<T>
+{
   declare readonly [signalTargetValue]: (value: T) => void
 
   constructor(readonly name: Name) {
+    super()
     assertSignalName(name)
   }
 
   toDatastarExpression(): string {
     return `$${this.name}`
-  }
-
-  toString(): string {
-    return this.toDatastarExpression()
   }
 
   /** Creates a typed child signal reference below this signal path. */

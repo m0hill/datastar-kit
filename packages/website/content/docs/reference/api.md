@@ -111,17 +111,17 @@ can declare their result with `js<T>(...)`.
 
 `reply` returns native `Response` objects.
 
-| API                                           | Status         | Use                                                                                  |
-| --------------------------------------------- | -------------- | ------------------------------------------------------------------------------------ |
-| `reply.page(body, options?, init?)`           | caller-defined | Render a full HTML document.                                                         |
-| `reply.patch(elements, options?, init?)`      | `200`          | Return one SSE element patch.                                                        |
-| `reply.signals(value, options?, init?)`       | `200`          | Return one SSE signal patch.                                                         |
-| `reply.stream(events, options?, init?)`       | `200`          | Return an SSE stream from chunks, iterables, async iterables, or a `ReadableStream`. |
-| `reply.done(init?)`                           | `204`          | Complete a command with no body.                                                     |
-| `reply.navigate(url, options?, init?)`        | `200`          | Navigate through a safe Datastar direct script response.                             |
-| `reply.directHtml(html, options?, init?)`     | `200`          | Direct-response HTML escape hatch.                                                   |
-| `reply.directSignals(value, options?, init?)` | `200`          | Direct-response JSON signal escape hatch.                                            |
-| `reply.directScript(script, options?, init?)` | `200`          | Trusted direct-response JavaScript escape hatch.                                     |
+| API                                           | Status         | Use                                                                |
+| --------------------------------------------- | -------------- | ------------------------------------------------------------------ |
+| `reply.page(body, options?, init?)`           | caller-defined | Render a full HTML document.                                       |
+| `reply.patch(elements, options?, init?)`      | `200`          | Return one SSE element patch.                                      |
+| `reply.signals(value, options?, init?)`       | `200`          | Return one SSE signal patch.                                       |
+| `reply.stream(events, options?, init?)`       | `200`          | Return an SSE stream from an iterable or async iterable of chunks. |
+| `reply.done(init?)`                           | `204`          | Complete a command with no body.                                   |
+| `reply.navigate(url, options?, init?)`        | `200`          | Navigate through a safe Datastar direct script response.           |
+| `reply.directHtml(html, options?, init?)`     | `200`          | Direct-response HTML escape hatch.                                 |
+| `reply.directSignals(value, options?, init?)` | `200`          | Direct-response JSON signal escape hatch.                          |
+| `reply.directScript(script, options?, init?)` | `200`          | Trusted direct-response JavaScript escape hatch.                   |
 
 Datastar action response helpers own their protocol status codes, so their native `init` type does not accept `status` or `statusText`. Use `reply.page(...)` or a plain `Response` for ordinary HTTP status semantics.
 

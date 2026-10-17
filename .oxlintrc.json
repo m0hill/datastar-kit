@@ -55,7 +55,7 @@
     "anti-slop/no-object-parameters": "error",
     "anti-slop/no-reflect-apply": "error",
     "anti-slop/no-reflect-get": "error",
-    "anti-slop/no-runtime-typeof": "off",
+    "anti-slop/no-runtime-typeof": "error",
     "anti-slop/no-shape-in-symbol-names": "off",
     "anti-slop/no-unknown-parameters": "off",
     "anti-slop/no-unknown-returns": "off",
@@ -100,6 +100,22 @@
       ],
       "rules": {
         "anti-slop/no-unsafe-dictionary-type": "off"
+      }
+    },
+    {
+      "files": [
+        "packages/datastar-kit/src/ds/expression.ts",
+        "packages/datastar-kit/src/ds/attribute-authoring.ts",
+        "packages/datastar-kit/src/ds/modifiers.ts",
+        "packages/datastar-kit/src/ds/modifier-rendering.ts",
+        "packages/datastar-kit/src/ds/state.ts",
+        "packages/datastar-kit/src/html.ts",
+        "packages/datastar-kit/src/jsx.ts",
+        "packages/datastar-kit/src/read.ts",
+        "packages/datastar-kit/src/sse.ts"
+      ],
+      "rules": {
+        "anti-slop/no-runtime-typeof": "off"
       }
     }
   ],
