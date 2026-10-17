@@ -38,12 +38,5 @@ export const script = (code: string, options?: ExecuteScriptOptions): string =>
  * Encodes a safe browser navigation as one Datastar SSE event chunk.
  */
 export const navigate = (url: string | URL, options: NavigateOptions = {}): string => {
-  const { baseUrl, allowedOrigins, ...scriptOptions } = options
-  return executeScript(
-    navigationScript(url, {
-      ...(baseUrl === undefined ? {} : { baseUrl }),
-      ...(allowedOrigins === undefined ? {} : { allowedOrigins })
-    }),
-    scriptOptions
-  )
+  return executeScript(navigationScript(url, options), options)
 }

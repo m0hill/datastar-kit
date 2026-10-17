@@ -49,7 +49,7 @@
     "vitest/no-standalone-expect": "off",
     "no-underscore-dangle": "off",
     "anti-slop/no-chained-type-assertions": "off",
-    "anti-slop/no-conditional-empty-object-spread": "off",
+    "anti-slop/no-conditional-empty-object-spread": "error",
     "anti-slop/no-known-value-widening": "off",
     "anti-slop/no-module-mocking": "error",
     "anti-slop/no-object-parameters": "error",

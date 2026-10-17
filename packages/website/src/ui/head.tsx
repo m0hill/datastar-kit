@@ -49,7 +49,7 @@ export const pageHead = (options: { description?: string; path?: string }): Html
     />
   )),
   <script>{unsafeHtml(THEME_INIT)}</script>,
-  ...(options.description === undefined
+  ...(options.description === undefined || options.description === ""
     ? []
     : [
         <meta

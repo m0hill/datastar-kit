@@ -24,7 +24,7 @@ export type DatastarAttributeNameInspection =
       /** Custom attribute name without a key or modifiers. */
       readonly baseName: string
       /** Nearby canonical name when the custom name is likely a typo. */
-      readonly suggestion?: string
+      readonly suggestion: string | undefined
     }
   | {
       /** The name is a valid canonical Datastar attribute form. */
@@ -175,11 +175,10 @@ export const inspectDatastarAttributeName = (name: string): DatastarAttributeNam
   const resolved = resolveDatastarAttributeRoot(root)
   if (resolved === undefined) {
     const [baseName = root] = root.split(":", 1)
-    const suggestion = closestDatastarAttributeName(baseName)
     return {
       _tag: "custom",
       baseName,
-      ...(suggestion === undefined ? {} : { suggestion })
+      suggestion: closestDatastarAttributeName(baseName)
     }
   }
 

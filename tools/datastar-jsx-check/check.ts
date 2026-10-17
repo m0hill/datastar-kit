@@ -19,7 +19,7 @@ export interface DatastarJsxDiagnostic {
   readonly start: number
   readonly length: number
   readonly message: string
-  readonly suggestion?: string
+  readonly suggestion: string | undefined
 }
 
 type CheckedAttribute = {
@@ -131,7 +131,7 @@ const diagnostic = (
     start,
     length: attribute.nameNode.getWidth(sourceFile),
     message,
-    ...(suggestion === undefined ? {} : { suggestion })
+    suggestion
   }
 }
 

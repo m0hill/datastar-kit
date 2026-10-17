@@ -22,7 +22,7 @@ for (const page of docPages) {
       reply.page(<DocsLayout page={page} />, {
         title: `${page.title} · Datastar Kit`,
         head: pageHead({
-          ...(page.description === "" ? {} : { description: page.description }),
+          description: page.description,
           path: page.path
         })
       })

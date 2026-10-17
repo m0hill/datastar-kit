@@ -46,9 +46,7 @@ export const loadProject = (configPath: string): LoadProjectResult => {
       program: ts.createProgram({
         rootNames: parsed.fileNames,
         options: parsed.options,
-        ...(parsed.projectReferences === undefined
-          ? {}
-          : { projectReferences: parsed.projectReferences })
+        projectReferences: parsed.projectReferences ?? []
       })
     }
   }

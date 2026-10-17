@@ -360,16 +360,14 @@ export const directHtml = (
   options: DirectHtmlOptions = {},
   init: StreamResponseInit = {}
 ): Response => {
-  const { selector, mode, namespace, useViewTransition } = options
-  return response(renderToString(html), init, 200, {
-    "content-type": "text/html; charset=utf-8",
-    ...(selector === undefined ? {} : { "datastar-selector": selector }),
-    ...(mode === undefined ? {} : { "datastar-mode": mode }),
-    ...(namespace === undefined ? {} : { "datastar-namespace": namespace }),
-    ...(useViewTransition === undefined
-      ? {}
-      : { "datastar-use-view-transition": String(useViewTransition) })
-  })
+  const headers = new Headers({ "content-type": "text/html; charset=utf-8" })
+  if (options.selector !== undefined) headers.set("datastar-selector", options.selector)
+  if (options.mode !== undefined) headers.set("datastar-mode", options.mode)
+  if (options.namespace !== undefined) headers.set("datastar-namespace", options.namespace)
+  if (options.useViewTransition !== undefined) {
+    headers.set("datastar-use-view-transition", String(options.useViewTransition))
+  }
+  return response(renderToString(html), init, 200, headers)
 }
 
 /**
@@ -389,11 +387,11 @@ export const directSignals = (
   options: DirectSignalsOptions = {},
   init: StreamResponseInit = {}
 ): Response => {
-  const { onlyIfMissing } = options
-  return response(JSON.stringify(value), init, 200, {
-    "content-type": "application/json; charset=utf-8",
-    ...(onlyIfMissing === undefined ? {} : { "datastar-only-if-missing": String(onlyIfMissing) })
-  })
+  const headers = new Headers({ "content-type": "application/json; charset=utf-8" })
+  if (options.onlyIfMissing !== undefined) {
+    headers.set("datastar-only-if-missing", String(options.onlyIfMissing))
+  }
+  return response(JSON.stringify(value), init, 200, headers)
 }
 
 /**
@@ -413,13 +411,11 @@ export const directScript = (
   options: DirectScriptOptions = {},
   init: StreamResponseInit = {}
 ): Response => {
-  const { attributes } = options
-  return response(script, init, 200, {
-    "content-type": "text/javascript; charset=utf-8",
-    ...(attributes === undefined
-      ? {}
-      : { "datastar-script-attributes": JSON.stringify(attributes) })
-  })
+  const headers = new Headers({ "content-type": "text/javascript; charset=utf-8" })
+  if (options.attributes !== undefined) {
+    headers.set("datastar-script-attributes", JSON.stringify(options.attributes))
+  }
+  return response(script, init, 200, headers)
 }
 
 /**
@@ -436,13 +432,5 @@ export const navigate = (
   options: NavigateOptions = {},
   init: StreamResponseInit = {}
 ): Response => {
-  const { baseUrl, allowedOrigins, ...scriptOptions } = options
-  return directScript(
-    navigationScript(url, {
-      ...(baseUrl === undefined ? {} : { baseUrl }),
-      ...(allowedOrigins === undefined ? {} : { allowedOrigins })
-    }),
-    scriptOptions,
-    init
-  )
+  return directScript(navigationScript(url, options), options, init)
 }
