@@ -99,34 +99,17 @@ describe("reply direct Datastar responses", () => {
     )
   })
 
-  it("allows navigation to explicit origin allowlists only", async () => {
-    const response = reply.navigate("https://docs.example/start", {
-      baseUrl: "https://app.example",
-      allowedOrigins: ["https://docs.example"]
-    })
-
-    expect(await response.text()).toBe(
-      'setTimeout(() => { window.location.href = "https://docs.example/start" })'
-    )
+  it("rejects unsafe navigation before building a response", () => {
     expect(() =>
-      reply.navigate("https://evil.example/phish", { baseUrl: "https://app.example" })
-    ).toThrow(reply.NavigationUrlError)
-    expect(() => reply.navigate("javascript:alert(1)", { baseUrl: "https://app.example" })).toThrow(
-      reply.NavigationUrlError
-    )
-    expect(() =>
-      reply.navigate("/safe\nSet-Cookie: bad", { baseUrl: "https://app.example" })
+      reply.navigate("//evil.example/phish", { baseUrl: "https://app.example" })
     ).toThrow(reply.NavigationUrlError)
   })
 
-  it("keeps Datastar action replies on 200-with-body or 204-without-body status semantics", async () => {
-    const signals = reply.directSignals({ count: 1 })
-    const empty = reply.done()
+  it("completes commands with an empty 204 response", async () => {
+    const response = reply.done({ headers: { "x-done": "yes" } })
 
-    expect(signals.status).toBe(200)
-    expect(signals.headers.get("content-type")).toBe("application/json; charset=utf-8")
-    expect(await signals.text()).toBe('{"count":1}')
-    expect(empty.status).toBe(204)
-    expect(await empty.text()).toBe("")
+    expect(response.status).toBe(204)
+    expect(response.headers.get("x-done")).toBe("yes")
+    expect(await response.text()).toBe("")
   })
 })

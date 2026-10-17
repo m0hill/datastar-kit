@@ -1,25 +1,9 @@
 import { fileURLToPath } from "node:url"
 import { playwright } from "@vitest/browser-playwright"
-import { defineConfig, type Plugin } from "vitest/config"
+import { defineConfig } from "vitest/config"
+import { browserFixtureEndpoints } from "./test/browser/fixture-server.js"
 
 const fromRoot = (path: string): string => fileURLToPath(new URL(path, import.meta.url))
-
-const browserFixtureEndpoints: Plugin = {
-  name: "datastar-kit-browser-fixture-endpoints",
-  configureServer(server) {
-    server.middlewares.use((request, response, next) => {
-      const json = (status: number, body: unknown) => {
-        response.writeHead(status, { "content-type": "application/json; charset=utf-8" })
-        response.end(JSON.stringify(body))
-      }
-
-      if (request.url === "/fixtures/runtime/ignored") return json(202, { count: 99 })
-      if (request.url === "/fixtures/runtime/increment") return json(200, { count: 1 })
-
-      next()
-    })
-  }
-}
 
 export default defineConfig({
   resolve: {
@@ -46,7 +30,7 @@ export default defineConfig({
         plugins: [browserFixtureEndpoints],
         test: {
           name: "browser",
-          include: ["test/browser/**/*.test.ts"],
+          include: ["test/browser/**/*.test.{ts,tsx}"],
           browser: {
             enabled: true,
             headless: true,

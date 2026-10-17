@@ -13,23 +13,10 @@ import {
 import type { DatastarFunction } from "../src/ds/index.js"
 
 describe("expression escape hatches", () => {
-  it("keeps simple signal refs typed", () => {
-    const saving = signal<boolean>("saving")
-
-    expect(saving.toDatastarExpression()).toBe("$saving")
-  })
-
-  it("uses explicit Datastar expressions instead of a framework expression DSL", () => {
-    expect(js("!($saving)").toDatastarExpression()).toBe("!($saving)")
-    expect(js("($ready) && ($dirty)").toDatastarExpression()).toBe("($ready) && ($dirty)")
-    expect(js('($enabled ? "Enabled" : "Disabled")').toDatastarExpression()).toBe(
-      '($enabled ? "Enabled" : "Disabled")'
-    )
-  })
-
   it("interpolates Datastar expressions with signals and JS literals", () => {
     const count = signal<number>("count")
 
+    expect(js("!$saving").toDatastarExpression()).toBe("!$saving")
     expect(js`${count} >= ${10}`.toDatastarExpression()).toBe("$count >= 10")
     expect(js`${count} === ${"done"}`.toDatastarExpression()).toBe('$count === "done"')
     expect(js`${count} = ${0}`.toDatastarExpression()).toBe("$count = 0")

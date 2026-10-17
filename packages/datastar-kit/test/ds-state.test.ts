@@ -1,14 +1,39 @@
 import { describe, expect, it } from "vitest"
 import { SignalNameError, state } from "../src/ds/index.js"
-import type { SignalState } from "../src/types.js"
+
+if (false) {
+  const form = state({ name: "", subscribed: false, errors: { name: "", email: "" } })
+  // @ts-expect-error Unknown top-level signal key.
+  form.patch({ missing: "" })
+  // @ts-expect-error Unknown nested signal key.
+  form.patch({ errors: { missing: "" } })
+  // @ts-expect-error Signal patch value must match the default value type.
+  form.patch({ subscribed: "yes" })
+  // @ts-expect-error Reset overrides are checked like signal patches.
+  form.reset({ errors: { email: false } })
+  // @ts-expect-error Nested object refs are not signal refs themselves.
+  form.refs.errors.toDatastarExpression()
+
+  // Singleton literal defaults widen, but explicit unions stay narrow.
+  type ViewDefaults = {
+    readonly attempt: 0
+    readonly name: ""
+    readonly status: "idle" | "saving"
+    readonly tags: readonly ("admin" | "editor")[]
+  }
+  const defaults: ViewDefaults = { attempt: 0, name: "", status: "idle", tags: ["admin"] }
+  const view = state(defaults)
+  view.patch({ attempt: 1 })
+  view.patch({ name: "Ada" })
+  view.patch({ status: "saving" })
+  view.patch({ tags: ["editor"] })
+  // @ts-expect-error Explicit string unions stay narrow.
+  view.patch({ status: "done" })
+  // @ts-expect-error Explicit array item unions stay narrow.
+  view.patch({ tags: ["guest"] })
+}
 
 describe("state helpers", () => {
-  it("keeps cloned signal defaults for direct data-signals attributes", () => {
-    const form = state({ name: "", email: "", errors: { name: "", email: "" } })
-
-    expect(form.defaults).toEqual({ name: "", email: "", errors: { name: "", email: "" } })
-  })
-
   it("does not retain mutable references to caller-owned defaults", () => {
     const defaults = { profile: { name: "Ada" }, tags: ["admin"] }
     const model = state(defaults)
@@ -58,18 +83,6 @@ describe("state helpers", () => {
     expect(form.refs.errors.name.toDatastarExpression()).toBe("$errors.name")
   })
 
-  it("returns type-checked signal patch objects", () => {
-    const form = state({ name: "", email: "", errors: { name: "", email: "" } })
-    const errors = {
-      name: "Enter your name",
-      email: "Enter a valid email"
-    }
-
-    const patch: SignalState = form.patch({ errors })
-
-    expect(patch).toEqual({ errors })
-  })
-
   it("allows null patches to remove signals", () => {
     const form = state({ name: "", errors: { name: "", email: "" } })
 
@@ -78,52 +91,6 @@ describe("state helpers", () => {
       errors: { email: null }
     })
     expect(form.reset({ errors: null })).toEqual({ name: "", errors: null })
-  })
-
-  it("rejects invalid patch keys and values at compile time", () => {
-    const form = state({ name: "", subscribed: false, errors: { name: "", email: "" } })
-
-    if (false) {
-      // @ts-expect-error Unknown top-level signal key.
-      form.patch({ missing: "" })
-      // @ts-expect-error Unknown nested signal key.
-      form.patch({ errors: { missing: "" } })
-      // @ts-expect-error Signal patch value must match the default value type.
-      form.patch({ subscribed: "yes" })
-      // @ts-expect-error Reset overrides are checked like signal patches.
-      form.reset({ errors: { email: false } })
-      // @ts-expect-error Nested object refs are not signal refs themselves.
-      form.refs.errors.toDatastarExpression()
-    }
-
-    expect(form.patch({ subscribed: true })).toEqual({ subscribed: true })
-  })
-
-  it("widens singleton literal defaults but preserves explicit unions", () => {
-    type ViewDefaults = {
-      readonly attempt: 0
-      readonly name: ""
-      readonly status: "idle" | "saving"
-      readonly tags: readonly ("admin" | "editor")[]
-    }
-    const defaults: ViewDefaults = { attempt: 0, name: "", status: "idle", tags: ["admin"] }
-    const view = state(defaults)
-
-    if (false) {
-      view.patch({ attempt: 1 })
-      view.patch({ name: "Ada" })
-      view.patch({ status: "saving" })
-      view.patch({ tags: ["editor"] })
-      // @ts-expect-error Explicit string unions stay narrow.
-      view.patch({ status: "done" })
-      // @ts-expect-error Explicit array item unions stay narrow.
-      view.patch({ tags: ["guest"] })
-    }
-
-    expect(view.patch({ status: "saving", tags: ["editor"] })).toEqual({
-      status: "saving",
-      tags: ["editor"]
-    })
   })
 
   it("resets defaults with optional nested overrides", () => {
@@ -135,6 +102,12 @@ describe("state helpers", () => {
       email: "",
       errors: { name: "", email: "Enter a valid email" }
     })
+  })
+
+  it("replaces arrays in reset overrides instead of merging them", () => {
+    const filters = state({ tags: ["admin", "editor"], sort: { by: "name" } })
+
+    expect(filters.reset({ tags: ["guest"] })).toEqual({ tags: ["guest"], sort: { by: "name" } })
   })
 
   it("throws early for invalid state keys", () => {

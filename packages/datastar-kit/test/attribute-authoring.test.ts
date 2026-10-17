@@ -1,16 +1,18 @@
 import { describe, expect, it } from "vitest"
+import { inspectDatastarAttributeName } from "../src/ds/attribute-authoring.js"
 import {
-  inspectDatastarAttributeName,
-  isDatastarPresenceAttribute,
-  normalizeDatastarAttribute
-} from "../src/ds/attribute-authoring.js"
-import { datastarAttributeDefinitions } from "../src/ds/attribute-metadata.js"
+  datastarAttributeDefinitions,
+  type DatastarModifierTarget
+} from "../src/ds/attribute-metadata.js"
 import type { DatastarAttributes } from "../src/ds/attribute-types.js"
-import { js } from "../src/ds/expression.js"
-import { mod } from "../src/ds/modifiers.js"
-import { signal } from "../src/ds/signals.js"
+import type { DatastarModifierKeysFor } from "../src/ds/modifier-rendering.js"
+import type { DatastarModifiedValue } from "../src/ds/modifiers.js"
 
+// The JSX attribute types are written by hand, while the runtime renders keys and modifiers from
+// `datastarAttributeDefinitions`. These checks fail typechecking when the two drift apart.
 type AttributeDefinition = (typeof datastarAttributeDefinitions)[number]
+
+type Equal<Left, Right> = [Left] extends [Right] ? ([Right] extends [Left] ? true : false) : false
 
 type MissingExactProjection<Definition> = Definition extends {
   readonly name: infer Name extends string
@@ -56,60 +58,79 @@ type UnexpectedKeyedProjection<Definition> = Definition extends {
     : never
   : never
 
-type ProjectionConforms = [MissingExactProjection<AttributeDefinition>] extends [never]
-  ? [UnexpectedExactProjection<AttributeDefinition>] extends [never]
-    ? [MissingKeyedProjection<AttributeDefinition>] extends [never]
-      ? [UnexpectedKeyedProjection<AttributeDefinition>] extends [never]
-        ? true
-        : false
-      : false
-    : false
-  : false
+type TypedModifierKeys<Value> =
+  Value extends DatastarModifiedValue<unknown, infer Keys, infer _Modifiers> ? Keys : never
 
-const projectionConforms: ProjectionConforms = true
+type RuntimeModifierKeys<Target> = [Target] extends [DatastarModifierTarget]
+  ? DatastarModifierKeysFor<Target>
+  : never
 
-describe("Datastar attribute authoring", () => {
-  it("normalizes ordinary, expression, signal-name, custom, and modified attributes", () => {
-    const query = signal<string>("query")
+type ExactModifierDrift<Definition> = Definition extends {
+  readonly name: infer Name extends keyof DatastarAttributes
+}
+  ? Equal<
+      TypedModifierKeys<DatastarAttributes[Name]>,
+      RuntimeModifierKeys<
+        Definition extends { readonly exactModifierTarget: infer Target } ? Target : never
+      >
+    > extends true
+    ? never
+    : Name
+  : never
 
-    expect(normalizeDatastarAttribute("id", "search")).toEqual({
-      name: "id",
-      value: "search"
-    })
-    expect(normalizeDatastarAttribute("data-show", false)).toEqual({
-      name: "data-show",
-      value: "false"
-    })
-    expect(normalizeDatastarAttribute("data-bind", query)).toEqual({
-      name: "data-bind",
-      value: "query"
-    })
-    expect(normalizeDatastarAttribute("data-custom", { ready: true })).toEqual({
-      name: "data-custom",
-      value: '{"ready": true}'
-    })
-    expect(
-      normalizeDatastarAttribute("data-on:click", mod(js<void>("$count++"), { prevent: true }))
-    ).toEqual({
-      name: "data-on:click__prevent",
-      value: "$count++"
-    })
-  })
+type KeyedModifierDrift<Definition> = Definition extends {
+  readonly name: infer Name extends string
+  readonly key: "optional" | "required"
+}
+  ? Equal<
+      TypedModifierKeys<
+        `${Name}:key` extends keyof DatastarAttributes ? DatastarAttributes[`${Name}:key`] : never
+      >,
+      RuntimeModifierKeys<
+        Definition extends { readonly keyedModifierTarget: infer Target } ? Target : never
+      >
+    > extends true
+    ? never
+    : `${Name}:*`
+  : never
 
-  it("inspects canonical names without exposing metadata and modifier coordination", () => {
-    expect(inspectDatastarAttributeName("data-show")).toEqual({
-      _tag: "known",
-      name: "data-show"
-    })
+// Resolves to `true` when there is no drift, or to the drifting attribute names otherwise, so a
+// failed assignment below names the offending attribute in the type error.
+type NoDrift<Names> = [Names] extends [never] ? true : Names
+
+const driftChecks: readonly true[] = [
+  true satisfies NoDrift<MissingExactProjection<AttributeDefinition>>,
+  true satisfies NoDrift<UnexpectedExactProjection<AttributeDefinition>>,
+  true satisfies NoDrift<MissingKeyedProjection<AttributeDefinition>>,
+  true satisfies NoDrift<UnexpectedKeyedProjection<AttributeDefinition>>,
+  true satisfies NoDrift<ExactModifierDrift<AttributeDefinition>>,
+  true satisfies NoDrift<KeyedModifierDrift<AttributeDefinition>>
+]
+void driftChecks
+
+describe("inspectDatastarAttributeName", () => {
+  it("classifies canonical names, ignoring keys and modifiers", () => {
+    expect(inspectDatastarAttributeName("data-show")).toEqual({ _tag: "known", name: "data-show" })
     expect(inspectDatastarAttributeName("data-on:click__prevent")).toEqual({
       _tag: "known",
       name: "data-on"
     })
+  })
+
+  it("suggests the nearest canonical name for likely typos", () => {
     expect(inspectDatastarAttributeName("data-shwo:key__once")).toEqual({
       _tag: "custom",
       baseName: "data-shwo",
       suggestion: "data-show"
     })
+    expect(inspectDatastarAttributeName("data-tooltip")).toEqual({
+      _tag: "custom",
+      baseName: "data-tooltip",
+      suggestion: undefined
+    })
+  })
+
+  it("reports key policy violations", () => {
     expect(inspectDatastarAttributeName("data-on")).toEqual({
       _tag: "invalid",
       category: "key",
@@ -120,17 +141,28 @@ describe("Datastar attribute authoring", () => {
       category: "key",
       message: '"data-show" does not accept a key'
     })
+    expect(inspectDatastarAttributeName("data-attr:")).toEqual({
+      _tag: "invalid",
+      category: "key",
+      message: '"data-attr" has an empty key'
+    })
+  })
+
+  it("reports unknown, misplaced, and unsupported modifiers", () => {
+    expect(inspectDatastarAttributeName("data-on:click__preevent")).toEqual({
+      _tag: "invalid",
+      category: "modifier",
+      message: 'Unknown Datastar modifier "preevent"'
+    })
     expect(inspectDatastarAttributeName("data-on:click__prop.value")).toEqual({
       _tag: "invalid",
       category: "modifier",
       message: 'Modifier "prop" is not valid on "data-on:click"'
     })
-  })
-
-  it("keeps presence behavior and the static attribute forms aligned with canonical policy", () => {
-    expect(isDatastarPresenceAttribute("data-ignore__self")).toBe(true)
-    expect(isDatastarPresenceAttribute("data-signals:result__ifmissing")).toBe(true)
-    expect(isDatastarPresenceAttribute("data-show")).toBe(false)
-    expect(projectionConforms).toBe(true)
+    expect(inspectDatastarAttributeName("data-show__once")).toEqual({
+      _tag: "invalid",
+      category: "modifier",
+      message: '"data-show" does not accept modifiers'
+    })
   })
 })

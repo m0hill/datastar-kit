@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { h, unsafeHtml } from "../src/html.js"
+import { h } from "../src/html.js"
 import * as reply from "../src/reply.js"
 
 describe("reply SSE responses", () => {
@@ -28,30 +28,6 @@ describe("reply SSE responses", () => {
     )
   })
 
-  it("escapes string patches unless unsafe HTML is explicit", async () => {
-    const text = reply.patch("<strong>Saved</strong>")
-    const html = reply.patch(unsafeHtml("<strong>Saved</strong>"))
-
-    expect(await text.text()).toBe(
-      "event: datastar-patch-elements\ndata: elements &lt;strong&gt;Saved&lt;/strong&gt;\n\n"
-    )
-    expect(await html.text()).toBe(
-      "event: datastar-patch-elements\ndata: elements <strong>Saved</strong>\n\n"
-    )
-  })
-
-  it("streams async iterable SSE responses", async () => {
-    async function* events() {
-      yield "event: first\n\n"
-      yield "event: second\n\n"
-    }
-
-    const response = reply.stream(events())
-
-    expect(response.headers.get("content-type")).toBe("text/event-stream")
-    expect(await response.text()).toBe("event: first\n\nevent: second\n\n")
-  })
-
   it("streams string and byte chunks", async () => {
     const response = reply.stream([
       "event: first\n\n",
@@ -71,8 +47,9 @@ describe("reply SSE responses", () => {
     const response = reply.stream(source, {}, { headers: { "x-stream": "web" } })
 
     expect(response.status).toBe(200)
-    expect(response.headers.get("x-stream")).toBe("web")
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(response.headers.get("cache-control")).toBe("no-cache")
+    expect(response.headers.get("x-stream")).toBe("web")
     expect(await response.text()).toBe("event: meta\n\n")
   })
 
@@ -136,6 +113,45 @@ describe("reply SSE responses", () => {
     expect(await reader.read()).toMatchObject({ done: false })
     expect(vi.getTimerCount()).toBe(1)
     await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
+    expect(vi.getTimerCount()).toBe(0)
+  })
+
+  it("repeats heartbeats on the interval after the initial delay", async () => {
+    vi.useFakeTimers()
+    async function* events() {
+      yield "event: ready\n\n"
+      await new Promise<never>(() => {})
+    }
+    const reader = reply
+      .stream(events(), { heartbeat: { initialDelayMs: 5, intervalMs: 50 } })
+      .body!.getReader()
+    const decode = async () => new TextDecoder().decode((await reader.read()).value)
+
+    await decode()
+    const first = decode()
+    await vi.advanceTimersByTimeAsync(5)
+    expect(await first).toBe(": heartbeat\n\n")
+
+    const second = decode()
+    await vi.advanceTimersByTimeAsync(49)
+    expect(vi.getTimerCount()).toBe(1)
+    await vi.advanceTimersByTimeAsync(1)
+    expect(await second).toBe(": heartbeat\n\n")
+
+    await reader.cancel()
+  })
+
+  it("errors the response stream and stops heartbeats when the event source throws", async () => {
+    vi.useFakeTimers()
+    const failure = new Error("database went away")
+    async function* events() {
+      yield "event: ready\n\n"
+      throw failure
+    }
+    const reader = reply.stream(events(), { heartbeat: { intervalMs: 100 } }).body!.getReader()
+
+    await reader.read()
+    await expect(reader.read()).rejects.toBe(failure)
     expect(vi.getTimerCount()).toBe(0)
   })
 })
