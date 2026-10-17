@@ -79,6 +79,23 @@ describe("datastar-kit/node", () => {
     expect(await response.text()).toContain('{"path":"/forms/submit","signals":{"title":"parsed"}}')
   })
 
+  it("reads the stream when middleware set a body without parsing it", async () => {
+    const handler = nodeHandler(async (request) => reply.signals({ body: await request.text() }))
+    const url = await listen((req, res) => {
+      // Express 4 body parsers set an empty body for content types they skip.
+      Object.assign(req as NodeRequest, { body: {} })
+      void handler(req, res)
+    })
+
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/x-www-form-urlencoded" },
+      body: "title=unparsed"
+    })
+
+    expect(await response.text()).toContain('{"body":"title=unparsed"}')
+  })
+
   it("preserves status codes and repeated Set-Cookie headers", async () => {
     const url = await serve(() => {
       const headers = new Headers()

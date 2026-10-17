@@ -29,8 +29,10 @@ const requestHeaders = (req: IncomingMessage): Headers => {
 
 const requestBody = (req: NodeRequest): BodyInit | null => {
   if (bodylessMethods.has(req.method ?? "GET")) return null
+  // Express 4 body parsers set `req.body = {}` even for requests they skip, so only a consumed
+  // stream proves the body was parsed.
   // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- Node and DOM type the same web stream separately.
-  if (req.body === undefined) return Readable.toWeb(req) as ReadableStream<Uint8Array>
+  if (!req.readableEnded) return Readable.toWeb(req) as ReadableStream<Uint8Array>
   if (typeof req.body === "string") return req.body
   if (req.body instanceof Uint8Array) return Uint8Array.from(req.body)
   return JSON.stringify(req.body)
