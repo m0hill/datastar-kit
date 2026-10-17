@@ -226,31 +226,32 @@ const renderDatastarModifier = (
   return exhaustive
 }
 
+// Datastar parses the first `__duration` tag as the interval, so a bare `__duration` or
+// `__duration.leading` becomes a 0ms or NaN interval. Spell out its 1s default in those cases.
+const datastarDefaultIntervalMs = 1000
+
 const intervalDurationModifier = (
   duration: unknown,
-  leading: unknown,
-  hasDuration: boolean
+  leading: unknown
 ): RenderedDatastarModifier | undefined => {
-  const durationEnabled = duration !== false && duration !== null && duration !== undefined
-  const leadingEnabled = leading === true
-
   if (leading !== false && leading !== null && leading !== undefined && leading !== true) {
     throw new TypeError('Datastar modifier "leading" expects a boolean value')
   }
 
-  if (!durationEnabled && !leadingEnabled) return undefined
+  const explicitDuration =
+    duration === false || duration === null || duration === undefined || duration === true
+      ? undefined
+      : durationModifier(duration)
 
-  const parts: string[] = []
-  if (hasDuration && duration !== true) {
-    parts.push(durationModifier(duration))
-  }
-  if (leadingEnabled) {
-    parts.push("leading")
+  if (leading !== true) {
+    return explicitDuration === undefined
+      ? undefined
+      : { key: "duration", suffix: `duration.${explicitDuration}` }
   }
 
   return {
     key: "duration",
-    suffix: parts.length === 0 ? "duration" : `duration.${parts.join(".")}`
+    suffix: `duration.${explicitDuration ?? `${datastarDefaultIntervalMs}ms`}.leading`
   }
 }
 
@@ -262,12 +263,10 @@ export const renderDatastarModifierSuffixes = (
   const suffixes: string[] = []
   let intervalDuration: unknown
   let intervalLeading: unknown
-  let hasIntervalDuration = false
 
   for (const [key, modifierValue] of Object.entries(modifiers)) {
     if (target === "interval" && key === "duration") {
       intervalDuration = modifierValue
-      hasIntervalDuration = true
       continue
     }
     if (target === "interval" && key === "leading") {
@@ -286,11 +285,7 @@ export const renderDatastarModifierSuffixes = (
   }
 
   if (target === "interval") {
-    const duration = intervalDurationModifier(
-      intervalDuration,
-      intervalLeading,
-      hasIntervalDuration
-    )
+    const duration = intervalDurationModifier(intervalDuration, intervalLeading)
     if (duration !== undefined) suffixes.unshift(duration.suffix)
   }
 
