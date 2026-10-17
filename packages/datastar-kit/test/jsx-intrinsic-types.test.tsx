@@ -559,10 +559,33 @@ describe("typed JSX intrinsic elements", () => {
       // @ts-expect-error custom data attributes have no modifier metadata target
       "data-custom": mod("$count", { prevent: true })
     }
+    const classMap: DatastarJsx.IntrinsicElements["div"] = {
+      "data-class": js<Readonly<Record<string, boolean>>>("{active: $active}")
+    }
+    const invalidClassMap: DatastarJsx.IntrinsicElements["div"] = {
+      // @ts-expect-error class map expressions must produce booleans
+      "data-class": js<Readonly<Record<string, number>>>("{active: $count}")
+    }
+    const attrMap: DatastarJsx.IntrinsicElements["div"] = {
+      "data-attr": js<Readonly<Record<string, { readonly id: number }>>>("{payload: $payload}")
+    }
+    const invalidAttrMap: DatastarJsx.IntrinsicElements["div"] = {
+      // @ts-expect-error attribute map expressions must produce JSON values
+      "data-attr": js<Readonly<Record<string, () => void>>>("{onclick: $handler}")
+    }
+    const invalidUnregisteredElement: DatastarJsx.IntrinsicElements["loose-widget"] = {
+      // @ts-expect-error unregistered custom elements only accept props the runtime can render
+      handler: () => undefined
+    }
     void invalidCustomObject
     void invalidCustomExpression
     void invalidCustomElement
     void invalidCustomModifier
+    void classMap
+    void invalidClassMap
+    void attrMap
+    void invalidAttrMap
+    void invalidUnregisteredElement
 
     const nodes = [
       <a

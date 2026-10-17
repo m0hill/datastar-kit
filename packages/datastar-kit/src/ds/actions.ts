@@ -75,7 +75,7 @@ const escapeTemplateText = (value: string): string =>
 const urlToJs = (url: ExprInput<string>): string =>
   typeof url === "string" ? JSON.stringify(url) : url.toDatastarExpression()
 
-const splitHash = (path: string): { readonly beforeHash: string; readonly hash: string } => {
+const splitHash = (path: string) => {
   const hashIndex = path.indexOf("#")
   if (hashIndex === -1) {
     return { beforeHash: path, hash: "" }

@@ -50,7 +50,7 @@
     "no-underscore-dangle": "off",
     "anti-slop/no-chained-type-assertions": "off",
     "anti-slop/no-conditional-empty-object-spread": "error",
-    "anti-slop/no-known-value-widening": "off",
+    "anti-slop/no-known-value-widening": "error",
     "anti-slop/no-module-mocking": "error",
     "anti-slop/no-object-parameters": "error",
     "anti-slop/no-reflect-apply": "error",
@@ -60,7 +60,7 @@
     "anti-slop/no-unknown-parameters": "off",
     "anti-slop/no-unknown-returns": "off",
     "anti-slop/no-unknown-type-aliases": "error",
-    "anti-slop/no-unsafe-dictionary-type": "off",
+    "anti-slop/no-unsafe-dictionary-type": "error",
     "anti-slop/no-widen-then-assert": "error",
     "anti-slop/require-safety-comment-for-type-assertion": "off"
   },
@@ -89,6 +89,17 @@
       "rules": {
         "typescript/no-unsafe-type-assertion": "off",
         "unicorn/consistent-function-scoping": "off"
+      }
+    },
+    {
+      "files": [
+        "packages/datastar-kit/src/jsx.ts",
+        "packages/datastar-kit/src/jsx-runtime.ts",
+        "packages/datastar-kit/src/jsx-dev-runtime.ts",
+        "packages/datastar-kit/src/ds/modifier-rendering.ts"
+      ],
+      "rules": {
+        "anti-slop/no-unsafe-dictionary-type": "off"
       }
     }
   ],

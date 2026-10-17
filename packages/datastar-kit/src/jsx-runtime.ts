@@ -2,7 +2,7 @@ import type { DatastarAttributeValue } from "./ds/attribute-types.js"
 import type { DatastarModifiedValue } from "./ds/modifiers.js"
 import type { HtmlElements, HtmlGlobalAttributes } from "./html-attributes.js"
 import type { HtmlChild, HtmlPropValue } from "./html.js"
-import { createJsxElement, type JsxTag } from "./jsx.js"
+import { createJsxElement, type JsxProps, type JsxTag } from "./jsx.js"
 
 /**
  * Application-registered attributes accepted by every known JSX intrinsic element.
@@ -110,6 +110,8 @@ export namespace JSX {
    * to give a custom element exact element-specific, global HTML, ARIA, and Datastar props.
    */
   export interface IntrinsicElements extends KnownIntrinsicElements, RegisteredCustomElements {
-    [tagName: `${string}-${string}`]: unknown
+    [tagName: `${string}-${string}`]:
+      | JsxProps
+      | RegisteredCustomElements[keyof RegisteredCustomElements]
   }
 }

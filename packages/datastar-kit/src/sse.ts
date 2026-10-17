@@ -153,15 +153,12 @@ const serializeEvent = (
 const encodeSignals = (value: SignalState | string): string =>
   typeof value === "string" ? value : JSON.stringify(value)
 
-const scriptAttributes = (options: ExecuteScriptOptions): string => {
-  const attrs: Record<string, string | number | boolean> = { ...options.attributes }
-
-  if (options.autoRemove !== false) {
-    attrs["data-effect"] = "el.remove()"
-  }
-
-  return renderHtmlAttributes(attrs)
-}
+const scriptAttributes = (options: ExecuteScriptOptions): string =>
+  renderHtmlAttributes(
+    options.autoRemove === false
+      ? { ...options.attributes }
+      : { ...options.attributes, "data-effect": "el.remove()" }
+  )
 
 // A trusted script may legitimately contain these sequences inside string,
 // template, or regex literals. Escaping them preserves JavaScript semantics in

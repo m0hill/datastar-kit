@@ -146,17 +146,16 @@ const assertStateKey = (key: string): void => {
   assertSignalName(key)
 }
 
-const buildRefs = (value: SignalObject, prefix = ""): Record<string, unknown> => {
-  const refs: Record<string, unknown> = {}
+type SignalRefTree = { readonly [key: string]: Signal<SignalValue> | SignalRefTree }
 
-  for (const [key, item] of Object.entries(value)) {
-    assertStateKey(key)
-    const name = prefix.length === 0 ? key : `${prefix}.${key}`
-    refs[key] = isSignalObject(item) ? buildRefs(item, name) : new Signal(name)
-  }
-
-  return refs
-}
+const buildRefs = (value: SignalObject, prefix = ""): SignalRefTree =>
+  Object.fromEntries(
+    Object.entries(value).map(([key, item]) => {
+      assertStateKey(key)
+      const name = prefix.length === 0 ? key : `${prefix}.${key}`
+      return [key, isSignalObject(item) ? buildRefs(item, name) : new Signal<SignalValue>(name)]
+    })
+  )
 
 /**
  * Creates a small typed helper around Datastar signal defaults.

@@ -6,6 +6,11 @@
 
 - Added `read.validate(request, schema)`, which decodes Datastar signals and validates them with any [Standard Schema](https://standardschema.dev) validator (Zod, Valibot, ArkType, and others). It returns the schema result with a typed `value` or `issues` instead of throwing on validation failure.
 
+### Changed
+
+- Narrowed whole-map expressions: `data-class` expression maps must produce booleans, and `data-attr` expression maps must produce JSON values instead of any object.
+- Unregistered hyphenated custom elements now accept only props the JSX runtime can render, matching the runtime error for other values.
+
 ### Removed
 
 - Removed the `datastar-kit/debugger` subpath and its Web Component. The debugger is no longer part of Datastar Kit.

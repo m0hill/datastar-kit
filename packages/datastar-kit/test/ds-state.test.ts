@@ -58,7 +58,7 @@ describe("state helpers", () => {
 
   it("returns type-checked signal patch objects", () => {
     const form = state({ name: "", email: "", errors: { name: "", email: "" } })
-    const errors: { readonly name: string; readonly email: string } = {
+    const errors = {
       name: "Enter your name",
       email: "Enter a valid email"
     }

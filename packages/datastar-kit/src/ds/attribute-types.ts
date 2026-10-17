@@ -6,6 +6,7 @@ import type {
   DatastarModifierKey,
   DatastarModifierOptions
 } from "./modifiers.js"
+import type { SignalValue } from "../types.js"
 import type { SignalStateInput, SignalTarget, SignalValueInput } from "./signals.js"
 
 /**
@@ -333,7 +334,7 @@ export interface DatastarAttributes<RefElement = never> extends DatastarEventAtt
   /** Sets attributes from an object of attribute names to expressions. @see https://data-star.dev/reference/attributes#data-attr */
   "data-attr"?:
     | Readonly<Record<string, DatastarAttributeExpression>>
-    | Expr<Readonly<Record<string, DatastarDynamicAttributeValue>>>
+    | Expr<Readonly<Record<string, SignalValue | undefined>>>
     | string
     | undefined
   /** Two-way binds an element value to a signal. @see https://data-star.dev/reference/attributes#data-bind */
@@ -341,7 +342,7 @@ export interface DatastarAttributes<RefElement = never> extends DatastarEventAtt
   /** Toggles classes from an object of class names to truthy expressions. @see https://data-star.dev/reference/attributes#data-class */
   "data-class"?:
     | Readonly<Record<string, DatastarTruthyExpression>>
-    | Expr<Readonly<Record<string, DatastarReadableValue>>>
+    | Expr<Readonly<Record<string, boolean>>>
     | string
     | undefined
   /** Creates read-only computed signals. @see https://data-star.dev/reference/attributes#data-computed */
