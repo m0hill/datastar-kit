@@ -6,7 +6,7 @@
 
 - Added `read.validate(request, schema)`, which decodes Datastar signals and validates them with any [Standard Schema](https://standardschema.dev) validator (Zod, Valibot, ArkType, and others). It returns the schema result with a typed `value` or `issues` instead of throwing on validation failure. The `StandardSchemaV1` type is exported from the root package.
 - Added `fieldErrors(fields, issues)`, which maps validation issues onto a field error object shaped like a `state(...)` error group. Fields without an issue are cleared, so one signal patch both shows new errors and removes resolved ones.
-- Added the `datastar-kit/node` subpath with `nodeHandler`, `toRequest`, and `sendResponse` for running fetch-style handlers on `node:http`, Express, and other Node `(req, res)` servers. Client disconnects abort the request signal and cancel streamed responses.
+- Added the `datastar-kit/node` subpath with `nodeHandler` for running fetch-style handlers on `node:http`, Express, and other Node `(req, res)` servers. Client disconnects abort the request signal and cancel streamed responses.
 
 ## 0.5.0 - 2026-07-25
 

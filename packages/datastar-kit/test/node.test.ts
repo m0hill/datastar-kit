@@ -1,7 +1,7 @@
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { afterEach, describe, expect, it } from "vitest"
-import { nodeHandler, type FetchHandler, type NodeRequest } from "../src/node.js"
+import { nodeHandler, type FetchHandler, type NodeRequest } from "datastar-kit/node"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
 import * as event from "../src/event.js"

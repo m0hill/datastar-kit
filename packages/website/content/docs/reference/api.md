@@ -183,11 +183,7 @@ Import this side-effect-only browser entry from development pages to register an
 
 ### `datastar-kit/node`
 
-| API                           | Use                                                                              |
-| ----------------------------- | -------------------------------------------------------------------------------- |
-| `nodeHandler(handler)`        | Wrap a `(request: Request) => Response` handler as a Node `(req, res)` listener. |
-| `toRequest(req, res?)`        | Convert a Node request into a native `Request`.                                  |
-| `sendResponse(res, response)` | Write a native `Response` to a Node response, streaming the body.                |
+`nodeHandler(handler)` wraps a `(request: Request) => Response` handler as a Node `(req, res)` listener for `node:http`, Express, and other Node servers.
 
 The request signal aborts when the client disconnects, and streamed response bodies are cancelled, so `reply.stream()` sources run their cleanup. Bodies already parsed by middleware such as `express.json()` are reused, and Express's `originalUrl` is preferred over the mounted `url`. With Express, `nodeHandler` passes handler errors to `next`.
 

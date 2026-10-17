@@ -41,20 +41,10 @@ const requestBody = (req: NodeRequest): BodyInit | null => {
 const isTlsSocket = (req: IncomingMessage): boolean =>
   "encrypted" in req.socket && req.socket.encrypted === true
 
-/**
- * Converts a Node request into a native `Request`.
- *
- * @remarks
- * The request signal aborts when the client disconnects. A body already parsed by middleware is
- * used instead of the drained request stream.
- *
- * @param req Node or Express request.
- * @param res Response used to detect client disconnects for the request signal.
- * @returns A native `Request` for Datastar Kit handlers.
- */
-export const toRequest = (req: NodeRequest, res?: ServerResponse): Request => {
+/** The request signal aborts when the client disconnects before the response finishes. */
+const toRequest = (req: NodeRequest, res: ServerResponse): Request => {
   const controller = new AbortController()
-  res?.once("close", () => {
+  res.once("close", () => {
     if (!res.writableFinished) controller.abort()
   })
 
@@ -73,17 +63,8 @@ export const toRequest = (req: NodeRequest, res?: ServerResponse): Request => {
   })
 }
 
-/**
- * Writes a native `Response` to a Node response.
- *
- * @remarks
- * Response bodies are streamed with backpressure. When the client disconnects, the response body
- * is cancelled, so `reply.stream()` sources run their cleanup.
- *
- * @param res Node or Express response.
- * @param response Native response returned by a Datastar Kit handler.
- */
-export const sendResponse = async (res: ServerResponse, response: Response): Promise<void> => {
+/** Streams the body with backpressure and cancels it when the client disconnects. */
+const sendResponse = async (res: ServerResponse, response: Response): Promise<void> => {
   res.statusCode = response.status
   res.statusMessage = response.statusText
 
