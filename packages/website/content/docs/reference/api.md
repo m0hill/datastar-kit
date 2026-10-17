@@ -112,10 +112,13 @@ can declare their result with `js<T>(...)`.
 `fieldErrors(fields, issues)` maps Standard Schema validation issues onto a field error object for a signal patch.
 
 ```tsx
-form.patch({ errors: fieldErrors(form.defaults.errors, result.issues) })
+const { errors, unmatched } = fieldErrors(form.defaults.errors, result.issues)
+form.patch({ errors })
 ```
 
-Each field in `fields` receives the message of the first issue whose path matches it, or `""` when there is none. Nested objects match nested paths. Issues for paths outside `fields` are ignored. The result has the same keys as `fields`, so it type-checks against the matching `state(...).patch(...)`.
+Each field in `fields` receives the message of the first issue whose path matches it, or `""` when there is none. Nested objects match nested paths. `errors` has the same keys as `fields`, so it type-checks against the matching `state(...).patch(...)`.
+
+`unmatched` contains the issues whose path matches no field in `fields`, such as form-level refinements. Additional issues for a field that already has a message are not included.
 
 ## `reply`
 

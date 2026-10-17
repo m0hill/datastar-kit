@@ -27,8 +27,8 @@ const issuesFor = (input: unknown) => {
 }
 
 describe("fieldErrors", () => {
-  it("maps the first issue per field, including nested fields, and ignores unknown paths", () => {
-    const errors = fieldErrors(
+  it("maps the first issue per field, including nested fields, and reports unmatched issues", () => {
+    const { errors, unmatched } = fieldErrors(
       signup.defaults.errors,
       issuesFor({ email: "nope", password: "short", address: { city: "" } })
     )
@@ -38,10 +38,11 @@ describe("fieldErrors", () => {
       password: "Use at least 8 characters",
       address: { city: "Enter a city" }
     })
+    expect(unmatched).toEqual([expect.objectContaining({ message: "Accept the terms" })])
   })
 
   it("clears fields without issues so resolved errors disappear", () => {
-    const errors = fieldErrors(
+    const { errors } = fieldErrors(
       signup.defaults.errors,
       issuesFor({ email: "a@b.co", password: "long enough password", address: { city: "" } })
     )
@@ -54,11 +55,20 @@ describe("fieldErrors", () => {
       fieldErrors({ address: { city: "" } }, [
         { message: "Enter a city", path: [{ key: "address" }, { key: "city" }] }
       ])
-    ).toEqual({ address: { city: "Enter a city" } })
+    ).toEqual({ errors: { address: { city: "Enter a city" } }, unmatched: [] })
+  })
+
+  it("reports form-level issues without a path as unmatched", () => {
+    const formLevel = { message: "Passwords must match" }
+
+    expect(fieldErrors({ password: "" }, [formLevel])).toEqual({
+      errors: { password: "" },
+      unmatched: [formLevel]
+    })
   })
 
   it("is typed to the error group so state patches still reject typos", () => {
-    const errors = fieldErrors(signup.defaults.errors, [])
+    const { errors } = fieldErrors(signup.defaults.errors, [])
 
     expectTypeOf(errors).toEqualTypeOf<{
       readonly email: string

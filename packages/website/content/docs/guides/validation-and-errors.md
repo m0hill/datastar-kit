@@ -30,9 +30,8 @@ async function submitContact(request: Request): Promise<Response> {
   const result = await read.validate(request, ContactInput)
 
   if (result.issues) {
-    return reply.signals(
-      contact.patch({ errors: fieldErrors(contact.defaults.errors, result.issues) })
-    )
+    const { errors } = fieldErrors(contact.defaults.errors, result.issues)
+    return reply.signals(contact.patch({ errors }))
   }
 
   await contacts.create(result.value)
@@ -42,7 +41,14 @@ async function submitContact(request: Request): Promise<Response> {
 
 `result.value` has the schema's output type. Validation failures are returned as `issues` instead of thrown, because they are expected input that usually becomes a UI patch.
 
-`fieldErrors(fields, issues)` maps issues onto an error object shaped like `fields`. Each field gets the message of its first matching issue, and fields without an issue get `""`, so the patch also clears errors the user has fixed. Nested fields match nested issue paths, and issues for other paths are ignored.
+`fieldErrors(fields, issues)` maps issues onto an error object shaped like `fields`. Each field gets the message of its first matching issue, and fields without an issue get `""`, so the patch also clears errors the user has fixed. Nested fields match nested issue paths.
+
+Issues that match no field, such as a form-level `.refine()` without a `path`, are returned as `unmatched`. Show them somewhere, or the form fails without telling the user why:
+
+```tsx
+const { errors, unmatched } = fieldErrors(signup.defaults.errors, result.issues)
+return reply.signals(signup.patch({ errors: { ...errors, form: unmatched[0]?.message ?? "" } }))
+```
 
 `read.validate(request, schema)` still throws when the Datastar payload is malformed or not a JSON object signal tree. Schema validation handles valid JSON with the wrong shape or unacceptable values.
 
