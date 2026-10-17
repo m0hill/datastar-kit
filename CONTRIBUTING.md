@@ -11,7 +11,10 @@ Thanks for your interest in Datastar Kit. This guide is for working on the SDK i
 
 ```sh
 pnpm install
+pnpm --filter datastar-kit exec playwright install chromium
 ```
+
+The second command downloads the headless Chromium used by the SDK's browser tests, which run in [Vitest Browser Mode](https://vitest.dev/guide/browser/).
 
 This is a pnpm workspace. The SDK lives in `packages/datastar-kit`, the docs site in `packages/website`, and runnable integrations in `examples/*`.
 
@@ -21,7 +24,7 @@ Run these from the repository root:
 
 | Command          | What it does                                                     |
 | ---------------- | ---------------------------------------------------------------- |
-| `pnpm test`      | Run the SDK test suite (Vitest) plus example tests.              |
+| `pnpm test`      | Run the SDK unit and browser tests (Vitest) plus example tests.  |
 | `pnpm typecheck` | Type-check the SDK, every example, and the website.              |
 | `pnpm build`     | Build the SDK and all example/website outputs.                   |
 | `pnpm lint`      | Lint with oxlint (`pnpm lint:fix` to autofix).                   |

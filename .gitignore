@@ -5,3 +5,6 @@ dump.rdb
 auth.json
 *.env
 .claude/
+# Vitest browser mode failure screenshots
+__screenshots__/
+.vitest-attachments/
