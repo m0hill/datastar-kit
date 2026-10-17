@@ -1,12 +1,12 @@
 # Validation
 
-Datastar Kit decodes Datastar signal transport. Your app validates the decoded data.
+Datastar Kit decodes Datastar signal transport. Your app owns the schema that validates the decoded data.
 
-That separation keeps validator-specific types, errors, transforms, and domain rules in application code, where they belong.
+Datastar Kit depends on no validator. Schemas, transforms, and domain rules stay in application code, where they belong.
 
 ## Decode, then validate
 
-Use `read.signals(request)` at the Datastar boundary, then call the schema library your app already uses:
+Use `read.validate(request, schema)` at the Datastar boundary. It decodes the Datastar signals, then validates them with any [Standard Schema](https://standardschema.dev) validator, such as Zod, Valibot, or ArkType:
 
 ```tsx
 import { z } from "zod"
@@ -27,27 +27,36 @@ const contact = state({
 })
 
 async function submitContact(request: Request): Promise<Response> {
-  const result = ContactInput.safeParse(await read.signals(request))
+  const result = await read.validate(request, ContactInput)
 
-  if (!result.success) {
-    const { fieldErrors } = z.flattenError(result.error)
+  if (result.issues) {
+    const errorFor = (field: string) =>
+      result.issues.find((issue) => issue.path?.[0] === field)?.message ?? ""
 
     return reply.signals(
       contact.patch({
         errors: {
-          name: fieldErrors.name?.[0] ?? "",
-          email: fieldErrors.email?.[0] ?? ""
+          name: errorFor("name"),
+          email: errorFor("email")
         }
       })
     )
   }
 
-  await contacts.create(result.data)
+  await contacts.create(result.value)
   return reply.done()
 }
 ```
 
-`read.signals(request)` can throw when the Datastar payload is malformed or not a JSON object signal tree. Schema validation handles valid JSON with the wrong shape or unacceptable values.
+`result.value` has the schema's output type. Validation failures are returned as `issues` instead of thrown, because they are expected input that usually becomes a UI patch.
+
+`read.validate(request, schema)` still throws when the Datastar payload is malformed or not a JSON object signal tree. Schema validation handles valid JSON with the wrong shape or unacceptable values.
+
+To use validator-specific features, such as Zod's `flattenError`, decode with `read.signals(request)` and call the validator yourself:
+
+```tsx
+const result = ContactInput.safeParse(await read.signals(request))
+```
 
 ## Show field errors
 

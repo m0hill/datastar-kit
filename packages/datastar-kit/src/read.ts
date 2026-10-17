@@ -1,3 +1,4 @@
+import type { StandardSchemaV1 } from "./standard-schema.js"
 import type { SignalState } from "./types.js"
 
 /**
@@ -70,4 +71,26 @@ export async function signals(request: Request): Promise<SignalState> {
   }
 
   return input
+}
+
+/**
+ * Parses Datastar signals from a request and validates them with a Standard Schema.
+ *
+ * @remarks
+ * Accepts any validator that implements Standard Schema, such as Zod, Valibot, or ArkType.
+ * Validation failures are returned rather than thrown because they are expected user input that
+ * usually becomes a signal or element patch. Malformed Datastar payloads still throw.
+ *
+ * @param request Native request received by a Datastar action handler.
+ * @param schema Standard Schema that validates the decoded signal state.
+ * @returns The schema's result: `value` on success, or `issues` on failure.
+ * @throws {@link SignalParseError} When the Datastar signal payload is not valid JSON.
+ * @throws {@link SignalShapeError} When the parsed payload is not a JSON object signal tree.
+ * @see https://standardschema.dev
+ */
+export async function validate<Schema extends StandardSchemaV1>(
+  request: Request,
+  schema: Schema
+): Promise<StandardSchemaV1.Result<StandardSchemaV1.InferOutput<Schema>>> {
+  return schema["~standard"].validate(await signals(request))
 }

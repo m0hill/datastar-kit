@@ -98,7 +98,12 @@ describe("package exports", () => {
       "script",
       "signals"
     ])
-    expect(exportedKeys(read)).toEqual(["SignalParseError", "SignalShapeError", "signals"])
+    expect(exportedKeys(read)).toEqual([
+      "SignalParseError",
+      "SignalShapeError",
+      "signals",
+      "validate"
+    ])
     expect(exportedKeys(reply)).toEqual([
       "NavigationUrlError",
       "directHtml",

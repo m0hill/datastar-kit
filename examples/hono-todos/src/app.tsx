@@ -110,17 +110,15 @@ app.get("/", () =>
 )
 
 app.post("/todos", async (c) => {
-  const result = TodoSignals.safeParse(await read.signals(c.req.raw))
+  const result = await read.validate(c.req.raw, TodoSignals)
 
-  if (!result.success) {
-    const { fieldErrors } = z.flattenError(result.error)
-
+  if (result.issues) {
     return reply.signals(
-      todoForm.patch({ errors: { title: fieldErrors.title?.[0] ?? "Enter a todo title." } })
+      todoForm.patch({ errors: { title: result.issues[0]?.message ?? "Enter a todo title." } })
     )
   }
 
-  const { title } = result.data
+  const { title } = result.value
   todos.push({ id: nextId, title, completed: false })
   nextId += 1
 

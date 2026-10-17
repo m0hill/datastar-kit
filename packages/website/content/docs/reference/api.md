@@ -96,13 +96,16 @@ can declare their result with `js<T>(...)`.
 
 `read` contains request-boundary helpers.
 
-| API                     | Use                                                           |
-| ----------------------- | ------------------------------------------------------------- |
-| `read.signals(request)` | Decode Datastar JSON signal state from a native `Request`.    |
-| `read.SignalParseError` | Thrown when signal payload JSON cannot be parsed.             |
-| `read.SignalShapeError` | Thrown when parsed signals are not a JSON object signal tree. |
+| API                              | Use                                                             |
+| -------------------------------- | --------------------------------------------------------------- |
+| `read.signals(request)`          | Decode Datastar JSON signal state from a native `Request`.      |
+| `read.validate(request, schema)` | Decode signal state, then validate it with any Standard Schema. |
+| `read.SignalParseError`          | Thrown when signal payload JSON cannot be parsed.               |
+| `read.SignalShapeError`          | Thrown when parsed signals are not a JSON object signal tree.   |
 
 `GET` and `DELETE` actions read the `datastar` query parameter. Other methods read the request body as JSON.
+
+`read.validate` accepts any [Standard Schema](https://standardschema.dev) validator, such as Zod, Valibot, or ArkType. It resolves to the schema's result: `{ value }` with the typed output on success, or `{ issues }` on failure. Validation failures are returned, not thrown; malformed payloads still throw `SignalParseError` or `SignalShapeError`.
 
 ## `reply`
 

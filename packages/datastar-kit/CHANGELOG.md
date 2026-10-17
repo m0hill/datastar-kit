@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added `read.validate(request, schema)`, which decodes Datastar signals and validates them with any [Standard Schema](https://standardschema.dev) validator (Zod, Valibot, ArkType, and others). It returns the schema result with a typed `value` or `issues` instead of throwing on validation failure. The `StandardSchemaV1` type is exported from the root package.
+
 ## 0.5.0 - 2026-07-25
 
 ### Added
