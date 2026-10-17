@@ -1,5 +1,5 @@
 import { getCookie } from "hono/cookie"
-import { fieldErrors, event, read, reply, state, get, js, mod, post } from "datastar-kit"
+import { event, read, reply, state, get, js, mod, post } from "datastar-kit"
 import { z } from "zod"
 import { pageHead, type App } from "../app.js"
 import { deleteSessionCookie, deleteSession } from "../auth/session.js"
@@ -501,11 +501,17 @@ export const registerWorkspacePage = (app: App) => {
   app.post("/projects", async (c) => {
     const parsedProject = projectSchema.safeParse(await read.signals(c.req.raw))
     if (!parsedProject.success) {
-      const { errors } = fieldErrors(
-        workspaceState.defaults._validation,
-        parsedProject.error.issues
+      const { fieldErrors } = z.flattenError(parsedProject.error)
+      return reply.signals(
+        workspaceState.patch({
+          _validation: {
+            ...workspaceState.defaults._validation,
+            projectName: fieldErrors.projectName?.[0] ?? "",
+            projectKey: fieldErrors.projectKey?.[0] ?? "",
+            projectDescription: fieldErrors.projectDescription?.[0] ?? ""
+          }
+        })
       )
-      return reply.signals(workspaceState.patch({ _validation: errors }))
     }
 
     const project = await createProject(c.get("user"), parsedProject.data)
@@ -538,13 +544,13 @@ export const registerWorkspacePage = (app: App) => {
   app.post("/issues", async (c) => {
     const parsedIssue = createIssueSchema.safeParse(await read.signals(c.req.raw))
     if (!parsedIssue.success) {
-      const issueErrors = z.flattenError(parsedIssue.error).fieldErrors
+      const { fieldErrors } = z.flattenError(parsedIssue.error)
       return reply.signals(
         workspaceState.patch({
           _validation: {
             ...workspaceState.defaults._validation,
-            form: issueErrors.projectId?.[0] ?? "",
-            issueTitle: issueErrors.issueTitle?.[0] ?? ""
+            form: fieldErrors.projectId?.[0] ?? "",
+            issueTitle: fieldErrors.issueTitle?.[0] ?? ""
           }
         })
       )

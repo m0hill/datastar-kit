@@ -1,5 +1,5 @@
 import { Hono } from "hono"
-import { fieldErrors, event, reply, read, state, get, local, mod, patch, put } from "datastar-kit"
+import { event, reply, read, state, get, local, mod, patch, put } from "datastar-kit"
 import { z } from "zod"
 import { ExampleLayout, pageHead } from "../layout.js"
 
@@ -206,8 +206,16 @@ example.patch("/:index", async (c) => {
   const result = schema.safeParse(await read.signals(c.req.raw))
 
   if (!result.success) {
-    const { errors } = fieldErrors(editFormState.defaults.errors, result.error.issues)
-    return reply.signals(editFormState.patch({ errors }))
+    const { fieldErrors } = z.flattenError(result.error)
+
+    return reply.signals(
+      editFormState.patch({
+        errors: {
+          name: fieldErrors.name?.[0] ?? "",
+          email: fieldErrors.email?.[0] ?? ""
+        }
+      })
+    )
   }
 
   rows[index] = result.data

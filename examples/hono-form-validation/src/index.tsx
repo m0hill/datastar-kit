@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server"
 import { Hono } from "hono"
 import { z } from "zod"
-import { fieldErrors, event, read, reply, state, mod, post } from "datastar-kit"
+import { event, read, reply, state, mod, post } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
@@ -80,7 +80,11 @@ app.post("/signup", async (c) => {
   const result = SignupSignals.safeParse(await read.signals(c.req.raw))
 
   if (!result.success) {
-    const { errors } = fieldErrors(signup.defaults.errors, result.error.issues)
+    const { fieldErrors } = z.flattenError(result.error)
+    const errors = {
+      name: fieldErrors.name?.[0] ?? "",
+      email: fieldErrors.email?.[0] ?? ""
+    }
 
     return reply.stream([
       event.signals(signup.patch({ errors })),

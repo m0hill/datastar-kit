@@ -1,4 +1,4 @@
-import { fieldErrors, read, reply, state, mod, post } from "datastar-kit"
+import { read, reply, state, mod, post } from "datastar-kit"
 import { z } from "zod"
 import { pageHead, type App } from "../app.js"
 import { createSession, getCurrentUser, sessionCookie } from "../auth/session.js"
@@ -118,8 +118,18 @@ export const registerSignupPage = (app: App) => {
   app.post("/signup", async (c) => {
     const result = signupSchema.safeParse(await read.signals(c.req.raw))
     if (!result.success) {
-      const { errors } = fieldErrors(signupState.defaults._validation, result.error.issues)
-      return reply.signals(signupState.patch({ _validation: errors }))
+      const { fieldErrors } = z.flattenError(result.error)
+
+      return reply.signals(
+        signupState.patch({
+          _validation: {
+            ...signupState.defaults._validation,
+            name: fieldErrors.name?.[0] ?? "",
+            username: fieldErrors.username?.[0] ?? "",
+            password: fieldErrors.password?.[0] ?? ""
+          }
+        })
+      )
     }
 
     const user = await createUser(result.data)
