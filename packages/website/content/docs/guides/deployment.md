@@ -20,25 +20,25 @@ Core helpers use Web Standard primitives such as `Request`, `Response`, `Headers
 
 ### Node `(req, res)` servers
 
-For `node:http`, Express, and other servers that use Node's `(req, res)` signature, wrap handlers with `nodeHandler` from `datastar-kit/node`:
+For `node:http`, Express, and other servers that use Node's `(req, res)` signature, wrap handlers with `getRequestListener` from [`@hono/node-server`](https://github.com/honojs/node-server). It accepts any `(request: Request) => Response` handler:
 
 ```ts
 import { createServer } from "node:http"
-import { nodeHandler } from "datastar-kit/node"
+import { getRequestListener } from "@hono/node-server"
 
-createServer(nodeHandler(handle)).listen(3000)
+createServer(getRequestListener(handle)).listen(3000)
 ```
 
 ```ts
 import express from "express"
-import { nodeHandler } from "datastar-kit/node"
+import { getRequestListener } from "@hono/node-server"
 
 const app = express()
-app.get("/", nodeHandler(home))
-app.post("/increment", nodeHandler(increment))
+app.get("/", getRequestListener(home))
+app.post("/increment", getRequestListener(increment))
 ```
 
-The adapter streams SSE responses with backpressure and cancels them when the client disconnects. It reuses bodies already parsed by middleware such as `express.json()`.
+Do not run body-parsing middleware such as `express.json()` on these routes. It consumes the request body before Datastar Kit can read the signals.
 
 ## Datastar runtime asset
 

@@ -162,14 +162,7 @@ wrappers remain limited to built-in Datastar attributes with modifier metadata.
 | Subpath                        | Use                                                                         |
 | ------------------------------ | --------------------------------------------------------------------------- |
 | `datastar-kit/sse`             | Low-level Datastar SSE encoders and comment chunks for custom integrations. |
-| `datastar-kit/node`            | Adapt fetch-style handlers to Node `(req, res)` servers such as Express.    |
 | `datastar-kit/jsx-runtime`     | TypeScript automatic JSX runtime entrypoint.                                |
 | `datastar-kit/jsx-dev-runtime` | TypeScript automatic JSX development runtime entrypoint.                    |
-
-### `datastar-kit/node`
-
-`nodeHandler(handler)` wraps a `(request: Request) => Response` handler as a Node `(req, res)` listener for `node:http`, Express, and other Node servers.
-
-The request signal aborts when the client disconnects, and streamed response bodies are cancelled, so `reply.stream()` sources run their cleanup. Bodies already parsed by middleware such as `express.json()` are reused, and Express's `originalUrl` is preferred over the mounted `url`. With Express, `nodeHandler` passes handler errors to `next`.
 
 Related guides: [Actions and responses](../guides/actions-and-responses.md), [Signals](../guides/signals.md), [HTML and JSX](../guides/html-and-jsx.md).
