@@ -83,58 +83,58 @@ const Hero = () => (
     <AsciiBackdrop />
     <div class="site-shell relative z-10 grid items-center gap-10 pt-12 pb-20 lg:grid-cols-[minmax(0,0.92fr)_minmax(30rem,1.08fr)] lg:gap-16 lg:pt-16">
       <div class="page-enter max-w-2xl">
-      <a
-        href={DATASTAR_URL}
-        target="_blank"
-        rel="noreferrer"
-        class="inline-flex items-center gap-2 text-fg-secondary transition-colors hover:text-accent"
-      >
-        <img
-          src="/datastar-rocket.png"
-          alt=""
-          width={18}
-          height={18}
-          class="h-4.5 w-4.5"
-        />
-        <span class="manual-kicker">Built for Datastar</span>
-      </a>
-      <h1 class="font-serif text-[2rem] leading-[1.02] font-medium tracking-tighter text-fg min-[420px]:text-4xl sm:text-5xl sm:leading-[0.95] md:text-6xl lg:text-7xl">
-        Stop shipping JavaScript.
-        <JsAsterisk />
-      </h1>
-      <p class="mt-5 max-w-lg font-serif text-xl leading-relaxed text-fg-secondary">
-        Build interactive Datastar pages from plain TypeScript: typed data-* attributes,
-        server-rendered TSX, signal readers, and native Response helpers.
-      </p>
-      <div class="mt-7 flex flex-wrap items-center gap-3">
         <a
-          href="/docs/introduction"
-          class="btn-primary"
-        >
-          Get started
-        </a>
-        <a
-          href={GITHUB_URL}
+          href={DATASTAR_URL}
           target="_blank"
           rel="noreferrer"
-          class="btn-secondary"
+          class="inline-flex items-center gap-2 text-fg-secondary transition-colors hover:text-accent"
         >
-          View on GitHub
+          <img
+            src="/datastar-rocket.png"
+            alt=""
+            width={18}
+            height={18}
+            class="h-4.5 w-4.5"
+          />
+          <span class="manual-kicker">Built for Datastar</span>
         </a>
+        <h1 class="font-serif text-[2rem] leading-[1.02] font-medium tracking-tighter text-fg min-[420px]:text-4xl sm:text-5xl sm:leading-[0.95] md:text-6xl lg:text-7xl">
+          Stop shipping JavaScript.
+          <JsAsterisk />
+        </h1>
+        <p class="mt-5 max-w-lg font-serif text-xl leading-relaxed text-fg-secondary">
+          Build interactive Datastar pages from plain TypeScript: typed data-* attributes,
+          server-rendered TSX, signal readers, and native Response helpers.
+        </p>
+        <div class="mt-7 flex flex-wrap items-center gap-3">
+          <a
+            href="/docs/introduction"
+            class="btn-primary"
+          >
+            Get started
+          </a>
+          <a
+            href={GITHUB_URL}
+            target="_blank"
+            rel="noreferrer"
+            class="btn-secondary"
+          >
+            View on GitHub
+          </a>
+        </div>
+        <button
+          type="button"
+          class="group mt-6 flex w-full max-w-sm cursor-pointer items-center justify-between gap-4 border border-border-strong bg-paper px-4 py-3 text-left font-mono text-sm text-fg transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent"
+          data-on:click={js`const btn = evt.currentTarget; navigator.clipboard.writeText(${"npm i datastar-kit"}); btn.classList.add('copied'); setTimeout(() => btn.classList.remove('copied'), 1200)`}
+          aria-label="Copy npm install command"
+        >
+          <span>
+            <span class="text-fg-muted">$ </span>
+            npm i datastar-kit
+          </span>
+          <InstallCopyIcon />
+        </button>
       </div>
-      <button
-        type="button"
-        class="group mt-6 flex w-full max-w-sm cursor-pointer items-center justify-between gap-4 border border-border-strong bg-paper px-4 py-3 text-left font-mono text-sm text-fg transition-colors hover:border-accent focus-visible:outline-2 focus-visible:outline-offset-3 focus-visible:outline-accent"
-        data-on:click={js`const btn = evt.currentTarget; navigator.clipboard.writeText(${"npm i datastar-kit"}); btn.classList.add('copied'); setTimeout(() => btn.classList.remove('copied'), 1200)`}
-        aria-label="Copy npm install command"
-      >
-        <span>
-          <span class="text-fg-muted">$ </span>
-          npm i datastar-kit
-        </span>
-        <InstallCopyIcon />
-      </button>
-    </div>
       <div class="min-w-0 [&_.code-block]:my-0">{unsafeHtml(snippets["counter"] ?? "")}</div>
     </div>
   </section>
@@ -249,10 +249,6 @@ const inTheBox = [
   {
     title: "Realtime in a few lines",
     body: "reply.stream sends SSE patches, so live multi-tab views are an ordinary handler."
-  },
-  {
-    title: "A development debugger",
-    body: "Drop one component into a page to inspect signals, patches, and SSE traffic."
   }
 ] as const
 

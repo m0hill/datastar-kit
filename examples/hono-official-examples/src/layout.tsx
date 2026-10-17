@@ -1,6 +1,5 @@
 import type { HtmlChild } from "datastar-kit"
 import type { JSX } from "datastar-kit/jsx-runtime"
-import { debuggerDevelopment } from "./debugger-development.js"
 
 const examples = [
   { slug: "active_search", title: "Active Search" },
@@ -41,12 +40,6 @@ export const pageHead = (extra?: HtmlChild | HtmlChild[]): HtmlChild[] => [
     rel="stylesheet"
     href="/public/styles.css"
   />,
-  debuggerDevelopment.enabled ? (
-    <script
-      type="module"
-      src={debuggerDevelopment.scriptPath}
-    />
-  ) : null,
   <script
     type="module"
     src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"

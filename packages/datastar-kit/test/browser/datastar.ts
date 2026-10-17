@@ -10,16 +10,9 @@ export const mount = (node: HtmlChild): void => {
   document.body.innerHTML = renderToString(node)
 }
 
-export const query = (selector: string, root: ParentNode = document): HTMLElement =>
-  queryAs(HTMLElement, selector, root)
-
-export const queryAs = <E extends Element>(
-  type: abstract new () => E,
-  selector: string,
-  root: ParentNode = document
-): E => {
+export const query = (selector: string, root: ParentNode = document): HTMLElement => {
   const element = root.querySelector(selector)
-  if (!(element instanceof type)) throw new Error(`Missing ${type.name}: ${selector}`)
+  if (!(element instanceof HTMLElement)) throw new Error(`Missing element: ${selector}`)
   return element
 }
 

@@ -8,6 +8,10 @@
 - Added `fieldErrors(fields, issues)`, which maps validation issues onto a field error object shaped like a `state(...)` error group. Fields without an issue are cleared, so one signal patch both shows new errors and removes resolved ones.
 - Added the `datastar-kit/node` subpath with `nodeHandler` for running fetch-style handlers on `node:http`, Express, and other Node `(req, res)` servers. Client disconnects abort the request signal and cancel streamed responses.
 
+### Removed
+
+- Removed the `datastar-kit/debugger` subpath and its Web Component. The debugger is no longer part of Datastar Kit.
+
 ## 0.5.0 - 2026-07-25
 
 ### Added

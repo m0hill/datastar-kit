@@ -173,13 +173,8 @@ wrappers remain limited to built-in Datastar attributes with modifier metadata.
 | ------------------------------ | --------------------------------------------------------------------------- |
 | `datastar-kit/sse`             | Low-level Datastar SSE encoders and comment chunks for custom integrations. |
 | `datastar-kit/node`            | Adapt fetch-style handlers to Node `(req, res)` servers such as Express.    |
-| `datastar-kit/debugger`        | Development-only browser entry that installs the debugger Web Component.    |
 | `datastar-kit/jsx-runtime`     | TypeScript automatic JSX runtime entrypoint.                                |
 | `datastar-kit/jsx-dev-runtime` | TypeScript automatic JSX development runtime entrypoint.                    |
-
-### `datastar-kit/debugger`
-
-Import this side-effect-only browser entry from development pages to register and add the `<datastar-kit-debugger>` Web Component. It inspects signals, Datastar events, and best-effort timeline snapshots. The subpath has no programmatic API.
 
 ### `datastar-kit/node`
 
@@ -187,4 +182,4 @@ Import this side-effect-only browser entry from development pages to register an
 
 The request signal aborts when the client disconnects, and streamed response bodies are cancelled, so `reply.stream()` sources run their cleanup. Bodies already parsed by middleware such as `express.json()` are reused, and Express's `originalUrl` is preferred over the mounted `url`. With Express, `nodeHandler` passes handler errors to `next`.
 
-Related guides: [Actions and responses](../guides/actions-and-responses.md), [Signals](../guides/signals.md), [Debugger](../guides/debugger.md), [HTML and JSX](../guides/html-and-jsx.md).
+Related guides: [Actions and responses](../guides/actions-and-responses.md), [Signals](../guides/signals.md), [HTML and JSX](../guides/html-and-jsx.md).

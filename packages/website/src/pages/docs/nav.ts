@@ -28,8 +28,7 @@ export const sidebar: NavGroup[] = [
       { text: "Actions and responses", path: "/docs/guides/actions-and-responses" },
       { text: "Element patches", path: "/docs/guides/patch-elements" },
       { text: "Validation", path: "/docs/guides/validation-and-errors" },
-      { text: "Realtime", path: "/docs/guides/realtime" },
-      { text: "Debugger", path: "/docs/guides/debugger" }
+      { text: "Realtime", path: "/docs/guides/realtime" }
     ]
   },
   {

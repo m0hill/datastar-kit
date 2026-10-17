@@ -2,7 +2,7 @@
 
 `datastar-kit` is a small TypeScript SDK for building server-driven UI with [Datastar](https://data-star.dev/).
 
-It provides typed helpers for Datastar actions, expressions, and signal refs; native Datastar attributes in server-rendered TSX; signal payload reads from `Request`; native `Response` helpers for Datastar pages, patches, streams, navigation, and command completion; and a development-only debugger Web Component.
+It provides typed helpers for Datastar actions, expressions, and signal refs; native Datastar attributes in server-rendered TSX; signal payload reads from `Request`; native `Response` helpers for Datastar pages, patches, streams, navigation, and command completion.
 
 It is not a framework. Bring your router, auth, database, validation, sessions, and runtime.
 
@@ -81,16 +81,6 @@ export function handle(request: Request): Response {
 ```
 
 The stable `id` is the patch contract. The server returns new HTML for `#count`; Datastar applies it in the browser.
-
-## Development debugger
-
-Load the debugger from a development-only browser entrypoint to inspect signals, events, and timeline snapshots.
-
-```ts
-import "datastar-kit/debugger"
-```
-
-Keep this entrypoint out of production builds and pages.
 
 See [datastar-kit.dev](https://datastar-kit.dev) for guides, API reference, and examples.
 
