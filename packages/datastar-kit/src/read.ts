@@ -43,13 +43,6 @@ const rawSignals = async (request: Request): Promise<string> => {
 }
 
 /**
- * Datastar signal state is JSON parsed at this boundary, so only the protocol's top-level object
- * shape needs checking here. Application schemas own any domain validation after this point.
- */
-const isSignalState = (value: unknown): value is SignalState =>
-  typeof value === "object" && value !== null && !Array.isArray(value)
-
-/**
  * Parses Datastar signals from a request.
  *
  * @param request Native request received by a Datastar action handler.
@@ -59,14 +52,15 @@ const isSignalState = (value: unknown): value is SignalState =>
  */
 export async function signals(request: Request): Promise<SignalState> {
   const raw = await rawSignals(request)
-  let input: unknown
+  let input: SignalState
   try {
     input = JSON.parse(raw)
   } catch (cause) {
     throw new SignalParseError(raw, { cause })
   }
 
-  if (!isSignalState(input)) {
+  // Valid JSON text that starts with "{" is an object; application schemas own anything deeper.
+  if (!raw.trimStart().startsWith("{")) {
     throw new SignalShapeError(input)
   }
 

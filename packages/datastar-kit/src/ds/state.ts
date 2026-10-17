@@ -76,28 +76,9 @@ export interface State<T extends SignalObject> {
   reset(overrides?: StatePatch<T>): SignalState
 }
 
+// Walking a JSON tree requires telling objects apart from primitives and arrays.
 const isSignalObject = (value: SignalValue): value is SignalObject =>
   typeof value === "object" && value !== null && !Array.isArray(value)
-
-const cloneSignalValue = (value: SignalValue): SignalValue => {
-  if (Array.isArray(value)) {
-    return value.map(cloneSignalValue)
-  }
-
-  if (isSignalObject(value)) {
-    return cloneSignalState(value)
-  }
-
-  return value
-}
-
-const cloneSignalState = (value: SignalObject): SignalState => {
-  const cloned: Record<string, SignalValue> = {}
-  for (const [key, item] of Object.entries(value)) {
-    cloned[key] = cloneSignalValue(item)
-  }
-  return cloned
-}
 
 const freezeSignalValue = (value: SignalValue): SignalValue => {
   if (Array.isArray(value)) {
@@ -125,11 +106,11 @@ const mergeSignalValue = (base: SignalValue | undefined, override: SignalValue):
     return mergeSignalState(base, override)
   }
 
-  return cloneSignalValue(override)
+  return structuredClone(override)
 }
 
 const mergeSignalState = (base: SignalObject, overrides: SignalObject): SignalState => {
-  const merged: Record<string, SignalValue> = cloneSignalState(base)
+  const merged: Record<string, SignalValue> = structuredClone(base)
 
   for (const [key, value] of Object.entries(overrides)) {
     merged[key] = mergeSignalValue(base[key], value)
@@ -164,18 +145,18 @@ const buildRefs = (value: SignalObject, prefix = ""): SignalRefTree =>
  * derived from one object. It does not read requests or perform schema validation.
  */
 export const state = <T extends SignalObject>(defaults: T): State<WidenSignalObject<T>> => {
-  const clonedDefaults = freezeSignalState(cloneSignalState(defaults)) as WidenSignalObject<T>
+  const clonedDefaults = freezeSignalState(structuredClone(defaults)) as WidenSignalObject<T>
   const refs = buildRefs(clonedDefaults) as StateSignalRefs<WidenSignalObject<T>>
 
   return {
     defaults: clonedDefaults,
     refs,
     patch(values) {
-      return cloneSignalState(values as SignalObject)
+      return structuredClone(values as SignalObject)
     },
     reset(overrides) {
       return overrides === undefined
-        ? cloneSignalState(clonedDefaults)
+        ? structuredClone(clonedDefaults)
         : mergeSignalState(clonedDefaults, overrides as SignalObject)
     }
   }
