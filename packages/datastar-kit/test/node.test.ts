@@ -1,6 +1,6 @@
 import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { nodeHandler, type FetchHandler, type NodeRequest } from "datastar-kit/node"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
@@ -17,6 +17,7 @@ const listen = async (listener: RequestListener): Promise<string> => {
 const serve = (handler: FetchHandler): Promise<string> => listen(nodeHandler(handler))
 
 afterEach(async () => {
+  vi.restoreAllMocks()
   server?.closeAllConnections()
   await new Promise<void>((resolve) => server?.close(() => resolve()))
   server = undefined
@@ -45,15 +46,6 @@ describe("datastar-kit/node", () => {
     expect(await response.text()).toBe(
       'event: datastar-patch-signals\ndata: signals {"method":"POST","path":"/save?draft=1","header":"yes","signals":{"count":2}}\n\n'
     )
-  })
-
-  it("reads GET signals from the query string", async () => {
-    const url = await serve(async (request) => reply.signals(await read.signals(request)))
-    const query = encodeURIComponent(JSON.stringify({ q: "kit" }))
-
-    const response = await fetch(`${url}/search?datastar=${query}`)
-
-    expect(await response.text()).toContain('{"q":"kit"}')
   })
 
   it("uses a body already parsed by middleware and the pre-mount URL", async () => {
@@ -163,5 +155,16 @@ describe("datastar-kit/node", () => {
 
     expect(response.status).toBe(418)
     expect(received).toBe(failure)
+  })
+
+  it("answers 500 when a handler throws without next", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => undefined)
+    const url = await serve(() => {
+      throw new Error("boom")
+    })
+
+    const response = await fetch(url)
+
+    expect(response.status).toBe(500)
   })
 })

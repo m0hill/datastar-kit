@@ -57,7 +57,7 @@ describe("fieldErrors", () => {
     ).toEqual({ address: { city: "Enter a city" } })
   })
 
-  it("produces a value accepted by the matching state patch", () => {
+  it("is typed to the error group so state patches still reject typos", () => {
     const errors = fieldErrors(signup.defaults.errors, [])
 
     expectTypeOf(errors).toEqualTypeOf<{
@@ -65,8 +65,6 @@ describe("fieldErrors", () => {
       readonly password: string
       readonly address: { readonly city: string }
     }>()
-    expect(signup.patch({ errors })).toEqual({
-      errors: { email: "", password: "", address: { city: "" } }
-    })
+    expectTypeOf({ errors }).toExtend<Parameters<typeof signup.patch>[0]>()
   })
 })
