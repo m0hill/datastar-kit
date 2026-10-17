@@ -4,13 +4,9 @@ import { Readable } from "node:stream"
 import { pipeline } from "node:stream/promises"
 import type { ReadableStream as NodeReadableStream } from "node:stream/web"
 
-/** A fetch-style handler, as used with every other Datastar Kit runtime. */
 export type FetchHandler = (request: Request) => Response | Promise<Response>
 
-/**
- * A Node request, optionally carrying a body that middleware such as `express.json()` already
- * consumed, and Express's pre-mount URL.
- */
+// Express adds a parsed `body` and the pre-mount `originalUrl`.
 export type NodeRequest = IncomingMessage & {
   readonly body?: unknown
   readonly originalUrl?: string
@@ -41,7 +37,6 @@ const requestBody = (req: NodeRequest): BodyInit | null => {
 const isTlsSocket = (req: IncomingMessage): boolean =>
   "encrypted" in req.socket && req.socket.encrypted === true
 
-/** The request signal aborts when the client disconnects before the response finishes. */
 const toRequest = (req: NodeRequest, res: ServerResponse): Request => {
   const controller = new AbortController()
   res.once("close", () => {
@@ -63,7 +58,6 @@ const toRequest = (req: NodeRequest, res: ServerResponse): Request => {
   })
 }
 
-/** Streams the body with backpressure and cancels it when the client disconnects. */
 const sendResponse = async (res: ServerResponse, response: Response): Promise<void> => {
   res.statusCode = response.status
   res.statusMessage = response.statusText
@@ -88,19 +82,6 @@ const sendResponse = async (res: ServerResponse, response: Response): Promise<vo
   }
 }
 
-/**
- * Adapts a fetch-style handler to Node's `(req, res)` signature.
- *
- * @example
- * ```ts
- * createServer(nodeHandler(handle)).listen(3000)
- * app.post("/increment", nodeHandler(increment)) // Express
- * ```
- *
- * @param handler Handler that receives a native `Request` and returns a native `Response`.
- * @returns A Node request listener. Errors are passed to `next` when one is provided; otherwise
- * they are logged and answered with a `500`, or the connection is closed if streaming started.
- */
 export const nodeHandler =
   (handler: FetchHandler) =>
   async (req: NodeRequest, res: ServerResponse, next?: (error: unknown) => void): Promise<void> => {

@@ -3,11 +3,9 @@ import { renderToString, type HtmlChild } from "../../src/html.js"
 export const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
 
-/** Loads the pinned Datastar runtime, which applies itself to the current document. */
 export const loadDatastar = (): Promise<{ readonly attribute: (plugin: unknown) => void }> =>
   import(/* @vite-ignore */ DATASTAR_RUNTIME)
 
-/** Renders server-side markup into the test page body. */
 export const mount = (node: HtmlChild): void => {
   document.body.innerHTML = renderToString(node)
 }
@@ -25,7 +23,6 @@ export const queryAs = <E extends Element>(
   return element
 }
 
-/** Resolves when Datastar finishes the next backend action request. */
 export const nextFetchFinished = (): Promise<void> =>
   new Promise((resolve) => {
     const listener = (event: Event) => {

@@ -1,9 +1,7 @@
 import type { StandardSchemaV1 } from "./standard-schema.js"
 
-/** Field error messages keyed like the signal state that displays them. */
 export type FieldErrorShape = { readonly [key: string]: string | FieldErrorShape }
 
-/** Field error messages with the same keys as `T`. */
 export type FieldErrors<T extends FieldErrorShape> = {
   readonly [Key in keyof T]: T[Key] extends FieldErrorShape ? FieldErrors<T[Key]> : string
 }
@@ -13,18 +11,6 @@ const pathKey = (path: StandardSchemaV1.Issue["path"]): string =>
     .map((segment) => String(typeof segment === "object" ? segment.key : segment))
     .join(".")
 
-/**
- * Maps validation issues onto a field error object for a signal patch.
- *
- * @remarks
- * Every field in `fields` is included: it receives the message of the first issue whose path
- * matches it, or `""` when it has none, so the patch also clears errors that are now resolved.
- * Issues for paths outside `fields` are ignored.
- *
- * @param fields Field error defaults, usually `state(...).defaults.errors`.
- * @param issues Issues from `read.validate(...)` or any Standard Schema validator.
- * @returns Field error messages shaped like `fields`.
- */
 export const fieldErrors = <T extends FieldErrorShape>(
   fields: T,
   issues: ReadonlyArray<StandardSchemaV1.Issue>

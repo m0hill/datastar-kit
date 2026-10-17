@@ -4,7 +4,6 @@ import { defineConfig, type Plugin } from "vitest/config"
 
 const fromRoot = (path: string): string => fileURLToPath(new URL(path, import.meta.url))
 
-/** Serves the Datastar action endpoints that browser tests fetch from the page. */
 const browserFixtureEndpoints = (): Plugin => {
   let timeTravelCount = 0
 
