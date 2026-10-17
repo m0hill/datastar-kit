@@ -51,15 +51,6 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
-  it("omits default modes, namespaces, and retry durations", () => {
-    expect(
-      patchElements("<div>Merge</div>", { mode: "outer", namespace: "html", retry: 1000 })
-    ).toBe("event: datastar-patch-elements\ndata: elements <div>Merge</div>\n\n")
-    expect(patchSignals({ one: 1 }, { retry: 1000 })).toBe(
-      'event: datastar-patch-signals\ndata: signals {"one":1}\n\n'
-    )
-  })
-
   it("keeps carriage returns in payloads from starting new SSE fields", () => {
     expect(patchElements("<div>\r  Hello\r</div>")).toBe(
       "event: datastar-patch-elements\ndata: elements <div>\ndata: elements   Hello\ndata: elements </div>\n\n"

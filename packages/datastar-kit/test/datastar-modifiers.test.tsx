@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { js, mod, post } from "../src/ds/index.js"
+import { mod, post } from "../src/ds/index.js"
 import { renderToString } from "../src/html.js"
 import { jsx as runtimeJsx } from "../src/jsx-runtime.js"
 
@@ -10,106 +10,9 @@ const save = post("/save")
 const renderModified = (name: string, value: unknown): string =>
   renderToString(runtimeJsx("div", { [name]: value }))
 
-describe("Datastar modifier rendering", () => {
-  it("renders flag modifiers as suffixes in authored order", () => {
-    expect(
-      renderToString(
-        <button data-on:click={mod(save, { once: true, prevent: true, window: true })} />
-      )
-    ).toBe('<button data-on:click__once__prevent__window="@post(&quot;/save&quot;)"></button>')
-  })
-
-  it("omits modifiers set to false", () => {
-    expect(
-      renderToString(<button data-on:click={mod(save, { once: false, prevent: true })} />)
-    ).toBe('<button data-on:click__prevent="@post(&quot;/save&quot;)"></button>')
-  })
-
-  it("lowercases camel-cased modifier names the way Datastar spells them", () => {
-    expect(
-      renderToString(
-        <div>
-          <div data-signals={mod({ ready: false }, { ifMissing: true })} />
-          <button data-on:click={mod(save, { viewTransition: true })} />
-        </div>
-      )
-    ).toBe(
-      '<div><div data-signals__ifmissing="{&quot;ready&quot;: false}"></div><button data-on:click__viewtransition="@post(&quot;/save&quot;)"></button></div>'
-    )
-  })
-
-  it("appends ms to bare numeric durations and keeps unit strings", () => {
-    const init = js<void>("$ready = true")
-
-    expect(
-      renderToString(
-        <div>
-          <div data-init={mod(init, { delay: 500 })} />
-          <div data-init={mod(init, { delay: "500" })} />
-          <div data-init={mod(init, { delay: "1s" })} />
-          <div data-init={mod(init, { delay: true })} />
-        </div>
-      )
-    ).toBe(
-      '<div><div data-init__delay.500ms="$ready = true"></div><div data-init__delay.500ms="$ready = true"></div><div data-init__delay.1s="$ready = true"></div><div data-init__delay="$ready = true"></div></div>'
-    )
-  })
-
-  it("renders debounce and throttle edge options as modifier tags", () => {
-    expect(
-      renderToString(
-        <div>
-          <input data-on:input={mod(save, { debounce: "200ms" })} />
-          <input
-            data-on:input={mod(save, {
-              debounce: { duration: "1s", leading: true, noTrailing: true }
-            })}
-          />
-          <input
-            data-on:input={mod(save, {
-              throttle: { duration: 250, noLeading: true, trailing: true }
-            })}
-          />
-        </div>
-      )
-    ).toBe(
-      '<div><input data-on:input__debounce.200ms="@post(&quot;/save&quot;)"><input data-on:input__debounce.1s.leading.notrailing="@post(&quot;/save&quot;)"><input data-on:input__throttle.250ms.noleading.trailing="@post(&quot;/save&quot;)"></div>'
-    )
-  })
-
-  it("renders value-tagged modifiers", () => {
-    const seen = js<void>("$seen = true")
-
-    expect(
-      renderToString(
-        <div>
-          <input data-bind={mod("accepted", { prop: "checked", event: ["input", "change"] })} />
-          <input data-bind:is-on={mod({ case: "camel", event: "change" })} />
-          <div data-on-intersect={mod(seen, { threshold: 25 })} />
-          <pre data-json-signals={mod({ terse: true })} />
-          <div data-ignore={mod({ self: true })} />
-        </div>
-      )
-    ).toBe(
-      '<div><input data-bind__prop.checked__event.input.change="accepted"><input data-bind:is-on__case.camel__event.change><div data-on-intersect__threshold.25="$seen = true"></div><pre data-json-signals__terse></pre><div data-ignore__self></div></div>'
-    )
-  })
-
-  it("puts the interval duration and its leading tag first", () => {
-    expect(
-      renderToString(
-        <div
-          data-on-interval={mod(js<void>("$count++"), {
-            viewTransition: true,
-            leading: true,
-            duration: 500
-          })}
-        />
-      )
-    ).toBe('<div data-on-interval__duration.500ms.leading__viewtransition="$count++"></div>')
-  })
-})
-
+// How Datastar applies rendered modifiers is checked against the real runtime in
+// test/browser/modifiers.test.tsx. This file covers the server-side validation that rejects
+// modifiers before any markup is produced.
 describe("Datastar modifier validation", () => {
   it("rejects modifiers the attribute does not support", () => {
     expect(() => renderModified("data-signals", mod({ ready: false }, { prevent: true }))).toThrow(

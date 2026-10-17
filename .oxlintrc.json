@@ -14,6 +14,7 @@
   },
   "ignorePatterns": [
     "node_modules/**",
+    "packages/datastar-kit/test/browser/vendor/**",
     "dist/**",
     "coverage/**",
     ".pi-cache/**",

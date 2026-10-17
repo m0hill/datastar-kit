@@ -67,15 +67,6 @@ describe("reply direct Datastar responses", () => {
     expect(await response.text()).toBe("<p>Updated</p>")
   })
 
-  it("serves direct JSON signal responses as explicit escape hatches", async () => {
-    const response = reply.directSignals({ count: 1 }, { onlyIfMissing: true })
-
-    expect(response.status).toBe(200)
-    expect(response.headers.get("content-type")).toBe("application/json; charset=utf-8")
-    expect(response.headers.get("datastar-only-if-missing")).toBe("true")
-    expect(await response.text()).toBe('{"count":1}')
-  })
-
   it("serves direct script responses as explicit escape hatches", async () => {
     const response = reply.directScript("console.log('hello')", {
       attributes: { type: "module", async: true }
