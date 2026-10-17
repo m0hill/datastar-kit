@@ -36,10 +36,11 @@
     "format": "oxfmt"
   },
   "devDependencies": {
+    "@oxlint/plugins": "^1.88.0",
     "@types/node": "^24.10.1",
     "oxfmt": "^0.51.0",
-    "oxlint": "^1.66.0",
-    "oxlint-tsgolint": "^0.23.0",
+    "oxlint": "^1.88.0",
+    "oxlint-tsgolint": "^7.0.2004",
     "tsx": "^4.22.3",
     "typescript": "^5.9.3",
     "vitest": "^4.0.14"
