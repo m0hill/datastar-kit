@@ -47,6 +47,7 @@ const workspaceState = state({
     form: "",
     projectName: "",
     projectKey: "",
+    projectDescription: "",
     issueTitle: ""
   }
 })
@@ -136,6 +137,10 @@ const Sidebar = (props: { user: User; projects: Project[] }) => (
               rows={2}
               data-bind={workspaceState.refs.projectDescription}
             ></textarea>
+            <small
+              class="text-danger text-[13px] font-medium min-h-4"
+              data-text={workspaceState.refs._validation.projectDescription}
+            ></small>
           </label>
           <button
             type="submit"
@@ -502,7 +507,8 @@ export const registerWorkspacePage = (app: App) => {
           _validation: {
             ...workspaceState.defaults._validation,
             projectName: fieldErrors.projectName?.[0] ?? "",
-            projectKey: fieldErrors.projectKey?.[0] ?? ""
+            projectKey: fieldErrors.projectKey?.[0] ?? "",
+            projectDescription: fieldErrors.projectDescription?.[0] ?? ""
           }
         })
       )
