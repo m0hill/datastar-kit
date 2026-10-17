@@ -1,6 +1,6 @@
 import { Hono } from "hono"
 import { z } from "zod"
-import { event, mod, post, read, reply, state } from "datastar-kit"
+import { event, fieldErrors, mod, post, read, reply, state } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
   "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
@@ -114,7 +114,7 @@ app.post("/todos", async (c) => {
 
   if (result.issues) {
     return reply.signals(
-      todoForm.patch({ errors: { title: result.issues[0]?.message ?? "Enter a todo title." } })
+      todoForm.patch({ errors: fieldErrors(todoForm.defaults.errors, result.issues) })
     )
   }
 

@@ -42,6 +42,7 @@ describe("package exports", () => {
       "dataAttrs",
       "del",
       "event",
+      "fieldErrors",
       "get",
       "h",
       "js",

@@ -1,6 +1,9 @@
 /** Type-safe primitive custom `data-*` attribute helpers. */
 export { dataAttrs } from "./data-attributes.js"
 export type { DataAttributes } from "./data-attributes.js"
+/** Validation issue mapping for form error signals. */
+export { fieldErrors } from "./form-errors.js"
+export type { FieldErrors, FieldErrorShape } from "./form-errors.js"
 /** Datastar action, signal, expression, and modifier helpers. */
 export * from "./ds/index.js"
 /** SSE event chunk helpers for `reply.stream()`. */

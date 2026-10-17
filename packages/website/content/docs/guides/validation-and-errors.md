@@ -10,7 +10,7 @@ Use `read.validate(request, schema)` at the Datastar boundary. It decodes the Da
 
 ```tsx
 import { z } from "zod"
-import { read, reply, state } from "datastar-kit"
+import { fieldErrors, read, reply, state } from "datastar-kit"
 
 const ContactInput = z.object({
   name: z.string().trim().min(2, "Enter your name"),
@@ -30,16 +30,8 @@ async function submitContact(request: Request): Promise<Response> {
   const result = await read.validate(request, ContactInput)
 
   if (result.issues) {
-    const errorFor = (field: string) =>
-      result.issues.find((issue) => issue.path?.[0] === field)?.message ?? ""
-
     return reply.signals(
-      contact.patch({
-        errors: {
-          name: errorFor("name"),
-          email: errorFor("email")
-        }
-      })
+      contact.patch({ errors: fieldErrors(contact.defaults.errors, result.issues) })
     )
   }
 
@@ -49,6 +41,8 @@ async function submitContact(request: Request): Promise<Response> {
 ```
 
 `result.value` has the schema's output type. Validation failures are returned as `issues` instead of thrown, because they are expected input that usually becomes a UI patch.
+
+`fieldErrors(fields, issues)` maps issues onto an error object shaped like `fields`. Each field gets the message of its first matching issue, and fields without an issue get `""`, so the patch also clears errors the user has fixed. Nested fields match nested issue paths, and issues for other paths are ignored.
 
 `read.validate(request, schema)` still throws when the Datastar payload is malformed or not a JSON object signal tree. Schema validation handles valid JSON with the wrong shape or unacceptable values.
 
