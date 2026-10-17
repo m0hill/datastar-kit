@@ -1,5 +1,5 @@
 import { HTTPException } from "hono/http-exception"
-import { event, read, reply, state, get, mod, patch, post } from "datastar-kit"
+import { fieldErrors, event, read, reply, state, get, mod, patch, post } from "datastar-kit"
 import { z } from "zod"
 import { pageHead, type App } from "../app.js"
 import {
@@ -247,15 +247,8 @@ export const registerIssuePage = (app: App) => {
     const user = c.get("user")
     const parsedComment = commentSchema.safeParse(await read.signals(c.req.raw))
     if (!parsedComment.success) {
-      const { fieldErrors } = z.flattenError(parsedComment.error)
-      return reply.signals(
-        issueState.patch({
-          _validation: {
-            ...issueState.defaults._validation,
-            commentBody: fieldErrors.commentBody?.[0] ?? ""
-          }
-        })
-      )
+      const { errors } = fieldErrors(issueState.defaults._validation, parsedComment.error.issues)
+      return reply.signals(issueState.patch({ _validation: errors }))
     }
 
     await createComment(user, issueId, parsedComment.data.commentBody)
