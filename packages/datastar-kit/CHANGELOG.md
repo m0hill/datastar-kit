@@ -5,6 +5,7 @@
 ### Added
 
 - Added `read.validate(request, schema)`, which decodes Datastar signals and validates them with any [Standard Schema](https://standardschema.dev) validator (Zod, Valibot, ArkType, and others). It returns the schema result with a typed `value` or `issues` instead of throwing on validation failure.
+- Added `reply.remove(selector)` and `event.remove(selector)` for removing elements. They require the selector that Datastar needs for remove patches, which `reply.patch("", { mode: "remove" })` could leave out.
 - Added `readEvents(response, { count })` in the new `datastar-kit/testing` subpath. It decodes Datastar SSE responses into typed `patch-elements` and `patch-signals` events with defaults filled in, skips comments, and cancels long-lived streams after `count` events.
 
 ### Changed

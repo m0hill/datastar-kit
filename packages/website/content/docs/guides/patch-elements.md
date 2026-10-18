@@ -134,16 +134,13 @@ return reply.patch(
 
 ## `remove`: delete an element
 
-Use `remove` with a selector and an empty payload:
+Use `reply.remove(...)`, or `event.remove(...)` inside a stream, with a selector for the elements to delete:
 
 ```tsx
-return reply.patch("", {
-  selector: "#toast-saved",
-  mode: "remove"
-})
+return reply.remove("#toast-saved")
 ```
 
-Datastar Kit sends a patch event without `elements` data:
+The selector is required because Datastar rejects a remove patch without one. Every element that matches it is removed. Datastar Kit sends a patch event without `elements` data:
 
 ```text
 event: datastar-patch-elements

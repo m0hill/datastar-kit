@@ -4,6 +4,8 @@ import * as event from "../src/event.js"
 if (false) {
   // @ts-expect-error Blessed event helpers require a signal-state object.
   event.signals('{"title":""}')
+  // @ts-expect-error Datastar rejects remove patches without a selector.
+  event.remove()
 }
 
 describe("Datastar SSE event helpers", () => {
@@ -14,6 +16,12 @@ describe("Datastar SSE event helpers", () => {
 
     expect(() => event.navigate("javascript:alert(1)", { baseUrl: "https://app.example" })).toThrow(
       event.NavigationUrlError
+    )
+  })
+
+  it("builds element removal events", () => {
+    expect(event.remove("#toast-saved", { id: "rm", useViewTransition: true })).toBe(
+      "event: datastar-patch-elements\nid: rm\ndata: selector #toast-saved\ndata: mode remove\ndata: useViewTransition true\n\n"
     )
   })
 })

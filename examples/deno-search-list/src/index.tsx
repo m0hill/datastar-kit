@@ -158,7 +158,7 @@ const routes: Route[] = [
       }
 
       return reply.stream([
-        event.patch("", { selector: "#empty-state", mode: "remove" }),
+        event.remove("#empty-state"),
         event.patch(<ItemRow item={item} />, { selector: "#item-list", mode: "append" }),
         event.signals(listState.patch({ name: "" }))
       ])

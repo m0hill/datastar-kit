@@ -68,7 +68,7 @@ const routes = new Map<string, Route>([
     async () =>
       reply.stream([
         event.patch(h("ul", { id: "list" }, h("li", {}, "first\nsecond"))),
-        event.patch(null, { selector: "#gone", mode: "remove" }),
+        event.remove("#gone"),
         event.signals({ streamed: { ok: true } }),
         event.script('window.scriptResult = "</script><!--ok"')
       ])

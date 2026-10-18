@@ -28,6 +28,16 @@ describe("reply SSE responses", () => {
     )
   })
 
+  it("serves element removal responses", async () => {
+    const response = reply.remove("#toast-saved", {}, { headers: { "x-remove": "yes" } })
+
+    expect(response.headers.get("x-remove")).toBe("yes")
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
+    expect(await response.text()).toBe(
+      "event: datastar-patch-elements\ndata: selector #toast-saved\ndata: mode remove\n\n"
+    )
+  })
+
   it("streams string and byte chunks", async () => {
     const response = reply.stream([
       "event: first\n\n",

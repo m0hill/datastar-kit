@@ -23,6 +23,13 @@ export type NavigateOptions = ExecuteScriptOptions & NavigationSafetyOptions
 export const patch = (elements: HtmlChild, options?: PatchElementsOptions): string =>
   patchElements(renderToString(elements), options)
 
+/** Options for an element removal event chunk. The selector and mode are set by `remove()`. */
+export type RemoveOptions = Omit<PatchElementsOptions, "selector" | "mode" | "namespace">
+
+/** Encodes one Datastar patch-elements SSE event chunk that removes every element matching `selector`. */
+export const remove = (selector: string, options: RemoveOptions = {}): string =>
+  patchElements(undefined, { ...options, selector, mode: "remove" })
+
 /** Encodes signal state as one Datastar patch-signals SSE event chunk. */
 export const signals = (value: SignalState, options?: PatchSignalsOptions): string =>
   patchSignals(value, options)

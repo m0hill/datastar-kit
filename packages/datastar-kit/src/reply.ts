@@ -258,6 +258,20 @@ export const patch = (
 ): Response => response(event.patch(elements, options), init, 200, sseHeaders)
 
 /**
+ * Creates a Datastar SSE response that removes elements from the browser document.
+ *
+ * @param selector CSS selector for the elements to remove.
+ * @param options Event options such as `id` and view transitions.
+ * @param init Native response options excluding status fields.
+ * @returns A `200` SSE `Response` containing one remove-mode patch-elements event.
+ */
+export const remove = (
+  selector: string,
+  options: event.RemoveOptions = {},
+  init: StreamResponseInit = {}
+): Response => response(event.remove(selector, options), init, 200, sseHeaders)
+
+/**
  * Creates a Datastar SSE signal patch response.
  *
  * @param value Signal state to patch.

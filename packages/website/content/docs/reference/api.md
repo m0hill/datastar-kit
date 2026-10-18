@@ -111,17 +111,18 @@ can declare their result with `js<T>(...)`.
 
 `reply` returns native `Response` objects.
 
-| API                                           | Status         | Use                                                                |
-| --------------------------------------------- | -------------- | ------------------------------------------------------------------ |
-| `reply.page(body, options?, init?)`           | caller-defined | Render a full HTML document.                                       |
-| `reply.patch(elements, options?, init?)`      | `200`          | Return one SSE element patch.                                      |
-| `reply.signals(value, options?, init?)`       | `200`          | Return one SSE signal patch.                                       |
-| `reply.stream(events, options?, init?)`       | `200`          | Return an SSE stream from an iterable or async iterable of chunks. |
-| `reply.done(init?)`                           | `204`          | Complete a command with no body.                                   |
-| `reply.navigate(url, options?, init?)`        | `200`          | Navigate through a safe Datastar direct script response.           |
-| `reply.directHtml(html, options?, init?)`     | `200`          | Direct-response HTML escape hatch.                                 |
-| `reply.directSignals(value, options?, init?)` | `200`          | Direct-response JSON signal escape hatch.                          |
-| `reply.directScript(script, options?, init?)` | `200`          | Trusted direct-response JavaScript escape hatch.                   |
+| API                                           | Status         | Use                                                                 |
+| --------------------------------------------- | -------------- | ------------------------------------------------------------------- |
+| `reply.page(body, options?, init?)`           | caller-defined | Render a full HTML document.                                        |
+| `reply.patch(elements, options?, init?)`      | `200`          | Return one SSE element patch.                                       |
+| `reply.signals(value, options?, init?)`       | `200`          | Return one SSE signal patch.                                        |
+| `reply.remove(selector, options?, init?)`     | `200`          | Return one SSE event that removes the elements matching `selector`. |
+| `reply.stream(events, options?, init?)`       | `200`          | Return an SSE stream from an iterable or async iterable of chunks.  |
+| `reply.done(init?)`                           | `204`          | Complete a command with no body.                                    |
+| `reply.navigate(url, options?, init?)`        | `200`          | Navigate through a safe Datastar direct script response.            |
+| `reply.directHtml(html, options?, init?)`     | `200`          | Direct-response HTML escape hatch.                                  |
+| `reply.directSignals(value, options?, init?)` | `200`          | Direct-response JSON signal escape hatch.                           |
+| `reply.directScript(script, options?, init?)` | `200`          | Trusted direct-response JavaScript escape hatch.                    |
 
 Datastar action response helpers own their protocol status codes, so their native `init` type does not accept `status` or `statusText`. Use `reply.page(...)` or a plain `Response` for ordinary HTTP status semantics.
 
@@ -131,13 +132,14 @@ Datastar action response helpers own their protocol status codes, so their nativ
 
 `event` returns framed SSE chunks for `reply.stream(...)`.
 
-| API                               | Use                                                         |
-| --------------------------------- | ----------------------------------------------------------- |
-| `event.patch(elements, options?)` | Render HTML and encode one `datastar-patch-elements` event. |
-| `event.signals(value, options?)`  | Encode one `datastar-patch-signals` event.                  |
-| `event.navigate(url, options?)`   | Encode a safe navigation event.                             |
-| `event.script(code, options?)`    | Encode trusted JavaScript execution.                        |
-| `event.comment(text?)`            | Encode an SSE comment chunk for manual heartbeats.          |
+| API                                | Use                                                                                       |
+| ---------------------------------- | ----------------------------------------------------------------------------------------- |
+| `event.patch(elements, options?)`  | Render HTML and encode one `datastar-patch-elements` event.                               |
+| `event.remove(selector, options?)` | Encode one `datastar-patch-elements` event that removes the elements matching `selector`. |
+| `event.signals(value, options?)`   | Encode one `datastar-patch-signals` event.                                                |
+| `event.navigate(url, options?)`    | Encode a safe navigation event.                                                           |
+| `event.script(code, options?)`     | Encode trusted JavaScript execution.                                                      |
+| `event.comment(text?)`             | Encode an SSE comment chunk for manual heartbeats.                                        |
 
 Use `event.*` when one response needs multiple events or a long-lived stream.
 
