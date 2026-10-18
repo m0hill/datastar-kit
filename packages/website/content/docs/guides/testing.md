@@ -35,6 +35,38 @@ expect(response.headers.get("content-type")).toBe("text/event-stream")
 expect(await response.text()).toContain("datastar-patch-elements")
 ```
 
+## Reading Datastar events
+
+Searching the raw SSE text passes for the wrong target or patch mode. `readEvents()` from `datastar-kit/testing` decodes the response into one object per event instead, with Datastar's defaults filled in:
+
+```ts
+import { readEvents } from "datastar-kit/testing"
+
+const events = await readEvents(response)
+
+expect(events).toEqual([
+  expect.objectContaining({ type: "patch-elements", selector: "#todos", mode: "inner" }),
+  expect.objectContaining({ type: "patch-signals", signals: { title: "" } })
+])
+```
+
+| Event              | Fields                                                                                                                                                            |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"patch-elements"` | `selector`, `mode` (default `"outer"`), `namespace` (default `"html"`), `useViewTransition`, `viewTransitionSelector`, `elements`, `id`, `retry` (default `1000`) |
+| `"patch-signals"`  | `signals` (parsed JSON), `onlyIfMissing`, `id`, `retry` (default `1000`)                                                                                          |
+
+Comments such as stream heartbeats are skipped. `event.script()` and `event.navigate()` arrive as `"patch-elements"` events that append a `<script>` to `body`, because that is how Datastar sends them.
+
+For long-lived streams, pass `count`. `readEvents()` stops after that many events and cancels the response body, which stops your stream's source:
+
+```ts
+const [first, second] = await readEvents(response, { count: 2 })
+```
+
+Without `count`, `readEvents()` reads until the stream ends, so a stream that never ends never resolves.
+
+`readEvents()` throws a `DatastarEventError` when the response is not `text/event-stream`, contains an event Datastar does not handle, or ends partway through an event. A `reply.done()` response decodes to `[]`.
+
 See `examples/hono-todos` for a complete app with tests that cover the initial HTML page, signal validation errors, element patches, and ordinary `404` responses.
 
 ## What to test

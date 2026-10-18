@@ -159,10 +159,11 @@ wrappers remain limited to built-in Datastar attributes with modifier metadata.
 
 ## Explicit subpaths
 
-| Subpath                        | Use                                                                         |
-| ------------------------------ | --------------------------------------------------------------------------- |
-| `datastar-kit/sse`             | Low-level Datastar SSE encoders and comment chunks for custom integrations. |
-| `datastar-kit/jsx-runtime`     | TypeScript automatic JSX runtime entrypoint.                                |
-| `datastar-kit/jsx-dev-runtime` | TypeScript automatic JSX development runtime entrypoint.                    |
+| Subpath                        | Use                                                                            |
+| ------------------------------ | ------------------------------------------------------------------------------ |
+| `datastar-kit/sse`             | Low-level Datastar SSE encoders and comment chunks for custom integrations.    |
+| `datastar-kit/testing`         | `readEvents()` decodes Datastar SSE responses into events for test assertions. |
+| `datastar-kit/jsx-runtime`     | TypeScript automatic JSX runtime entrypoint.                                   |
+| `datastar-kit/jsx-dev-runtime` | TypeScript automatic JSX development runtime entrypoint.                       |
 
 Related guides: [Actions and responses](../guides/actions-and-responses.md), [Signals](../guides/signals.md), [HTML and JSX](../guides/html-and-jsx.md).

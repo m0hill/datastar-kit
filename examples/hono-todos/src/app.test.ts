@@ -1,3 +1,4 @@
+import { readEvents } from "datastar-kit/testing"
 import type { Hono } from "hono"
 import { describe, expect, it, vi } from "vitest"
 
@@ -38,19 +39,20 @@ describe("Hono todos", () => {
   it("adds a todo by calling the Hono app with a Datastar signal request", async () => {
     const app = await loadApp()
     const response = await app.fetch(datastarPost("/todos", { title: "Write tests" }))
-    const body = await response.text()
 
     expect(response.status).toBe(200)
-    expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(response.headers.get("cache-control")).toBe("no-cache")
-    expect(body).toContain(
-      'event: datastar-patch-signals\ndata: signals {"title":"","errors":{"title":""}}\n\n'
-    )
-    expect(body).toContain("event: datastar-patch-elements")
-    expect(body).toContain('<li id="todo-1" data-completed="false">')
-    expect(body).toContain("Write tests")
-    expect(body).toContain("@post(&quot;/todos/1/toggle&quot;)")
-    expect(body).toContain("1 of 1 remaining")
+
+    const [signals, ...patches] = await readEvents(response)
+    expect(signals).toMatchObject({
+      type: "patch-signals",
+      signals: { title: "", errors: { title: "" } }
+    })
+    const html = patches.map((patch) => patch.type === "patch-elements" && patch.elements).join("")
+    expect(html).toContain('<li id="todo-1" data-completed="false">')
+    expect(html).toContain("Write tests")
+    expect(html).toContain("@post(&quot;/todos/1/toggle&quot;)")
+    expect(html).toContain("1 of 1 remaining")
   })
 
   it("returns signal validation errors without a browser or framework mock", async () => {

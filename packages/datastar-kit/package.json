@@ -32,6 +32,10 @@
       "types": "./dist/sse.d.ts",
       "default": "./dist/sse.js"
     },
+    "./testing": {
+      "types": "./dist/testing.d.ts",
+      "default": "./dist/testing.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
