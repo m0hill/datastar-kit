@@ -23,6 +23,13 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
+  // Datastar's SDK spec (sdk/ADR.md) requires leaving out `retry:` when it is the 1000ms default.
+  it("omits the retry field when it is Datastar's default", () => {
+    expect(patchSignals({ count: 1 }, { retry: 1000 })).toBe(
+      'event: datastar-patch-signals\ndata: signals {"count":1}\n\n'
+    )
+  })
+
   it("encodes scoped view transition selectors only when view transitions are enabled", () => {
     expect(
       patchElements("<div>Merge</div>", {
