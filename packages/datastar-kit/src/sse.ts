@@ -49,7 +49,10 @@ export interface PatchElementsOptions extends SseEventOptions {
   readonly namespace?: PatchElementsNamespace
   /** Whether Datastar should use the View Transition API when applying the patch. */
   readonly useViewTransition?: boolean
-  /** CSS selector for the element whose scoped View Transition API should apply the patch. */
+  /**
+   * CSS selector for the element whose scoped View Transition API should apply the patch. Requires
+   * Datastar 1.0.2 or newer; older runtimes ignore it.
+   */
   readonly viewTransitionSelector?: string
 }
 

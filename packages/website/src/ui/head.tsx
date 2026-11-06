@@ -2,7 +2,7 @@ import { unsafeHtml, type HtmlChild } from "datastar-kit"
 import { SITE_URL } from "../constants"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 
 const FONT_PRELOADS = [
   "/fonts/geist-latin-wght-normal.woff2",

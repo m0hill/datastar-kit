@@ -31,6 +31,15 @@ export interface PageOptions {
   readonly head?: HtmlChild | readonly HtmlChild[]
   /** Optional document title rendered before additional head children. */
   readonly title?: string
+  /**
+   * Per-request CSP nonce rendered as `data-nonce` on the root `<html>` element, which turns on
+   * Datastar's CSP mode so expressions run without `unsafe-eval`. Send a matching
+   * `Content-Security-Policy` `script-src` directive, and generate a new nonce for every page.
+   * Requires Datastar 1.0.3 or newer; older runtimes ignore it.
+   *
+   * @see https://data-star.dev/reference/security#csp-mode
+   */
+  readonly nonce?: string
 }
 
 /**
@@ -156,7 +165,7 @@ const htmlDocument = (body: HtmlChild | readonly HtmlChild[], options: PageOptio
   `<!doctype html>${renderToString(
     h(
       "html",
-      { lang: options.lang ?? "en" },
+      { lang: options.lang ?? "en", "data-nonce": options.nonce },
       h(
         "head",
         {},

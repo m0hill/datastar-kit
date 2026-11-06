@@ -176,7 +176,7 @@ module-augmentation registrations for custom rich attributes.
 import { reply } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 
 const ProjectsPage = (props: { projects: Project[] }) => (
   <main id="page">
@@ -197,6 +197,32 @@ return reply.page(<ProjectsPage projects={projects} />, {
 ```
 
 `title` renders a document `<title>`. `head` accepts one node or an array of nodes.
+
+To run Datastar under a strict Content Security Policy without `unsafe-eval`, pass a per-request `nonce`. It renders as `data-nonce` on `<html>`, which turns on Datastar's [CSP mode](https://data-star.dev/reference/security#csp-mode) (Datastar 1.0.3+). Generate a new random nonce for every full-page response and send it in the `script-src` directive of your `Content-Security-Policy` header. The Datastar `<script>` tag needs the nonce too, unless your policy already allows its origin (for example `'self'` when you host Datastar yourself). Element patches need no nonce:
+
+```tsx
+const nonce = crypto.randomUUID()
+
+return reply.page(
+  <ProjectsPage projects={projects} />,
+  {
+    title: "Projects",
+    nonce,
+    head: (
+      <script
+        type="module"
+        nonce={nonce}
+        src={DATASTAR_RUNTIME}
+      />
+    )
+  },
+  {
+    headers: {
+      "Content-Security-Policy": `script-src 'nonce-${nonce}'`
+    }
+  }
+)
+```
 
 ## Layouts
 

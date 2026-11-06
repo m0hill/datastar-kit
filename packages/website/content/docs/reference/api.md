@@ -39,6 +39,7 @@ The root package exports helpers for action expressions, signal refs, typed sign
 | `post(url, options?)`      | Build `@post(...)`.                                               |
 | `put(url, options?)`       | Build `@put(...)`.                                                |
 | `patch(url, options?)`     | Build `@patch(...)`.                                              |
+| `query(url, options?)`     | Build `@query(...)`. Requires Datastar 1.0.4+.                    |
 | `del(url, options?)`       | Build `@delete(...)`.                                             |
 | `peek(callable)`           | Build `@peek(...)`.                                               |
 | `setAll(value, filter?)`   | Build `@setAll(...)`.                                             |

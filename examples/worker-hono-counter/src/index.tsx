@@ -4,7 +4,7 @@ import { reply, post } from "datastar-kit"
 const app = new Hono()
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 
 let count = 0
 

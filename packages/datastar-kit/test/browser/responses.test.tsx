@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { del, get, js, patch, post, put, signal } from "../../src/ds/index.js"
-import { mount, query, signalValue, text } from "./datastar.js"
+import { del, get, js, patch, post, put, query as queryAction, signal } from "../../src/ds/index.js"
+import { datastarAtLeast, mount, query, signalValue, text } from "./datastar.js"
 
 declare global {
   interface Window {
@@ -30,6 +30,24 @@ describe("Datastar responses", () => {
       await expect.poll(() => signalValue(`echo.${method}`)).toBe(7)
     }
   })
+
+  it.skipIf(!datastarAtLeast("1.0.4"))(
+    "delivers signals to read.signals in the body of a QUERY request",
+    async () => {
+      await mount(
+        <main data-signals={{ count: 7, echo: { query: 0 } }}>
+          <button
+            id="send-query"
+            type="button"
+            data-on:click={queryAction("/fixtures/echo")}
+          />
+        </main>
+      )
+
+      query("#send-query").click()
+      await expect.poll(() => signalValue("echo.query")).toBe(7)
+    }
+  )
 
   it("applies element, removal, signal, and script events from one stream", async () => {
     delete window.scriptResult

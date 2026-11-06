@@ -7,6 +7,7 @@ export {
   peek,
   post,
   put,
+  query,
   queryUrl,
   setAll,
   toggleAll

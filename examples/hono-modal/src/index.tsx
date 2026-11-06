@@ -5,7 +5,7 @@ import { Hono } from "hono"
 import { event, reply, get, js, mod, post, signal } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 
 const openModal = signal<boolean, "modalOpen">("modalOpen")
 const app = new Hono()

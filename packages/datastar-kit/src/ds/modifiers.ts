@@ -30,6 +30,10 @@ export type DatastarModifierOptions = Readonly<{
   delay?: DurationModifier
   document?: boolean
   duration?: DurationModifier
+  /**
+   * Events that sync a `data-bind` element back to its signal. Using it without `prop` requires
+   * Datastar 1.0.1 or newer; on 1.0.0, set both.
+   */
   event?: string | readonly string[]
   exit?: boolean
   full?: boolean
@@ -40,6 +44,10 @@ export type DatastarModifierOptions = Readonly<{
   outside?: boolean
   passive?: boolean
   prevent?: boolean
+  /**
+   * Element property that `data-bind` reads and writes. Using it without `event` requires Datastar
+   * 1.0.1 or newer; on 1.0.0, set both.
+   */
   prop?: string
   self?: boolean
   stop?: boolean

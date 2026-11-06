@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added `query(url, options?)`, which builds Datastar's `@query()` action for HTTP `QUERY` requests with signals in the request body. `read.signals(request)` already reads `QUERY` bodies. Requires Datastar 1.0.4.
+- Added a `nonce` option to `reply.page(...)`. It renders `data-nonce` on `<html>`, which turns on Datastar's CSP mode so pages can run without `unsafe-eval`. Requires Datastar 1.0.3.
+
+### Changed
+
+- Documented support for every Datastar `1.0.x` release, from `1.0.0` to `1.0.4`, with the minimum Datastar version for each feature that needs a newer runtime. The browser tests now run against every Datastar release from 1.0.0 to 1.0.4.
+- Examples and docs now load Datastar `v1.0.4`.
+
 ## 0.6.0 - 2026-10-18
 
 ### Added

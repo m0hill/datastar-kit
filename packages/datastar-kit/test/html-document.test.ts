@@ -3,7 +3,7 @@ import { h } from "../src/html.js"
 import { page } from "../src/reply.js"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 
 describe("HTML document responses", () => {
   it("renders a doctype and basic document shell", async () => {
@@ -21,6 +21,12 @@ describe("HTML document responses", () => {
       }).text()
     ).resolves.toBe(
       `<!doctype html><html lang="en-US"><head><title>Demo</title><script type="module" src="${DATASTAR_RUNTIME}"></script></head><body><main>Datastar</main></body></html>`
+    )
+  })
+
+  it("renders a nonce as data-nonce on the root element for Datastar CSP mode", async () => {
+    await expect(page(h("main", {}, "Hello"), { nonce: "r4nd0m" }).text()).resolves.toBe(
+      '<!doctype html><html lang="en" data-nonce="r4nd0m"><head></head><body><main>Hello</main></body></html>'
     )
   })
 })

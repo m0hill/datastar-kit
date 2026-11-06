@@ -12,7 +12,7 @@ import {
   type DatastarFunction
 } from "../../src/ds/index.js"
 import { mount, query, signalValue } from "./datastar.js"
-import { action as registerAction } from "./vendor/datastar.js"
+import { action as registerAction } from "datastar-runtime"
 
 const inspected = (field: string): unknown => signalValue(`inspected.${field}`)
 

@@ -29,12 +29,19 @@ The browser stays light. Datastar handles events, requests, signals, and DOM pat
 npm i datastar-kit
 ```
 
-Datastar Kit does not bundle, install, or serve the Datastar browser runtime. This release is written and tested against Datastar `v1.0.2`; use a pinned CDN URL or a self-hosted compatible copy.
+Datastar Kit does not bundle, install, or serve the Datastar browser runtime. Datastar Kit works with every Datastar `1.0.x` release, from `v1.0.0` to `v1.0.4`, and its browser tests run against each one. Use a pinned runtime URL or a self-hosted copy. A few features need a newer runtime:
+
+| Feature                                                                                      | Needs Datastar |
+| -------------------------------------------------------------------------------------------- | -------------- |
+| `data-bind` with only `prop` or only `event` set in `mod(...)` (on 1.0.0, set both together) | `1.0.1`        |
+| `viewTransitionSelector` on element patches (older runtimes ignore it)                       | `1.0.2`        |
+| `reply.page(..., { nonce })` for Datastar's CSP mode (older runtimes ignore it)              | `1.0.3`        |
+| `query(url)` for `@query()` requests                                                         | `1.0.4`        |
 
 ```html
 <script
   type="module"
-  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
+  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 ></script>
 ```
 
@@ -57,7 +64,7 @@ This is a complete counter in one fetch-compatible handler:
 import { post, reply } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.2/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
 
 let count = 0
 

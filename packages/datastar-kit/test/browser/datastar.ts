@@ -1,5 +1,5 @@
 import { h, renderToString, type HtmlChild } from "../../src/html.js"
-import { getPath } from "./vendor/datastar.js"
+import { getPath } from "datastar-runtime"
 
 /** Reads a signal from the running Datastar instance. */
 export const signalValue = (path: string): unknown => getPath(path)
@@ -37,4 +37,20 @@ export const typeInto = (selector: string, value: string, eventName = "input"): 
   if (!(input instanceof HTMLInputElement)) throw new Error(`Not an input: ${selector}`)
   input.value = value
   input.dispatchEvent(new Event(eventName, { bubbles: true }))
+}
+
+const versionParts = (version: string): number[] => version.split(".").map(Number)
+
+/**
+ * Whether the Datastar runtime under test is at least `version`. Use it with `it.skipIf` for
+ * features that only newer Datastar releases support.
+ */
+export const datastarAtLeast = (version: string): boolean => {
+  const current = versionParts(__DATASTAR_VERSION__)
+  const minimum = versionParts(version)
+  for (let index = 0; index < minimum.length; index += 1) {
+    const difference = (current[index] ?? 0) - (minimum[index] ?? 0)
+    if (difference !== 0) return difference > 0
+  }
+  return true
 }

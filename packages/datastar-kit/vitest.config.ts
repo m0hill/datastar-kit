@@ -5,6 +5,10 @@ import { browserFixtureEndpoints } from "./test/browser/fixture-server.js"
 
 const fromRoot = (path: string): string => fileURLToPath(new URL(path, import.meta.url))
 
+// Browser tests run once per supported Datastar release. Add a release by vendoring its bundle as
+// `test/browser/vendor/datastar-<version>.js` and listing its version here.
+const datastarVersions = ["1.0.0", "1.0.1", "1.0.2", "1.0.3", "1.0.4"] as const
+
 export default defineConfig({
   resolve: {
     alias: [
@@ -26,20 +30,29 @@ export default defineConfig({
           exclude: ["test/browser/**", "dist/**", "node_modules/**"]
         }
       },
-      {
-        extends: true,
+      ...datastarVersions.map((version) => ({
+        extends: true as const,
         plugins: [browserFixtureEndpoints],
+        define: { __DATASTAR_VERSION__: JSON.stringify(version) },
+        resolve: {
+          alias: [
+            {
+              find: "datastar-runtime",
+              replacement: fromRoot(`./test/browser/vendor/datastar-${version}.js`)
+            }
+          ]
+        },
         test: {
-          name: "browser",
+          name: `browser (datastar ${version})`,
           include: ["test/browser/**/*.test.{ts,tsx}"],
           browser: {
             enabled: true,
             headless: true,
             provider: playwright(),
-            instances: [{ browser: "chromium" }]
+            instances: [{ browser: "chromium" as const }]
           }
         }
-      }
+      }))
     ]
   }
 })

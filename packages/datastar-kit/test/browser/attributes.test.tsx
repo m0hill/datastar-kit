@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { js, local, mod, regex, signal, state } from "../../src/ds/index.js"
-import { mount, query, signalValue, text, typeInto } from "./datastar.js"
+import { datastarAtLeast, mount, query, signalValue, text, typeInto } from "./datastar.js"
 
 // Real Datastar applying attributes rendered by the JSX runtime. Each test uses its own signal
 // names because Datastar's signal store lives for the whole test file.
@@ -100,13 +100,12 @@ describe("Datastar attributes rendered by JSX", () => {
     expect(panel.style.backgroundColor).toBe("red")
   })
 
-  it("binds signal refs, keyed names, custom events, and custom properties", async () => {
+  it("binds signal refs, keyed names, and custom properties", async () => {
     const query_ = signal<string, "search">("search")
-    const draft = signal<string, "draft">("draft")
     const expanded = signal<boolean, "expanded">("expanded")
 
     await mount(
-      <main data-signals={{ search: "", draft: "", expanded: false }}>
+      <main data-signals={{ search: "", expanded: false }}>
         <input
           id="search"
           data-bind={query_}
@@ -118,10 +117,6 @@ describe("Datastar attributes rendered by JSX", () => {
         <input
           id="last-name"
           data-bind:last-name={mod({ case: "snake" })}
-        />
-        <input
-          id="draft"
-          data-bind={mod(draft, { event: "change" })}
         />
         <details
           id="details"
@@ -139,14 +134,31 @@ describe("Datastar attributes rendered by JSX", () => {
     expect(signalValue("firstName")).toBe("Ada")
     expect(signalValue("last_name")).toBe("Lovelace")
 
-    typeInto("#draft", "typed", "input")
-    expect(signalValue("draft")).toBe("")
-    typeInto("#draft", "committed", "change")
-    expect(signalValue("draft")).toBe("committed")
-
     query("#details").setAttribute("open", "")
     await expect.poll(() => signalValue("expanded")).toBe(true)
   })
+
+  // Datastar 1.0.0 requires `__event` and `__prop` together on data-bind.
+  it.skipIf(!datastarAtLeast("1.0.1"))(
+    "binds through a custom event without a custom property",
+    async () => {
+      const draft = signal<string, "draft">("draft")
+
+      await mount(
+        <main data-signals={{ draft: "" }}>
+          <input
+            id="draft"
+            data-bind={mod(draft, { event: "change" })}
+          />
+        </main>
+      )
+
+      typeInto("#draft", "typed", "input")
+      expect(signalValue("draft")).toBe("")
+      typeInto("#draft", "committed", "change")
+      expect(signalValue("draft")).toBe("committed")
+    }
+  )
 
   it("stores element refs and derives computed signals", async () => {
     const count = signal<number, "count">("count")

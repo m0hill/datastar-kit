@@ -103,7 +103,7 @@ const querySeparator = (path: string): string => {
 }
 
 const fetchAction = (
-  method: "get" | "post" | "put" | "patch" | "delete",
+  method: "get" | "post" | "put" | "patch" | "query" | "delete",
   url: ExprInput<string>,
   options?: FetchActionOptions
 ): Expr<void> => {
@@ -175,6 +175,15 @@ export const put = (url: ExprInput<string>, options?: FetchActionOptions): Expr<
 /** Creates a Datastar `@patch()` action expression. @see https://data-star.dev/reference/actions#patch */
 export const patch = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> =>
   fetchAction("patch", url, options)
+
+/**
+ * Creates a Datastar `@query()` action expression, which sends an HTTP `QUERY` request with the
+ * signals in the request body. Requires Datastar 1.0.4 or newer.
+ *
+ * @see https://data-star.dev/reference/actions#query
+ */
+export const query = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> =>
+  fetchAction("query", url, options)
 
 /** Creates a Datastar `@delete()` action expression. @see https://data-star.dev/reference/actions#delete */
 export const del = (url: ExprInput<string>, options?: FetchActionOptions): Expr<void> =>
