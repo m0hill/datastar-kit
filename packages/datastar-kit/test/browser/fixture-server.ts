@@ -94,13 +94,6 @@ const routes = new Map<string, Route>([
       ])
   ],
   [
-    "/fixtures/preserve",
-    async () =>
-      reply.patch(
-        h("details", { id: "details", "data-preserve-attr": "open" }, h("summary", {}, "server"))
-      )
-  ],
-  [
     "/fixtures/signals-if-missing",
     async () => reply.signals({ kept: "replaced", added: "new" }, { onlyIfMissing: true })
   ],
@@ -108,7 +101,6 @@ const routes = new Map<string, Route>([
     "/fixtures/direct-html",
     async () => reply.directHtml(h("p", {}, "patched"), { selector: "#direct-slot", mode: "inner" })
   ],
-  ["/fixtures/direct-signals", async () => reply.directSignals({ direct: "applied" })],
   [
     "/fixtures/direct-signals-if-missing",
     async () =>

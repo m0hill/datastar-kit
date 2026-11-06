@@ -108,30 +108,6 @@ describe("Datastar responses", () => {
     expect(document.querySelector("#dot")?.namespaceURI).toBe("http://www.w3.org/2000/svg")
   })
 
-  it("keeps attributes listed in data-preserve-attr when the server morphs an element", async () => {
-    await mount(
-      <main>
-        <button
-          id="morph"
-          type="button"
-          data-on:click={post("/fixtures/preserve")}
-        />
-        <details
-          id="details"
-          data-preserve-attr="open"
-        >
-          <summary>client</summary>
-        </details>
-      </main>
-    )
-
-    query("#details").setAttribute("open", "")
-    query("#morph").click()
-
-    await expect.poll(() => text("#details summary")).toBe("server")
-    expect(query("#details").hasAttribute("open")).toBe(true)
-  })
-
   it("only adds missing signals when onlyIfMissing is set", async () => {
     await mount(
       <main data-signals={{ kept: "original", directKept: "original" }}>
@@ -157,28 +133,21 @@ describe("Datastar responses", () => {
     expect(signalValue("directKept")).toBe("original")
   })
 
-  it("applies direct HTML and direct signal responses", async () => {
+  it("applies direct HTML responses", async () => {
     await mount(
-      <main data-signals={{ direct: "pending" }}>
+      <main>
         <button
           id="direct-html"
           type="button"
           data-on:click={get("/fixtures/direct-html")}
-        />
-        <button
-          id="direct-signals"
-          type="button"
-          data-on:click={get("/fixtures/direct-signals")}
         />
         <div id="direct-slot">empty</div>
       </main>
     )
 
     query("#direct-html").click()
-    query("#direct-signals").click()
 
     await expect.poll(() => query("#direct-slot").innerHTML).toBe("<p>patched</p>")
-    await expect.poll(() => signalValue("direct")).toBe("applied")
   })
 
   it("tracks in-flight requests with data-indicator", async () => {

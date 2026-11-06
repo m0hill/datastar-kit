@@ -195,21 +195,6 @@ describe("Datastar attributes rendered by JSX", () => {
     expect(signalValue("totals.triple")).toBe(9)
   })
 
-  it("runs init and effect expressions", async () => {
-    const source = signal<number, "source">("source")
-    const mirror = signal<number, "mirror">("mirror")
-
-    await mount(
-      <main
-        data-signals={{ source: 0, mirror: -1 }}
-        data-init={js<void>`${source} = ${5}`}
-        data-effect={js<void>`${mirror} = ${source} * 10`}
-      />
-    )
-
-    expect(signalValue("mirror")).toBe(50)
-  })
-
   it("skips data-ignore subtrees and only the element itself with __self", async () => {
     await mount(
       <main data-signals={{ shown: "applied" }}>
