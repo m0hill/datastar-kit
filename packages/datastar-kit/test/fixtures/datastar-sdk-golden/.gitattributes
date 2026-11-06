@@ -1,0 +1,2 @@
+# Unmodified Datastar files: SSE output ends with a blank line, and some cases test trailing spaces.
+* -whitespace

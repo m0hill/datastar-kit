@@ -18,6 +18,7 @@
   "ignorePatterns": [
     "node_modules/**",
     "packages/datastar-kit/test/browser/vendor/**",
+    "packages/datastar-kit/test/fixtures/datastar-sdk-golden/**",
     "dist/**",
     "coverage/**",
     ".pi-cache/**",
