@@ -76,6 +76,13 @@ type SseChunkInput = string | Uint8Array
  */
 export type SseStreamInput = Iterable<SseChunkInput> | AsyncIterable<SseChunkInput>
 
+/**
+ * Builds the event source from a signal that aborts when the client disconnects. A source that
+ * waits between events, such as an async generator awaiting the next update, can watch the
+ * signal to stop waiting.
+ */
+export type SseStreamSource = (signal: AbortSignal) => SseStreamInput
+
 const textEncoder = new TextEncoder()
 type Timer = ReturnType<typeof setTimeout>
 
@@ -131,12 +138,15 @@ const encodeChunk = (chunk: SseChunkInput): Uint8Array =>
   chunk instanceof Uint8Array ? chunk : textEncoder.encode(chunk)
 
 const readableStreamFrom = (
-  source: SseStreamInput,
+  events: SseStreamInput | SseStreamSource,
   heartbeat?: SseHeartbeatOptions
 ): ReadableStream<Uint8Array> => {
-  const iterator = (async function* () {
-    yield* source
-  })()
+  const disconnected = new AbortController()
+  const source = typeof events === "function" ? events(disconnected.signal) : events
+  // The source's own iterator, not a wrapping generator: a generator queues return() behind a
+  // pending next(), so an idle source would not hear about the disconnect until its next event.
+  const iterator =
+    Symbol.asyncIterator in source ? source[Symbol.asyncIterator]() : source[Symbol.iterator]()
   let closed = false
   let started = false
   let initial: Timer | undefined
@@ -180,6 +190,7 @@ const readableStreamFrom = (
     },
     cancel() {
       cleanup()
+      disconnected.abort()
       void iterator.return?.()
     }
   })
@@ -248,13 +259,25 @@ export const signals = (
 /**
  * Creates a Datastar SSE stream response from event chunks.
  *
- * @param events Event chunks, iterables, async iterables, or a readable stream.
+ * When the client disconnects, the source's iterator is returned, so a generator's `finally` runs
+ * and a custom iterator's `return()` is called. A generator waiting for its next event cannot be
+ * stopped from outside, so pass a function to receive a signal that aborts on disconnect.
+ *
+ * @example
+ * ```ts
+ * reply.stream(async function* (signal) {
+ *   for await (const todos of updates.subscribe(signal)) yield event.patch(<TodoList todos={todos} />)
+ * })
+ * ```
+ *
+ * @param events Event chunks, iterables, async iterables, a readable stream, or a function that
+ *   builds one from a signal that aborts when the client disconnects.
  * @param options SSE stream options.
  * @param init Native response options excluding status fields.
  * @returns A `200` SSE streaming `Response`.
  */
 export const stream = (
-  events: SseStreamInput,
+  events: SseStreamInput | SseStreamSource,
   options: SseStreamOptions = {},
   init: StreamResponseInit = {}
 ): Response => sseResponse(readableStreamFrom(events, options.heartbeat), init)

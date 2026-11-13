@@ -48,16 +48,16 @@ app.get("/", () =>
   })
 )
 
-app.get("/live", (c) => {
-  async function* stream() {
+app.get("/live", () => {
+  async function* stream(signal: AbortSignal) {
     yield event.patch(<Count />)
 
-    for await (const _ of invalidations.subscribe(c.req.raw.signal)) {
+    for await (const _ of invalidations.subscribe(signal)) {
       yield event.patch(<Count />)
     }
   }
 
-  return reply.stream(stream(), {
+  return reply.stream(stream, {
     heartbeat: { intervalMs: 15_000, comment: "live-counter" }
   })
 })

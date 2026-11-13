@@ -83,6 +83,50 @@ describe("reply SSE responses", () => {
     await expect(cleanup).resolves.toBeUndefined()
   })
 
+  it("returns a custom iterator that is waiting for its next event when the client cancels", async () => {
+    let returned: () => void = () => undefined
+    const stopped = new Promise<void>((resolve) => {
+      returned = resolve
+    })
+    const subscription: AsyncIterable<string> = {
+      [Symbol.asyncIterator]: () => ({
+        next: () => new Promise<never>(() => {}),
+        return: async () => {
+          returned()
+          return { done: true, value: undefined }
+        }
+      })
+    }
+
+    const reader = reply.stream(subscription).body!.getReader()
+    void reader.read()
+    await reader.cancel()
+
+    await expect(stopped).resolves.toBeUndefined()
+  })
+
+  it("aborts the source's signal when the client cancels, so a waiting generator can stop", async () => {
+    let cleanedUp: () => void = () => undefined
+    const cleanup = new Promise<void>((resolve) => {
+      cleanedUp = resolve
+    })
+    const response = reply.stream(async function* (signal) {
+      try {
+        yield "event: first\n\n"
+        await new Promise((resolve) => signal.addEventListener("abort", resolve))
+      } finally {
+        cleanedUp()
+      }
+    })
+
+    const reader = response.body!.getReader()
+    await reader.read()
+    void reader.read()
+    await reader.cancel()
+
+    await expect(cleanup).resolves.toBeUndefined()
+  })
+
   it("starts heartbeats once the stream is read and stops them on cancel", async () => {
     vi.useFakeTimers()
     async function* events() {

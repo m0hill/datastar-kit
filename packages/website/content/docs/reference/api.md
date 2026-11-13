@@ -113,15 +113,15 @@ can declare their result with `js<T>(...)`.
 
 `reply` returns native `Response` objects.
 
-| API                                       | Status         | Use                                                                 |
-| ----------------------------------------- | -------------- | ------------------------------------------------------------------- |
-| `reply.page(body, options?, init?)`       | caller-defined | Render a full HTML document.                                        |
-| `reply.patch(elements, options?, init?)`  | `200`          | Return one SSE element patch.                                       |
-| `reply.signals(value, options?, init?)`   | `200`          | Return one SSE signal patch.                                        |
-| `reply.remove(selector, options?, init?)` | `200`          | Return one SSE event that removes the elements matching `selector`. |
-| `reply.stream(events, options?, init?)`   | `200`          | Return an SSE stream from an iterable or async iterable of chunks.  |
-| `reply.done(init?)`                       | `204`          | Complete a command with no body.                                    |
-| `reply.navigate(url, options?, init?)`    | `200`          | Return one SSE event that safely navigates the browser.             |
+| API                                       | Status         | Use                                                                                                                               |
+| ----------------------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `reply.page(body, options?, init?)`       | caller-defined | Render a full HTML document.                                                                                                      |
+| `reply.patch(elements, options?, init?)`  | `200`          | Return one SSE element patch.                                                                                                     |
+| `reply.signals(value, options?, init?)`   | `200`          | Return one SSE signal patch.                                                                                                      |
+| `reply.remove(selector, options?, init?)` | `200`          | Return one SSE event that removes the elements matching `selector`.                                                               |
+| `reply.stream(events, options?, init?)`   | `200`          | Return an SSE stream from an iterable or async iterable of chunks, or a function that builds one from a disconnect `AbortSignal`. |
+| `reply.done(init?)`                       | `204`          | Complete a command with no body.                                                                                                  |
+| `reply.navigate(url, options?, init?)`    | `200`          | Return one SSE event that safely navigates the browser.                                                                           |
 
 Datastar action response helpers own their protocol status codes, so their native `init` type does not accept `status` or `statusText`. Use `reply.page(...)` or a plain `Response` for ordinary HTTP status semantics.
 

@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `reply.stream(...)` accepts a function that builds the event source from an `AbortSignal`. The signal aborts when the client disconnects, on every runtime, so a generator waiting for its next event can stop instead of waiting forever.
+
+### Fixed
+
+- When a client disconnects from `reply.stream(...)` while the source is waiting for its next event, a custom async iterator's `return()` is now called right away. Before, it ran only after the next event arrived, so a quiet subscription could stay open indefinitely.
+
 ## 0.7.0 - 2026-11-14
 
 ### Added

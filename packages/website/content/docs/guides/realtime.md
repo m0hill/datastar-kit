@@ -5,18 +5,18 @@ Realtime is one of the smallest things you do with Datastar Kit. There is no soc
 ```tsx
 import { event, reply } from "datastar-kit"
 
-async function* todoEvents() {
+async function* todoEvents(signal: AbortSignal) {
   yield event.patch(<TodoList todos={await todos.all()} />)
 
-  for await (const _ of todos.changes()) {
+  for await (const _ of todos.changes(signal)) {
     yield event.patch(<TodoList todos={await todos.all()} />)
   }
 }
 
-app.get("/todos/live", (c) => reply.stream(todoEvents()))
+app.get("/todos/live", () => reply.stream(todoEvents))
 ```
 
-`reply.stream(...)` takes the iterable, so call the generator (`todoEvents()`) rather than passing the function. Point the page at the route with `data-on:load`:
+`reply.stream(...)` calls `todoEvents` with a signal that aborts when the browser disconnects, so the subscription ends with the connection. Point the page at the route with `data-on:load`:
 
 ```tsx
 import { get } from "datastar-kit"
@@ -47,15 +47,15 @@ A stream sends the current view on connect, then a fresh view on every change. I
 | Stream response     | Sends `event.patch(...)` chunks through `reply.stream(...)`. |
 
 ```tsx
-async function* todoEvents(userId: string) {
+async function* todoEvents(userId: string, signal: AbortSignal) {
   yield event.patch(<TodoList todos={await todos.forUser(userId)} />)
 
-  for await (const _ of todoInvalidations.forUser(userId)) {
+  for await (const _ of todoInvalidations.forUser(userId, signal)) {
     yield event.patch(<TodoList todos={await todos.forUser(userId)} />)
   }
 }
 
-return reply.stream(todoEvents(user.id), {
+return reply.stream((signal) => todoEvents(user.id, signal), {
   heartbeat: { intervalMs: 15_000, comment: "todos" }
 })
 ```
@@ -116,9 +116,17 @@ Heartbeats are response behavior, so they live on `reply.stream(...)` options in
 
 ## Cancellation
 
-When your framework exposes a request `AbortSignal`, connect it to the subscription or stream source so disconnected clients do not leave subscribers running.
+When the browser disconnects, `reply.stream(...)` stops the source: a generator's `finally` block runs, and a custom async iterator's `return()` is called.
 
-The exact wiring depends on the runtime. The important part is ownership: Datastar Kit writes the SSE response; your app owns the lifetime of database, broker, or in-memory subscriptions.
+A generator that is waiting for its next event cannot be stopped from outside; it only notices once that event arrives, which for a quiet subscription may be never. Pass a function instead of an iterable, and `reply.stream(...)` calls it with an `AbortSignal` that aborts on disconnect. Hand that signal to whatever the generator waits on:
+
+```ts
+reply.stream((signal) => todoEvents(user.id, signal))
+```
+
+This signal works the same on every runtime. A request's own `signal` does not always abort when the client leaves, depending on the runtime and framework.
+
+Datastar Kit writes the SSE response; your app owns the lifetime of database, broker, or in-memory subscriptions.
 
 ## Deployment
 
