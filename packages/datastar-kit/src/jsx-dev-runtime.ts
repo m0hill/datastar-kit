@@ -1,5 +1,5 @@
 import type { HtmlChild } from "./html.js"
-import { createJsxElement, Fragment, type JsxInput, type JsxTag } from "./jsx.js"
+import { buildElement, Fragment, type JsxInput, type JsxTag } from "./element.js"
 
 /**
  * Compiler-only JSX fragment export for the automatic development JSX runtime.
@@ -28,4 +28,4 @@ export const jsxDEV = (
   _isStaticChildren?: boolean,
   _source?: unknown,
   _self?: unknown
-): HtmlChild => createJsxElement(tag, input)
+): HtmlChild => buildElement(tag, input)

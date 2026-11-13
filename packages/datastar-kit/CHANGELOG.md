@@ -4,6 +4,8 @@
 
 ### Added
 
+- Added first-class function views: `h.<tag>(props, ...children)` for every HTML and SVG tag, `h(Component, props, ...children)` for components, and `h("my-element", props, ...children)` for custom elements and dynamic tags. `h()` and JSX share one element core, so props are typed by the same element types (including `CustomJsxAttributes` and `CustomJsxElements` registrations) and render identical HTML. Because props are object literals, `h()` also rejects misspelled attributes that JSX accepts. `Fragment`, `ElementFactory`, and `IntrinsicElementProps` are exported from the root.
+
 - Exported `HtmlNameError` from the root and `SseFieldError` from `event` and `reply`, so callers can catch the errors these helpers throw with `instanceof`.
 
 - Added `query(url, options?)`, which builds Datastar's `@query()` action for HTTP `QUERY` requests with signals in the request body. `read.signals(request)` already reads `QUERY` bodies. Requires Datastar 1.0.4.
@@ -19,6 +21,8 @@
 - `readEvents` reads a field line without a colon as a field with an empty value, as the SSE spec does, and reports invalid signal JSON as a `DatastarEventError`.
 
 ### Changed
+
+- `h(tag, props, ...children)` now type-checks props against the element's attributes and normalizes Datastar values like JSX does. Before, it took only primitive props and rendered `mod(...)` and objects as `[object Object]`, signal refs in `data-bind` as `$name`, and `className` as a literal attribute. Arbitrary `data-*` props now go through `...dataAttrs({...})`, as in JSX.
 
 - Documented support for every Datastar `1.0.x` release, from `1.0.0` to `1.0.4`, with the minimum Datastar version for each feature that needs a newer runtime. The browser tests now run against every Datastar release from 1.0.0 to 1.0.4.
 - Examples and docs now load Datastar `v1.0.4`.

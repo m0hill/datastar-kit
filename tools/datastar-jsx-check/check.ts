@@ -1,5 +1,5 @@
 import ts from "typescript"
-import { compilerProps } from "../../packages/datastar-kit/src/jsx.js"
+import { compilerProps } from "../../packages/datastar-kit/src/element.js"
 import { closestName, inspectDatastarAttributeName } from "./attribute-name.js"
 
 /** Stable diagnostic identifiers produced by the Datastar JSX checker. */

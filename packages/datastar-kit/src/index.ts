@@ -18,10 +18,19 @@ export type {
   HtmlVoidGlobalAttributes,
   SvgElementAttributes
 } from "./html-attributes.js"
-export { h, HtmlNameError, renderToString, unsafeHtml } from "./html.js"
+export { Fragment, h } from "./element.js"
+export type { ElementFactory, ElementTagFunctions } from "./element.js"
+export { HtmlNameError, renderToString, unsafeHtml } from "./html.js"
 export type { HtmlChild, HtmlNode, HtmlProps, HtmlPropValue } from "./html.js"
-/** @internal Compiler-only factory for an element whose `key` follows a spread. */
-export { createElement } from "./jsx.js"
-export type { JsxProps } from "./jsx.js"
-export type { CustomJsxAttributes, CustomJsxElements } from "./jsx-runtime.js"
+/**
+ * @internal The classic factory TypeScript and esbuild import for a JSX element whose `key`
+ * follows a spread. It is `h()`.
+ */
+export { h as createElement } from "./element.js"
+export type { JsxProps } from "./element.js"
+export type {
+  CustomJsxAttributes,
+  CustomJsxElements,
+  IntrinsicElementProps
+} from "./jsx-runtime.js"
 export type { SignalState, SignalValue } from "./types.js"

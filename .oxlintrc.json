@@ -93,7 +93,7 @@
     },
     {
       "files": [
-        "packages/datastar-kit/src/jsx.ts",
+        "packages/datastar-kit/src/element.ts",
         "packages/datastar-kit/src/jsx-runtime.ts",
         "packages/datastar-kit/src/jsx-dev-runtime.ts",
         "packages/datastar-kit/src/ds/modifier-rendering.ts"
@@ -109,7 +109,7 @@
         "packages/datastar-kit/src/ds/modifiers.ts",
         "packages/datastar-kit/src/ds/modifier-rendering.ts",
         "packages/datastar-kit/src/html.ts",
-        "packages/datastar-kit/src/jsx.ts",
+        "packages/datastar-kit/src/element.ts",
         "packages/datastar-kit/src/sse.ts",
         "packages/datastar-kit/src/ds/state.ts"
       ],

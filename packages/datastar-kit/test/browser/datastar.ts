@@ -1,4 +1,5 @@
-import { h, renderToString, type HtmlChild } from "../../src/html.js"
+import { h } from "../../src/element.js"
+import { renderToString, type HtmlChild } from "../../src/html.js"
 import { getPath } from "datastar-runtime"
 
 /** Reads a signal from the running Datastar instance. */

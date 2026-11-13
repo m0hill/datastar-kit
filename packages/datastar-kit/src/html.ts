@@ -29,7 +29,7 @@ export type HtmlChild =
   | readonly HtmlChild[]
 
 /**
- * A lightweight HTML element node used by the JSX runtime and `h()` factory.
+ * A lightweight HTML element node built by `h()` and JSX.
  */
 export interface HtmlNode {
   /** The HTML tag name to render. */
@@ -184,14 +184,12 @@ export const renderHtmlAttributes = (props: HtmlProps): string => {
 }
 
 /**
- * Creates a lightweight HTML element node without using JSX.
+ * Builds an HTML node from already-normalized attributes. Application code uses `h()` or JSX,
+ * which type-check props and normalize Datastar values first.
  *
- * @param tag The HTML tag name to render.
- * @param props Attributes rendered on the element.
- * @param children Child nodes rendered inside the element.
- * @returns An HTML node that can be passed to `renderToString()` or response helpers.
+ * @internal
  */
-export const h = (
+export const htmlNode = (
   tag: string,
   props: HtmlProps = {},
   ...children: readonly HtmlChild[]

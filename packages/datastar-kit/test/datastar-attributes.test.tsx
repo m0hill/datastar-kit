@@ -30,10 +30,10 @@ describe("Datastar attribute rendering", () => {
 
   it("rejects expressions and objects on non-data attributes", () => {
     expect(() => runtimeJsx("output", { id: signal<number>("count") })).toThrow(
-      'Unsupported JSX prop value for "id"'
+      'Unsupported prop value for "id"'
     )
     expect(() => runtimeJsx("div", { title: { text: "Hi" } })).toThrow(
-      'Unsupported JSX prop value for "title"'
+      'Unsupported prop value for "title"'
     )
   })
 })

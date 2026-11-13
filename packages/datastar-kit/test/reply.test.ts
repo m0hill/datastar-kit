@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import * as event from "../src/event.js"
-import { h } from "../src/html.js"
+import { h } from "../src/element.js"
 import * as reply from "../src/reply.js"
 
 if (false) {

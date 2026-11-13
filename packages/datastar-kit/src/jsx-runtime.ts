@@ -2,7 +2,7 @@ import type { DatastarAttributeValue } from "./ds/attribute-types.js"
 import type { DatastarModifiedValue } from "./ds/modifiers.js"
 import type { HtmlElements, HtmlGlobalAttributes } from "./html-attributes.js"
 import type { HtmlChild, HtmlPropValue } from "./html.js"
-import { createJsxElement, type JsxInput, type JsxProps, type JsxTag } from "./jsx.js"
+import { buildElement, type JsxInput, type JsxProps, type JsxTag } from "./element.js"
 
 /**
  * Application-registered attributes accepted by every known JSX intrinsic element.
@@ -51,11 +51,24 @@ type RegisteredCustomElements = {
 }
 
 /**
+ * Props for every intrinsic element, shared by `h()` and JSX.
+ *
+ * Known HTML and SVG tags get typed attributes and editor autocomplete. Unregistered custom
+ * element names must contain a hyphen and retain loose props. Augment {@link CustomJsxElements}
+ * to give a custom element exact element-specific, global HTML, ARIA, and Datastar props.
+ */
+export interface IntrinsicElementProps extends KnownIntrinsicElements, RegisteredCustomElements {
+  [tagName: `${string}-${string}`]:
+    | JsxProps
+    | RegisteredCustomElements[keyof RegisteredCustomElements]
+}
+
+/**
  * Compiler-only JSX fragment export for the automatic JSX runtime.
  *
  * @internal
  */
-export { Fragment } from "./jsx.js"
+export { Fragment } from "./element.js"
 
 /**
  * Compiler-only entrypoint for TypeScript's automatic JSX runtime.
@@ -67,7 +80,7 @@ export { Fragment } from "./jsx.js"
  * @returns A Datastar Kit HTML node or fragment.
  */
 export const jsx = (tag: JsxTag, input: JsxInput | null, _key?: string | number): HtmlChild =>
-  createJsxElement(tag, input)
+  buildElement(tag, input)
 
 /**
  * Compiler-only entrypoint for JSX calls with static children.
@@ -99,9 +112,5 @@ export namespace JSX {
    * element names must contain a hyphen and retain loose props. Augment {@link CustomJsxElements}
    * to give a custom element exact element-specific, global HTML, ARIA, and Datastar props.
    */
-  export interface IntrinsicElements extends KnownIntrinsicElements, RegisteredCustomElements {
-    [tagName: `${string}-${string}`]:
-      | JsxProps
-      | RegisteredCustomElements[keyof RegisteredCustomElements]
-  }
+  export interface IntrinsicElements extends IntrinsicElementProps {}
 }

@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http"
 import type { Plugin } from "vitest/config"
 import * as event from "../../src/event.js"
-import { h } from "../../src/html.js"
+import { h } from "../../src/element.js"
 import * as read from "../../src/read.js"
 import * as reply from "../../src/reply.js"
 

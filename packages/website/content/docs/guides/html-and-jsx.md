@@ -1,8 +1,13 @@
-# HTML and JSX
+# HTML, JSX, and h()
 
-Datastar Kit renders HTML on the server. TSX is an authoring convenience over a small HTML node model; it is not a browser component runtime, virtual DOM, or hydration system.
+Datastar Kit renders HTML on the server. Write views in TSX or with plain `h()` function calls: both are first-class, go through the same element core, and render identical HTML. Neither is a browser component runtime, virtual DOM, or hydration system.
 
-Use TSX for application views. Use the low-level HTML helpers when you are writing tests, generators, or non-JSX code.
+| Write views with | When                                                                                                                |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+| TSX              | You like markup-shaped code, or your framework (Hono, Elysia) already uses JSX.                                     |
+| `h()`            | You want plain `.ts` files with no JSX setup, props you can build and spread as objects, or stricter typo checking. |
+
+You can mix them freely: a TSX component can render an `h()` tree, and the other way around.
 
 ## Setup
 
@@ -36,10 +41,51 @@ const html = renderToString(<SaveButton />)
 
 View functions receive data and return HTML. Load data in handlers or route loaders before rendering.
 
+## Function views with h()
+
+`h()` needs no compiler setup. Call `h.<tag>(props, ...children)` for HTML and SVG tags,
+`h(Component, props, ...children)` for components, and `h("my-element", props, ...children)` for
+custom elements or a tag chosen at runtime:
+
+```ts
+import { h, js, mod, post, renderToString, state, type HtmlChild } from "datastar-kit"
+
+const form = state({ email: "", count: 0 })
+
+const Field = (props: { readonly label: string; readonly children?: HtmlChild }) =>
+  h.label({ class: "field" }, props.label, props.children)
+
+const SignupForm = () =>
+  h.form(
+    {
+      "data-signals": mod(form.defaults, { ifMissing: true }),
+      "data-on:submit": mod(post("/signup"), { prevent: true })
+    },
+    h(Field, { label: "Email" }, h.input({ type: "email", "data-bind": form.refs.email })),
+    h.output({ "data-text": js`${form.refs.count} * 2` }),
+    h.button({ type: "submit" }, "Sign up")
+  )
+
+const html = renderToString(SignupForm())
+```
+
+Props are typed exactly like the matching JSX element, so every example in this guide works the
+same way with `h()`. Because props are an object literal, TypeScript also rejects misspelled
+attributes such as `"data-shwo"` or `"aria-labl"`, which JSX lets through. Add custom `data-*`
+attributes with `...dataAttrs({ "data-testid": "row" })`.
+
+Positional children replace `props.children`. `Fragment` groups children without a wrapper:
+`h(Fragment, null, a, b)`, though an array of children works too.
+
+Prefer `h.div(...)` over `h("div", ...)` for known tags. Inside the generic `h("div", ...)` call
+TypeScript cannot infer what an untyped `js` expression returns, so attributes that check the
+result, such as `data-text` and `data-show`, need `js<number>` there. `h.div(...)` and JSX infer it.
+
 ## Datastar attributes
 
-TSX can use native Datastar attribute names directly. Datastar Kit's JSX runtime serializes signal
-refs, expressions, action helpers, and object-valued signal maps for `data-*` attributes:
+TSX and `h()` use native Datastar attribute names directly. Datastar Kit serializes signal refs,
+expressions, action helpers, and object-valued signal maps for `data-*` attributes. The examples
+below use TSX:
 
 ```tsx
 import { mod, post, state } from "datastar-kit"

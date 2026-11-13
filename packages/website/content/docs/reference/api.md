@@ -143,17 +143,22 @@ Use `event.*` when one response needs multiple events or a long-lived stream.
 
 ## HTML helpers
 
-| API                    | Use                                                          |
-| ---------------------- | ------------------------------------------------------------ |
-| `renderToString(node)` | Serialize Datastar Kit HTML nodes and TSX output.            |
-| `unsafeHtml(html)`     | Mark trusted HTML as already safe.                           |
-| `dataAttrs(values)`    | Type-check a primitive custom `data-*` attribute spread bag. |
-| `HtmlNameError`        | Thrown when a tag or attribute name cannot render safely.    |
+| API                                | Use                                                                   |
+| ---------------------------------- | --------------------------------------------------------------------- |
+| `h.<tag>(props, ...children)`      | Build an HTML or SVG element without JSX, typed like the JSX element. |
+| `h(Component, props, ...children)` | Call a function component without JSX.                                |
+| `h(tag, props, ...children)`       | Build a custom element or a tag chosen at runtime.                    |
+| `Fragment`                         | Group children without a wrapper element.                             |
+| `renderToString(node)`             | Serialize Datastar Kit HTML nodes, `h()` trees, and TSX output.       |
+| `unsafeHtml(html)`                 | Mark trusted HTML as already safe.                                    |
+| `dataAttrs(values)`                | Type-check a primitive custom `data-*` attribute spread bag.          |
+| `HtmlNameError`                    | Thrown when a tag or attribute name cannot render safely.             |
 
 Types exported from the root include `CustomJsxAttributes`, `CustomJsxElements`, `DataAttributes`,
-`HtmlChild`, `HtmlNode`, `HtmlProps`, `HtmlPropValue`, `SignalState`, and `SignalValue`. Augment
-`CustomJsxAttributes` and `CustomJsxElements` in `datastar-kit/jsx-runtime` to register exact custom
-HTML or Datastar plugin attributes and custom-element props. Registered custom elements also retain
+`ElementFactory`, `HtmlChild`, `HtmlNode`, `HtmlProps`, `HtmlPropValue`, `IntrinsicElementProps`,
+`SignalState`, and `SignalValue`. Augment `CustomJsxAttributes` and `CustomJsxElements` in
+`datastar-kit/jsx-runtime` to register exact custom HTML or Datastar plugin attributes and
+custom-element props; the registrations apply to both JSX and `h()`. Registered custom elements also retain
 global HTML, ARIA, children, and typed Datastar attributes. Non-`data-*` custom attributes must use
 primitive `HtmlPropValue` values so their static types match server-rendering behavior. Modifier
 wrappers remain limited to built-in Datastar attributes with modifier metadata.

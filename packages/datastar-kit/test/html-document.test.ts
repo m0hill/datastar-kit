@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { h } from "../src/html.js"
+import { h } from "../src/element.js"
 import { page } from "../src/reply.js"
 
 const DATASTAR_RUNTIME =

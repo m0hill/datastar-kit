@@ -1,5 +1,5 @@
 import * as event from "./event.js"
-import { h, renderToString, type HtmlChild } from "./html.js"
+import { htmlNode, renderToString, type HtmlChild } from "./html.js"
 import {
   comment as sseComment,
   type PatchElementsOptions,
@@ -114,16 +114,16 @@ const sseResponse = (body: BodyInit, init: StreamResponseInit): Response =>
 
 const htmlDocument = (body: HtmlChild | readonly HtmlChild[], options: PageOptions): string =>
   `<!doctype html>${renderToString(
-    h(
+    htmlNode(
       "html",
       { lang: options.lang ?? "en", "data-nonce": options.nonce },
-      h(
+      htmlNode(
         "head",
         {},
-        options.title === undefined ? null : h("title", {}, options.title),
+        options.title === undefined ? null : htmlNode("title", {}, options.title),
         options.head
       ),
-      h("body", {}, body)
+      htmlNode("body", {}, body)
     )
   )}`
 
