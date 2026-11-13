@@ -1,7 +1,6 @@
 import { describe, expect, expectTypeOf, it } from "vitest"
 import { z } from "zod"
 import * as read from "../src/read.js"
-import type { StandardSchemaV1 } from "../src/standard-schema.js"
 
 const CounterSignals = z.object({
   count: z.number()
@@ -33,7 +32,8 @@ describe("read.validate", () => {
   })
 
   it("awaits asynchronous Standard Schema validators", async () => {
-    const Even: StandardSchemaV1<unknown, { readonly even: true }> = {
+    // Any object with a `~standard` property is a schema, so a hand-written one stands in here.
+    const Even: Parameters<typeof read.validate>[1] = {
       "~standard": {
         version: 1,
         vendor: "test",

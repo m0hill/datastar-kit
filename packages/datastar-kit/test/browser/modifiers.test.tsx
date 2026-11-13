@@ -236,18 +236,30 @@ describe("Datastar modifiers rendered by mod()", () => {
 
   it("fires intersection handlers once", async () => {
     await mount(
-      <main data-signals={{ count: 0 }}>
+      <main data-signals={{ count: 0, log: "" }}>
         <div
-          id="visible"
+          id="targets"
           style="height: 10px"
-          data-on-intersect={mod(increment, { once: true, half: true })}
-        />
+        >
+          <div
+            style="height: 10px"
+            data-on-intersect={mod(increment, { once: true, half: true })}
+          />
+          <div
+            style="height: 10px"
+            data-on-intersect={mod(append("x"), { half: true })}
+          />
+        </div>
       </main>
     )
+    await expect.poll(() => signalValue("log")).toBe("x")
 
-    await expect.poll(() => signalValue("count")).toBe(1)
-    query("#visible").style.display = "none"
-    query("#visible").style.display = "block"
-    await expect.poll(() => signalValue("count")).toBe(1)
+    // Move both targets out of view and back. The handler without `once` proves they re-entered.
+    query("#targets").style.marginTop = "200vh"
+    await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)))
+    query("#targets").style.marginTop = "0"
+    await expect.poll(() => signalValue("log")).toBe("xx")
+
+    expect(signalValue("count")).toBe(1)
   })
 })

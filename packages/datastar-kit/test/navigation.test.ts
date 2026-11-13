@@ -1,20 +1,25 @@
 import { describe, expect, it } from "vitest"
-import { NavigationUrlError, safeNavigationUrl } from "../src/navigation.js"
+import * as event from "../src/event.js"
+import type { NavigateOptions } from "../src/event.js"
 
 const baseUrl = "https://app.example"
 
-describe("safeNavigationUrl", () => {
+// The URL the navigation event sends the browser to.
+const target = (url: string | URL, options?: NavigateOptions): unknown => {
+  const assigned = /window\.location\.href = (".*?") \}/.exec(event.navigate(url, options))?.[1]
+  return assigned === undefined ? undefined : JSON.parse(assigned)
+}
+
+describe("event.navigate URL safety", () => {
   it("normalizes same-origin targets to a path with query and hash", () => {
-    expect(safeNavigationUrl("/dashboard?tab=1#top", { baseUrl })).toBe("/dashboard?tab=1#top")
-    expect(safeNavigationUrl("https://app.example/a/../b", { baseUrl })).toBe("/b")
-    expect(safeNavigationUrl(new URL("https://app.example/settings"), { baseUrl })).toBe(
-      "/settings"
-    )
+    expect(target("/dashboard?tab=1#top", { baseUrl })).toBe("/dashboard?tab=1#top")
+    expect(target("https://app.example/a/../b", { baseUrl })).toBe("/b")
+    expect(target(new URL("https://app.example/settings"), { baseUrl })).toBe("/settings")
   })
 
   it("resolves relative targets against http://localhost by default", () => {
-    expect(safeNavigationUrl("issues/1")).toBe("/issues/1")
-    expect(() => safeNavigationUrl("https://app.example/")).toThrow(NavigationUrlError)
+    expect(target("issues/1")).toBe("/issues/1")
+    expect(() => target("https://app.example/")).toThrow(event.NavigationUrlError)
   })
 
   it.each([
@@ -26,21 +31,18 @@ describe("safeNavigationUrl", () => {
     ["a URL with an embedded tab", "java\tscript:alert(1)"],
     ["a URL with a line break", "/safe\nSet-Cookie: bad"]
   ])("rejects %s", (_label, url) => {
-    expect(() => safeNavigationUrl(url, { baseUrl })).toThrow(NavigationUrlError)
+    expect(() => target(url, { baseUrl })).toThrow(event.NavigationUrlError)
   })
 
   it("allows absolute URLs only for explicitly allowed HTTP(S) origins", () => {
     expect(
-      safeNavigationUrl("https://docs.example/start?x=1", {
+      target("https://docs.example/start?x=1", {
         baseUrl,
         allowedOrigins: ["not a url", new URL("https://docs.example/ignored-path")]
       })
     ).toBe("https://docs.example/start?x=1")
     expect(() =>
-      safeNavigationUrl("http://docs.example/start", {
-        baseUrl,
-        allowedOrigins: ["https://docs.example"]
-      })
-    ).toThrow(NavigationUrlError)
+      target("http://docs.example/start", { baseUrl, allowedOrigins: ["https://docs.example"] })
+    ).toThrow(event.NavigationUrlError)
   })
 })

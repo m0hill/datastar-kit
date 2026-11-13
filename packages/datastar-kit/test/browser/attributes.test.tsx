@@ -235,7 +235,6 @@ describe("Datastar attributes rendered by JSX", () => {
       </main>
     )
 
-    expect(JSON.parse(text("#filtered") ?? "")).toEqual({ counter: 1 })
     expect(text("#filtered")).toBe('{"counter":1}')
   })
 

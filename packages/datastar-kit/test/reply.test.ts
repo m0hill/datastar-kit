@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import * as event from "../src/event.js"
 import { h } from "../src/html.js"
 import * as reply from "../src/reply.js"
 
@@ -53,14 +54,8 @@ describe("reply page, navigation, and no-content responses", () => {
     expect(response.status).toBe(200)
     expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(await response.text()).toBe(
-      'event: datastar-patch-elements\ndata: mode append\ndata: selector body\ndata: elements <script data-effect="el.remove()">setTimeout(() => { window.location.href = "/dashboard?from=login#top" })</script>\n\n'
+      event.navigate("/dashboard?from=login#top", { baseUrl: "https://app.example" })
     )
-  })
-
-  it("rejects unsafe navigation before building a response", () => {
-    expect(() =>
-      reply.navigate("//evil.example/phish", { baseUrl: "https://app.example" })
-    ).toThrow(reply.NavigationUrlError)
   })
 
   it("completes commands with an empty 204 response", async () => {

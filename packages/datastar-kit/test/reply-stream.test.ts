@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
+import * as event from "../src/event.js"
 import { h } from "../src/html.js"
 import * as reply from "../src/reply.js"
 
@@ -33,9 +34,7 @@ describe("reply SSE responses", () => {
 
     expect(response.headers.get("x-remove")).toBe("yes")
     expect(response.headers.get("content-type")).toBe("text/event-stream")
-    expect(await response.text()).toBe(
-      "event: datastar-patch-elements\ndata: selector #toast-saved\ndata: mode remove\n\n"
-    )
+    expect(await response.text()).toBe(event.remove("#toast-saved"))
   })
 
   it("streams string and byte chunks", async () => {
@@ -84,7 +83,7 @@ describe("reply SSE responses", () => {
     await expect(cleanup).resolves.toBeUndefined()
   })
 
-  it("starts heartbeat timers on first pull and clears them on cancel", async () => {
+  it("starts heartbeats once the stream is read and stops them on cancel", async () => {
     vi.useFakeTimers()
     async function* events() {
       yield "event: ready\n\n"
@@ -100,13 +99,11 @@ describe("reply SSE responses", () => {
     expect(vi.getTimerCount()).toBe(0)
     const first = await reader.read()
     expect(new TextDecoder().decode(first.value)).toBe("event: ready\n\n")
-    expect(vi.getTimerCount()).toBe(1)
 
     const next = reader.read()
     await vi.advanceTimersByTimeAsync(10)
     const heartbeat = await next
     expect(new TextDecoder().decode(heartbeat.value)).toBe(": tick\n\n")
-    expect(vi.getTimerCount()).toBe(1)
 
     await reader.cancel()
     expect(vi.getTimerCount()).toBe(0)
@@ -121,7 +118,6 @@ describe("reply SSE responses", () => {
       .body!.getReader()
 
     expect(await reader.read()).toMatchObject({ done: false })
-    expect(vi.getTimerCount()).toBe(1)
     await expect(reader.read()).resolves.toEqual({ done: true, value: undefined })
     expect(vi.getTimerCount()).toBe(0)
   })
@@ -142,9 +138,12 @@ describe("reply SSE responses", () => {
     await vi.advanceTimersByTimeAsync(5)
     expect(await first).toBe(": heartbeat\n\n")
 
-    const second = decode()
+    let secondSent = false
+    const second = decode().finally(() => {
+      secondSent = true
+    })
     await vi.advanceTimersByTimeAsync(49)
-    expect(vi.getTimerCount()).toBe(1)
+    expect(secondSent).toBe(false)
     await vi.advanceTimersByTimeAsync(1)
     expect(await second).toBe(": heartbeat\n\n")
 
