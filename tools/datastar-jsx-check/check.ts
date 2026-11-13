@@ -3,17 +3,33 @@ import { compilerProps } from "../../packages/datastar-kit/src/element.js"
 import { closestName, inspectDatastarAttributeName } from "./attribute-name.js"
 import { htmlNestingProblem, movesTextOut } from "./html-nesting.js"
 
+/**
+ * How to fix each diagnostic, keyed by its stable code. The README has a before/after example under
+ * a heading for each code.
+ */
+export const diagnosticFixes = {
+  "unknown-aria-attribute":
+    "Correct the name to an ARIA attribute from the WAI-ARIA specification.",
+  "unknown-datastar-attribute":
+    "Correct the name, or register a Datastar plugin attribute in CustomJsxAttributes.",
+  "invalid-datastar-key":
+    "Add the `:key` the attribute requires, or remove a key it does not accept.",
+  "invalid-datastar-modifier":
+    "Remove the suffix, or pass modifiers with mod(value, modifiers), which type-checks them per attribute.",
+  "unsupported-rich-attribute":
+    "Pass a string, number, or boolean, or move the value to a data-* attribute.",
+  "unregistered-rich-data-attribute":
+    "Register the attribute and its value type in CustomJsxAttributes, or pass a primitive value.",
+  "unregistered-custom-element-ref":
+    "Register the element in CustomJsxElements so data-ref knows the element type.",
+  "unknown-vendor-attribute":
+    "Register the attribute in CustomJsxAttributes, or use a data-* attribute.",
+  "invalid-html-nesting":
+    "Change a tag so the parser keeps the nesting, such as <span> instead of <div> inside <p>, or write the <tbody> or <tr> the parser would insert."
+} as const satisfies Record<string, string>
+
 /** Stable diagnostic identifiers produced by the Datastar JSX checker. */
-export type DatastarJsxDiagnosticCode =
-  | "unknown-aria-attribute"
-  | "unknown-datastar-attribute"
-  | "invalid-datastar-key"
-  | "invalid-datastar-modifier"
-  | "unsupported-rich-attribute"
-  | "unregistered-rich-data-attribute"
-  | "unregistered-custom-element-ref"
-  | "unknown-vendor-attribute"
-  | "invalid-html-nesting"
+export type DatastarJsxDiagnosticCode = keyof typeof diagnosticFixes
 
 /** A source-anchored Datastar JSX checker diagnostic. */
 export interface DatastarJsxDiagnostic {

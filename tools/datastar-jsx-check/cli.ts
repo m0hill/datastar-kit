@@ -1,7 +1,7 @@
 import { existsSync, readdirSync } from "node:fs"
 import path from "node:path"
 import ts from "typescript"
-import { checkProgram, type DatastarJsxDiagnostic } from "./check.js"
+import { checkProgram, diagnosticFixes, type DatastarJsxDiagnostic } from "./check.js"
 import { loadProject } from "./load-project.js"
 
 // Every TypeScript project in the repo, so a new example is checked without being listed here.
@@ -23,7 +23,12 @@ const formatDiagnostic = (diagnostic: DatastarJsxDiagnostic): string => {
     diagnostic.suggestion === undefined
       ? ""
       : ` Did you mean ${JSON.stringify(diagnostic.suggestion)}?`
-  return `${relativeFile}${position} - error ${diagnostic.code}: ${diagnostic.message}.${suggestion}`
+  const docs = path.relative(process.cwd(), path.join(import.meta.dirname, "README.md"))
+  return [
+    `${relativeFile}${position} - error ${diagnostic.code}: ${diagnostic.message}.${suggestion}`,
+    `  fix: ${diagnosticFixes[diagnostic.code]}`,
+    `  docs: ${docs}#${diagnostic.code}`
+  ].join("\n")
 }
 
 const run = (projectPaths: readonly string[]): number => {

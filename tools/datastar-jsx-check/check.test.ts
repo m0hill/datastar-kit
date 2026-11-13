@@ -1,6 +1,7 @@
+import { readFileSync } from "node:fs"
 import path from "node:path"
 import { describe, expect, it } from "vitest"
-import { checkProgram } from "./check.js"
+import { checkProgram, diagnosticFixes } from "./check.js"
 import { loadProject } from "./load-project.js"
 
 const fixtureConfig = path.join(import.meta.dirname, "fixtures", "tsconfig.json")
@@ -95,5 +96,12 @@ describe("Datastar JSX checker", () => {
     expect(new Set(diagnostics.map((diagnostic) => diagnostic.code))).toEqual(
       new Set(["invalid-html-nesting"])
     )
+  })
+  it("documents every diagnostic code in the README", () => {
+    const readme = readFileSync(path.join(import.meta.dirname, "README.md"), "utf8")
+
+    for (const code of Object.keys(diagnosticFixes)) {
+      expect(readme).toContain(`### \`${code}\``)
+    }
   })
 })
