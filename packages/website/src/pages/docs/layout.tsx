@@ -4,6 +4,17 @@ import { flatNav, sidebar } from "./nav"
 import { DocSearch, searchState } from "./search"
 import type { DocPage } from "./types"
 
+// Full page loads reset the sidebar's scroll position. This runs right after the sidebar is parsed,
+// before the first paint: it restores the position saved when the last docs page was left, then
+// makes sure the current page's link is visible.
+const SIDEBAR_SCROLL =
+  "(function(){var s=document.getElementById('docs-sidebar'),k='docs-sidebar-scroll';" +
+  "try{s.scrollTop=Number(sessionStorage.getItem(k))}catch(e){}" +
+  "var a=s.querySelector('[aria-current=page]');if(a){var r=a.getBoundingClientRect()," +
+  "b=s.getBoundingClientRect();if(r.top<b.top||r.bottom>b.bottom)" +
+  "s.scrollTop+=r.top-b.top-(b.height-r.height)/2}" +
+  "addEventListener('pagehide',function(){try{sessionStorage.setItem(k,String(s.scrollTop))}catch(e){}})})()"
+
 const SidebarNav = (props: { activePath: string }) => (
   <nav class="space-y-7">
     {sidebar.map((group) => (
@@ -14,6 +25,7 @@ const SidebarNav = (props: { activePath: string }) => (
             <li>
               <a
                 href={item.path}
+                aria-current={item.path === props.activePath ? "page" : undefined}
                 class={
                   item.path === props.activePath
                     ? "-ml-px block border-l border-accent bg-accent-dim/40 py-1.5 pr-2 pl-3.5 font-mono text-[12px] font-semibold text-accent"
@@ -108,9 +120,13 @@ export const DocsLayout = (props: { page: DocPage }) => (
       />
       <div class="site-shell lg:grid lg:grid-cols-[15rem_minmax(0,1fr)] xl:grid-cols-[15rem_minmax(0,1fr)_13rem]">
         <aside class="border-r border-border-subtle max-lg:hidden">
-          <div class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto py-10 pr-6">
+          <div
+            id="docs-sidebar"
+            class="sticky top-16 max-h-[calc(100dvh-4rem)] overflow-y-auto py-10 pr-6"
+          >
             <SidebarNav activePath={props.page.path} />
           </div>
+          <script>{unsafeHtml(SIDEBAR_SCROLL)}</script>
         </aside>
         <div class="min-w-0 py-10 lg:px-10">
           <details class="mb-6 border border-border-subtle bg-paper lg:hidden">
