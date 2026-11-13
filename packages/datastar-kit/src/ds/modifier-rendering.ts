@@ -45,11 +45,11 @@ const caseModifiers = new Set<string>(datastarCaseModifiers)
 const isDatastarModifierKey = (key: string): key is DatastarModifierKey =>
   Object.hasOwn(compatibleModifierTargets, key)
 
-/** @internal Every modifier key the SDK can render. */
+/** @internal */
 export const datastarModifierKeys =
   Object.keys(compatibleModifierTargets).filter(isDatastarModifierKey)
 
-/** @internal The `__suffix` Datastar reads for a modifier key: the key in lowercase. */
+/** @internal */
 export const datastarModifierSuffix = (key: DatastarModifierKey): string => key.toLowerCase()
 
 /** @internal Returns whether a modifier key is supported by an attribute modifier target. */
@@ -74,7 +74,6 @@ const isModifierRecord = (value: unknown): value is Readonly<Record<string, unkn
 const isModifierOff = (value: unknown): boolean =>
   value === false || value === null || value === undefined
 
-// Each timing modifier's flags and the tags Datastar reads for them.
 const timingFlags = {
   debounce: new Map([
     ["leading", "leading"],
@@ -123,7 +122,6 @@ const eventTags = (value: unknown): string => {
   return events.join(".")
 }
 
-// Renders one modifier that is switched on: its suffix plus any `.tag` values.
 const renderDatastarModifier = (key: DatastarModifierKey, value: unknown): string => {
   const suffix = datastarModifierSuffix(key)
   switch (key) {

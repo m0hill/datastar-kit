@@ -1090,9 +1090,6 @@ type ReactAliasProps<Attributes> = {
     : never]?: Attributes[ReactAttributeAliases[Alias] & keyof Attributes]
 }
 
-/**
- * Element attributes plus the React-style aliases of the attributes the element has.
- */
 export type WithReactAliases<Attributes> = Attributes & ReactAliasProps<Attributes>
 
 type FileBindReference = DatastarSignalReference<readonly DatastarFile[], DatastarFile[]>

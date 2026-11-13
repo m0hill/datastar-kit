@@ -162,7 +162,6 @@ export const resolveDatastarAttributeRoot = (
     : { definition, form: "key", key: root.slice(separator + 1) }
 }
 
-/** Resolves an attribute name, modifiers included, against the canonical Datastar attributes. */
 export const resolveDatastarAttribute = (name: string): ResolvedDatastarAttribute | undefined =>
   resolveDatastarAttributeRoot(datastarAttributeRoot(name))
 
@@ -177,11 +176,9 @@ export const isPresenceForm = (resolved: ResolvedDatastarAttribute): boolean =>
 export const isExpressionForm = (resolved: ResolvedDatastarAttribute): boolean =>
   appliesToForm(resolved.definition.expression, resolved.form)
 
-/** Whether a signal ref renders as its bare name rather than as an expression. */
 export const takesSignalName = (resolved: ResolvedDatastarAttribute): boolean =>
   resolved.form === "exact" && resolved.definition.signalNameValue === true
 
-/** The modifier set this form of the attribute accepts, if any. */
 export const modifierTargetOf = (
   resolved: ResolvedDatastarAttribute
 ): DatastarModifierTarget | undefined =>

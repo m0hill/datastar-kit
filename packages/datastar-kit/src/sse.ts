@@ -1,7 +1,7 @@
 import { renderHtmlAttributes } from "./html.js"
 import type { SignalState } from "./types.js"
 
-/** @internal Every Datastar patch-elements mode. */
+/** @internal */
 export const patchElementsModes = [
   "outer",
   "inner",
@@ -20,7 +20,7 @@ export const patchElementsModes = [
  */
 export type PatchElementsMode = (typeof patchElementsModes)[number]
 
-/** @internal Every Datastar patch-elements namespace. */
+/** @internal */
 export const patchElementsNamespaces = ["html", "svg", "mathml"] as const
 
 /**
@@ -81,7 +81,7 @@ export interface ExecuteScriptOptions extends SseEventOptions {
   readonly autoRemove?: boolean
 }
 
-/** @internal SSE event names Datastar reads. */
+/** @internal */
 export const PATCH_ELEMENTS_EVENT = "datastar-patch-elements"
 /** @internal */
 export const PATCH_SIGNALS_EVENT = "datastar-patch-signals"

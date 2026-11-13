@@ -10,9 +10,6 @@ import {
 import { htmlElementTags, reactAttributeAliases, type HtmlElements } from "./html-attributes.js"
 import type { IntrinsicElementProps } from "./jsx-runtime.js"
 
-// The element core shared by `h()` and JSX: both check props against the same element types,
-// normalize Datastar values the same way, and call components the same way.
-
 /**
  * Loosely typed props accepted by unregistered hyphenated custom elements, in `h()` and JSX.
  */
@@ -29,11 +26,7 @@ export type JsxInput = Readonly<Record<string, unknown>> & {
   readonly children?: HtmlChild | readonly HtmlChild[]
 }
 
-/**
- * Internal function component signature used by the JSX runtime.
- *
- * @internal
- */
+/** @internal */
 export type JsxComponent = (props: JsxInput) => HtmlChild
 
 /** @internal Props the compiler adds; they are not element attributes or component props. */
@@ -81,19 +74,12 @@ const childList = (
 
 /**
  * Fragment component: renders its children with no wrapper element. JSX's `<>...</>` uses it.
- *
- * @param props The children to render.
- * @returns The children, unchanged.
  */
 export const Fragment = (props: {
   readonly children?: HtmlChild | readonly HtmlChild[]
 }): HtmlChild => props.children
 
-/**
- * An intrinsic tag or a function component.
- *
- * @internal
- */
+/** @internal */
 export type JsxTag = string | JsxComponent
 
 /**
@@ -101,9 +87,6 @@ export type JsxTag = string | JsxComponent
  * runtimes, and `createElement` all end here.
  *
  * @internal
- * @param tag Intrinsic tag or function component, `Fragment` included.
- * @param input Props, children included.
- * @returns An HTML node or whatever the component renders.
  */
 export const buildElement = (tag: JsxTag, input: JsxInput | null): HtmlChild =>
   typeof tag === "function"
@@ -114,7 +97,6 @@ export const buildElement = (tag: JsxTag, input: JsxInput | null): HtmlChild =>
 type ComponentInput<Props> = Omit<Props, "children"> &
   Partial<Pick<Props, Extract<keyof Props, "children">>>
 
-// Positional children, when given, replace props.children.
 const withChildren = (
   tag: JsxTag,
   props: {} | null | undefined,

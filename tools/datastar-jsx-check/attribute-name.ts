@@ -16,10 +16,8 @@ import type { DatastarModifierKey } from "../../packages/datastar-kit/src/ds/mod
 const datastarModifierKeyForSuffix = (suffix: string): DatastarModifierKey | undefined =>
   datastarModifierKeys.find((key) => datastarModifierSuffix(key) === suffix)
 
-/** Result of inspecting a rendered Datastar attribute name. */
 export type DatastarAttributeNameInspection =
   | {
-      /** The name does not belong to a canonical Datastar attribute. */
       readonly _tag: "custom"
       /** Custom attribute name without a key or modifiers. */
       readonly baseName: string
@@ -27,7 +25,6 @@ export type DatastarAttributeNameInspection =
       readonly suggestion: string | undefined
     }
   | {
-      /** The name is a valid canonical Datastar attribute form. */
       readonly _tag: "known"
       /** Canonical attribute name without a key or modifiers. */
       readonly name: string
@@ -35,9 +32,7 @@ export type DatastarAttributeNameInspection =
   | {
       /** The name belongs to a canonical attribute but violates its key or modifier policy. */
       readonly _tag: "invalid"
-      /** Policy category violated by the rendered name. */
       readonly category: "key" | "modifier"
-      /** Human-readable explanation suitable for a source diagnostic. */
       readonly message: string
     }
 
@@ -105,10 +100,7 @@ const datastarAttributeNames = datastarAttributeDefinitions.map((definition) => 
  * Inspects a rendered attribute name against canonical Datastar key and modifier policy.
  *
  * Unknown names are classified as custom because primitive custom `data-*` attributes are valid
- * authoring extensions. The inspection is pure and does not inspect the attribute value.
- *
- * @param name - Rendered Datastar attribute name, including handwritten modifier suffixes.
- * @returns A known, custom, or invalid name inspection.
+ * authoring extensions.
  */
 export const inspectDatastarAttributeName = (name: string): DatastarAttributeNameInspection => {
   const root = datastarAttributeRoot(name)

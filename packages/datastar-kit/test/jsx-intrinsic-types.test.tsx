@@ -225,7 +225,6 @@ typecheckOnly(() => {
   const theme = signal<"light" | "dark">("theme")
   const nodes = [
     <select data-bind={text} />,
-    // Single selects write back one of the rendered option values.
     <select data-bind={theme} />,
     <select data-bind={count} />,
     <select

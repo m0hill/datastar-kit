@@ -16,7 +16,6 @@ import {
 const form = state({ email: "", agree: false })
 const count = signal<number, "count">("count")
 
-// Both forms of a small component: one written with JSX, one with h().
 const FieldJsx = (props: { readonly label: string; readonly children?: HtmlChild }) => (
   <label className="field">
     {props.label}
@@ -27,7 +26,6 @@ const FieldH = (props: { readonly label: string; readonly children?: HtmlChild }
   h.label({ className: "field" }, props.label, props.children)
 
 describe("h()", () => {
-  // h() and JSX share one element core, so the same tree must render the same HTML.
   it("renders exactly what the equivalent JSX renders", () => {
     const viaJsx = (
       <form
@@ -135,13 +133,11 @@ if (false) {
   h(Greeting)
   // @ts-expect-error Component props are type-checked.
   h(Greeting, { name: 1 })
-  // React-style aliases work in h() too.
   h.input({ maxLength: 40, readOnly: true, tabIndex: -1 })
   // @ts-expect-error Only on elements with the HTML attribute.
   h.div({ maxLength: 40 })
   h(NoProps)
   h(Greeting, { name: "Ada" })
-  // Tags build HTML nodes; components return whatever they render.
   const node: HtmlNode = h("my-widget", { mode: "compact" })
   // @ts-expect-error A component's result is any HtmlChild, not necessarily a node.
   const rendered: HtmlNode = h(Greeting, { name: "Ada" })

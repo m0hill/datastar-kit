@@ -95,7 +95,6 @@ const routes = new Map<string, Route>([
         })
       ])
   ],
-  // Navigates to the `to` query parameter, resolved against the page that sent the request.
   [
     "/fixtures/navigate",
     async (request) => {

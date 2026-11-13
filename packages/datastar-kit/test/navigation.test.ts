@@ -4,7 +4,6 @@ import type { NavigateOptions } from "../src/event.js"
 
 const baseUrl = "https://app.example"
 
-// The URL the navigation event sends the browser to.
 const target = (url: string | URL, options?: NavigateOptions): unknown => {
   const assigned = /window\.location\.href = (".*?") \}/.exec(event.navigate(url, options))?.[1]
   return assigned === undefined ? undefined : JSON.parse(assigned)
