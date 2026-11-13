@@ -15,9 +15,11 @@ check a selected project.
 
 - `check.ts` is the functional core: `checkProgram(program)` returns structured diagnostics.
 - `html-nesting.ts` holds the nesting rules: a `<div>` in a `<p>`, nested `<a>`, `<form>`, `<button>`,
-  or `<li>`, and table rows or text outside the elements a table allows. Each is a case where the
-  parser changes the tree, so the DOM no longer matches the server's HTML and Datastar patches can
-  morph the wrong elements. Nesting the parser keeps as written is not reported.
+  or `<li>`, table parts outside the table element that holds them, text or other elements inside
+  table parts, and HTML tags such as `<div>` inside `<svg>`. Each is a case where the parser changes
+  the tree, so the DOM no longer matches the server's HTML and Datastar patches can morph the wrong
+  elements. Nesting the parser keeps as written is not reported. `html-nesting.browser.test.ts`
+  checks the rules against Chromium's parser, which decides what counts as rewritten.
 - `load-project.ts` adapts a tsconfig into a TypeScript `Program`.
 - `cli.ts` owns workspace defaults, diagnostic rendering, and the process exit code.
 - `fixtures/` and `check.test.ts` cover registrations, path mappings, runtime-safe direct and spread
