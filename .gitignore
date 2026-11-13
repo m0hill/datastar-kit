@@ -8,3 +8,6 @@ auth.json
 # Vitest browser mode failure screenshots
 __screenshots__/
 .vitest-attachments/
+
+# Local research notes
+docs/research/
