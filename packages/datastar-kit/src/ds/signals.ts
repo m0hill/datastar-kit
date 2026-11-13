@@ -114,16 +114,7 @@ export const local = <T = unknown, Name extends string = string>(
  * @typeParam T Value the computed expression produces.
  * @typeParam Name Signal path represented by this reference.
  */
-export class Computed<T, Name extends string = string> extends ExprBase<T> {
-  constructor(readonly name: Name) {
-    super()
-    assertSignalName(name)
-  }
-
-  toDatastarExpression(): string {
-    return `$${this.name}`
-  }
-}
+export type Computed<T, Name extends string = string> = Expr<T> & { readonly name: Name }
 
 /**
  * Creates a read-only reference to a computed signal, which `data-computed:<name>` defines.
@@ -142,4 +133,4 @@ export class Computed<T, Name extends string = string> extends ExprBase<T> {
  */
 export const computed = <T = unknown, Name extends string = string>(
   name: Name
-): Computed<T, Name> => new Computed(name)
+): Computed<T, Name> => signal<T, Name>(name)

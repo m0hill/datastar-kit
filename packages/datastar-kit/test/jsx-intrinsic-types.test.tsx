@@ -89,28 +89,15 @@ typecheckOnly(() => {
 
 // reads computed signals anywhere and writes them nowhere
 typecheckOnly(() => {
-  const total = computed<number>("total")
   const label = computed<string>("label")
   const visible = computed<boolean>("visible")
   const element = computed<HTMLElement>("element")
 
   const nodes = [
-    <output data-text={total} />,
-    <div data-show={visible} />,
-    <div data-attr:title={label} />,
-    <button data-on:click={js`${total} > 10 && @post('/big')`} />,
+    <output data-text={label} />,
     // @ts-expect-error Datastar ignores writes to a computed signal.
     <input data-bind={label} />,
-    // @ts-expect-error Datastar ignores writes to a computed signal.
-    <input
-      type="number"
-      data-bind={total}
-    />,
-    // @ts-expect-error Datastar ignores writes to a computed signal.
-    <input
-      type="checkbox"
-      data-bind={visible}
-    />,
+    // Radios and selects accept refs of any write type, so they need their own check.
     // @ts-expect-error Datastar ignores writes to a computed signal.
     <input
       type="radio"

@@ -50,8 +50,8 @@ export type {
   TimingModifierOptions
 } from "./modifiers.js"
 
-export { Computed, computed, local, Signal, SignalNameError, signal } from "./signals.js"
-export type { SignalStateInput, SignalTarget, SignalValueInput } from "./signals.js"
+export { computed, local, Signal, SignalNameError, signal } from "./signals.js"
+export type { Computed, SignalStateInput, SignalTarget, SignalValueInput } from "./signals.js"
 
 export { state } from "./state.js"
 export type { State, StatePatch, StateSignalRefs } from "./state.js"
