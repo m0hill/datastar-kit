@@ -4,8 +4,6 @@ import * as reply from "../src/reply.js"
 
 if (false) {
   // @ts-expect-error Datastar action body replies own their protocol status.
-  reply.directSignals({ count: 1 }, {}, { status: 200 })
-  // @ts-expect-error Datastar action body replies own their protocol status.
   reply.patch(h("p", {}, "Updated"), {}, { status: 200 })
   // @ts-expect-error Datastar action body replies own their protocol status.
   reply.signals({ count: 1 }, {}, { status: 200 })
@@ -13,11 +11,9 @@ if (false) {
   reply.done({ status: 204 })
   // @ts-expect-error High-level signal replies require a signal-state object.
   reply.signals('{"count":1}')
-  // @ts-expect-error Direct JSON signal replies require a signal-state object.
-  reply.directSignals('{"count":1}')
 }
 
-describe("reply direct Datastar responses", () => {
+describe("reply page, navigation, and no-content responses", () => {
   it("serves full Datastar pages with normal page status options", async () => {
     const response = reply.page(
       h("main", {}, "Ada & Grace"),
@@ -51,42 +47,13 @@ describe("reply direct Datastar responses", () => {
     ])
   })
 
-  it("serves direct HTML patch responses as explicit escape hatches", async () => {
-    const response = reply.directHtml(h("p", {}, "Updated"), {
-      selector: "#slot",
-      mode: "inner",
-      namespace: "svg",
-      useViewTransition: true
-    })
-
-    expect(response.status).toBe(200)
-    expect(response.headers.get("datastar-selector")).toBe("#slot")
-    expect(response.headers.get("datastar-mode")).toBe("inner")
-    expect(response.headers.get("datastar-namespace")).toBe("svg")
-    expect(response.headers.get("datastar-use-view-transition")).toBe("true")
-    expect(await response.text()).toBe("<p>Updated</p>")
-  })
-
-  it("serves direct script responses as explicit escape hatches", async () => {
-    const response = reply.directScript("console.log('hello')", {
-      attributes: { type: "module", async: true }
-    })
-
-    expect(response.status).toBe(200)
-    expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
-    expect(response.headers.get("datastar-script-attributes")).toBe(
-      '{"type":"module","async":true}'
-    )
-    expect(await response.text()).toBe("console.log('hello')")
-  })
-
-  it("serves safe navigation script responses", async () => {
+  it("navigates through an SSE script event", async () => {
     const response = reply.navigate("/dashboard?from=login#top", { baseUrl: "https://app.example" })
 
     expect(response.status).toBe(200)
-    expect(response.headers.get("content-type")).toBe("text/javascript; charset=utf-8")
+    expect(response.headers.get("content-type")).toBe("text/event-stream")
     expect(await response.text()).toBe(
-      'setTimeout(() => { window.location.href = "/dashboard?from=login#top" })'
+      'event: datastar-patch-elements\ndata: mode append\ndata: selector body\ndata: elements <script data-effect="el.remove()">setTimeout(() => { window.location.href = "/dashboard?from=login#top" })</script>\n\n'
     )
   })
 

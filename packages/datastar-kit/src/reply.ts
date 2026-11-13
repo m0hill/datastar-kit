@@ -1,10 +1,7 @@
 import * as event from "./event.js"
 import { h, renderToString, type HtmlChild } from "./html.js"
-import { navigationScript, type NavigationSafetyOptions } from "./navigation.js"
 import {
   comment as sseComment,
-  type PatchElementsNamespace,
-  type PatchElementsMode,
   type PatchElementsOptions,
   type PatchSignalsOptions,
   type SignalState
@@ -68,38 +65,8 @@ export interface SseStreamOptions {
   readonly heartbeat?: SseHeartbeatOptions
 }
 
-/**
- * Direct HTML response options.
- */
-export interface DirectHtmlOptions {
-  /** CSS selector for target elements when Datastar handles a direct HTML response. */
-  readonly selector?: string
-  /** Patch operation used for the direct HTML response. */
-  readonly mode?: PatchElementsMode
-  /** Markup namespace used to parse the direct HTML response. */
-  readonly namespace?: PatchElementsNamespace
-  /** Whether Datastar should use the View Transition API when applying the direct patch. */
-  readonly useViewTransition?: boolean
-}
-
-/**
- * Direct signal response options.
- */
-export interface DirectSignalsOptions {
-  /** Whether signal keys should only be patched when they do not already exist. */
-  readonly onlyIfMissing?: boolean
-}
-
-/**
- * Direct script response options.
- */
-export interface DirectScriptOptions {
-  /** Attributes Datastar applies to the generated `<script>` element. */
-  readonly attributes?: Readonly<Record<string, string | number | boolean>>
-}
-
 /** Safe navigation response options. */
-export type NavigateOptions = DirectScriptOptions & NavigationSafetyOptions
+export type NavigateOptions = event.NavigateOptions
 
 type SseChunkInput = string | Uint8Array
 
@@ -320,93 +287,17 @@ export const stream = (
 export const done = (init: StreamResponseInit = {}): Response => response(null, init, 204)
 
 /**
- * Creates a Datastar direct HTML response.
- *
- * @remarks
- * Prefer `reply.patch()` for normal Datastar updates. Direct HTML responses are public escape
- * hatches for integrations that specifically need Datastar's direct-response handling.
- *
- * @param html HTML child tree to send as a direct response.
- * @param options Direct HTML response options.
- * @param init Native response options excluding status fields.
- * @returns A `200` direct HTML `Response`.
- */
-export const directHtml = (
-  html: HtmlChild,
-  options: DirectHtmlOptions = {},
-  init: StreamResponseInit = {}
-): Response => {
-  const headers = new Headers({ "content-type": "text/html; charset=utf-8" })
-  if (options.selector !== undefined) headers.set("datastar-selector", options.selector)
-  if (options.mode !== undefined) headers.set("datastar-mode", options.mode)
-  if (options.namespace !== undefined) headers.set("datastar-namespace", options.namespace)
-  if (options.useViewTransition !== undefined) {
-    headers.set("datastar-use-view-transition", String(options.useViewTransition))
-  }
-  return response(renderToString(html), init, 200, headers)
-}
-
-/**
- * Creates a Datastar direct signal response.
- *
- * @remarks
- * Prefer `reply.signals()` for normal Datastar signal patches. Direct signal responses are public
- * escape hatches for integrations that specifically need Datastar's direct-response handling.
- *
- * @param value Signal state to patch.
- * @param options Direct signal response options.
- * @param init Native response options excluding status fields.
- * @returns A `200` direct JSON `Response`.
- */
-export const directSignals = (
-  value: SignalState,
-  options: DirectSignalsOptions = {},
-  init: StreamResponseInit = {}
-): Response => {
-  const headers = new Headers({ "content-type": "application/json; charset=utf-8" })
-  if (options.onlyIfMissing !== undefined) {
-    headers.set("datastar-only-if-missing", String(options.onlyIfMissing))
-  }
-  return response(JSON.stringify(value), init, 200, headers)
-}
-
-/**
- * Creates a Datastar direct script response.
- *
- * @remarks
- * This is a trust-boundary escape hatch. Only pass JavaScript produced by trusted application code.
- * Prefer `reply.navigate()` for navigation and structured patches for ordinary UI updates.
- *
- * @param script JavaScript source to execute in the browser.
- * @param options Direct script response options.
- * @param init Native response options excluding status fields.
- * @returns A `200` direct JavaScript `Response`.
- */
-export const directScript = (
-  script: string,
-  options: DirectScriptOptions = {},
-  init: StreamResponseInit = {}
-): Response => {
-  const headers = new Headers({ "content-type": "text/javascript; charset=utf-8" })
-  if (options.attributes !== undefined) {
-    headers.set("datastar-script-attributes", JSON.stringify(options.attributes))
-  }
-  return response(script, init, 200, headers)
-}
-
-/**
- * Creates a safe Datastar direct script response that navigates the browser.
+ * Creates a Datastar SSE response that safely navigates the browser.
  *
  * @param url Relative or allowlisted absolute URL to navigate to.
- * @param options Navigation and script options.
+ * @param options Navigation and event options.
  * @param init Native response options excluding status fields.
- * @returns A `200` direct JavaScript `Response` that schedules a `window.location.href` assignment.
+ * @returns A `200` SSE `Response` with one script event that schedules a `window.location.href`
+ * assignment.
  * @throws {@link NavigationUrlError} When the URL is malformed, non-HTTP(S), or cross-origin without being allowlisted.
  */
 export const navigate = (
   url: string | URL,
   options: NavigateOptions = {},
   init: StreamResponseInit = {}
-): Response => {
-  return directScript(navigationScript(url, options), options, init)
-}
+): Response => response(event.navigate(url, options), init, 200, sseHeaders)

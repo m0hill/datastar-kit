@@ -93,18 +93,17 @@ const routes = new Map<string, Route>([
         })
       ])
   ],
+  // Navigates to the `to` query parameter, resolved against the page that sent the request.
+  [
+    "/fixtures/navigate",
+    async (request) => {
+      const to = new URL(request.url).searchParams.get("to") ?? "/"
+      return reply.navigate(to, { baseUrl: request.headers.get("referer") ?? request.url })
+    }
+  ],
   [
     "/fixtures/signals-if-missing",
     async () => reply.signals({ kept: "replaced", added: "new" }, { onlyIfMissing: true })
-  ],
-  [
-    "/fixtures/direct-html",
-    async () => reply.directHtml(h("p", {}, "patched"), { selector: "#direct-slot", mode: "inner" })
-  ],
-  [
-    "/fixtures/direct-signals-if-missing",
-    async () =>
-      reply.directSignals({ directKept: "replaced", directAdded: "new" }, { onlyIfMissing: true })
   ],
   [
     "/fixtures/held",

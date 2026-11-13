@@ -20,7 +20,7 @@ Schema validation proves shape, not authority. A valid `projectId` still needs a
 | API                                           | Boundary                                                                             |
 | --------------------------------------------- | ------------------------------------------------------------------------------------ |
 | `unsafeHtml(...)`                             | Only pass trusted or sanitized HTML.                                                 |
-| `reply.directScript(...)`                     | Only pass trusted JavaScript produced by application code.                           |
+| `event.script(...)`                           | Only pass trusted JavaScript produced by application code.                           |
 | `reply.navigate(...)` / `event.navigate(...)` | Prefer these for Datastar-driven navigation because URLs are normalized and checked. |
 | HTML tag and attribute names                  | Rendered names are checked; values and text are escaped by default.                  |
 | Browser signals                               | Treat as user input, never as durable state or authority.                            |

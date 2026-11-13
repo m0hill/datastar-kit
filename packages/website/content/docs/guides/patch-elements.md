@@ -158,19 +158,6 @@ return reply.patch(<article id="featured-card">Featured card</article>, {
 })
 ```
 
-The same option is available on `reply.patch(...)`, `event.patch(...)`, and `reply.directHtml(...)`. Patches should still work in browsers where view transitions are unavailable.
-
-## Direct HTML responses
-
-`reply.patch(...)` is the normal path because it sends an SSE patch event. `reply.directHtml(...)` expresses similar options through Datastar direct-response headers:
-
-```tsx
-return reply.directHtml(<TodoItem todo={todo} />, {
-  selector: "#todos",
-  mode: "append"
-})
-```
-
-Use direct HTML responses only when an integration specifically needs Datastar direct-response behavior.
+The same option is available on `reply.patch(...)` and `event.patch(...)`. Patches should still work in browsers where view transitions are unavailable.
 
 Next: [Validation](validation-and-errors.md).

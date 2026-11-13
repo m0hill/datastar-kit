@@ -11,9 +11,11 @@
 
 - Documented support for every Datastar `1.0.x` release, from `1.0.0` to `1.0.4`, with the minimum Datastar version for each feature that needs a newer runtime. The browser tests now run against every Datastar release from 1.0.0 to 1.0.4.
 - Examples and docs now load Datastar `v1.0.4`.
+- `reply.navigate(...)` now sends its navigation script as an SSE event instead of a `text/javascript` response, so every Datastar action reply is SSE. Calls stay the same. `NavigateOptions` is now the same type as `event.NavigateOptions`.
 
 ### Removed
 
+- Removed `reply.directHtml`, `reply.directSignals`, and `reply.directScript` and their option types. They sent the same updates as `reply.patch`, `reply.signals`, and `event.script` in a second, non-SSE format, and offered nothing the SSE replies lack: an SSE reply can opt into browser caching with a `Cache-Control` header in `init` just the same. Datastar's SDK spec and its official TypeScript SDK send only SSE as well.
 - Removed the `datastar-kit/sse` subpath. It duplicated `event.*`: use `event.patch`, `event.signals`, `event.script`, and `event.comment` inside `reply.stream(...)`. For an HTML string from another template engine, pass `unsafeHtml(html)` to `event.patch`.
 
 ## 0.6.0 - 2026-10-18
@@ -33,6 +35,7 @@
 
 ### Removed
 
+- Removed `reply.directHtml`, `reply.directSignals`, and `reply.directScript` and their option types. They sent the same updates as `reply.patch`, `reply.signals`, and `event.script` in a second, non-SSE format, and offered nothing the SSE replies lack: an SSE reply can opt into browser caching with a `Cache-Control` header in `init` just the same. Datastar's SDK spec and its official TypeScript SDK send only SSE as well.
 - Removed the `datastar-kit/debugger` subpath and its Web Component. The debugger is no longer part of Datastar Kit.
 
 ## 0.5.0 - 2026-07-25
@@ -44,6 +47,7 @@
 
 ### Removed
 
+- Removed `reply.directHtml`, `reply.directSignals`, and `reply.directScript` and their option types. They sent the same updates as `reply.patch`, `reply.signals`, and `event.script` in a second, non-SSE format, and offered nothing the SSE replies lack: an SSE reply can opt into browser caching with a `Cache-Control` header in `init` just the same. Datastar's SDK spec and its official TypeScript SDK send only SSE as well.
 - Removed the server-rendered `DatastarDebugger` component. Load the development-only Web Component from `datastar-kit/debugger` instead.
 - Removed `state(...).ref(path)` and its `StatePathError`/path helper types; use `state(...).refs` for known leaf refs or `Signal.path(...)` for dynamic child refs.
 
@@ -96,6 +100,7 @@
 
 ### Removed
 
+- Removed `reply.directHtml`, `reply.directSignals`, and `reply.directScript` and their option types. They sent the same updates as `reply.patch`, `reply.signals`, and `event.script` in a second, non-SSE format, and offered nothing the SSE replies lack: an SSE reply can opt into browser caching with a `Cache-Control` header in `init` just the same. Datastar's SDK spec and its official TypeScript SDK send only SSE as well.
 - Removed the root `ds` namespace export; import Datastar authoring helpers directly from `datastar-kit`.
 - Removed the `expr(...)` public alias; use `js(...)` / `js\`...\``.
 - Removed the Datastar attribute prop-fragment DSL: write native `data-*` Datastar attributes in TSX instead.

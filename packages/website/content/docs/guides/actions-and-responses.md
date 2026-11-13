@@ -114,16 +114,6 @@ return reply.stream([event.signals(form.reset()), event.patch(<IssueDetails issu
 
 `event.navigate(...)` is the composable version of `reply.navigate(...)` when a stream should end by moving the browser to another URL.
 
-## Direct responses
-
-Datastar also supports direct-response headers. Datastar Kit exposes them as:
-
-- `reply.directHtml(...)`
-- `reply.directSignals(...)`
-- `reply.directScript(...)`
-
-Prefer the SSE helpers unless an integration specifically requires direct-response handling. `reply.directScript(...)` executes trusted JavaScript in the browser; use structured patches or `reply.navigate(...)` when possible.
-
 ## Forms and request bodies
 
 Structured `get`, `post`, `put`, `patch`, and `del` actions use Datastar's default JSON signal transport.

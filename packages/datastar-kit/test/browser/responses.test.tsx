@@ -110,44 +110,36 @@ describe("Datastar responses", () => {
 
   it("only adds missing signals when onlyIfMissing is set", async () => {
     await mount(
-      <main data-signals={{ kept: "original", directKept: "original" }}>
+      <main data-signals={{ kept: "original" }}>
         <button
           id="sse"
           type="button"
           data-on:click={post("/fixtures/signals-if-missing")}
         />
-        <button
-          id="direct"
-          type="button"
-          data-on:click={post("/fixtures/direct-signals-if-missing")}
-        />
       </main>
     )
 
     query("#sse").click()
-    query("#direct").click()
 
     await expect.poll(() => signalValue("added")).toBe("new")
-    await expect.poll(() => signalValue("directAdded")).toBe("new")
     expect(signalValue("kept")).toBe("original")
-    expect(signalValue("directKept")).toBe("original")
   })
 
-  it("applies direct HTML responses", async () => {
+  it("navigates the browser with reply.navigate", async () => {
+    // A hash-only target keeps the test page loaded while proving the navigation script ran.
+    const target = `${location.pathname}${location.search}#navigated`
     await mount(
-      <main>
-        <button
-          id="direct-html"
-          type="button"
-          data-on:click={get("/fixtures/direct-html")}
-        />
-        <div id="direct-slot">empty</div>
-      </main>
+      <button
+        id="navigate"
+        type="button"
+        data-on:click={get(`/fixtures/navigate?to=${encodeURIComponent(target)}`)}
+      />
     )
 
-    query("#direct-html").click()
+    query("#navigate").click()
 
-    await expect.poll(() => query("#direct-slot").innerHTML).toBe("<p>patched</p>")
+    await expect.poll(() => location.hash).toBe("#navigated")
+    history.replaceState(null, "", `${location.pathname}${location.search}`)
   })
 
   it("tracks in-flight requests with data-indicator", async () => {

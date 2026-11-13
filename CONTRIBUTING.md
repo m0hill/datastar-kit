@@ -93,9 +93,9 @@ Documentation pages live in `packages/website/content/docs/*.md` and are compile
 These keep the SDK small; please preserve them in new work:
 
 - Public APIs stay close to Web Standard primitives: `Request`, `Response`, `Headers`, `URL`, and `ReadableStream`.
-- Datastar remains the browser runtime and patch protocol. The SDK serializes typed values for native Datastar attributes and generates actions, SSE events, and direct responses — it does not ship its own browser runtime.
+- Datastar remains the browser runtime and patch protocol. The SDK serializes typed values for native Datastar attributes and generates actions and SSE events — it does not ship its own browser runtime.
 - Server-rendered HTML is the primary UI payload. TSX compiles to the small HTML node model; there is no virtual DOM or hydration.
-- SSE patches are the default response style. Direct responses exist only for integrations that need them.
+- Every Datastar action response is SSE, matching Datastar's SDK spec and its official TypeScript SDK.
 - Signals are browser-side input and feedback, not the durable state model for an application.
 - Framework concerns (routing, auth, sessions, databases, deployment) stay outside the package.
 
