@@ -101,8 +101,8 @@ export const datastarDefaults = {
 }
 
 /**
- * Error thrown when an SSE field value contains characters that would corrupt
- * the line-oriented SSE protocol (newlines, carriage returns, control chars).
+ * Error thrown when an SSE field value would corrupt the line-oriented SSE protocol: a line break or
+ * other control character in a single-line field, or a retry delay that is not whole milliseconds.
  */
 export class SseFieldError extends Error {
   constructor(
@@ -164,6 +164,10 @@ const serializeEvent = (
   }
 
   if (options.retry !== undefined && options.retry !== datastarDefaults.retry) {
+    // EventSource ignores a retry field that is not a run of ASCII digits.
+    if (!Number.isSafeInteger(options.retry) || options.retry < 0) {
+      throw new SseFieldError("retry", String(options.retry))
+    }
     out.push(`retry: ${options.retry}`)
   }
 

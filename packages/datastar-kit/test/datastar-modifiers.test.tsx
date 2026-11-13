@@ -56,6 +56,10 @@ describe("Datastar modifier validation", () => {
     const objectDelay = mod(save, { delay: {} })
     // @ts-expect-error Structured timing options require a duration.
     const missingDuration = mod(save, { debounce: { leading: true } })
+    // @ts-expect-error Throttle has no leading flag; Datastar throttles on the leading edge already.
+    const throttleLeading = mod(save, { throttle: { duration: 100, leading: true } })
+    // @ts-expect-error Debounce has no trailing flag; Datastar debounces on the trailing edge already.
+    const debounceTrailing = mod(save, { debounce: { duration: 100, trailing: true } })
 
     expect(() => renderModified("data-on:click", unknown)).toThrow(
       'Unknown Datastar modifier "preevent"'
@@ -71,6 +75,12 @@ describe("Datastar modifier validation", () => {
     )
     expect(() => renderModified("data-on:click", missingDuration)).toThrow(
       'Datastar modifier "debounce" requires a duration'
+    )
+    expect(() => renderModified("data-on:click", throttleLeading)).toThrow(
+      'Datastar modifier "throttle" does not accept "leading"'
+    )
+    expect(() => renderModified("data-on:click", debounceTrailing)).toThrow(
+      'Datastar modifier "debounce" does not accept "trailing"'
     )
   })
 

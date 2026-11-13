@@ -4,8 +4,19 @@
 
 ### Added
 
+- Exported `HtmlNameError` from the root and `SseFieldError` from `event` and `reply`, so callers can catch the errors these helpers throw with `instanceof`.
+
 - Added `query(url, options?)`, which builds Datastar's `@query()` action for HTTP `QUERY` requests with signals in the request body. `read.signals(request)` already reads `QUERY` bodies. Requires Datastar 1.0.4.
 - Added a `nonce` option to `reply.page(...)`. It renders `data-nonce` on `<html>`, which turns on Datastar's CSP mode so pages can run without `unsafe-eval`. Requires Datastar 1.0.3.
+
+### Fixed
+
+- Fixed JSX elements whose `key` comes after a spread, such as `<li {...props} key={id} />`, failing to load: TypeScript and esbuild compile them to `createElement` imported from `datastar-kit`, which the package now exports.
+- `debounce` and `throttle` options no longer drop flags silently. Each accepts only its own flags (`leading`/`noTrailing` for debounce, `noLeading`/`trailing` for throttle), in the types and at runtime. `TimingModifierOptions` is now the union of the new `DebounceModifierOptions` and `ThrottleModifierOptions`.
+- An SSE `retry` that is not a non-negative whole number of milliseconds now throws `SseFieldError` instead of writing a line `EventSource` ignores.
+- `js` and the other expression helpers now throw a `TypeError` for functions and symbols instead of rendering them as strings, and render bigints as bigint literals (`10n`).
+- A malformed or non-HTTP(S) entry in `allowedOrigins` now throws a `TypeError` naming it, instead of never matching.
+- `readEvents` reads a field line without a colon as a field with an empty value, as the SSE spec does, and reports invalid signal JSON as a `DatastarEventError`.
 
 ### Changed
 
@@ -35,7 +46,6 @@
 
 ### Removed
 
-- Removed `reply.directHtml`, `reply.directSignals`, and `reply.directScript` and their option types. They sent the same updates as `reply.patch`, `reply.signals`, and `event.script` in a second, non-SSE format, and offered nothing the SSE replies lack: an SSE reply can opt into browser caching with a `Cache-Control` header in `init` just the same. Datastar's SDK spec and its official TypeScript SDK send only SSE as well.
 - Removed the `datastar-kit/debugger` subpath and its Web Component. The debugger is no longer part of Datastar Kit.
 
 ## 0.5.0 - 2026-07-25
@@ -47,7 +57,6 @@
 
 ### Removed
 
-- Removed `reply.directHtml`, `reply.directSignals`, and `reply.directScript` and their option types. They sent the same updates as `reply.patch`, `reply.signals`, and `event.script` in a second, non-SSE format, and offered nothing the SSE replies lack: an SSE reply can opt into browser caching with a `Cache-Control` header in `init` just the same. Datastar's SDK spec and its official TypeScript SDK send only SSE as well.
 - Removed the server-rendered `DatastarDebugger` component. Load the development-only Web Component from `datastar-kit/debugger` instead.
 - Removed `state(...).ref(path)` and its `StatePathError`/path helper types; use `state(...).refs` for known leaf refs or `Signal.path(...)` for dynamic child refs.
 
@@ -100,7 +109,6 @@
 
 ### Removed
 
-- Removed `reply.directHtml`, `reply.directSignals`, and `reply.directScript` and their option types. They sent the same updates as `reply.patch`, `reply.signals`, and `event.script` in a second, non-SSE format, and offered nothing the SSE replies lack: an SSE reply can opt into browser caching with a `Cache-Control` header in `init` just the same. Datastar's SDK spec and its official TypeScript SDK send only SSE as well.
 - Removed the root `ds` namespace export; import Datastar authoring helpers directly from `datastar-kit`.
 - Removed the `expr(...)` public alias; use `js(...)` / `js\`...\``.
 - Removed the Datastar attribute prop-fragment DSL: write native `data-*` Datastar attributes in TSX instead.

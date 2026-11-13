@@ -51,7 +51,8 @@ const parseRawEvent = (block: string): RawEvent => {
   const data = new Map<string, string>()
 
   for (const line of block.split("\n")) {
-    const colon = line.indexOf(":")
+    // A line without a colon is a field name with an empty value.
+    const colon = line.includes(":") ? line.indexOf(":") : line.length
     const field = line.slice(0, colon)
     const value = line.slice(colon + 1).replace(/^ /u, "")
 
@@ -70,11 +71,19 @@ const parseRawEvent = (block: string): RawEvent => {
   return { event, id, retry, data }
 }
 
+const parseSignals = (text: string): SignalState => {
+  try {
+    return JSON.parse(text)
+  } catch (cause) {
+    throw new DatastarEventError(`Invalid patch-signals JSON: ${JSON.stringify(text)}`, { cause })
+  }
+}
+
 const toDatastarEvent = ({ event, id, retry, data }: RawEvent): DatastarEvent => {
   if (event === PATCH_SIGNALS_EVENT) {
     return {
       type: "patch-signals",
-      signals: JSON.parse(data.get("signals") ?? "{}"),
+      signals: parseSignals(data.get("signals") ?? "{}"),
       onlyIfMissing: data.get("onlyIfMissing") === "true",
       id,
       retry

@@ -1,13 +1,23 @@
-/**
- * Structured timing options for Datastar debounce and throttle modifiers.
- */
-export type TimingModifierOptions = Readonly<{
+/** Structured options for Datastar's `debounce` modifier, which fires on the trailing edge. */
+export type DebounceModifierOptions = Readonly<{
   duration: string | number
+  /** Also fire on the leading edge. */
   leading?: boolean
+  /** Skip the trailing-edge call. */
   noTrailing?: boolean
+}>
+
+/** Structured options for Datastar's `throttle` modifier, which fires on the leading edge. */
+export type ThrottleModifierOptions = Readonly<{
+  duration: string | number
+  /** Skip the leading-edge call. */
   noLeading?: boolean
+  /** Also fire on the trailing edge. */
   trailing?: boolean
 }>
+
+/** Structured timing options for Datastar debounce and throttle modifiers. */
+export type TimingModifierOptions = DebounceModifierOptions | ThrottleModifierOptions
 
 /** @internal Supported Datastar key casing conversions used by the JSX modifier cleaner. */
 export const datastarCaseModifiers = ["camel", "kebab", "snake", "pascal"] as const
@@ -21,12 +31,11 @@ export type CaseModifier = (typeof datastarCaseModifiers)[number]
  * The JSX runtime turns these options into Datastar's `__modifier` attribute-name suffixes.
  */
 type DurationModifier = boolean | string | number
-type TimingModifier = DurationModifier | TimingModifierOptions
 
 export type DatastarModifierOptions = Readonly<{
   capture?: boolean
   case?: CaseModifier
-  debounce?: TimingModifier
+  debounce?: DurationModifier | DebounceModifierOptions
   delay?: DurationModifier
   document?: boolean
   duration?: DurationModifier
@@ -53,7 +62,7 @@ export type DatastarModifierOptions = Readonly<{
   stop?: boolean
   terse?: boolean
   threshold?: string | number
-  throttle?: TimingModifier
+  throttle?: DurationModifier | ThrottleModifierOptions
   viewTransition?: boolean
   window?: boolean
 }>
@@ -67,9 +76,25 @@ type UnknownModifierMessage<Key extends PropertyKey> = Key extends string
   ? `Unknown Datastar modifier: ${Key}`
   : "Unknown Datastar modifier"
 
+// Generic inference skips excess-property checks, so a flag from the other timing modifier, such as
+// `throttle: { leading: true }`, is mapped to the exact options type to surface the error.
+type ExactTimingOptions<Value, Options> = Value extends { readonly duration: unknown }
+  ? Exclude<keyof Value, keyof Options> extends never
+    ? Value
+    : Options
+  : Value
+
 type NoUnknownModifierKeys<Modifiers extends DatastarModifierOptions> =
   Exclude<keyof Modifiers, DatastarModifierKey> extends never
-    ? Modifiers
+    ? Extract<keyof Modifiers, "debounce" | "throttle"> extends never
+      ? Modifiers
+      : {
+          [Key in keyof Modifiers]: Key extends "debounce"
+            ? ExactTimingOptions<Modifiers[Key], DebounceModifierOptions>
+            : Key extends "throttle"
+              ? ExactTimingOptions<Modifiers[Key], ThrottleModifierOptions>
+              : Modifiers[Key]
+        }
     : UnknownModifierMessage<Exclude<keyof Modifiers, DatastarModifierKey>>
 
 const datastarModifiedValueBrand: unique symbol = Symbol("datastar-kit.modified-value")

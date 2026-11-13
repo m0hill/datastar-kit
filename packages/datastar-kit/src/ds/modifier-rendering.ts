@@ -74,6 +74,18 @@ const isModifierRecord = (value: unknown): value is Readonly<Record<string, unkn
 const isModifierOff = (value: unknown): boolean =>
   value === false || value === null || value === undefined
 
+// Each timing modifier's flags and the tags Datastar reads for them.
+const timingFlags = {
+  debounce: new Map([
+    ["leading", "leading"],
+    ["noTrailing", "notrailing"]
+  ]),
+  throttle: new Map([
+    ["noLeading", "noleading"],
+    ["trailing", "trailing"]
+  ])
+}
+
 const timingTags = (key: "debounce" | "throttle", value: unknown): string => {
   if (!isModifierRecord(value)) return durationModifier(value)
 
@@ -83,12 +95,15 @@ const timingTags = (key: "debounce" | "throttle", value: unknown): string => {
   }
 
   const tags = [durationModifier(duration)]
-  if (key === "debounce") {
-    if (value.leading === true) tags.push("leading")
-    if (value.noTrailing === true) tags.push("notrailing")
-  } else {
-    if (value.noLeading === true) tags.push("noleading")
-    if (value.trailing === true) tags.push("trailing")
+  for (const [flag, enabled] of Object.entries(value)) {
+    if (flag === "duration") continue
+    const tag = timingFlags[key].get(flag)
+    if (tag === undefined) {
+      throw new TypeError(
+        `Datastar modifier ${JSON.stringify(key)} does not accept ${JSON.stringify(flag)}`
+      )
+    }
+    if (enabled === true) tags.push(tag)
   }
   return tags.join(".")
 }

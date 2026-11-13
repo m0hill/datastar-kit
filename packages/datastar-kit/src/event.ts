@@ -8,6 +8,7 @@ import {
 } from "./sse.js"
 
 export { NavigationUrlError } from "./navigation.js"
+export { SseFieldError } from "./sse.js"
 export {
   comment,
   executeScript as script,

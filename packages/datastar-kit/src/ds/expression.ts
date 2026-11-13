@@ -82,11 +82,11 @@ export const toJs = (value: ExprInput<unknown>): string => {
       .join(", ")}}`
   }
 
-  if (typeof value === "bigint" || typeof value === "function" || typeof value === "symbol") {
-    return JSON.stringify(String(value))
+  if (typeof value === "bigint") {
+    return `${value}n`
   }
 
-  return JSON.stringify("")
+  throw new TypeError(`Cannot serialize a ${typeof value} as a Datastar expression`)
 }
 
 /**

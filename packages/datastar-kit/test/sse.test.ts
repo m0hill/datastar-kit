@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import * as event from "../src/event.js"
-import { unsafeHtml } from "../src/html.js"
+import { HtmlNameError, unsafeHtml } from "../src/index.js"
 
 describe("Datastar SSE encoding", () => {
   it("encodes SSE comments for manual heartbeats", () => {
@@ -54,8 +54,14 @@ describe("Datastar SSE encoding", () => {
     )
   })
 
+  it("rejects retry delays that are not whole milliseconds", () => {
+    for (const retry of [Number.NaN, -1, 1.5, Number.POSITIVE_INFINITY]) {
+      expect(() => event.signals({ a: 1 }, { retry })).toThrow(event.SseFieldError)
+    }
+  })
+
   it("rejects line breaks in single-line SSE fields", () => {
-    const invalidField = /Invalid Datastar SSE/
+    const invalidField = event.SseFieldError
     expect(() => event.patch("x", { id: "a\nb" })).toThrow(invalidField)
     expect(() => event.signals({ a: 1 }, { id: "bad\rid" })).toThrow(invalidField)
     expect(() => event.patch("x", { selector: "#x\ndata: elements <script>" })).toThrow(
@@ -89,6 +95,6 @@ describe("Datastar SSE encoding", () => {
       event.script("console.log('hello')", {
         attributes: { 'type" onclick="alert(1)': "module" }
       })
-    ).toThrow(/Invalid HTML attribute name/)
+    ).toThrow(HtmlNameError)
   })
 })

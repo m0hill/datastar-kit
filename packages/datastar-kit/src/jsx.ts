@@ -84,6 +84,24 @@ export const Fragment = (props: {
 }): HtmlChild => props.children
 
 /**
+ * Classic element factory. TypeScript and esbuild import it from `datastar-kit` for an element
+ * whose `key` follows a spread, where the automatic `jsx()` call cannot keep the key separate.
+ *
+ * @internal
+ */
+export const createElement = (
+  tag: JsxTag,
+  props: Readonly<Record<string, unknown>> | null,
+  ...children: readonly HtmlChild[]
+): HtmlChild =>
+  createJsxElement(
+    tag,
+    children.length === 0
+      ? props
+      : { ...props, children: children.length === 1 ? children[0] : children }
+  )
+
+/**
  * Internal JSX tag input accepted by the automatic runtime.
  *
  * @internal

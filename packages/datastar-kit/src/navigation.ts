@@ -20,6 +20,16 @@ export class NavigationUrlError extends Error {
   }
 }
 
+// A misspelled allowlist entry would otherwise just never match, so it fails loudly instead.
+const allowedOrigins = (options: NavigationSafetyOptions): string[] =>
+  (options.allowedOrigins ?? []).map((origin) => {
+    const allowed = URL.parse(origin.toString())
+    if (allowed === null || (allowed.protocol !== "http:" && allowed.protocol !== "https:")) {
+      throw new TypeError(`Invalid allowed navigation origin: ${JSON.stringify(origin.toString())}`)
+    }
+    return allowed.origin
+  })
+
 /**
  * Normalizes navigation targets and rejects cross-origin or non-HTTP(S) URLs by default.
  */
@@ -28,6 +38,7 @@ export const safeNavigationUrl = (
   options: NavigationSafetyOptions = {}
 ): string => {
   const raw = input.toString()
+  const allowed = allowedOrigins(options)
   if (/[\u0000-\u001F\u007F]/u.test(raw)) {
     throw new NavigationUrlError(raw)
   }
@@ -49,18 +60,8 @@ export const safeNavigationUrl = (
     return `${url.pathname}${url.search}${url.hash}`
   }
 
-  for (const origin of options.allowedOrigins ?? []) {
-    try {
-      const allowed = new URL(origin.toString())
-      if (
-        (allowed.protocol === "http:" || allowed.protocol === "https:") &&
-        allowed.origin === url.origin
-      ) {
-        return url.toString()
-      }
-    } catch {
-      // Treat malformed allowlist entries as non-matches.
-    }
+  if (allowed.includes(url.origin)) {
+    return url.toString()
   }
 
   throw new NavigationUrlError(raw)

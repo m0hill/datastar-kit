@@ -88,6 +88,28 @@ describe("automatic JSX runtime", () => {
     expect(renderToString(node)).toBe("<span>Shown</span>Plain text7")
   })
 
+  // TypeScript and esbuild compile a key written after a spread to `createElement` imported from
+  // the jsxImportSource root, not to `jsx`.
+  it("renders an element whose key follows a spread", () => {
+    const props = { id: "save", className: "primary" }
+    const items = ["a", "b"]
+
+    expect(
+      renderToString(
+        <ul>
+          {items.map((item) => (
+            <li
+              {...props}
+              key={item}
+            >
+              {item}
+            </li>
+          ))}
+        </ul>
+      )
+    ).toBe('<ul><li id="save" class="primary">a</li><li id="save" class="primary">b</li></ul>')
+  })
+
   it("passes single and multiple children to components", () => {
     interface LinkProps {
       readonly href: string

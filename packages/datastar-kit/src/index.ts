@@ -18,8 +18,10 @@ export type {
   HtmlVoidGlobalAttributes,
   SvgElementAttributes
 } from "./html-attributes.js"
-export { h, renderToString, unsafeHtml } from "./html.js"
+export { h, HtmlNameError, renderToString, unsafeHtml } from "./html.js"
 export type { HtmlChild, HtmlNode, HtmlProps, HtmlPropValue } from "./html.js"
+/** @internal Compiler-only factory for an element whose `key` follows a spread. */
+export { createElement } from "./jsx.js"
 export type { JsxProps } from "./jsx.js"
 export type { CustomJsxAttributes, CustomJsxElements } from "./jsx-runtime.js"
 export type { SignalState, SignalValue } from "./types.js"

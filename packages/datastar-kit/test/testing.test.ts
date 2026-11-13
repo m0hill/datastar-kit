@@ -97,5 +97,16 @@ describe("readEvents", () => {
     await expect(
       readEvents(reply.stream(["event: datastar-patch-elements\ndata: mode sideways\n\n"]))
     ).rejects.toThrow('Unexpected patch-elements mode: "sideways"')
+    await expect(
+      readEvents(reply.stream(["event: datastar-patch-signals\ndata: signals {oops\n\n"]))
+    ).rejects.toThrow(DatastarEventError)
+  })
+
+  it("reads a field line without a colon as a field with an empty value", async () => {
+    const events = await readEvents(
+      reply.stream(["event: datastar-patch-signals\nid\ndata: signals {}\n\n"])
+    )
+
+    expect(events).toEqual([expect.objectContaining({ id: "" })])
   })
 })

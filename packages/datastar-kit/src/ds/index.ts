@@ -44,7 +44,13 @@ export { js, regex, RegexExpressionError } from "./expression.js"
 export type { DatastarFunction, Expr, ExprInput } from "./expression.js"
 
 export { mod } from "./modifiers.js"
-export type { CaseModifier, DatastarModifierOptions, TimingModifierOptions } from "./modifiers.js"
+export type {
+  CaseModifier,
+  DatastarModifierOptions,
+  DebounceModifierOptions,
+  ThrottleModifierOptions,
+  TimingModifierOptions
+} from "./modifiers.js"
 
 export { local, Signal, SignalNameError, signal } from "./signals.js"
 export type { SignalStateInput, SignalTarget, SignalValueInput } from "./signals.js"

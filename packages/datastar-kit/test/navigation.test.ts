@@ -38,11 +38,20 @@ describe("event.navigate URL safety", () => {
     expect(
       target("https://docs.example/start?x=1", {
         baseUrl,
-        allowedOrigins: ["not a url", new URL("https://docs.example/ignored-path")]
+        allowedOrigins: [new URL("https://docs.example/ignored-path")]
       })
     ).toBe("https://docs.example/start?x=1")
     expect(() =>
       target("http://docs.example/start", { baseUrl, allowedOrigins: ["https://docs.example"] })
     ).toThrow(event.NavigationUrlError)
+  })
+
+  it.each([
+    ["a malformed origin", "not a url"],
+    ["a non-HTTP origin", "ftp://docs.example"]
+  ])("rejects %s in allowedOrigins instead of ignoring it", (_label, origin) => {
+    expect(() => target("/home", { baseUrl, allowedOrigins: [origin] })).toThrow(
+      `Invalid allowed navigation origin: ${JSON.stringify(origin)}`
+    )
   })
 })

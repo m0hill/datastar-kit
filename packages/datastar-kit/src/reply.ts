@@ -8,6 +8,7 @@ import {
 import type { SignalState } from "./types.js"
 
 export { NavigationUrlError } from "./navigation.js"
+export { SseFieldError } from "./sse.js"
 
 /**
  * Safe network configuration for Datastar action helpers.

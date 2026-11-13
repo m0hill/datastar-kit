@@ -124,7 +124,7 @@ can declare their result with `js<T>(...)`.
 
 Datastar action response helpers own their protocol status codes, so their native `init` type does not accept `status` or `statusText`. Use `reply.page(...)` or a plain `Response` for ordinary HTTP status semantics.
 
-`reply.NavigationUrlError` is thrown when navigation URLs are malformed, unsafe, or disallowed by the provided navigation options.
+`reply.NavigationUrlError` is thrown when navigation URLs are malformed, unsafe, or disallowed by the provided navigation options. `reply.SseFieldError` (also `event.SseFieldError`) is thrown when an event field would corrupt the SSE stream: a line break in an `id` or `selector`, or a `retry` that is not a non-negative whole number of milliseconds.
 
 ## `event`
 
@@ -148,6 +148,7 @@ Use `event.*` when one response needs multiple events or a long-lived stream.
 | `renderToString(node)` | Serialize Datastar Kit HTML nodes and TSX output.            |
 | `unsafeHtml(html)`     | Mark trusted HTML as already safe.                           |
 | `dataAttrs(values)`    | Type-check a primitive custom `data-*` attribute spread bag. |
+| `HtmlNameError`        | Thrown when a tag or attribute name cannot render safely.    |
 
 Types exported from the root include `CustomJsxAttributes`, `CustomJsxElements`, `DataAttributes`,
 `HtmlChild`, `HtmlNode`, `HtmlProps`, `HtmlPropValue`, `SignalState`, and `SignalValue`. Augment

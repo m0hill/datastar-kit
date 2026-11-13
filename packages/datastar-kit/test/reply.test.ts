@@ -58,6 +58,10 @@ describe("reply page, navigation, and no-content responses", () => {
     )
   })
 
+  it("exposes the SSE field error its helpers throw", () => {
+    expect(() => reply.signals({ a: 1 }, { id: "a\nb" })).toThrow(reply.SseFieldError)
+  })
+
   it("completes commands with an empty 204 response", async () => {
     const response = reply.done({ headers: { "x-done": "yes" } })
 
