@@ -164,7 +164,6 @@ wrappers remain limited to built-in Datastar attributes with modifier metadata.
 
 | Subpath                        | Use                                                                            |
 | ------------------------------ | ------------------------------------------------------------------------------ |
-| `datastar-kit/sse`             | Low-level Datastar SSE encoders and comment chunks for custom integrations.    |
 | `datastar-kit/testing`         | `readEvents()` decodes Datastar SSE responses into events for test assertions. |
 | `datastar-kit/jsx-runtime`     | TypeScript automatic JSX runtime entrypoint.                                   |
 | `datastar-kit/jsx-dev-runtime` | TypeScript automatic JSX development runtime entrypoint.                       |

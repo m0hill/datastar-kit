@@ -24,7 +24,6 @@ Use Datastar Kit for:
 | Signal request decoding         | `read.signals(request)`                                                                                    |
 | Datastar responses              | `reply.page(...)`, `reply.patch(...)`, `reply.signals(...)`, `reply.stream(...)`, `reply.done(...)`        |
 | Stream chunks                   | `event.patch(...)`, `event.signals(...)`, `event.navigate(...)`, `event.script(...)`, `event.comment(...)` |
-| Low-level protocol tests        | `datastar-kit/sse`                                                                                         |
 
 The public APIs stay close to Web Standards: `Request`, `Response`, `Headers`, `URL`, `ReadableStream`, and plain objects.
 

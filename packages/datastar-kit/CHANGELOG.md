@@ -12,6 +12,10 @@
 - Documented support for every Datastar `1.0.x` release, from `1.0.0` to `1.0.4`, with the minimum Datastar version for each feature that needs a newer runtime. The browser tests now run against every Datastar release from 1.0.0 to 1.0.4.
 - Examples and docs now load Datastar `v1.0.4`.
 
+### Removed
+
+- Removed the `datastar-kit/sse` subpath. It duplicated `event.*`: use `event.patch`, `event.signals`, `event.script`, and `event.comment` inside `reply.stream(...)`. For an HTML string from another template engine, pass `unsafeHtml(html)` to `event.patch`.
+
 ## 0.6.0 - 2026-10-18
 
 ### Added
