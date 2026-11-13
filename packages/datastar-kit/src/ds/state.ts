@@ -1,8 +1,6 @@
 import type { SignalState, SignalValue } from "../types.js"
 import { assertSignalName, Signal, SignalNameError } from "./signals.js"
 
-type SignalObject = SignalState
-
 type IsUnion<T, Candidate = T> = [T] extends [never]
   ? false
   : T extends unknown
@@ -29,11 +27,11 @@ type WidenSignalValue<Value extends SignalValue> = [Value] extends [string]
         ? null
         : [Value] extends [readonly (infer Item extends SignalValue)[]]
           ? readonly WidenSignalValue<Item>[]
-          : [Value] extends [SignalObject]
+          : [Value] extends [SignalState]
             ? WidenSignalObject<Value>
             : Value
 
-type WidenSignalObject<T extends SignalObject> = {
+type WidenSignalObject<T extends SignalState> = {
   readonly [Key in keyof T & string]: WidenSignalValue<T[Key]>
 }
 
@@ -41,18 +39,18 @@ type SignalRefFor<Value extends SignalValue, Name extends string> = [Value] exte
   readonly SignalValue[]
 ]
   ? Signal<Value, Name>
-  : [Value] extends [SignalObject]
+  : [Value] extends [SignalState]
     ? StateSignalRefs<Value, Name>
     : Signal<Value, Name>
 
 type StatePatchValue<Value extends SignalValue> = [Value] extends [readonly SignalValue[]]
   ? Value | null
-  : [Value] extends [SignalObject]
+  : [Value] extends [SignalState]
     ? StatePatch<Value> | null
     : Value | null
 
 /** Nested typed Datastar signal references for a `state(...)` object. */
-export type StateSignalRefs<T extends SignalObject, Prefix extends string = ""> = {
+export type StateSignalRefs<T extends SignalState, Prefix extends string = ""> = {
   readonly [Key in keyof T & string]: SignalRefFor<
     T[Key],
     Prefix extends "" ? Key : `${Prefix}.${Key}`
@@ -60,12 +58,12 @@ export type StateSignalRefs<T extends SignalObject, Prefix extends string = ""> 
 }
 
 /** Type-checked partial signal patch accepted by a `state(...)` helper. */
-export type StatePatch<T extends SignalObject> = {
+export type StatePatch<T extends SignalState> = {
   readonly [Key in keyof T & string]?: StatePatchValue<T[Key]>
 }
 
 /** A typed signal-state helper created by `state(...)`. */
-export interface State<T extends SignalObject> {
+export interface State<T extends SignalState> {
   /** Initial signal values supplied to `state(...)`. */
   readonly defaults: T
   /** Nested typed leaf signal refs. */
@@ -77,7 +75,7 @@ export interface State<T extends SignalObject> {
 }
 
 // Walking a JSON tree requires telling objects apart from primitives and arrays.
-const isSignalObject = (value: SignalValue): value is SignalObject =>
+const isSignalObject = (value: SignalValue): value is SignalState =>
   typeof value === "object" && value !== null && !Array.isArray(value)
 
 const freezeSignalValue = (value: SignalValue): SignalValue => {
@@ -93,7 +91,7 @@ const freezeSignalValue = (value: SignalValue): SignalValue => {
   return value
 }
 
-const freezeSignalState = <T extends SignalObject>(value: T): T => {
+const freezeSignalState = <T extends SignalState>(value: T): T => {
   for (const item of Object.values(value)) {
     freezeSignalValue(item)
   }
@@ -109,7 +107,7 @@ const mergeSignalValue = (base: SignalValue | undefined, override: SignalValue):
   return structuredClone(override)
 }
 
-const mergeSignalState = (base: SignalObject, overrides: SignalObject): SignalState => {
+const mergeSignalState = (base: SignalState, overrides: SignalState): SignalState => {
   const merged: Record<string, SignalValue> = structuredClone(base)
 
   for (const [key, value] of Object.entries(overrides)) {
@@ -129,7 +127,7 @@ const assertStateKey = (key: string): void => {
 
 type SignalRefTree = { readonly [key: string]: Signal<SignalValue> | SignalRefTree }
 
-const buildRefs = (value: SignalObject, prefix = ""): SignalRefTree =>
+const buildRefs = (value: SignalState, prefix = ""): SignalRefTree =>
   Object.fromEntries(
     Object.entries(value).map(([key, item]) => {
       assertStateKey(key)
@@ -144,7 +142,7 @@ const buildRefs = (value: SignalObject, prefix = ""): SignalRefTree =>
  * `state(...)` keeps initial values, signal refs, reset payloads, and partial signal patches
  * derived from one object. It does not read requests or perform schema validation.
  */
-export const state = <T extends SignalObject>(defaults: T): State<WidenSignalObject<T>> => {
+export const state = <T extends SignalState>(defaults: T): State<WidenSignalObject<T>> => {
   // SAFETY: WidenSignalObject<T> only widens literal types, so the cloned defaults still match it.
   const clonedDefaults = freezeSignalState(structuredClone(defaults)) as WidenSignalObject<T>
   // SAFETY: buildRefs mirrors the defaults tree with a Signal per leaf and a subtree per object.
@@ -156,13 +154,13 @@ export const state = <T extends SignalObject>(defaults: T): State<WidenSignalObj
     patch(values) {
       // SAFETY: every StatePatch value is a SignalValue or null; TypeScript cannot prove that for a
       // generic mapped type.
-      return structuredClone(values as SignalObject)
+      return structuredClone(values as SignalState)
     },
     reset(overrides) {
       return overrides === undefined
         ? structuredClone(clonedDefaults)
         : // SAFETY: as in patch(), StatePatch values are always SignalValues or null.
-          mergeSignalState(clonedDefaults, overrides as SignalObject)
+          mergeSignalState(clonedDefaults, overrides as SignalState)
     }
   }
 }

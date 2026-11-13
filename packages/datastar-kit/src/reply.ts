@@ -266,7 +266,7 @@ export const stream = (
  * @returns A `204` no-content `Response`.
  */
 export const done = (init: StreamResponseInit = {}): Response =>
-  new Response(null, { status: 204, headers: mergeHeaders({}, init.headers) })
+  new Response(null, { status: 204, headers: new Headers(init.headers) })
 
 /**
  * Creates a Datastar SSE response that safely navigates the browser.

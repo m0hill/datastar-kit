@@ -100,12 +100,15 @@ export const assertHtmlAttributeName = (name: string): void => {
   }
 }
 
+// Attributes that render bare when true and are left out when false. `capture` and `download` also
+// take string values, which render as usual.
 const booleanAttributes = new Set([
   "allowfullscreen",
   "allowpaymentrequest",
   "async",
   "autofocus",
   "autoplay",
+  "capture",
   "checked",
   "compact",
   "controls",
@@ -116,6 +119,7 @@ const booleanAttributes = new Set([
   "disabled",
   "disablepictureinpicture",
   "disableremoteplayback",
+  "download",
   "formnovalidate",
   "hidden",
   "inert",
@@ -144,15 +148,8 @@ const booleanAttributes = new Set([
   "webkitdirectory"
 ])
 
-const overloadedBooleanAttributes = new Set(["capture", "download"])
-
-const isBooleanAttribute = (name: string): boolean => {
-  const normalized = name.toLowerCase()
-  return booleanAttributes.has(normalized) || overloadedBooleanAttributes.has(normalized)
-}
-
 const isPresenceAttribute = (name: string): boolean =>
-  isBooleanAttribute(name) || isDatastarPresenceAttribute(name)
+  booleanAttributes.has(name.toLowerCase()) || isDatastarPresenceAttribute(name)
 
 /** @internal Renders HTML attributes with a leading space when any attributes are present. */
 export const renderHtmlAttributes = (props: HtmlProps): string => {
