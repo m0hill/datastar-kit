@@ -14,7 +14,7 @@
 
 ### Fixed
 
-- Radio inputs and single selects accept `data-bind` signals typed as a union of their values, such as `signal<"light" | "dark">`. They write back one of the rendered values, so the signal no longer has to accept any string.
+- Radio inputs and single selects accept `data-bind` signals typed as a union of their values, such as `signal<"light" | "dark">`. They write back one of the rendered values, so the signal no longer has to accept any string. Signals typed `string | number` still bind.
 - Fixed JSX elements whose `key` comes after a spread, such as `<li {...props} key={id} />`, failing to load: TypeScript and esbuild compile them to `createElement` imported from `datastar-kit`, which the package now exports.
 - `debounce` and `throttle` options no longer drop flags silently. Each accepts only its own flags (`leading`/`noTrailing` for debounce, `noLeading`/`trailing` for throttle), in the types and at runtime. `TimingModifierOptions` is now the union of the new `DebounceModifierOptions` and `ThrottleModifierOptions`.
 - An SSE `retry` that is not a non-negative whole number of milliseconds now throws `SseFieldError` instead of writing a line `EventSource` ignores.

@@ -147,6 +147,7 @@ typecheckOnly(() => {
   const checks = signal<readonly boolean[]>("checks")
   const theme = signal<"light" | "dark">("theme")
   const size = signal<1 | 2>("size")
+  const mixedId = signal<string | number>("mixedId")
   const nodes = [
     <input data-bind={text} />,
     <input data-bind={count} />,
@@ -190,6 +191,12 @@ typecheckOnly(() => {
       value={2}
       data-bind={size}
     />,
+    <input
+      type="radio"
+      value="a"
+      data-bind={mixedId}
+    />,
+    <select data-bind={mixedId} />,
     <input data-bind="uncheckedInput" />,
     <input data-bind={mod(object, { prop: "customValue", event: "change" })} />,
     <typed-widget

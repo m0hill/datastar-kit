@@ -1111,6 +1111,7 @@ type StringOrNumberInputBindReference =
 type ChoiceBindReference =
   | DatastarSignalReference<string, never>
   | DatastarSignalReference<number, never>
+  | DatastarSignalReference<string | number, never>
 type BooleanOrStringInputBindReference =
   | DatastarSignalReference<boolean, boolean>
   | StringBindReference
