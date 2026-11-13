@@ -4,19 +4,16 @@
 
 ### Added
 
+- Typed `<template>` attributes for declarative shadow DOM (`shadowrootmode`, `shadowrootclonable`, `shadowrootdelegatesfocus`, `shadowrootserializable`, `shadowrootcustomelementregistry`, `shadowrootslotassignment`), `webkitdirectory` on file inputs, and `credentialless` on iframes.
 - Elements accept React-style names for multi-word attributes, such as `maxLength`, `readOnly`, `tabIndex`, `autoComplete`, and `colSpan`, alongside `className` and `htmlFor`. Each alias renders as its HTML attribute and is accepted only on elements that have that attribute. When both names are written, the HTML name wins.
-
 - Added first-class function views: `h.<tag>(props, ...children)` for every HTML and SVG tag, `h(Component, props, ...children)` for components, and `h("my-element", props, ...children)` for custom elements and dynamic tags. `h()` and JSX share one element core, so props are typed by the same element types (including `CustomJsxAttributes` and `CustomJsxElements` registrations) and render identical HTML. Because props are object literals, `h()` also rejects misspelled attributes that JSX accepts. `Fragment`, `ElementFactory`, and `IntrinsicElementProps` are exported from the root.
-
 - Exported `HtmlNameError` from the root and `SseFieldError` from `event` and `reply`, so callers can catch the errors these helpers throw with `instanceof`.
-
 - Added `query(url, options?)`, which builds Datastar's `@query()` action for HTTP `QUERY` requests with signals in the request body. `read.signals(request)` already reads `QUERY` bodies. Requires Datastar 1.0.4.
 - Added a `nonce` option to `reply.page(...)`. It renders `data-nonce` on `<html>`, which turns on Datastar's CSP mode so pages can run without `unsafe-eval`. Requires Datastar 1.0.3.
 
 ### Fixed
 
 - Radio inputs and single selects accept `data-bind` signals typed as a union of their values, such as `signal<"light" | "dark">`. They write back one of the rendered values, so the signal no longer has to accept any string.
-
 - Fixed JSX elements whose `key` comes after a spread, such as `<li {...props} key={id} />`, failing to load: TypeScript and esbuild compile them to `createElement` imported from `datastar-kit`, which the package now exports.
 - `debounce` and `throttle` options no longer drop flags silently. Each accepts only its own flags (`leading`/`noTrailing` for debounce, `noLeading`/`trailing` for throttle), in the types and at runtime. `TimingModifierOptions` is now the union of the new `DebounceModifierOptions` and `ThrottleModifierOptions`.
 - An SSE `retry` that is not a non-negative whole number of milliseconds now throws `SseFieldError` instead of writing a line `EventSource` ignores.
@@ -27,13 +24,13 @@
 ### Changed
 
 - `h(tag, props, ...children)` now type-checks props against the element's attributes and normalizes Datastar values like JSX does. Before, it took only primitive props and rendered `mod(...)` and objects as `[object Object]`, signal refs in `data-bind` as `$name`, and `className` as a literal attribute. Arbitrary `data-*` props now go through `...dataAttrs({...})`, as in JSX.
-
 - Documented support for every Datastar `1.0.x` release, from `1.0.0` to `1.0.4`, with the minimum Datastar version for each feature that needs a newer runtime. The browser tests now run against every Datastar release from 1.0.0 to 1.0.4.
 - Examples and docs now load Datastar `v1.0.4`.
 - `reply.navigate(...)` now sends its navigation script as an SSE event instead of a `text/javascript` response, so every Datastar action reply is SSE. Calls stay the same. `NavigateOptions` is now the same type as `event.NavigateOptions`.
 
 ### Removed
 
+- `true` no longer renders as a bare attribute for obsolete HTML boolean attributes (`compact`, `declare`, `nohref`, `noresize`, `nowrap`, `scoped`, `truespeed`, `typemustmatch`, `allowpaymentrequest`). No element type accepts them.
 - Removed the deprecated `DatastarExpression` and `DatastarExpressionValue` types. Use the semantic expression type for the attribute instead: `DatastarReadableExpression`, `DatastarTruthyExpression`, or `DatastarEffectExpression`.
 - Removed `reply.directHtml`, `reply.directSignals`, and `reply.directScript` and their option types. They sent the same updates as `reply.patch`, `reply.signals`, and `event.script` in a second, non-SSE format, and offered nothing the SSE replies lack: an SSE reply can opt into browser caching with a `Cache-Control` header in `init` just the same. Datastar's SDK spec and its official TypeScript SDK send only SSE as well.
 - Removed the `datastar-kit/sse` subpath. It duplicated `event.*`: use `event.patch`, `event.signals`, `event.script`, and `event.comment` inside `reply.stream(...)`. For an HTML string from another template engine, pass `unsafeHtml(html)` to `event.patch`.

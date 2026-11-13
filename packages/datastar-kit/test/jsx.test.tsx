@@ -27,6 +27,27 @@ describe("automatic JSX runtime", () => {
     ).toBe('<input maxlength="40" readonly tabindex="-1" autocomplete="off">')
   })
 
+  it("renders declarative shadow DOM, directory, and credentialless attributes", () => {
+    expect(
+      renderToString(
+        <div>
+          <template
+            shadowrootmode="open"
+            shadowrootclonable
+            shadowrootserializable={false}
+          />
+          <input
+            type="file"
+            webkitdirectory
+          />
+          <iframe credentialless />
+        </div>
+      )
+    ).toBe(
+      '<div><template shadowrootmode="open" shadowrootclonable></template><input type="file" webkitdirectory><iframe credentialless></iframe></div>'
+    )
+  })
+
   it("lets the HTML name win over its React-style alias in either order", () => {
     expect(
       renderToString(
@@ -161,6 +182,8 @@ describe("automatic JSX runtime", () => {
 if (false) {
   // @ts-expect-error An element accepts an alias only when it has the HTML attribute.
   ;<div maxLength={40} />
+  // @ts-expect-error A shadow root mode is "open" or "closed".
+  ;<template shadowrootmode="sealed" />
   // @ts-expect-error The alias takes the HTML attribute's value type.
   ;<input readOnly="yes" />
 }

@@ -387,6 +387,8 @@ export interface HtmlHtmlAttributes extends HtmlGlobalAttributes {
 export interface IframeHtmlAttributes extends HtmlGlobalAttributes {
   allow?: string | undefined
   allowfullscreen?: boolean | undefined
+  /** Loads the iframe in a new, ephemeral context without the parent's cookies or storage. */
+  credentialless?: boolean | undefined
   height?: number | string | undefined
   loading?: "eager" | "lazy" | undefined
   name?: string | undefined
@@ -470,7 +472,20 @@ export interface InputHtmlAttributes extends HtmlVoidGlobalAttributes {
     | "week"
     | undefined
   value?: string | number | undefined
+  /** Lets a file input select a whole directory. */
+  webkitdirectory?: boolean | undefined
   width?: number | string | undefined
+}
+
+/** `<template>` attributes, including those that declare a shadow root in server-rendered HTML. */
+export interface TemplateHtmlAttributes extends HtmlGlobalAttributes {
+  /** Attaches the template's content as a declarative shadow root of its parent. */
+  shadowrootmode?: "open" | "closed" | undefined
+  shadowrootclonable?: boolean | undefined
+  shadowrootcustomelementregistry?: boolean | undefined
+  shadowrootdelegatesfocus?: boolean | undefined
+  shadowrootserializable?: boolean | undefined
+  shadowrootslotassignment?: "named" | "manual" | undefined
 }
 
 export interface ModHtmlAttributes extends HtmlGlobalAttributes {
@@ -817,7 +832,7 @@ interface HtmlElementAttributeDefinitions {
   table: HtmlGlobalAttributes
   tbody: HtmlGlobalAttributes
   td: TdHtmlAttributes
-  template: HtmlGlobalAttributes
+  template: TemplateHtmlAttributes
   textarea: TextareaHtmlAttributes
   tfoot: HtmlGlobalAttributes
   th: ThHtmlAttributes
