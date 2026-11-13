@@ -1,4 +1,13 @@
-import type { PatchElementsMode, PatchElementsNamespace, SignalState } from "./sse.js"
+import {
+  datastarDefaults,
+  PATCH_ELEMENTS_EVENT,
+  PATCH_SIGNALS_EVENT,
+  patchElementsModes,
+  patchElementsNamespaces,
+  type PatchElementsMode,
+  type PatchElementsNamespace
+} from "./sse.js"
+import type { SignalState } from "./types.js"
 
 /** A decoded `datastar-patch-elements` event with Datastar defaults filled in. */
 export interface PatchElementsEvent {
@@ -38,7 +47,7 @@ interface RawEvent {
 const parseRawEvent = (block: string): RawEvent => {
   let event = ""
   let id: string | undefined
-  let retry = 1000
+  let retry: number = datastarDefaults.retry
   const data = new Map<string, string>()
 
   for (const line of block.split("\n")) {
@@ -62,7 +71,7 @@ const parseRawEvent = (block: string): RawEvent => {
 }
 
 const toDatastarEvent = ({ event, id, retry, data }: RawEvent): DatastarEvent => {
-  if (event === "datastar-patch-signals") {
+  if (event === PATCH_SIGNALS_EVENT) {
     return {
       type: "patch-signals",
       signals: JSON.parse(data.get("signals") ?? "{}"),
@@ -72,22 +81,10 @@ const toDatastarEvent = ({ event, id, retry, data }: RawEvent): DatastarEvent =>
     }
   }
 
-  if (event === "datastar-patch-elements") return toPatchElementsEvent(id, retry, data)
+  if (event === PATCH_ELEMENTS_EVENT) return toPatchElementsEvent(id, retry, data)
 
   throw new DatastarEventError(`Unexpected SSE event: ${JSON.stringify(event)}`)
 }
-
-const patchElementsModes: readonly PatchElementsMode[] = [
-  "outer",
-  "inner",
-  "remove",
-  "replace",
-  "prepend",
-  "append",
-  "before",
-  "after"
-]
-const patchElementsNamespaces: readonly PatchElementsNamespace[] = ["html", "svg", "mathml"]
 
 const oneOf = <T extends string>(field: string, allowed: readonly T[], value: string): T => {
   const match = allowed.find((candidate) => candidate === value)
@@ -104,8 +101,12 @@ const toPatchElementsEvent = (
 ): PatchElementsEvent => ({
   type: "patch-elements",
   selector: data.get("selector"),
-  mode: oneOf("mode", patchElementsModes, data.get("mode") ?? "outer"),
-  namespace: oneOf("namespace", patchElementsNamespaces, data.get("namespace") ?? "html"),
+  mode: oneOf("mode", patchElementsModes, data.get("mode") ?? datastarDefaults.mode),
+  namespace: oneOf(
+    "namespace",
+    patchElementsNamespaces,
+    data.get("namespace") ?? datastarDefaults.namespace
+  ),
   useViewTransition: data.get("useViewTransition") === "true",
   viewTransitionSelector: data.get("viewTransitionSelector"),
   elements: data.get("elements") ?? "",

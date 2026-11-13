@@ -11,11 +11,11 @@ export type JsxProps = Readonly<
 >
 
 /**
- * Internal props passed to function components by the JSX runtime.
+ * Props from the JSX compiler, children included. Components receive the same shape.
  *
  * @internal
  */
-export type JsxComponentProps = Readonly<Record<string, unknown>> & {
+export type JsxInput = Readonly<Record<string, unknown>> & {
   readonly children?: HtmlChild | readonly HtmlChild[]
 }
 
@@ -24,25 +24,17 @@ export type JsxComponentProps = Readonly<Record<string, unknown>> & {
  *
  * @internal
  */
-export type JsxComponent = (props: JsxComponentProps) => HtmlChild
+export type JsxComponent = (props: JsxInput) => HtmlChild
 
-const childrenProp = (
-  children: readonly HtmlChild[]
-): HtmlChild | readonly HtmlChild[] | undefined => {
-  if (children.length === 0) {
-    return undefined
-  }
-  if (children.length === 1) {
-    return children[0]
-  }
-  return children
-}
+/** @internal Props the compiler adds; they are not element attributes or component props. */
+export const compilerProps = new Set(["__self", "__source", "key"])
 
-const normalizePropName = (key: string): string => {
-  if (key === "className") return "class"
-  if (key === "htmlFor") return "for"
-  return key
-}
+// React-style names and the HTML attribute each one renders as. When both are written, the HTML
+// name wins, whichever comes first.
+const propAliases = { className: "class", htmlFor: "for" } as const
+
+const isAliasedProp = (key: string): key is keyof typeof propAliases =>
+  Object.hasOwn(propAliases, key)
 
 const isPropValue = (value: unknown): value is HtmlPropValue =>
   value === null ||
@@ -51,20 +43,15 @@ const isPropValue = (value: unknown): value is HtmlPropValue =>
   typeof value === "number" ||
   typeof value === "boolean"
 
-const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): HtmlProps => {
+const elementProps = (input: JsxInput | null): HtmlProps => {
   const cleaned: Record<string, HtmlPropValue> = {}
 
   for (const [key, value] of Object.entries(input ?? {})) {
-    if (key === "__self" || key === "__source" || key === "children" || key === "key") {
-      continue
-    }
+    if (compilerProps.has(key) || key === "children") continue
+    const alias = isAliasedProp(key) ? propAliases[key] : undefined
+    if (alias !== undefined && input?.[alias] !== undefined) continue
 
-    const propName = normalizePropName(key)
-    const prop = normalizeDatastarAttribute(propName, value)
-    if (key === "className" && cleaned.class !== undefined) {
-      continue
-    }
-
+    const prop = normalizeDatastarAttribute(alias ?? key, value)
     if (!isPropValue(prop.value)) {
       throw new TypeError(`Unsupported JSX prop value for ${JSON.stringify(key)}`)
     }
@@ -75,25 +62,14 @@ const cleanElementProps = (input: Readonly<Record<string, unknown>> | null): Htm
   return cleaned
 }
 
-const cleanComponentProps = (
-  input: Readonly<Record<string, unknown>> | null,
-  children: readonly HtmlChild[]
-): JsxComponentProps => {
-  const cleaned: Record<string, unknown> & { children?: HtmlChild | readonly HtmlChild[] } = {}
+const componentProps = (input: JsxInput | null): JsxInput =>
+  Object.fromEntries(Object.entries(input ?? {}).filter(([key]) => !compilerProps.has(key)))
 
-  for (const [key, value] of Object.entries(input ?? {})) {
-    if (key === "__self" || key === "__source" || key === "children" || key === "key") {
-      continue
-    }
-    cleaned[key] = value
-  }
-
-  const child = childrenProp(children)
-  if (child !== undefined) {
-    cleaned.children = child
-  }
-
-  return cleaned
+const childList = (
+  children: HtmlChild | readonly HtmlChild[] | undefined
+): readonly HtmlChild[] => {
+  if (children === undefined) return []
+  return Array.isArray(children) ? children : [children]
 }
 
 /**
@@ -101,46 +77,28 @@ const cleanComponentProps = (
  *
  * @internal
  * @param props Fragment children supplied by the JSX transform.
- * @returns The children as a renderable array.
+ * @returns The children, unchanged.
  */
 export const Fragment = (props: {
   readonly children?: HtmlChild | readonly HtmlChild[]
-}): readonly HtmlChild[] => {
-  const children = props.children
-  if (children === undefined) {
-    return []
-  }
-  return Array.isArray(children) ? children : [children]
-}
+}): HtmlChild => props.children
 
 /**
  * Internal JSX tag input accepted by the automatic runtime.
  *
  * @internal
  */
-export type JsxTag = string | typeof Fragment | JsxComponent
+export type JsxTag = string | JsxComponent
 
 /**
  * Compiler-only factory used by `jsx-runtime` and `jsx-dev-runtime`.
  *
  * @internal
- * @param tag Intrinsic tag, fragment marker, or function component.
- * @param input Raw JSX props from the compiler.
- * @param children Normalized JSX children.
- * @returns An HTML node or fragment children.
+ * @param tag Intrinsic tag or function component, `Fragment` included.
+ * @param input Raw JSX props from the compiler, children included.
+ * @returns An HTML node or whatever the component renders.
  */
-export const createJsxElement = (
-  tag: JsxTag,
-  input: Readonly<Record<string, unknown>> | null,
-  children: readonly HtmlChild[]
-): HtmlChild => {
-  if (tag === Fragment) {
-    return children
-  }
-
-  if (typeof tag === "function") {
-    return tag(cleanComponentProps(input, children))
-  }
-
-  return h(tag, cleanElementProps(input), ...children)
-}
+export const createJsxElement = (tag: JsxTag, input: JsxInput | null): HtmlChild =>
+  typeof tag === "function"
+    ? tag(componentProps(input))
+    : h(tag, elementProps(input), ...childList(input?.children))

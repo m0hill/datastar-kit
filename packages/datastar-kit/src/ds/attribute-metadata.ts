@@ -162,31 +162,34 @@ export const resolveDatastarAttributeRoot = (
     : { definition, form: "key", key: root.slice(separator + 1) }
 }
 
-const resolveDatastarAttribute = (name: string): ResolvedDatastarAttribute | undefined =>
+/** Resolves an attribute name, modifiers included, against the canonical Datastar attributes. */
+export const resolveDatastarAttribute = (name: string): ResolvedDatastarAttribute | undefined =>
   resolveDatastarAttributeRoot(datastarAttributeRoot(name))
 
 /** Returns whether a name belongs to an HTML `data-*` attribute. */
 export const isDatastarAttribute = (name: string): boolean => name.startsWith("data-")
 
-export const isDatastarPresenceAttribute = (name: string): boolean => {
-  const resolved = resolveDatastarAttribute(name)
-  return resolved !== undefined && appliesToForm(resolved.definition.presence, resolved.form)
-}
+/** Whether `true` renders the attribute bare, with no value. */
+export const isPresenceForm = (resolved: ResolvedDatastarAttribute): boolean =>
+  appliesToForm(resolved.definition.presence, resolved.form)
 
-export const datastarModifierTarget = (name: string): DatastarModifierTarget | undefined => {
-  const resolved = resolveDatastarAttribute(name)
-  if (resolved === undefined) return undefined
-  return resolved.form === "exact"
+/** Whether primitive values are Datastar expression source to serialize. */
+export const isExpressionForm = (resolved: ResolvedDatastarAttribute): boolean =>
+  appliesToForm(resolved.definition.expression, resolved.form)
+
+/** Whether a signal ref renders as its bare name rather than as an expression. */
+export const takesSignalName = (resolved: ResolvedDatastarAttribute): boolean =>
+  resolved.form === "exact" && resolved.definition.signalNameValue === true
+
+/** The modifier set this form of the attribute accepts, if any. */
+export const modifierTargetOf = (
+  resolved: ResolvedDatastarAttribute
+): DatastarModifierTarget | undefined =>
+  resolved.form === "exact"
     ? resolved.definition.exactModifierTarget
     : resolved.definition.keyedModifierTarget
-}
 
-export const isDatastarExpressionAttribute = (name: string): boolean => {
+export const isDatastarPresenceAttribute = (name: string): boolean => {
   const resolved = resolveDatastarAttribute(name)
-  return resolved !== undefined && appliesToForm(resolved.definition.expression, resolved.form)
-}
-
-export const isDatastarSignalNameAttribute = (name: string): boolean => {
-  const resolved = resolveDatastarAttribute(name)
-  return resolved?.form === "exact" && resolved.definition.signalNameValue === true
+  return resolved !== undefined && isPresenceForm(resolved)
 }

@@ -3,9 +3,9 @@ import { h, renderToString, type HtmlChild } from "./html.js"
 import {
   comment as sseComment,
   type PatchElementsOptions,
-  type PatchSignalsOptions,
-  type SignalState
+  type PatchSignalsOptions
 } from "./sse.js"
+import type { SignalState } from "./types.js"
 
 export { NavigationUrlError } from "./navigation.js"
 
@@ -103,30 +103,13 @@ const mergeHeaders = (defaults: HeadersInit, headers: HeadersInit | undefined): 
   return merged
 }
 
-const response = (
-  body: BodyInit | null,
-  init: StreamResponseInit | undefined,
-  status: 200 | 204,
-  defaultHeaders: HeadersInit = {}
-): Response =>
-  new Response(body, {
-    status,
-    headers: mergeHeaders(defaultHeaders, init?.headers)
-  })
-
 const sseHeaders = {
   "cache-control": "no-cache",
   "content-type": "text/event-stream"
 } as const
 
-const childrenArray = (
-  child: HtmlChild | readonly HtmlChild[] | undefined
-): readonly HtmlChild[] => {
-  if (child === undefined) {
-    return []
-  }
-  return Array.isArray(child) ? child : [child]
-}
+const sseResponse = (body: BodyInit, init: StreamResponseInit): Response =>
+  new Response(body, { status: 200, headers: mergeHeaders(sseHeaders, init.headers) })
 
 const htmlDocument = (body: HtmlChild | readonly HtmlChild[], options: PageOptions): string =>
   `<!doctype html>${renderToString(
@@ -137,9 +120,9 @@ const htmlDocument = (body: HtmlChild | readonly HtmlChild[], options: PageOptio
         "head",
         {},
         options.title === undefined ? null : h("title", {}, options.title),
-        ...childrenArray(options.head)
+        options.head
       ),
-      h("body", {}, ...childrenArray(body))
+      h("body", {}, body)
     )
   )}`
 
@@ -231,7 +214,7 @@ export const patch = (
   elements: HtmlChild,
   options: PatchOptions = {},
   init: StreamResponseInit = {}
-): Response => response(event.patch(elements, options), init, 200, sseHeaders)
+): Response => sseResponse(event.patch(elements, options), init)
 
 /**
  * Creates a Datastar SSE response that removes elements from the browser document.
@@ -245,7 +228,7 @@ export const remove = (
   selector: string,
   options: event.RemoveOptions = {},
   init: StreamResponseInit = {}
-): Response => response(event.remove(selector, options), init, 200, sseHeaders)
+): Response => sseResponse(event.remove(selector, options), init)
 
 /**
  * Creates a Datastar SSE signal patch response.
@@ -259,7 +242,7 @@ export const signals = (
   value: SignalState,
   options: SignalsOptions = {},
   init: StreamResponseInit = {}
-): Response => response(event.signals(value, options), init, 200, sseHeaders)
+): Response => sseResponse(event.signals(value, options), init)
 
 /**
  * Creates a Datastar SSE stream response from event chunks.
@@ -273,10 +256,7 @@ export const stream = (
   events: SseStreamInput,
   options: SseStreamOptions = {},
   init: StreamResponseInit = {}
-): Response => {
-  const { heartbeat } = options
-  return response(readableStreamFrom(events, heartbeat), init, 200, sseHeaders)
-}
+): Response => sseResponse(readableStreamFrom(events, options.heartbeat), init)
 
 /**
  * Creates a Datastar command-completion response with no body.
@@ -284,7 +264,8 @@ export const stream = (
  * @param init Native response options excluding status fields.
  * @returns A `204` no-content `Response`.
  */
-export const done = (init: StreamResponseInit = {}): Response => response(null, init, 204)
+export const done = (init: StreamResponseInit = {}): Response =>
+  new Response(null, { status: 204, headers: mergeHeaders({}, init.headers) })
 
 /**
  * Creates a Datastar SSE response that safely navigates the browser.
@@ -300,4 +281,4 @@ export const navigate = (
   url: string | URL,
   options: NavigateOptions = {},
   init: StreamResponseInit = {}
-): Response => response(event.navigate(url, options), init, 200, sseHeaders)
+): Response => sseResponse(event.navigate(url, options), init)

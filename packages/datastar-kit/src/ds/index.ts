@@ -12,7 +12,7 @@ export {
   setAll,
   toggleAll
 } from "./actions.js"
-export type { FetchActionOptions, SignalFilter } from "./actions.js"
+export type { FetchActionOptions } from "./actions.js"
 
 export type {
   DatastarAttributeExpression,
@@ -34,7 +34,8 @@ export type {
   DatastarStyleValue,
   DatastarTextExpression,
   DatastarTextValue,
-  DatastarTruthyExpression
+  DatastarTruthyExpression,
+  SignalFilter
 } from "./attribute-types.js"
 
 export { preserve } from "./attributes.js"

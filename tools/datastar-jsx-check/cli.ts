@@ -1,26 +1,14 @@
+import { existsSync, readdirSync } from "node:fs"
 import path from "node:path"
 import ts from "typescript"
 import { checkProgram, type DatastarJsxDiagnostic } from "./check.js"
 import { loadProject } from "./load-project.js"
 
-const defaultProjectPaths = [
-  "packages/datastar-kit/tsconfig.json",
-  "packages/website/tsconfig.json",
-  "examples/elysia-layout/tsconfig.json",
-  "examples/hono-counter/tsconfig.json",
-  "examples/hono-custom-actions/tsconfig.json",
-  "examples/hono-form-validation/tsconfig.json",
-  "examples/hono-linear-clone/tsconfig.json",
-  "examples/hono-live-counter/tsconfig.json",
-  "examples/hono-live-counter-redis/tsconfig.json",
-  "examples/hono-modal/tsconfig.json",
-  "examples/hono-official-examples/tsconfig.json",
-  "examples/hono-todos/tsconfig.json",
-  "examples/syntax-check/tsconfig.json",
-  "examples/worker-do-hono-live-todos/tsconfig.json",
-  "examples/worker-hono-counter/tsconfig.json",
-  "examples/worker-hono-live-todos/tsconfig.json"
-] as const
+// Every TypeScript project in the repo, so a new example is checked without being listed here.
+const defaultProjectPaths = ["packages", "examples"]
+  .flatMap((folder) => readdirSync(folder).map((name) => path.join(folder, name, "tsconfig.json")))
+  .filter((projectPath) => existsSync(projectPath))
+  .toSorted()
 
 const formatDiagnostic = (diagnostic: DatastarJsxDiagnostic): string => {
   const source = ts.sys.readFile(diagnostic.file)

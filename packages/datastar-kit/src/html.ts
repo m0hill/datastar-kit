@@ -1,4 +1,4 @@
-import { isDatastarPresenceAttribute } from "./ds/attribute-authoring.js"
+import { isDatastarPresenceAttribute } from "./ds/attribute-metadata.js"
 
 /**
  * A primitive value that can be serialized as an HTML attribute value.
@@ -82,7 +82,7 @@ const isHtmlNode = (value: unknown): value is HtmlNode =>
 const escapeHtmlText = (value: string): string =>
   value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;")
 
-export const escapeHtmlAttribute = (value: string): string =>
+const escapeHtmlAttribute = (value: string): string =>
   escapeHtmlText(value).replaceAll('"', "&quot;").replaceAll("'", "&#39;")
 
 const tagNamePattern = /^[A-Za-z][A-Za-z0-9:-]*$/

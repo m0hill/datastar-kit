@@ -1,10 +1,10 @@
 import { readdirSync, readFileSync } from "node:fs"
 import { describe, expect, it } from "vitest"
 import { z } from "zod"
+import * as event from "../src/event.js"
+import { unsafeHtml } from "../src/html.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
-import { executeScript, patchElements, patchSignals } from "../src/sse.js"
-import type { SseEventOptions } from "../src/sse.js"
 
 // Replays Datastar's SDK conformance goldens (see fixtures/datastar-sdk-golden/README.md) the way
 // Datastar's own runner does: the case input arrives as the request's signals, and the server
@@ -39,8 +39,7 @@ const GoldenInput = z.object({
       }),
       z.object({
         type: z.literal("patchSignals"),
-        signals: z.record(z.string(), z.json()).exactOptional(),
-        "signals-raw": z.string().exactOptional(),
+        signals: z.record(z.string(), z.json()).default({}),
         onlyIfMissing: z.boolean().exactOptional(),
         ...eventFields
       })
@@ -50,33 +49,26 @@ const GoldenInput = z.object({
 
 type GoldenEvent = z.infer<typeof GoldenInput>["events"][number]
 
-type SseEventOptionsDraft = { -readonly [Key in keyof SseEventOptions]: SseEventOptions[Key] }
+type EventOptions = { id?: string; retry?: number }
 
-const sseOptions = ({ eventId, retryDuration }: GoldenEvent): SseEventOptions => {
-  const options: SseEventOptionsDraft = {}
+const sseOptions = ({ eventId, retryDuration }: GoldenEvent): EventOptions => {
+  const options: EventOptions = {}
   if (eventId !== undefined) options.id = eventId
   if (retryDuration !== undefined) options.retry = retryDuration
   return options
 }
 
-const encode = (event: GoldenEvent): string => {
-  if (event.type === "executeScript") {
-    const { type: _type, eventId: _id, retryDuration: _retry, script, ...options } = event
-    return executeScript(script, { ...sseOptions(event), ...options })
+const encode = (golden: GoldenEvent): string => {
+  if (golden.type === "executeScript") {
+    const { type: _type, eventId: _id, retryDuration: _retry, script, ...options } = golden
+    return event.script(script, { ...sseOptions(golden), ...options })
   }
-  if (event.type === "patchElements") {
-    const { type: _type, eventId: _id, retryDuration: _retry, elements, ...options } = event
-    return patchElements(elements, { ...sseOptions(event), ...options })
+  if (golden.type === "patchElements") {
+    const { type: _type, eventId: _id, retryDuration: _retry, elements, ...options } = golden
+    return event.patch(unsafeHtml(elements), { ...sseOptions(golden), ...options })
   }
-  const {
-    type: _type,
-    eventId: _id,
-    retryDuration: _retry,
-    signals = {},
-    "signals-raw": rawSignals,
-    ...options
-  } = event
-  return patchSignals(rawSignals ?? signals, { ...sseOptions(event), ...options })
+  const { type: _type, eventId: _id, retryDuration: _retry, signals, ...options } = golden
+  return event.signals(signals, { ...sseOptions(golden), ...options })
 }
 
 // The SDK side of the conformance server: read the signals, answer with the described events.
@@ -125,17 +117,21 @@ const requestFor = (method: string, input: string): Request => {
   })
 }
 
-const cases = ["get", "post"].flatMap((method) =>
-  readdirSync(new URL(`${method}/`, goldenRoot)).map((name) => {
-    const dir = new URL(`${method}/${name}/`, goldenRoot)
-    return {
-      label: `${method.toUpperCase()} ${name}`,
-      method,
-      input: readFileSync(new URL("input.json", dir), "utf8"),
-      output: readFileSync(new URL("output.txt", dir), "utf8")
-    }
-  })
-)
+// `signals-raw` cases send hand-formatted signal text, which the public API cannot produce: it
+// only takes signal objects and serializes them itself.
+const cases = ["get", "post"]
+  .flatMap((method) =>
+    readdirSync(new URL(`${method}/`, goldenRoot)).map((name) => {
+      const dir = new URL(`${method}/${name}/`, goldenRoot)
+      return {
+        label: `${method.toUpperCase()} ${name}`,
+        method,
+        input: readFileSync(new URL("input.json", dir), "utf8"),
+        output: readFileSync(new URL("output.txt", dir), "utf8")
+      }
+    })
+  )
+  .filter(({ input }) => !input.includes('"signals-raw"'))
 
 describe("Datastar SDK conformance goldens", () => {
   it.each(cases)("$label", async ({ method, input, output }) => {

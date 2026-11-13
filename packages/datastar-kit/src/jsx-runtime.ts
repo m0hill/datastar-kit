@@ -2,7 +2,7 @@ import type { DatastarAttributeValue } from "./ds/attribute-types.js"
 import type { DatastarModifiedValue } from "./ds/modifiers.js"
 import type { HtmlElements, HtmlGlobalAttributes } from "./html-attributes.js"
 import type { HtmlChild, HtmlPropValue } from "./html.js"
-import { createJsxElement, type JsxProps, type JsxTag } from "./jsx.js"
+import { createJsxElement, type JsxInput, type JsxProps, type JsxTag } from "./jsx.js"
 
 /**
  * Application-registered attributes accepted by every known JSX intrinsic element.
@@ -26,7 +26,7 @@ export interface CustomJsxAttributes {}
 export interface CustomJsxElements {}
 
 // Custom extension declarations are open interfaces, so project their values onto the exact
-// serialization domains enforced by cleanElementProps before exposing them through JSX.
+// serialization domains the JSX runtime accepts (see `elementProps` in jsx.ts) before exposing them through JSX.
 type CustomDataAttributeValue = Exclude<DatastarAttributeValue, DatastarModifiedValue>
 
 type RuntimeSerializableAttributes<Attributes> = {
@@ -50,11 +50,6 @@ type RegisteredCustomElements = {
     CustomElementGlobalAttributes
 }
 
-const toChildren = (value: HtmlChild | readonly HtmlChild[] | undefined): readonly HtmlChild[] => {
-  if (value === undefined) return []
-  return Array.isArray(value) ? value : [value]
-}
-
 /**
  * Compiler-only JSX fragment export for the automatic JSX runtime.
  *
@@ -66,18 +61,13 @@ export { Fragment } from "./jsx.js"
  * Compiler-only entrypoint for TypeScript's automatic JSX runtime.
  *
  * @internal
- * @param tag Intrinsic tag, fragment marker, or function component.
+ * @param tag Intrinsic tag or function component, `Fragment` included.
  * @param input Props supplied by the JSX transform.
  * @param _key JSX key consumed by the compiler/runtime boundary.
  * @returns A Datastar Kit HTML node or fragment.
  */
-export const jsx = (
-  tag: JsxTag,
-  input:
-    | (Readonly<Record<string, unknown>> & { readonly children?: HtmlChild | readonly HtmlChild[] })
-    | null,
-  _key?: string | number
-): HtmlChild => createJsxElement(tag, input, toChildren(input?.children))
+export const jsx = (tag: JsxTag, input: JsxInput | null, _key?: string | number): HtmlChild =>
+  createJsxElement(tag, input)
 
 /**
  * Compiler-only entrypoint for JSX calls with static children.

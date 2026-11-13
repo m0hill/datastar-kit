@@ -1,6 +1,5 @@
 import type { HtmlChild } from "./html.js"
-import { Fragment, jsx } from "./jsx-runtime.js"
-import type { JsxTag } from "./jsx.js"
+import { createJsxElement, Fragment, type JsxInput, type JsxTag } from "./jsx.js"
 
 /**
  * Compiler-only JSX fragment export for the automatic development JSX runtime.
@@ -14,9 +13,9 @@ export type { JSX } from "./jsx-runtime.js"
  * Compiler-only entrypoint for TypeScript's automatic development JSX runtime.
  *
  * @internal
- * @param tag Intrinsic tag, fragment marker, or function component.
+ * @param tag Intrinsic tag or function component, `Fragment` included.
  * @param input Props supplied by the JSX transform.
- * @param key JSX key consumed by the compiler/runtime boundary.
+ * @param _key JSX key consumed by the compiler/runtime boundary.
  * @param _isStaticChildren Development-runtime static children flag.
  * @param _source Development-runtime source metadata.
  * @param _self Development-runtime receiver metadata.
@@ -24,11 +23,9 @@ export type { JSX } from "./jsx-runtime.js"
  */
 export const jsxDEV = (
   tag: JsxTag,
-  input:
-    | (Readonly<Record<string, unknown>> & { readonly children?: HtmlChild | readonly HtmlChild[] })
-    | null,
-  key?: string | number,
+  input: JsxInput | null,
+  _key?: string | number,
   _isStaticChildren?: boolean,
   _source?: unknown,
   _self?: unknown
-): HtmlChild => jsx(tag, input, key)
+): HtmlChild => createJsxElement(tag, input)

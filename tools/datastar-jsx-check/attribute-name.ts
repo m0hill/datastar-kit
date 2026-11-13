@@ -3,45 +3,18 @@
 import {
   datastarAttributeDefinitions,
   datastarAttributeRoot,
-  datastarModifierTarget,
+  modifierTargetOf,
   resolveDatastarAttributeRoot
 } from "../../packages/datastar-kit/src/ds/attribute-metadata.js"
-import { isDatastarModifierCompatible } from "../../packages/datastar-kit/src/ds/modifier-rendering.js"
+import {
+  datastarModifierKeys,
+  datastarModifierSuffix,
+  isDatastarModifierCompatible
+} from "../../packages/datastar-kit/src/ds/modifier-rendering.js"
 import type { DatastarModifierKey } from "../../packages/datastar-kit/src/ds/modifiers.js"
 
-const modifierKeysBySuffix = {
-  capture: "capture",
-  case: "case",
-  debounce: "debounce",
-  delay: "delay",
-  document: "document",
-  duration: "duration",
-  event: "event",
-  exit: "exit",
-  full: "full",
-  half: "half",
-  ifmissing: "ifMissing",
-  leading: "leading",
-  once: "once",
-  outside: "outside",
-  passive: "passive",
-  prevent: "prevent",
-  prop: "prop",
-  self: "self",
-  stop: "stop",
-  terse: "terse",
-  threshold: "threshold",
-  throttle: "throttle",
-  viewtransition: "viewTransition",
-  window: "window"
-} as const satisfies Readonly<Record<string, DatastarModifierKey>>
-
-const isModifierSuffix = (suffix: string): suffix is keyof typeof modifierKeysBySuffix =>
-  Object.hasOwn(modifierKeysBySuffix, suffix)
-
-/** Resolves a rendered modifier suffix to its typed modifier key. */
 const datastarModifierKeyForSuffix = (suffix: string): DatastarModifierKey | undefined =>
-  isModifierSuffix(suffix) ? modifierKeysBySuffix[suffix] : undefined
+  datastarModifierKeys.find((key) => datastarModifierSuffix(key) === suffix)
 
 /** Result of inspecting a rendered Datastar attribute name. */
 export type DatastarAttributeNameInspection =
@@ -110,20 +83,23 @@ const damerauLevenshteinDistance = (left: string, right: string): number => {
   return distanceAt(left.length, right.length)
 }
 
-const closestDatastarAttributeName = (name: string): string | undefined => {
+/** Returns the candidate within one edit of `name`, the likely intended spelling of a typo. */
+export const closestName = (name: string, candidates: readonly string[]): string | undefined => {
   let closest: string | undefined
   let closestDistance = Number.POSITIVE_INFINITY
 
-  for (const definition of datastarAttributeDefinitions) {
-    const distance = damerauLevenshteinDistance(name, definition.name)
+  for (const candidate of candidates) {
+    const distance = damerauLevenshteinDistance(name, candidate)
     if (distance < closestDistance) {
-      closest = definition.name
+      closest = candidate
       closestDistance = distance
     }
   }
 
   return closestDistance <= 1 ? closest : undefined
 }
+
+const datastarAttributeNames = datastarAttributeDefinitions.map((definition) => definition.name)
 
 /**
  * Inspects a rendered attribute name against canonical Datastar key and modifier policy.
@@ -142,7 +118,7 @@ export const inspectDatastarAttributeName = (name: string): DatastarAttributeNam
     return {
       _tag: "custom",
       baseName,
-      suggestion: closestDatastarAttributeName(baseName)
+      suggestion: closestName(baseName, datastarAttributeNames)
     }
   }
 
@@ -173,7 +149,7 @@ export const inspectDatastarAttributeName = (name: string): DatastarAttributeNam
     return { _tag: "known", name: resolved.definition.name }
   }
 
-  const target = datastarModifierTarget(name)
+  const target = modifierTargetOf(resolved)
   if (target === undefined) {
     return {
       _tag: "invalid",

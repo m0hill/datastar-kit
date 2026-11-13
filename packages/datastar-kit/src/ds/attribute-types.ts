@@ -1,5 +1,5 @@
 import type { HtmlPropValue } from "../html.js"
-import type { DatastarModifierKeysFor } from "./attribute-authoring.js"
+import type { DatastarModifierKeysFor } from "./modifier-rendering.js"
 import type { Expr } from "./expression.js"
 import type {
   DatastarModifiedValue,
@@ -184,15 +184,19 @@ export type DatastarBindAttribute<Reference extends DatastarSignalReference> =
   | undefined
 
 /**
- * Signal filter accepted by filter-valued Datastar attributes such as `data-json-signals` and
- * `data-on-signal-patch-filter`.
+ * Datastar signal filter used by fetch actions, `@setAll()`, `@toggleAll()`, and filter-valued
+ * attributes such as `data-json-signals`.
  */
-export type DatastarSignalFilterInput = {
+// A type alias rather than an interface, so it fits JSX attribute value index signatures.
+export type SignalFilter = {
   /** Regular expression or expression selecting signal paths to include. */
   readonly include?: Expr<RegExp> | RegExp | string | undefined
   /** Regular expression or expression selecting signal paths to exclude. */
   readonly exclude?: Expr<RegExp> | RegExp | string | undefined
 }
+
+/** Signal filter accepted by filter-valued Datastar attributes; the same type as {@link SignalFilter}. */
+export type DatastarSignalFilterInput = SignalFilter
 
 /**
  * Serializable Datastar value union used by loose JSX and SVG prop bags.

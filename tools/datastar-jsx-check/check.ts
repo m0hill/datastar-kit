@@ -1,5 +1,6 @@
 import ts from "typescript"
-import { inspectDatastarAttributeName } from "./attribute-name.js"
+import { compilerProps } from "../../packages/datastar-kit/src/jsx.js"
+import { closestName, inspectDatastarAttributeName } from "./attribute-name.js"
 
 /** Stable diagnostic identifiers produced by the Datastar JSX checker. */
 export type DatastarJsxDiagnosticCode =
@@ -60,63 +61,6 @@ const isPrimitiveAttributeValue = (
   )
 }
 
-const damerauLevenshteinDistance = (left: string, right: string): number => {
-  const rows = left.length + 1
-  const columns = right.length + 1
-  const distances = Array.from({ length: rows }, () => Array<number>(columns).fill(0))
-  const distanceAt = (row: number, column: number): number => distances[row]?.[column] ?? 0
-
-  for (let row = 0; row < rows; row += 1) {
-    const values = distances[row]
-    if (values !== undefined) values[0] = row
-  }
-  const firstRow = distances[0]
-  if (firstRow !== undefined) {
-    for (let column = 0; column < columns; column += 1) firstRow[column] = column
-  }
-
-  for (let row = 1; row < rows; row += 1) {
-    const values = distances[row]
-    if (values === undefined) continue
-
-    for (let column = 1; column < columns; column += 1) {
-      const substitutionCost = left[row - 1] === right[column - 1] ? 0 : 1
-      const deletion = distanceAt(row - 1, column) + 1
-      const insertion = distanceAt(row, column - 1) + 1
-      const substitution = distanceAt(row - 1, column - 1) + substitutionCost
-      let distance = Math.min(deletion, insertion, substitution)
-
-      if (
-        row > 1 &&
-        column > 1 &&
-        left[row - 1] === right[column - 2] &&
-        left[row - 2] === right[column - 1]
-      ) {
-        distance = Math.min(distance, distanceAt(row - 2, column - 2) + 1)
-      }
-
-      values[column] = distance
-    }
-  }
-
-  return distanceAt(left.length, right.length)
-}
-
-const closestName = (name: string, candidates: readonly string[]): string | undefined => {
-  let closest: string | undefined
-  let closestDistance = Number.POSITIVE_INFINITY
-
-  for (const candidate of candidates) {
-    const distance = damerauLevenshteinDistance(name, candidate)
-    if (distance < closestDistance) {
-      closest = candidate
-      closestDistance = distance
-    }
-  }
-
-  return closestDistance <= 1 ? closest : undefined
-}
-
 const diagnostic = (
   sourceFile: ts.SourceFile,
   attribute: CheckedAttribute,
@@ -145,9 +89,7 @@ const checkAttribute = (
   const { name } = attribute
   if (
     name !== "children" &&
-    name !== "key" &&
-    name !== "__self" &&
-    name !== "__source" &&
+    !compilerProps.has(name) &&
     !name.startsWith("data-") &&
     !isPrimitiveAttributeValue(checker, attribute)
   ) {
@@ -189,6 +131,8 @@ const checkAttribute = (
       )
     }
     if (inspection._tag === "known") {
+      // data-ref is the only attribute whose type depends on the element (the ref's element type),
+      // so it is the only one an unregistered custom element cannot type.
       if (looseCustomElement && inspection.name === "data-ref") {
         return diagnostic(
           sourceFile,

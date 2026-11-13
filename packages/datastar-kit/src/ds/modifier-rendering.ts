@@ -2,11 +2,6 @@ import type { DatastarModifierTarget } from "./attribute-metadata.js"
 import { isExpr } from "./expression.js"
 import { datastarCaseModifiers, type DatastarModifierKey } from "./modifiers.js"
 
-interface RenderedDatastarModifier {
-  readonly key: DatastarModifierKey
-  readonly suffix: string
-}
-
 const compatibleModifierTargets = {
   capture: ["on"],
   case: ["bindKey", "case", "computed", "on", "signalsKey"],
@@ -48,7 +43,14 @@ export type DatastarModifierKeysFor<Target extends DatastarModifierTarget> = {
 const caseModifiers = new Set<string>(datastarCaseModifiers)
 
 const isDatastarModifierKey = (key: string): key is DatastarModifierKey =>
-  key in compatibleModifierTargets
+  Object.hasOwn(compatibleModifierTargets, key)
+
+/** @internal Every modifier key the SDK can render. */
+export const datastarModifierKeys =
+  Object.keys(compatibleModifierTargets).filter(isDatastarModifierKey)
+
+/** @internal The `__suffix` Datastar reads for a modifier key: the key in lowercase. */
+export const datastarModifierSuffix = (key: DatastarModifierKey): string => key.toLowerCase()
 
 /** @internal Returns whether a modifier key is supported by an attribute modifier target. */
 export const isDatastarModifierCompatible = (
@@ -68,124 +70,88 @@ const durationModifier = (value: unknown): string => {
 const isModifierRecord = (value: unknown): value is Readonly<Record<string, unknown>> =>
   typeof value === "object" && value !== null && !Array.isArray(value) && !isExpr(value)
 
-const flagModifier = (
-  key: DatastarModifierKey,
-  value: unknown,
-  suffix: string
-): RenderedDatastarModifier | undefined => {
-  if (value === false || value === null || value === undefined) return undefined
-  if (value === true) return { key, suffix }
-  throw new TypeError(`Datastar modifier ${JSON.stringify(key)} expects a boolean value`)
-}
+// `false`, `null`, and `undefined` leave a modifier off, so callers can toggle one conditionally.
+const isModifierOff = (value: unknown): boolean =>
+  value === false || value === null || value === undefined
 
-const durationTaggedModifier = (
-  key: DatastarModifierKey,
-  value: unknown,
-  modifier: string
-): RenderedDatastarModifier | undefined => {
-  if (value === false || value === null || value === undefined) return undefined
-  if (value === true) return { key, suffix: modifier }
-  return { key, suffix: `${modifier}.${durationModifier(value)}` }
-}
-
-const timingTaggedModifier = (
-  key: DatastarModifierKey,
-  value: unknown,
-  modifier: "debounce" | "throttle"
-): RenderedDatastarModifier | undefined => {
-  if (value === false || value === null || value === undefined) return undefined
-  if (value === true) return { key, suffix: modifier }
-
-  if (!isModifierRecord(value)) {
-    return { key, suffix: `${modifier}.${durationModifier(value)}` }
-  }
+const timingTags = (key: "debounce" | "throttle", value: unknown): string => {
+  if (!isModifierRecord(value)) return durationModifier(value)
 
   const duration = value.duration
   if (duration === undefined) {
     throw new TypeError(`Datastar modifier ${JSON.stringify(key)} requires a duration`)
   }
 
-  const parts = [durationModifier(duration)]
-  if (modifier === "debounce") {
-    if (value.leading === true) parts.push("leading")
-    if (value.noTrailing === true) parts.push("notrailing")
+  const tags = [durationModifier(duration)]
+  if (key === "debounce") {
+    if (value.leading === true) tags.push("leading")
+    if (value.noTrailing === true) tags.push("notrailing")
   } else {
-    if (value.noLeading === true) parts.push("noleading")
-    if (value.trailing === true) parts.push("trailing")
+    if (value.noLeading === true) tags.push("noleading")
+    if (value.trailing === true) tags.push("trailing")
   }
-  return { key, suffix: `${modifier}.${parts.join(".")}` }
+  return tags.join(".")
 }
 
-const valueTaggedModifier = (
-  key: DatastarModifierKey,
-  value: unknown,
-  modifier: string,
-  allowed?: ReadonlySet<string>
-): RenderedDatastarModifier | undefined => {
-  if (value === false || value === null || value === undefined) return undefined
-  if (typeof value === "string" || typeof value === "number") {
-    if (allowed !== undefined && !allowed.has(String(value))) {
-      throw new TypeError(`Datastar modifier ${JSON.stringify(key)} received unsupported value`)
-    }
-    return { key, suffix: `${modifier}.${value}` }
+const valueTag = (key: DatastarModifierKey, value: unknown): string => {
+  if (typeof value !== "string" && typeof value !== "number") {
+    throw new TypeError(`Datastar modifier ${JSON.stringify(key)} expects a string or number value`)
   }
-  throw new TypeError(`Datastar modifier ${JSON.stringify(key)} expects a string or number value`)
+  return String(value)
 }
 
-const eventModifier = (value: unknown): string => {
+const eventTags = (value: unknown): string => {
   const events = typeof value === "string" ? [value] : Array.isArray(value) ? value : undefined
   if (events === undefined || events.some((event) => typeof event !== "string")) {
     throw new TypeError('Datastar modifier "event" expects a string or string array')
   }
-  return `event.${events.join(".")}`
+  return events.join(".")
 }
 
-const renderDatastarModifier = (
-  key: string,
-  value: unknown
-): RenderedDatastarModifier | undefined => {
-  if (!isDatastarModifierKey(key)) {
-    throw new TypeError(`Unknown Datastar modifier ${JSON.stringify(key)}`)
-  }
-
+// Renders one modifier that is switched on: its suffix plus any `.tag` values.
+const renderDatastarModifier = (key: DatastarModifierKey, value: unknown): string => {
+  const suffix = datastarModifierSuffix(key)
   switch (key) {
     case "capture":
     case "document":
     case "exit":
     case "full":
     case "half":
-    case "leading":
+    case "ifMissing":
     case "once":
     case "outside":
     case "passive":
     case "prevent":
-    case "stop":
-    case "window":
-      return flagModifier(key, value, key)
     case "self":
-      return flagModifier(key, value, "self")
-    case "ifMissing":
-      return flagModifier(key, value, "ifmissing")
+    case "stop":
     case "terse":
-      return flagModifier(key, value, "terse")
     case "viewTransition":
-      return flagModifier(key, value, "viewtransition")
-    case "delay":
-      return durationTaggedModifier(key, value, "delay")
+    case "window":
+      if (value !== true) {
+        throw new TypeError(`Datastar modifier ${JSON.stringify(key)} expects a boolean value`)
+      }
+      return suffix
     case "duration":
-      return durationTaggedModifier(key, value, "duration")
+    case "leading":
+      // Only interval attributes accept these, and they render through intervalDurationSuffix.
+      throw new TypeError(`Datastar modifier ${JSON.stringify(key)} renders with the interval`)
+    case "delay":
+      return value === true ? suffix : `${suffix}.${durationModifier(value)}`
     case "debounce":
-      return timingTaggedModifier(key, value, "debounce")
     case "throttle":
-      return timingTaggedModifier(key, value, "throttle")
-    case "case":
-      return valueTaggedModifier(key, value, key, caseModifiers)
+      return value === true ? suffix : `${suffix}.${timingTags(key, value)}`
+    case "case": {
+      const tag = valueTag(key, value)
+      if (!caseModifiers.has(tag)) {
+        throw new TypeError(`Datastar modifier ${JSON.stringify(key)} received unsupported value`)
+      }
+      return `${suffix}.${tag}`
+    }
     case "prop":
     case "threshold":
-      return valueTaggedModifier(key, value, key)
+      return `${suffix}.${valueTag(key, value)}`
     case "event":
-      if (value === false || value === null || value === undefined) return undefined
-      return { key, suffix: eventModifier(value) }
+      return `${suffix}.${eventTags(value)}`
   }
 
   const exhaustive: never = key
@@ -196,29 +162,19 @@ const renderDatastarModifier = (
 // `__duration.leading` becomes a 0ms or NaN interval. Spell out its 1s default in those cases.
 const datastarDefaultIntervalMs = 1000
 
-const intervalDurationModifier = (
-  duration: unknown,
-  leading: unknown
-): RenderedDatastarModifier | undefined => {
-  if (leading !== false && leading !== null && leading !== undefined && leading !== true) {
+const intervalDurationSuffix = (duration: unknown, leading: unknown): string | undefined => {
+  if (!isModifierOff(leading) && leading !== true) {
     throw new TypeError('Datastar modifier "leading" expects a boolean value')
   }
 
   const explicitDuration =
-    duration === false || duration === null || duration === undefined || duration === true
-      ? undefined
-      : durationModifier(duration)
+    isModifierOff(duration) || duration === true ? undefined : durationModifier(duration)
 
   if (leading !== true) {
-    return explicitDuration === undefined
-      ? undefined
-      : { key: "duration", suffix: `duration.${explicitDuration}` }
+    return explicitDuration === undefined ? undefined : `duration.${explicitDuration}`
   }
 
-  return {
-    key: "duration",
-    suffix: `duration.${explicitDuration ?? `${datastarDefaultIntervalMs}ms`}.leading`
-  }
+  return `duration.${explicitDuration ?? `${datastarDefaultIntervalMs}ms`}.leading`
 }
 
 export const renderDatastarModifierSuffixes = (
@@ -227,32 +183,25 @@ export const renderDatastarModifierSuffixes = (
   modifiers: Readonly<Record<string, unknown>>
 ): string[] => {
   const suffixes: string[] = []
-  let intervalDuration: unknown
-  let intervalLeading: unknown
 
-  for (const [key, modifierValue] of Object.entries(modifiers)) {
-    if (target === "interval" && key === "duration") {
-      intervalDuration = modifierValue
-      continue
+  for (const [key, value] of Object.entries(modifiers)) {
+    if (!isDatastarModifierKey(key)) {
+      throw new TypeError(`Unknown Datastar modifier ${JSON.stringify(key)}`)
     }
-    if (target === "interval" && key === "leading") {
-      intervalLeading = modifierValue
-      continue
-    }
-
-    const modifier = renderDatastarModifier(key, modifierValue)
-    if (modifier === undefined) continue
-    if (!isDatastarModifierCompatible(target, modifier.key)) {
+    // An interval's duration and leading render together as one tag, below.
+    if (target === "interval" && (key === "duration" || key === "leading")) continue
+    if (isModifierOff(value)) continue
+    if (!isDatastarModifierCompatible(target, key)) {
       throw new TypeError(
         `Datastar modifier ${JSON.stringify(key)} is not valid on ${JSON.stringify(name)}`
       )
     }
-    suffixes.push(modifier.suffix)
+    suffixes.push(renderDatastarModifier(key, value))
   }
 
   if (target === "interval") {
-    const duration = intervalDurationModifier(intervalDuration, intervalLeading)
-    if (duration !== undefined) suffixes.unshift(duration.suffix)
+    const duration = intervalDurationSuffix(modifiers.duration, modifiers.leading)
+    if (duration !== undefined) suffixes.unshift(duration)
   }
 
   return suffixes

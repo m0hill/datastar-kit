@@ -1,10 +1,12 @@
 import {
-  datastarModifierTarget,
   isDatastarAttribute,
-  isDatastarExpressionAttribute,
-  isDatastarSignalNameAttribute
+  isExpressionForm,
+  modifierTargetOf,
+  resolveDatastarAttribute,
+  takesSignalName,
+  type ResolvedDatastarAttribute
 } from "./attribute-metadata.js"
-import { isExpr, toJs } from "./expression.js"
+import { toJs } from "./expression.js"
 import { renderDatastarModifierSuffixes } from "./modifier-rendering.js"
 import { isDatastarModifiedValue } from "./modifiers.js"
 import { Signal } from "./signals.js"
@@ -17,23 +19,23 @@ export type NormalizedDatastarAttribute = {
   readonly value: unknown
 }
 
-const isDatastarSerializableValue = (name: string, value: unknown): boolean =>
-  isExpr(value) ||
-  Array.isArray(value) ||
-  (typeof value === "object" && value !== null) ||
-  (isDatastarExpressionAttribute(name) &&
-    (typeof value === "number" || typeof value === "boolean" || value === null))
-
-const normalizeDatastarValue = (name: string, value: unknown): unknown => {
-  if (value instanceof Signal && isDatastarSignalNameAttribute(name)) {
+// Objects (expressions, arrays, plain objects) always serialize; primitives only where the
+// attribute takes expression source. Custom `data-*` attributes resolve to undefined.
+const normalizeDatastarValue = (
+  resolved: ResolvedDatastarAttribute | undefined,
+  value: unknown
+): unknown => {
+  if (value instanceof Signal && resolved !== undefined && takesSignalName(resolved)) {
     return value.name
   }
 
-  if (isDatastarSerializableValue(name, value)) {
-    return toJs(value)
-  }
+  const serializable =
+    (typeof value === "object" && value !== null) ||
+    (resolved !== undefined &&
+      isExpressionForm(resolved) &&
+      (typeof value === "number" || typeof value === "boolean" || value === null))
 
-  return value
+  return serializable ? toJs(value) : value
 }
 
 /**
@@ -56,8 +58,10 @@ export const normalizeDatastarAttribute = (
     return { name, value }
   }
 
+  const resolved = resolveDatastarAttribute(name)
+
   if (isDatastarModifiedValue(value)) {
-    const target = datastarModifierTarget(name)
+    const target = resolved === undefined ? undefined : modifierTargetOf(resolved)
     if (target === undefined) {
       throw new TypeError(`Datastar attribute ${JSON.stringify(name)} does not accept modifiers`)
     }
@@ -65,12 +69,9 @@ export const normalizeDatastarAttribute = (
     const suffixes = renderDatastarModifierSuffixes(target, name, value.modifiers)
     return {
       name: suffixes.length === 0 ? name : `${name}__${suffixes.join("__")}`,
-      value: normalizeDatastarValue(name, value.value)
+      value: normalizeDatastarValue(resolved, value.value)
     }
   }
 
-  return { name, value: normalizeDatastarValue(name, value) }
+  return { name, value: normalizeDatastarValue(resolved, value) }
 }
-
-export { isDatastarPresenceAttribute } from "./attribute-metadata.js"
-export type { DatastarModifierKeysFor } from "./modifier-rendering.js"

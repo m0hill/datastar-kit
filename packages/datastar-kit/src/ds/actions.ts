@@ -1,22 +1,6 @@
-import {
-  isExpr,
-  raw,
-  toJs,
-  type DatastarFunction,
-  type Expr,
-  type ExprInput
-} from "./expression.js"
+import { raw, toJs, type DatastarFunction, type Expr, type ExprInput } from "./expression.js"
+import type { SignalFilter } from "./attribute-types.js"
 import type { SignalStateInput } from "./signals.js"
-
-/**
- * Datastar signal filter used by signal display, signal patch, and fetch action helpers.
- */
-export interface SignalFilter {
-  /** Regular expression or expression selecting signal paths to include. */
-  readonly include?: Expr<RegExp> | RegExp | string
-  /** Regular expression or expression selecting signal paths to exclude. */
-  readonly exclude?: Expr<RegExp> | RegExp | string
-}
 
 /**
  * Options accepted by Datastar fetch actions such as `@get()` and `@post()`.
@@ -50,37 +34,30 @@ export interface FetchActionOptions {
   readonly requestCancellation?: "auto" | "cleanup" | "disabled" | Expr<AbortController>
 }
 
-const fetchOptionKeys = [
-  "selector",
-  "headers",
-  "contentType",
-  "filterSignals",
-  "openWhenHidden",
-  "payload",
-  "retry",
-  "retryInterval",
-  "retryScaler",
-  "retryMaxWait",
-  "retryMaxCount",
-  "requestCancellation"
-] as const satisfies readonly (keyof FetchActionOptions)[]
+// A record, not a list, so adding an option to FetchActionOptions fails here until it is rendered.
+// Only these keys render, so a stray runtime key cannot reach the Datastar expression.
+const fetchOptionNames = {
+  selector: true,
+  headers: true,
+  contentType: true,
+  filterSignals: true,
+  openWhenHidden: true,
+  payload: true,
+  retry: true,
+  retryInterval: true,
+  retryScaler: true,
+  retryMaxWait: true,
+  retryMaxCount: true,
+  requestCancellation: true
+} satisfies Record<keyof FetchActionOptions, true>
 
-const fetchOptionsToJs = (options: FetchActionOptions): string => {
-  const entries: string[] = []
+const isFetchOptionKey = (key: string): key is keyof FetchActionOptions =>
+  Object.hasOwn(fetchOptionNames, key)
 
-  for (const key of fetchOptionKeys) {
-    const value = options[key]
-    if (value !== undefined) entries.push(`${key}: ${toJs(value)}`)
-  }
-
-  return `{${entries.join(", ")}}`
-}
+const fetchOptionKeys = Object.keys(fetchOptionNames).filter(isFetchOptionKey)
 
 const escapeTemplateText = (value: string): string =>
   value.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("${", "\\${")
-
-const urlToJs = (url: ExprInput<string>): string =>
-  isExpr(url) ? url.toDatastarExpression() : JSON.stringify(url)
 
 const splitHash = (path: string) => {
   const hashIndex = path.indexOf("#")
@@ -105,13 +82,13 @@ const querySeparator = (path: string): string => {
 const fetchAction = (
   method: "get" | "post" | "put" | "patch" | "query" | "delete",
   url: ExprInput<string>,
-  options?: FetchActionOptions
+  options: FetchActionOptions = {}
 ): Expr<void> => {
-  if (options === undefined || Object.keys(options).length === 0) {
-    return raw(`@${method}(${urlToJs(url)})`)
-  }
-
-  return raw(`@${method}(${urlToJs(url)}, ${fetchOptionsToJs(options)})`)
+  const entries = fetchOptionKeys
+    .filter((key) => options[key] !== undefined)
+    .map((key) => `${key}: ${toJs(options[key])}`)
+  const args = entries.length === 0 ? toJs(url) : `${toJs(url)}, {${entries.join(", ")}}`
+  return raw(`@${method}(${args})`)
 }
 
 export class ActionNameError extends Error {
@@ -126,14 +103,6 @@ const assertActionName = (name: string): void => {
   if (!actionNamePattern.test(name)) {
     throw new ActionNameError(name)
   }
-}
-
-const datastarAction = <T = unknown>(
-  name: string,
-  ...args: ReadonlyArray<ExprInput<unknown>>
-): Expr<T> => {
-  assertActionName(name)
-  return raw(`@${name}(${args.map((arg) => toJs(arg)).join(", ")})`)
 }
 
 /**
@@ -195,15 +164,15 @@ export const del = (url: ExprInput<string>, options?: FetchActionOptions): Expr<
  * @see https://data-star.dev/reference/actions#peek
  */
 export const peek = <T = unknown>(callable: Expr<DatastarFunction<T>>): Expr<T> =>
-  datastarAction<T>("peek", callable)
+  action<T>("peek", callable)
 
 /** Creates a Datastar `@setAll()` action expression. @see https://data-star.dev/reference/actions#setall */
 export const setAll = (value: ExprInput<unknown>, filter?: SignalFilter): Expr<void> =>
-  filter === undefined ? datastarAction("setAll", value) : datastarAction("setAll", value, filter)
+  filter === undefined ? action("setAll", value) : action("setAll", value, filter)
 
 /** Creates a Datastar `@toggleAll()` action expression. @see https://data-star.dev/reference/actions#toggleall */
 export const toggleAll = (filter?: SignalFilter): Expr<void> =>
-  filter === undefined ? datastarAction("toggleAll") : datastarAction("toggleAll", filter)
+  filter === undefined ? action("toggleAll") : action("toggleAll", filter)
 
 /**
  * Creates an expression for an app-defined Datastar action such as `@myAction(...)`.
@@ -214,4 +183,7 @@ export const toggleAll = (filter?: SignalFilter): Expr<void> =>
 export const action = <T = unknown>(
   name: string,
   ...args: ReadonlyArray<ExprInput<unknown>>
-): Expr<T> => datastarAction<T>(name, ...args)
+): Expr<T> => {
+  assertActionName(name)
+  return raw(`@${name}(${args.map((arg) => toJs(arg)).join(", ")})`)
+}

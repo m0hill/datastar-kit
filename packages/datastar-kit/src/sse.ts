@@ -1,29 +1,34 @@
-import type { SignalState } from "./types.js"
 import { renderHtmlAttributes } from "./html.js"
+import type { SignalState } from "./types.js"
 
-export type { SignalState, SignalValue } from "./types.js"
+/** @internal Every Datastar patch-elements mode. */
+export const patchElementsModes = [
+  "outer",
+  "inner",
+  "remove",
+  "replace",
+  "prepend",
+  "append",
+  "before",
+  "after"
+] as const
 
 /**
  * Datastar patch-elements modes for applying returned HTML to the current document.
  *
  * @see https://data-star.dev/reference/sse_events#datastar-patch-elements
  */
-export type PatchElementsMode =
-  | "outer"
-  | "inner"
-  | "remove"
-  | "replace"
-  | "prepend"
-  | "append"
-  | "before"
-  | "after"
+export type PatchElementsMode = (typeof patchElementsModes)[number]
+
+/** @internal Every Datastar patch-elements namespace. */
+export const patchElementsNamespaces = ["html", "svg", "mathml"] as const
 
 /**
  * Datastar patch-elements namespace used when parsing returned markup.
  *
  * @see https://data-star.dev/reference/sse_events#datastar-patch-elements
  */
-export type PatchElementsNamespace = "html" | "svg" | "mathml"
+export type PatchElementsNamespace = (typeof patchElementsNamespaces)[number]
 
 /**
  * Fields shared by Datastar SSE events.
@@ -76,8 +81,24 @@ export interface ExecuteScriptOptions extends SseEventOptions {
   readonly autoRemove?: boolean
 }
 
-const PATCH_ELEMENTS_EVENT = "datastar-patch-elements"
-const PATCH_SIGNALS_EVENT = "datastar-patch-signals"
+/** @internal SSE event names Datastar reads. */
+export const PATCH_ELEMENTS_EVENT = "datastar-patch-elements"
+/** @internal */
+export const PATCH_SIGNALS_EVENT = "datastar-patch-signals"
+
+/**
+ * @internal Values Datastar assumes when an event leaves a field out. The encoder omits fields equal
+ * to these, so a decoder must fill them back in.
+ */
+export const datastarDefaults = {
+  retry: 1000,
+  mode: "outer",
+  namespace: "html"
+} as const satisfies {
+  readonly retry: number
+  readonly mode: PatchElementsMode
+  readonly namespace: PatchElementsNamespace
+}
 
 /**
  * Error thrown when an SSE field value contains characters that would corrupt
@@ -142,7 +163,7 @@ const serializeEvent = (
     out.push(`id: ${options.id}`)
   }
 
-  if (options.retry !== undefined && options.retry !== 1000) {
+  if (options.retry !== undefined && options.retry !== datastarDefaults.retry) {
     out.push(`retry: ${options.retry}`)
   }
 
@@ -152,9 +173,6 @@ const serializeEvent = (
 
   return `${out.join("\n")}\n\n`
 }
-
-const encodeSignals = (value: SignalState | string): string =>
-  typeof value === "string" ? value : JSON.stringify(value)
 
 const scriptAttributes = (options: ExecuteScriptOptions): string =>
   renderHtmlAttributes(
@@ -178,12 +196,7 @@ const escapeScriptBody = (script: string): string =>
  * @returns A complete SSE event string.
  * @see https://data-star.dev/reference/sse_events#datastar-patch-elements
  */
-export function patchElements(elements: string, options?: PatchElementsOptions): string
-export function patchElements(
-  elements: undefined,
-  options: PatchElementsOptions & { readonly mode: "remove" }
-): string
-export function patchElements(elements = "", options: PatchElementsOptions = {}): string {
+export const patchElements = (elements: string, options: PatchElementsOptions = {}): string => {
   const lines: Array<EventLine> = []
 
   if (options.selector !== undefined) {
@@ -191,7 +204,7 @@ export function patchElements(elements = "", options: PatchElementsOptions = {})
     lines.push({ key: "selector", value: options.selector })
   }
 
-  if (options.mode !== undefined && options.mode !== "outer") {
+  if (options.mode !== undefined && options.mode !== datastarDefaults.mode) {
     lines.push({ key: "mode", value: options.mode })
   }
 
@@ -204,7 +217,7 @@ export function patchElements(elements = "", options: PatchElementsOptions = {})
     }
   }
 
-  if (options.namespace !== undefined && options.namespace !== "html") {
+  if (options.namespace !== undefined && options.namespace !== datastarDefaults.namespace) {
     lines.push({ key: "namespace", value: options.namespace })
   }
 
@@ -215,25 +228,32 @@ export function patchElements(elements = "", options: PatchElementsOptions = {})
   return serializeEvent(PATCH_ELEMENTS_EVENT, options, lines)
 }
 
+/** Options for a remove-mode patch-elements event; `removeElements` sets the selector and mode. */
+export type RemoveElementsOptions = Omit<PatchElementsOptions, "selector" | "mode" | "namespace">
+
+/**
+ * Encodes a Datastar `datastar-patch-elements` SSE event that removes every element matching
+ * `selector`.
+ */
+export const removeElements = (selector: string, options: RemoveElementsOptions = {}): string =>
+  patchElements("", { ...options, selector, mode: "remove" })
+
 /**
  * Encodes a Datastar `datastar-patch-signals` SSE event.
  *
- * @param signals Signal state or raw serialized signal patch source.
+ * @param signals Signal state to patch.
  * @param options Datastar patch-signals event options.
  * @returns A complete SSE event string.
  * @see https://data-star.dev/reference/sse_events#datastar-patch-signals
  */
-export const patchSignals = (
-  signals: SignalState | string,
-  options: PatchSignalsOptions = {}
-): string => {
+export const patchSignals = (signals: SignalState, options: PatchSignalsOptions = {}): string => {
   const lines: Array<EventLine> = []
 
   if (options.onlyIfMissing === true) {
     lines.push({ key: "onlyIfMissing", value: "true" })
   }
 
-  lines.push(...dataLines("signals", encodeSignals(signals)))
+  lines.push(...dataLines("signals", JSON.stringify(signals)))
 
   return serializeEvent(PATCH_SIGNALS_EVENT, options, lines)
 }
@@ -243,7 +263,8 @@ export const patchSignals = (
  *
  * @remarks
  * This helper sends JavaScript to the browser. Only pass script text produced by trusted
- * application code. Do not include unsanitized user input in generated scripts.
+ * application code. Do not include unsanitized user input in generated scripts. Prefer structured
+ * element or signal patches when possible.
  *
  * @param script JavaScript source to execute in the browser.
  * @param options Script execution event options.
