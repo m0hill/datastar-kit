@@ -105,3 +105,41 @@ export const local = <T = unknown, Name extends string = string>(
     // exactly the conditional type; TypeScript cannot evaluate it for a generic Name.
     (name.startsWith("_") ? name : `_${name}`) as Name extends `_${string}` ? Name : `_${Name}`
   )
+
+/**
+ * A typed reference to a signal defined with `data-computed`. It reads like any signal, but it is
+ * not a {@link SignalTarget}: Datastar ignores writes to a computed signal, so attributes that
+ * write, such as `data-bind`, reject it.
+ *
+ * @typeParam T Value the computed expression produces.
+ * @typeParam Name Signal path represented by this reference.
+ */
+export class Computed<T, Name extends string = string> extends ExprBase<T> {
+  constructor(readonly name: Name) {
+    super()
+    assertSignalName(name)
+  }
+
+  toDatastarExpression(): string {
+    return `$${this.name}`
+  }
+}
+
+/**
+ * Creates a read-only reference to a computed signal, which `data-computed:<name>` defines.
+ *
+ * @example
+ * ```tsx
+ * const total = computed<number>("total")
+ *
+ * <div data-computed:total={js`${price} * ${qty}`}>
+ *   <output data-text={total} />
+ * </div>
+ * ```
+ *
+ * @throws {@link SignalNameError} When the signal name is invalid.
+ * @see https://data-star.dev/reference/attributes#data-computed
+ */
+export const computed = <T = unknown, Name extends string = string>(
+  name: Name
+): Computed<T, Name> => new Computed(name)

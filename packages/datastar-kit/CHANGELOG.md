@@ -4,6 +4,7 @@
 
 ### Added
 
+- Added `computed<T>(name)`, a read-only ref to a signal defined with `data-computed:<name>`. It reads like any signal in `data-text`, `data-show`, and `js` expressions, but `data-bind`, `data-indicator`, and `data-ref` reject it: Datastar ignores writes to a computed signal, so a bound input would silently stop updating it.
 - Typed `<template>` attributes for declarative shadow DOM (`shadowrootmode`, `shadowrootclonable`, `shadowrootdelegatesfocus`, `shadowrootserializable`, `shadowrootcustomelementregistry`, `shadowrootslotassignment`), `webkitdirectory` on file inputs, and `credentialless` on iframes.
 - Elements accept React-style names for multi-word attributes, such as `maxLength`, `readOnly`, `tabIndex`, `autoComplete`, and `colSpan`, alongside `className` and `htmlFor`. Each alias renders as its HTML attribute and is accepted only on elements that have that attribute. When both names are written, the HTML name wins.
 - Added first-class function views: `h.<tag>(props, ...children)` for every HTML and SVG tag, `h(Component, props, ...children)` for components, and `h("my-element", props, ...children)` for custom elements and dynamic tags. `h()` and JSX share one element core, so props are typed by the same element types (including `CustomJsxAttributes` and `CustomJsxElements` registrations) and render identical HTML. Because props are object literals, `h()` also rejects misspelled attributes that JSX accepts. `Fragment`, `ElementFactory`, and `IntrinsicElementProps` are exported from the root.

@@ -1,5 +1,14 @@
 import { describe, expect, it } from "vitest"
-import { get, js, local, queryUrl, signal, SignalNameError, state } from "../src/ds/index.js"
+import {
+  computed,
+  get,
+  js,
+  local,
+  queryUrl,
+  signal,
+  SignalNameError,
+  state
+} from "../src/ds/index.js"
 import type { Expr, Signal } from "../src/ds/index.js"
 
 if (false) {
@@ -46,6 +55,12 @@ describe("Datastar signal refs", () => {
   it("creates underscore-prefixed local signal refs without double-prefixing", () => {
     expect(local<boolean>("saving").toDatastarExpression()).toBe("$_saving")
     expect(local<boolean, "_saving">("_saving").toDatastarExpression()).toBe("$_saving")
+  })
+
+  it("reads computed signals by name and validates the name", () => {
+    expect(computed<number>("total").toDatastarExpression()).toBe("$total")
+    expect(js`${computed<number>("total")} * 2`.toDatastarExpression()).toBe("$total * 2")
+    expect(() => computed("first-name")).toThrow(SignalNameError)
   })
 
   it("throws early for invalid nested paths", () => {

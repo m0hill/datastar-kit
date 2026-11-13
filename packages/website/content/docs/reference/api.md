@@ -30,6 +30,7 @@ The root package exports helpers for action expressions, signal refs, typed sign
 | `state(defaults)` | Create typed leaf refs, frozen defaults, partial patches, and reset payloads. |
 | `signal(name)`    | Create a standalone typed signal ref.                                         |
 | `local(name)`     | Create an underscore-prefixed local/private signal ref.                       |
+| `computed(name)`  | Create a read-only ref to a signal defined with `data-computed`.              |
 
 ### Actions
 

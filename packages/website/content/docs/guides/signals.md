@@ -122,6 +122,23 @@ const savingSignal = <div data-signals:_saving={mod(false, { ifMissing: true })}
 
 Private names are a convention, not a security boundary. The browser still controls browser state.
 
+## Computed signals
+
+`data-computed:<name>` defines a signal Datastar derives from other signals. Refer to it with `computed(...)`:
+
+```tsx
+import { computed, js, state } from "datastar-kit"
+
+const cart = state({ price: 10, qty: 2 })
+const total = computed<number>("total")
+
+<div data-computed:total={js`${cart.refs.price} * ${cart.refs.qty}`}>
+  <output data-text={total} />
+</div>
+```
+
+A computed ref reads like any signal, but attributes that write to signals reject it. Datastar ignores writes to a computed signal, so `<input data-bind={total} />` would show what the user typed while `$total` kept its computed value. To let users edit the value, bind the signals it is computed from.
+
 ## Expressions
 
 For anything beyond a bare signal ref, use `js` so signal refs and JavaScript literals are serialized consistently:

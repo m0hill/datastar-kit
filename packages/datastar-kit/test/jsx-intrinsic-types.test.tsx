@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { dataAttrs } from "../src/data-attributes.js"
 import {
+  computed,
   get,
   js,
   mod,
@@ -81,6 +82,47 @@ typecheckOnly(() => {
     <form data-ref={button} />,
     // @ts-expect-error data-bind requires a branded readable and writable signal.
     <input data-bind={structuralReference} />
+  ]
+
+  void nodes
+})
+
+// reads computed signals anywhere and writes them nowhere
+typecheckOnly(() => {
+  const total = computed<number>("total")
+  const label = computed<string>("label")
+  const visible = computed<boolean>("visible")
+  const element = computed<HTMLElement>("element")
+
+  const nodes = [
+    <output data-text={total} />,
+    <div data-show={visible} />,
+    <div data-attr:title={label} />,
+    <button data-on:click={js`${total} > 10 && @post('/big')`} />,
+    // @ts-expect-error Datastar ignores writes to a computed signal.
+    <input data-bind={label} />,
+    // @ts-expect-error Datastar ignores writes to a computed signal.
+    <input
+      type="number"
+      data-bind={total}
+    />,
+    // @ts-expect-error Datastar ignores writes to a computed signal.
+    <input
+      type="checkbox"
+      data-bind={visible}
+    />,
+    // @ts-expect-error Datastar ignores writes to a computed signal.
+    <input
+      type="radio"
+      value="a"
+      data-bind={label}
+    />,
+    // @ts-expect-error Datastar ignores writes to a computed signal.
+    <select data-bind={label} />,
+    // @ts-expect-error Datastar ignores writes to a computed signal.
+    <button data-indicator={visible} />,
+    // @ts-expect-error Datastar ignores writes to a computed signal.
+    <div data-ref={element} />
   ]
 
   void nodes
