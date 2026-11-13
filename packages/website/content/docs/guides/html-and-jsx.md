@@ -160,6 +160,11 @@ as `js<void>("$count++")` or `js<string>("$label")`. Raw strings remain the expl
 hand-written Datastar source. Primitive values such as `false` and `0` are not accepted at effect
 sites because they cannot perform an effect.
 
+HTML attribute names work as written (`maxlength`, `readonly`, `class`, `for`). React-style names
+work too (`maxLength`, `readOnly`, `className`, `htmlFor`) and render as the HTML attribute; if you
+write both, the HTML name wins. Radios and single selects can bind a signal typed as a union of their
+values, such as `signal<"light" | "dark">("theme")`.
+
 Known elements reject misspelled normal attributes, and unknown element names must use the HTML
 custom-element hyphen convention. An unregistered `<my-widget>` remains loosely typed, while a
 module augmentation can give custom attributes and elements exact props:

@@ -116,6 +116,8 @@ typecheckOnly(() => {
   const object = signal<{ readonly id: number }>("object")
   const choices = signal<readonly string[]>("choices")
   const checks = signal<readonly boolean[]>("checks")
+  const theme = signal<"light" | "dark">("theme")
+  const size = signal<1 | 2>("size")
   const nodes = [
     <input data-bind={text} />,
     <input data-bind={count} />,
@@ -148,6 +150,17 @@ typecheckOnly(() => {
       type="radio"
       data-bind={choices}
     />,
+    // Radios write back one of the rendered values, so a union of those values may bind.
+    <input
+      type="radio"
+      value="dark"
+      data-bind={theme}
+    />,
+    <input
+      type="radio"
+      value={2}
+      data-bind={size}
+    />,
     <input data-bind="uncheckedInput" />,
     <input data-bind={mod(object, { prop: "customValue", event: "change" })} />,
     <typed-widget
@@ -170,6 +183,13 @@ typecheckOnly(() => {
     <input
       type="radio"
       data-bind={object}
+    />,
+    // @ts-expect-error Text inputs write any string, so a union of string literals cannot bind.
+    <input data-bind={theme} />,
+    // @ts-expect-error Radio adapters write strings or numbers, not booleans.
+    <input
+      type="radio"
+      data-bind={flag}
     />,
     // @ts-expect-error An event modifier does not replace the native value adapter.
     <input data-bind={mod(object, { event: "change" })} />
@@ -202,8 +222,11 @@ typecheckOnly(() => {
   const strings = signal<readonly string[]>("strings")
   const numbers = signal<readonly number[]>("numbers")
   const selections = signal<readonly (string | number)[]>("selections")
+  const theme = signal<"light" | "dark">("theme")
   const nodes = [
     <select data-bind={text} />,
+    // Single selects write back one of the rendered option values.
+    <select data-bind={theme} />,
     <select data-bind={count} />,
     <select
       multiple

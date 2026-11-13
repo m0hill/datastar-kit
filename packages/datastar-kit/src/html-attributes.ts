@@ -222,10 +222,8 @@ export interface HtmlGlobalAttributes<RefElement = never>
   autocapitalize?: "off" | "none" | "on" | "sentences" | "words" | "characters" | undefined
   autocorrect?: "on" | "off" | undefined
   autofocus?: boolean | undefined
-  /** HTML `class` attribute. */
+  /** HTML `class` attribute; `className` also works. */
   class?: string | undefined
-  /** Alias for `class`; normalized by the JSX runtime. */
-  className?: string | undefined
   contenteditable?: boolean | "true" | "false" | "plaintext-only" | undefined
   dir?: "ltr" | "rtl" | "auto" | undefined
   draggable?: boolean | "true" | "false" | undefined
@@ -481,9 +479,8 @@ export interface ModHtmlAttributes extends HtmlGlobalAttributes {
 }
 
 export interface LabelHtmlAttributes extends HtmlGlobalAttributes {
+  /** HTML `for` attribute; `htmlFor` also works. */
   for?: string | undefined
-  /** Alias for `for`; normalized by the JSX runtime. */
-  htmlFor?: string | undefined
 }
 
 export interface LiHtmlAttributes extends HtmlGlobalAttributes {
@@ -596,9 +593,8 @@ export interface OptionHtmlAttributes extends HtmlGlobalAttributes {
 }
 
 export interface OutputHtmlAttributes extends HtmlGlobalAttributes {
+  /** HTML `for` attribute; `htmlFor` also works. */
   for?: string | undefined
-  /** Alias for `for`; normalized by the JSX runtime. */
-  htmlFor?: string | undefined
   form?: string | undefined
   name?: string | undefined
 }
@@ -1011,6 +1007,82 @@ export const htmlElementTags = Object.keys({
   view: true
 } satisfies Record<keyof HtmlElementAttributeDefinitions, true>)
 
+/**
+ * React-style prop names and the HTML attribute each renders as. An element accepts an alias only
+ * when it has the HTML attribute, and the alias takes that attribute's value type. When both are
+ * written, the HTML name wins.
+ */
+export const reactAttributeAliases = {
+  acceptCharset: "accept-charset",
+  accessKey: "accesskey",
+  allowFullScreen: "allowfullscreen",
+  autoCapitalize: "autocapitalize",
+  autoComplete: "autocomplete",
+  autoCorrect: "autocorrect",
+  autoFocus: "autofocus",
+  autoPlay: "autoplay",
+  charSet: "charset",
+  className: "class",
+  colSpan: "colspan",
+  contentEditable: "contenteditable",
+  controlsList: "controlslist",
+  crossOrigin: "crossorigin",
+  dateTime: "datetime",
+  disablePictureInPicture: "disablepictureinpicture",
+  disableRemotePlayback: "disableremoteplayback",
+  encType: "enctype",
+  enterKeyHint: "enterkeyhint",
+  fetchPriority: "fetchpriority",
+  formAction: "formaction",
+  formEncType: "formenctype",
+  formMethod: "formmethod",
+  formNoValidate: "formnovalidate",
+  formTarget: "formtarget",
+  hrefLang: "hreflang",
+  htmlFor: "for",
+  httpEquiv: "http-equiv",
+  imageSizes: "imagesizes",
+  imageSrcSet: "imagesrcset",
+  inputMode: "inputmode",
+  itemID: "itemid",
+  itemProp: "itemprop",
+  itemRef: "itemref",
+  itemScope: "itemscope",
+  itemType: "itemtype",
+  maxLength: "maxlength",
+  minLength: "minlength",
+  noModule: "nomodule",
+  noValidate: "novalidate",
+  playsInline: "playsinline",
+  popoverTarget: "popovertarget",
+  popoverTargetAction: "popovertargetaction",
+  readOnly: "readonly",
+  referrerPolicy: "referrerpolicy",
+  rowSpan: "rowspan",
+  spellCheck: "spellcheck",
+  srcDoc: "srcdoc",
+  srcLang: "srclang",
+  srcSet: "srcset",
+  tabIndex: "tabindex",
+  useMap: "usemap"
+} as const
+
+type ReactAttributeAliases = typeof reactAttributeAliases
+
+type ReactAliasProps<Attributes> = {
+  [Alias in keyof ReactAttributeAliases as ReactAttributeAliases[Alias] extends keyof Attributes
+    ? Alias
+    : never]?: Attributes[ReactAttributeAliases[Alias] & keyof Attributes]
+}
+
+/**
+ * Element attributes plus the React-style aliases of the attributes the element has.
+ * Distributes over unions, such as the per-`type` input attributes.
+ */
+export type WithReactAliases<Attributes> = Attributes extends unknown
+  ? Attributes & ReactAliasProps<Attributes>
+  : never
+
 type FileBindReference = DatastarSignalReference<readonly DatastarFile[], DatastarFile[]>
 type StringBindReference = DatastarSignalReference<string, string>
 type NumberBindReference = DatastarSignalReference<number, number>
@@ -1025,6 +1097,11 @@ type StringOrNumberArrayBindReference =
 type StringOrNumberInputBindReference =
   | StringOrNumberBindReference
   | StringOrNumberArrayBindReference
+// Radios and single selects write back one of the values the author rendered, so a signal typed
+// as a union of those values (such as "light" | "dark") may bind, not only one that takes any string.
+type ChoiceBindReference =
+  | DatastarSignalReference<string, never>
+  | DatastarSignalReference<number, never>
 type BooleanOrStringInputBindReference =
   | DatastarSignalReference<boolean, boolean>
   | StringBindReference
@@ -1045,7 +1122,7 @@ type TypedInputHtmlAttributes = Omit<InputHtmlAttributes, "type" | "data-bind"> 
       }
     | {
         type: "radio"
-        "data-bind"?: DatastarBindAttribute<StringOrNumberInputBindReference>
+        "data-bind"?: DatastarBindAttribute<ChoiceBindReference | StringOrNumberArrayBindReference>
       }
     | {
         type?: Exclude<InputHtmlAttributes["type"], "file" | "checkbox" | "radio">
@@ -1065,7 +1142,7 @@ type TypedSelectHtmlAttributes = Omit<SelectHtmlAttributes, "multiple" | "data-b
       }
     | {
         multiple?: false | undefined
-        "data-bind"?: DatastarBindAttribute<StringOrNumberBindReference>
+        "data-bind"?: DatastarBindAttribute<ChoiceBindReference>
       }
   )
 

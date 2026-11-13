@@ -7,7 +7,7 @@ import {
   type HtmlProps,
   type HtmlPropValue
 } from "./html.js"
-import { htmlElementTags, type HtmlElements } from "./html-attributes.js"
+import { htmlElementTags, reactAttributeAliases, type HtmlElements } from "./html-attributes.js"
 import type { IntrinsicElementProps } from "./jsx-runtime.js"
 
 // The element core shared by `h()` and JSX: both check props against the same element types,
@@ -39,12 +39,8 @@ export type JsxComponent = (props: JsxInput) => HtmlChild
 /** @internal Props the compiler adds; they are not element attributes or component props. */
 export const compilerProps = new Set(["__self", "__source", "key"])
 
-// React-style names and the HTML attribute each one renders as. When both are written, the HTML
-// name wins, whichever comes first.
-const propAliases = { className: "class", htmlFor: "for" } as const
-
-const isAliasedProp = (key: string): key is keyof typeof propAliases =>
-  Object.hasOwn(propAliases, key)
+const isAliasedProp = (key: string): key is keyof typeof reactAttributeAliases =>
+  Object.hasOwn(reactAttributeAliases, key)
 
 const isPropValue = (value: unknown): value is HtmlPropValue =>
   value === null ||
@@ -58,7 +54,8 @@ const elementProps = (input: JsxInput | null): HtmlProps => {
 
   for (const [key, value] of Object.entries(input ?? {})) {
     if (compilerProps.has(key) || key === "children") continue
-    const alias = isAliasedProp(key) ? propAliases[key] : undefined
+    // When both a React-style alias and its HTML name are written, the HTML name wins.
+    const alias = isAliasedProp(key) ? reactAttributeAliases[key] : undefined
     if (alias !== undefined && input?.[alias] !== undefined) continue
 
     const prop = normalizeDatastarAttribute(alias ?? key, value)

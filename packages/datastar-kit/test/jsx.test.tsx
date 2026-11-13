@@ -15,6 +15,33 @@ describe("automatic JSX runtime", () => {
         </label>
       )
     ).toBe('<label class="field" for="email">Email</label>')
+    expect(
+      renderToString(
+        <input
+          maxLength={40}
+          readOnly
+          tabIndex={-1}
+          autoComplete="off"
+        />
+      )
+    ).toBe('<input maxlength="40" readonly tabindex="-1" autocomplete="off">')
+  })
+
+  it("lets the HTML name win over its React-style alias in either order", () => {
+    expect(
+      renderToString(
+        <div>
+          <input
+            maxlength={1}
+            maxLength={2}
+          />
+          <input
+            maxLength={2}
+            maxlength={1}
+          />
+        </div>
+      )
+    ).toBe('<div><input maxlength="1"><input maxlength="1"></div>')
   })
 
   it("lets an explicit class prop win over className in either order", () => {
@@ -130,3 +157,10 @@ describe("automatic JSX runtime", () => {
     ).toBe('<a href="/docs">Docs</a><a href="/api"><b>API</b> reference</a>')
   })
 })
+
+if (false) {
+  // @ts-expect-error An element accepts an alias only when it has the HTML attribute.
+  ;<div maxLength={40} />
+  // @ts-expect-error The alias takes the HTML attribute's value type.
+  ;<input readOnly="yes" />
+}

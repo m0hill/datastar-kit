@@ -4,6 +4,8 @@
 
 ### Added
 
+- Elements accept React-style names for multi-word attributes, such as `maxLength`, `readOnly`, `tabIndex`, `autoComplete`, and `colSpan`, alongside `className` and `htmlFor`. Each alias renders as its HTML attribute and is accepted only on elements that have that attribute. When both names are written, the HTML name wins.
+
 - Added first-class function views: `h.<tag>(props, ...children)` for every HTML and SVG tag, `h(Component, props, ...children)` for components, and `h("my-element", props, ...children)` for custom elements and dynamic tags. `h()` and JSX share one element core, so props are typed by the same element types (including `CustomJsxAttributes` and `CustomJsxElements` registrations) and render identical HTML. Because props are object literals, `h()` also rejects misspelled attributes that JSX accepts. `Fragment`, `ElementFactory`, and `IntrinsicElementProps` are exported from the root.
 
 - Exported `HtmlNameError` from the root and `SseFieldError` from `event` and `reply`, so callers can catch the errors these helpers throw with `instanceof`.
@@ -12,6 +14,8 @@
 - Added a `nonce` option to `reply.page(...)`. It renders `data-nonce` on `<html>`, which turns on Datastar's CSP mode so pages can run without `unsafe-eval`. Requires Datastar 1.0.3.
 
 ### Fixed
+
+- Radio inputs and single selects accept `data-bind` signals typed as a union of their values, such as `signal<"light" | "dark">`. They write back one of the rendered values, so the signal no longer has to accept any string.
 
 - Fixed JSX elements whose `key` comes after a spread, such as `<li {...props} key={id} />`, failing to load: TypeScript and esbuild compile them to `createElement` imported from `datastar-kit`, which the package now exports.
 - `debounce` and `throttle` options no longer drop flags silently. Each accepts only its own flags (`leading`/`noTrailing` for debounce, `noLeading`/`trailing` for throttle), in the types and at runtime. `TimingModifierOptions` is now the union of the new `DebounceModifierOptions` and `ThrottleModifierOptions`.

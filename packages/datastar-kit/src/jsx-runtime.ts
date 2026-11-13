@@ -1,6 +1,6 @@
 import type { DatastarAttributeValue } from "./ds/attribute-types.js"
 import type { DatastarModifiedValue } from "./ds/modifiers.js"
-import type { HtmlElements, HtmlGlobalAttributes } from "./html-attributes.js"
+import type { HtmlElements, HtmlGlobalAttributes, WithReactAliases } from "./html-attributes.js"
 import type { HtmlChild, HtmlPropValue } from "./html.js"
 import { buildElement, type JsxInput, type JsxProps, type JsxTag } from "./element.js"
 
@@ -40,10 +40,11 @@ type RuntimeSerializableAttributes<Attributes> = {
 type RegisteredCustomAttributes = RuntimeSerializableAttributes<CustomJsxAttributes>
 
 type KnownIntrinsicElements = {
-  [Tag in keyof HtmlElements]: HtmlElements[Tag] & RegisteredCustomAttributes
+  [Tag in keyof HtmlElements]: WithReactAliases<HtmlElements[Tag]> & RegisteredCustomAttributes
 }
 
-type CustomElementGlobalAttributes = HtmlGlobalAttributes<HTMLElement> & RegisteredCustomAttributes
+type CustomElementGlobalAttributes = WithReactAliases<HtmlGlobalAttributes<HTMLElement>> &
+  RegisteredCustomAttributes
 
 type RegisteredCustomElements = {
   [Tag in keyof CustomJsxElements]: RuntimeSerializableAttributes<CustomJsxElements[Tag]> &

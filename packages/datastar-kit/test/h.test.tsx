@@ -134,6 +134,10 @@ if (false) {
   h(Greeting)
   // @ts-expect-error Component props are type-checked.
   h(Greeting, { name: 1 })
+  // React-style aliases work in h() too.
+  h.input({ maxLength: 40, readOnly: true, tabIndex: -1 })
+  // @ts-expect-error Only on elements with the HTML attribute.
+  h.div({ maxLength: 40 })
   h(NoProps)
   h(Greeting, { name: "Ada" })
 }
