@@ -5,6 +5,7 @@ import * as event from "../src/event.js"
 import { unsafeHtml } from "../src/html.js"
 import * as read from "../src/read.js"
 import * as reply from "../src/reply.js"
+import { patchElementsModes } from "../src/sse.js"
 
 // Replays Datastar's SDK conformance goldens (see fixtures/datastar-sdk-golden/README.md) the way
 // Datastar's own runner does: the case input arrives as the request's signals, and the server
@@ -31,9 +32,7 @@ const GoldenInput = z.object({
         type: z.literal("patchElements"),
         elements: z.string().default(""),
         selector: z.string().exactOptional(),
-        mode: z
-          .enum(["outer", "inner", "replace", "prepend", "append", "before", "after", "remove"])
-          .exactOptional(),
+        mode: z.enum(patchElementsModes).exactOptional(),
         useViewTransition: z.boolean().exactOptional(),
         ...eventFields
       }),

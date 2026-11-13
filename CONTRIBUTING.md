@@ -79,6 +79,7 @@ Documentation pages live in `packages/website/content/docs/*.md` and are compile
 - `signals.ts` — signal refs and name validation.
 - `state.ts` — typed helpers around grouped signal defaults.
 - `attributes.ts`, `attribute-metadata.ts`, `attribute-types.ts`, `modifiers.ts`, `modifier-rendering.ts` — `data-*` attribute typing and modifier rendering.
+- `attribute-authoring.ts` — turns signal refs, `mod()` values, and expressions into rendered `data-*` attributes for the element core.
 
 ### Request boundary
 
