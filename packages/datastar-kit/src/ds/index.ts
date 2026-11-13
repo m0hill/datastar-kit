@@ -22,8 +22,6 @@ export type {
   DatastarDynamicAttributeValue,
   DatastarEffectExpression,
   DatastarEventName,
-  DatastarExpression,
-  DatastarExpressionValue,
   DatastarFile,
   DatastarModifiable,
   DatastarReadableExpression,

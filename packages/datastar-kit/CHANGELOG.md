@@ -34,6 +34,7 @@
 
 ### Removed
 
+- Removed the deprecated `DatastarExpression` and `DatastarExpressionValue` types. Use the semantic expression type for the attribute instead: `DatastarReadableExpression`, `DatastarTruthyExpression`, or `DatastarEffectExpression`.
 - Removed `reply.directHtml`, `reply.directSignals`, and `reply.directScript` and their option types. They sent the same updates as `reply.patch`, `reply.signals`, and `event.script` in a second, non-SSE format, and offered nothing the SSE replies lack: an SSE reply can opt into browser caching with a `Cache-Control` header in `init` just the same. Datastar's SDK spec and its official TypeScript SDK send only SSE as well.
 - Removed the `datastar-kit/sse` subpath. It duplicated `event.*`: use `event.patch`, `event.signals`, `event.script`, and `event.comment` inside `reply.stream(...)`. For an HTML string from another template engine, pass `unsafeHtml(html)` to `event.patch`.
 

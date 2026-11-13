@@ -9,14 +9,6 @@ import type {
 import type { SignalValue } from "../types.js"
 import type { SignalStateInput, SignalTarget, SignalValueInput } from "./signals.js"
 
-/**
- * Unclassified Datastar expression source retained for compatibility.
- *
- * @deprecated Prefer the semantic expression type for the target attribute. This broad type erases
- * the expression result and should be treated as an unsafe interoperability escape hatch.
- */
-export type DatastarExpression = Expr | string
-
 /** JavaScript value that can be read from a Datastar expression without being an effect result. */
 export type DatastarReadableValue =
   | string
@@ -48,15 +40,6 @@ export type DatastarReadableExpression =
  * truthiness rather than requiring a literal boolean result.
  */
 export type DatastarTruthyExpression = DatastarReadableExpression
-
-/**
- * Legacy readable expression union retained for compatibility.
- *
- * @deprecated Prefer the semantic expression type for the target attribute, such as
- * {@link DatastarReadableExpression}, {@link DatastarTruthyExpression}, or
- * {@link DatastarEffectExpression}.
- */
-export type DatastarExpressionValue = DatastarReadableExpression
 
 /**
  * Side-effecting expression accepted by Datastar event and lifecycle attributes.
