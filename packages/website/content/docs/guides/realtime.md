@@ -20,10 +20,13 @@ app.get("/todos/live", (c) => reply.stream(todoEvents()))
 
 ```tsx
 import { get } from "datastar-kit"
-;<div
-  id="todos"
-  data-on:load={get("/todos/live")}
-/>
+
+const liveTodos = (
+  <div
+    id="todos"
+    data-on:load={get("/todos/live")}
+  />
+)
 ```
 
 That is a complete live view. Every browser on that route now reflects the current todo list, and a new tab is correct the moment it connects.

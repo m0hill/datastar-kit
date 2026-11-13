@@ -122,13 +122,16 @@ For example, `data-preserve-attr` expects a space-separated list of HTML attribu
 
 ```tsx
 import { preserve } from "datastar-kit"
-;<details
-  open
-  data-preserve-attr={preserve("open", "class")}
->
-  <summary>Filters</summary>
-  ...
-</details>
+
+const filters = (
+  <details
+    open
+    data-preserve-attr={preserve("open", "class")}
+  >
+    <summary>Filters</summary>
+    ...
+  </details>
+)
 ```
 
 ## Typed attributes and autocomplete
