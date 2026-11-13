@@ -30,7 +30,8 @@ Datastar Kit does not bundle, install, or serve the Datastar browser runtime. Da
 ></script>
 ```
 
-For TSX views, set `jsxImportSource`:
+Write views in TSX or with plain `h.<tag>(props, ...children)` calls; both are typed the same way
+and render the same HTML. For TSX views, set `jsxImportSource`:
 
 ```json
 {

@@ -64,12 +64,12 @@ Documentation pages live in `packages/website/content/docs/*.md` and are compile
 - `reply.ts` — turns rendered HTML and SSE chunks into native `Response` objects.
 - `navigation.ts` — builds safe navigation scripts used by the navigation helpers.
 
-### HTML and JSX
+### HTML, JSX, and h()
 
 - `html.ts` — the internal HTML node model plus `renderToString` and `unsafeHtml`.
-- `html-attributes.ts` — attribute typing and serialization metadata for intrinsic elements.
-- `jsx-runtime.ts` / `jsx-dev-runtime.ts` — automatic JSX runtime entrypoints.
-- `jsx.ts` — adapts JSX calls into the HTML node model.
+- `html-attributes.ts` — attribute typing, React-style attribute aliases, and the list of known tags.
+- `element.ts` — the element core shared by `h()` and JSX: prop normalization, components, `Fragment`, and `h`.
+- `jsx-runtime.ts` / `jsx-dev-runtime.ts` — automatic JSX runtime entrypoints and the intrinsic element types.
 
 ### Datastar authoring (`src/ds`)
 

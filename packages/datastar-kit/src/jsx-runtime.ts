@@ -26,7 +26,7 @@ export interface CustomJsxAttributes {}
 export interface CustomJsxElements {}
 
 // Custom extension declarations are open interfaces, so project their values onto the exact
-// serialization domains the JSX runtime accepts (see `elementProps` in jsx.ts) before exposing them through JSX.
+// serialization domains the JSX runtime accepts (see `elementProps` in element.ts) before exposing them through JSX.
 type CustomDataAttributeValue = Exclude<DatastarAttributeValue, DatastarModifiedValue>
 
 type RuntimeSerializableAttributes<Attributes> = {
