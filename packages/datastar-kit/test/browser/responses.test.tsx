@@ -151,7 +151,7 @@ describe("Datastar responses", () => {
         type="button"
         data-indicator={saving}
         data-attr:aria-busy={js`${saving}`}
-        data-on:click={post("/fixtures/held")}
+        data-on:click={post(`/fixtures/held?key=${__DATASTAR_VERSION__}`)}
       />
     )
 
@@ -160,7 +160,7 @@ describe("Datastar responses", () => {
     await expect.poll(() => signalValue("saving")).toBe(true)
     expect(query("#held").getAttribute("aria-busy")).toBe("")
 
-    await fetch("/fixtures/release")
+    await fetch(`/fixtures/release?key=${__DATASTAR_VERSION__}`)
     await expect.poll(() => signalValue("saving")).toBe(false)
     expect(query("#held").hasAttribute("aria-busy")).toBe(false)
   })

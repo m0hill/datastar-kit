@@ -49,8 +49,10 @@ const send = async (response: Response, target: ServerResponse): Promise<void> =
   target.end(Buffer.from(await response.arrayBuffer()))
 }
 
-// Lets a test keep one action request in flight until it fetches the release route.
-let releaseHeld: (() => void) | undefined
+// Lets a test keep one action request in flight until it fetches the release route. Every Datastar
+// version's browser shares this server and runs in parallel, so each holds under its own `key`.
+const releaseHeld = new Map<string, () => void>()
+const holdKey = (request: Request): string => new URL(request.url).searchParams.get("key") ?? ""
 
 const routes = new Map<string, Route>([
   // Echoes the `count` signal Datastar sent, keyed by HTTP method, to check how each method
@@ -107,17 +109,17 @@ const routes = new Map<string, Route>([
   ],
   [
     "/fixtures/held",
-    async () => {
+    async (request) => {
       await new Promise<void>((resolve) => {
-        releaseHeld = resolve
+        releaseHeld.set(holdKey(request), resolve)
       })
       return reply.done()
     }
   ],
   [
     "/fixtures/release",
-    async () => {
-      releaseHeld?.()
+    async (request) => {
+      releaseHeld.get(holdKey(request))?.()
       return reply.done()
     }
   ]
