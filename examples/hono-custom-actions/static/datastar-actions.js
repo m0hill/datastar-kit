@@ -3,7 +3,7 @@ import {
   attribute,
   effect,
   mergePaths
-} from "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
+} from "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.5/bundles/datastar.js"
 
 const setSignal = (path, value) => {
   if (typeof path !== "string" || path.length === 0) return

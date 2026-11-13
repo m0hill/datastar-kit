@@ -3,7 +3,7 @@ import { h } from "../src/element.js"
 import { page } from "../src/reply.js"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.5/bundles/datastar.js"
 
 describe("HTML document responses", () => {
   it("renders a doctype and basic document shell", async () => {

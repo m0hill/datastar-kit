@@ -1,8 +1,9 @@
 import { unsafeHtml, type HtmlChild } from "datastar-kit"
 import { SITE_URL } from "../constants"
+import { STYLES_HREF } from "../generated/assets"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.5/bundles/datastar.js"
 
 const FONT_PRELOADS = [
   "/fonts/geist-latin-wght-normal.woff2",
@@ -36,7 +37,7 @@ export const pageHead = (options: { description?: string; path?: string }): Html
   />,
   <link
     rel="preload"
-    href="/styles.css"
+    href={STYLES_HREF}
     as="style"
   />,
   ...FONT_PRELOADS.map((href) => (
@@ -71,7 +72,7 @@ export const pageHead = (options: { description?: string; path?: string }): Html
   />,
   <link
     rel="stylesheet"
-    href="/styles.css"
+    href={STYLES_HREF}
     fetchpriority="high"
   />,
   <script

@@ -4,7 +4,7 @@ import { z } from "zod"
 import { event, read, reply, state, mod, post } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.5/bundles/datastar.js"
 
 const signup = state({
   name: "",

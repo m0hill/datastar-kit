@@ -4,7 +4,7 @@ import { event, read, reply, type HtmlChild, state, mod, post } from "datastar-k
 import { z } from "zod"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.5/bundles/datastar.js"
 
 const projectForm = state({ title: "" })
 

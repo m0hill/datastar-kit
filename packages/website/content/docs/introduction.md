@@ -29,7 +29,7 @@ The browser stays light. Datastar handles events, requests, signals, and DOM pat
 npm i datastar-kit
 ```
 
-Datastar Kit does not bundle, install, or serve the Datastar browser runtime. Datastar Kit works with every Datastar `1.0.x` release, from `v1.0.0` to `v1.0.4`, and its browser tests run against each one. Use a pinned runtime URL or a self-hosted copy. A few features need a newer runtime:
+Datastar Kit does not bundle, install, or serve the Datastar browser runtime. Datastar Kit works with every Datastar `1.0.x` release, from `v1.0.0` to `v1.0.5`, and its browser tests run against each one. Use a pinned runtime URL or a self-hosted copy. A few features need a newer runtime:
 
 | Feature                                                                                      | Needs Datastar |
 | -------------------------------------------------------------------------------------------- | -------------- |
@@ -41,7 +41,7 @@ Datastar Kit does not bundle, install, or serve the Datastar browser runtime. Da
 ```html
 <script
   type="module"
-  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
+  src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.5/bundles/datastar.js"
 ></script>
 ```
 
@@ -64,7 +64,7 @@ This is a complete counter in one fetch-compatible handler:
 import { post, reply } from "datastar-kit"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.5/bundles/datastar.js"
 
 let count = 0
 

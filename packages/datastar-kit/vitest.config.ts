@@ -7,7 +7,7 @@ const fromRoot = (path: string): string => fileURLToPath(new URL(path, import.me
 
 // Browser tests run once per supported Datastar release. Add a release by vendoring its bundle as
 // `test/browser/vendor/datastar-<version>.js` and listing its version here.
-const datastarVersions = ["1.0.0", "1.0.1", "1.0.2", "1.0.3", "1.0.4"] as const
+const datastarVersions = ["1.0.0", "1.0.1", "1.0.2", "1.0.3", "1.0.4", "1.0.5"] as const
 
 export default defineConfig({
   resolve: {

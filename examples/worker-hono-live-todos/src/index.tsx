@@ -110,7 +110,7 @@ app.get("/", async (c) => {
       />,
       <script
         type="module"
-        src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
+        src="https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.5/bundles/datastar.js"
       />
     ]
   })

@@ -24,8 +24,8 @@
 ### Changed
 
 - `h(tag, props, ...children)` now type-checks props against the element's attributes and normalizes Datastar values like JSX does. Before, it took only primitive props and rendered `mod(...)` and objects as `[object Object]`, signal refs in `data-bind` as `$name`, and `className` as a literal attribute. Arbitrary `data-*` props now go through `...dataAttrs({...})`, as in JSX.
-- Documented support for every Datastar `1.0.x` release, from `1.0.0` to `1.0.4`, with the minimum Datastar version for each feature that needs a newer runtime. The browser tests now run against every Datastar release from 1.0.0 to 1.0.4.
-- Examples and docs now load Datastar `v1.0.4`.
+- Documented support for every Datastar `1.0.x` release, from `1.0.0` to `1.0.5`, with the minimum Datastar version for each feature that needs a newer runtime. The browser tests now run against every Datastar release from 1.0.0 to 1.0.5.
+- Examples and docs now load Datastar `v1.0.5`.
 - `reply.navigate(...)` now sends its navigation script as an SSE event instead of a `text/javascript` response, so every Datastar action reply is SSE. Calls stay the same. `NavigateOptions` is now the same type as `event.NavigateOptions`.
 
 ### Removed

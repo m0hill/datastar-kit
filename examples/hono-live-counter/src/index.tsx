@@ -4,7 +4,7 @@ import { event, reply, get, post } from "datastar-kit"
 import { invalidations } from "./realtime/hub.js"
 
 const DATASTAR_RUNTIME =
-  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.4/bundles/datastar.js"
+  "https://cdn.jsdelivr.net/gh/starfederation/datastar@v1.0.5/bundles/datastar.js"
 
 let count = 0
 
