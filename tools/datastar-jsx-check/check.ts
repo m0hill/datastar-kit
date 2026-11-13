@@ -1,6 +1,7 @@
 import ts from "typescript"
 import { compilerProps } from "../../packages/datastar-kit/src/element.js"
 import { closestName, inspectDatastarAttributeName } from "./attribute-name.js"
+import { htmlNestingProblem, movesTextOut } from "./html-nesting.js"
 
 /** Stable diagnostic identifiers produced by the Datastar JSX checker. */
 export type DatastarJsxDiagnosticCode =
@@ -12,6 +13,7 @@ export type DatastarJsxDiagnosticCode =
   | "unregistered-rich-data-attribute"
   | "unregistered-custom-element-ref"
   | "unknown-vendor-attribute"
+  | "invalid-html-nesting"
 
 /** A source-anchored Datastar JSX checker diagnostic. */
 export interface DatastarJsxDiagnostic {
@@ -63,17 +65,17 @@ const isPrimitiveAttributeValue = (
 
 const diagnostic = (
   sourceFile: ts.SourceFile,
-  attribute: CheckedAttribute,
+  node: ts.Node,
   code: DatastarJsxDiagnosticCode,
   message: string,
   suggestion?: string
 ): DatastarJsxDiagnostic => {
-  const start = attribute.nameNode.getStart(sourceFile)
+  const start = node.getStart(sourceFile)
   return {
     code,
     file: sourceFile.fileName,
     start,
-    length: attribute.nameNode.getWidth(sourceFile),
+    length: node.getWidth(sourceFile),
     message,
     suggestion
   }
@@ -95,7 +97,7 @@ const checkAttribute = (
   ) {
     return diagnostic(
       sourceFile,
-      attribute,
+      attribute.nameNode,
       "unsupported-rich-attribute",
       `Attribute ${JSON.stringify(name)} only accepts primitive values; expressions, arrays, and objects require a data-* attribute`
     )
@@ -113,7 +115,7 @@ const checkAttribute = (
     )
     return diagnostic(
       sourceFile,
-      attribute,
+      attribute.nameNode,
       "unknown-aria-attribute",
       `Unknown ARIA attribute ${JSON.stringify(name)}`,
       suggestion
@@ -125,7 +127,7 @@ const checkAttribute = (
     if (inspection._tag === "invalid") {
       return diagnostic(
         sourceFile,
-        attribute,
+        attribute.nameNode,
         inspection.category === "key" ? "invalid-datastar-key" : "invalid-datastar-modifier",
         inspection.message
       )
@@ -136,7 +138,7 @@ const checkAttribute = (
       if (looseCustomElement && inspection.name === "data-ref") {
         return diagnostic(
           sourceFile,
-          attribute,
+          attribute.nameNode,
           "unregistered-custom-element-ref",
           'Attribute "data-ref" on an unregistered custom element requires registration in CustomJsxElements'
         )
@@ -148,7 +150,7 @@ const checkAttribute = (
     if (inspection.suggestion !== undefined) {
       return diagnostic(
         sourceFile,
-        attribute,
+        attribute.nameNode,
         "unknown-datastar-attribute",
         `Unknown Datastar attribute ${JSON.stringify(inspection.baseName)}`,
         inspection.suggestion
@@ -158,7 +160,7 @@ const checkAttribute = (
     if (isPrimitiveAttributeValue(checker, attribute)) return undefined
     return diagnostic(
       sourceFile,
-      attribute,
+      attribute.nameNode,
       "unregistered-rich-data-attribute",
       `Rich custom data attribute ${JSON.stringify(name)} must be registered in CustomJsxAttributes`
     )
@@ -169,7 +171,7 @@ const checkAttribute = (
   if (checker.getIndexTypeOfType(propsType, ts.IndexKind.String) !== undefined) return undefined
   return diagnostic(
     sourceFile,
-    attribute,
+    attribute.nameNode,
     "unknown-vendor-attribute",
     `Unknown vendor or custom attribute ${JSON.stringify(name)}; register it in CustomJsxAttributes`
   )
@@ -246,6 +248,59 @@ const checkedAttributes = (
       : checkedSpreadAttributes(checker, property)
   )
 
+const intrinsicTag = (tagName: ts.JsxTagNameExpression): string | undefined =>
+  ts.isIdentifier(tagName) && /^[a-z]/.test(tagName.text) ? tagName.text : undefined
+
+const isCallbackArgument = (node: ts.Node): boolean =>
+  ts.isCallExpression(node.parent) && node.parent.arguments.some((argument) => argument === node)
+
+// The intrinsic elements a node renders inside, nearest first. Fragments, expressions, and callbacks
+// such as `.map(...)` are see-through; a component, an attribute, or any other function ends the
+// list, since what renders around it is unknown here.
+const openAncestors = (node: ts.Node): readonly string[] => {
+  const tags: string[] = []
+  for (let current = node.parent; !ts.isSourceFile(current); current = current.parent) {
+    if (ts.isJsxAttribute(current)) break
+    if (ts.isFunctionLike(current) && !isCallbackArgument(current)) break
+    if (ts.isJsxElement(current)) {
+      const tag = intrinsicTag(current.openingElement.tagName)
+      if (tag === undefined) break
+      tags.push(tag)
+    }
+  }
+  return tags
+}
+
+const checkNesting = (
+  sourceFile: ts.SourceFile,
+  node: ts.Node
+): DatastarJsxDiagnostic | undefined => {
+  if (ts.isJsxText(node)) {
+    const parent = openAncestors(node)[0]
+    if (node.containsOnlyTriviaWhiteSpaces || parent === undefined || !movesTextOut(parent)) {
+      return undefined
+    }
+    return diagnostic(
+      sourceFile,
+      node,
+      "invalid-html-nesting",
+      `Text inside <${parent}>: the HTML parser moves it out of the <${parent}>, so the browser's DOM will not match this markup`
+    )
+  }
+
+  const tagName = ts.isJsxElement(node)
+    ? node.openingElement.tagName
+    : ts.isJsxSelfClosingElement(node)
+      ? node.tagName
+      : undefined
+  const tag = tagName === undefined ? undefined : intrinsicTag(tagName)
+  if (tagName === undefined || tag === undefined) return undefined
+  const problem = htmlNestingProblem(tag, openAncestors(node))
+  return problem === undefined
+    ? undefined
+    : diagnostic(sourceFile, tagName, "invalid-html-nesting", problem)
+}
+
 const checkSourceFile = (
   checker: ts.TypeChecker,
   sourceFile: ts.SourceFile
@@ -262,6 +317,9 @@ const checkSourceFile = (
       : checker.getTypeOfSymbolAtLocation(globalPropsSymbol, sourceFile)
 
   const visit = (node: ts.Node): void => {
+    const nesting = checkNesting(sourceFile, node)
+    if (nesting !== undefined) diagnostics.push(nesting)
+
     if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
       const contextualPropsType = checker.getContextualType(node.attributes)
       const tagName = node.tagName.getText(sourceFile)

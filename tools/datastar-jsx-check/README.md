@@ -1,7 +1,7 @@
 # Datastar JSX checker
 
 Private workspace checker for JSX mistakes that TypeScript deliberately permits, especially unknown
-attribute names containing hyphens.
+attribute names containing hyphens, and element nesting that the browser's HTML parser rewrites.
 
 ```sh
 pnpm check:jsx-attributes
@@ -14,6 +14,10 @@ check a selected project.
 ## Module shape
 
 - `check.ts` is the functional core: `checkProgram(program)` returns structured diagnostics.
+- `html-nesting.ts` holds the nesting rules: a `<div>` in a `<p>`, nested `<a>`, `<form>`, `<button>`,
+  or `<li>`, and table rows or text outside the elements a table allows. Each is a case where the
+  parser changes the tree, so the DOM no longer matches the server's HTML and Datastar patches can
+  morph the wrong elements. Nesting the parser keeps as written is not reported.
 - `load-project.ts` adapts a tsconfig into a TypeScript `Program`.
 - `cli.ts` owns workspace defaults, diagnostic rendering, and the process exit code.
 - `fixtures/` and `check.test.ts` cover registrations, path mappings, runtime-safe direct and spread

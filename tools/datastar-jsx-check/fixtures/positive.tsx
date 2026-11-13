@@ -1,4 +1,4 @@
-import { dataAttrs, js, signal, type Expr } from "datastar-kit"
+import { dataAttrs, js, signal, type Expr, type HtmlChild } from "datastar-kit"
 
 declare module "datastar-kit/jsx-runtime" {
   interface CustomJsxAttributes {
@@ -44,5 +44,61 @@ export const positiveFixture = (
       aria-label="Widget"
       data-show={visible}
     />
+  </main>
+)
+
+const nestingRows = ["a", "b"]
+const Card = (props: { readonly children?: HtmlChild }) => <section>{props.children}</section>
+
+export const nestingPositiveFixture = (
+  <main>
+    <p>
+      <span />
+      <button>
+        <div />
+      </button>
+      <Card>
+        <div />
+      </Card>
+    </p>
+    <ul>
+      <li>
+        <ul>
+          <li />
+        </ul>
+      </li>
+    </ul>
+    <dl>
+      <dt />
+      <dd />
+    </dl>
+    <a href="/">
+      <svg>
+        <a href="#" />
+      </svg>
+    </a>
+    <table>
+      <caption>Rows</caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+        </tr>
+      </thead>
+      <tbody>
+        {nestingRows.map((row) => (
+          <tr>
+            <td>
+              <table>
+                <tbody>
+                  <tr>
+                    <td>{row}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
   </main>
 )
