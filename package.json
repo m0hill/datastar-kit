@@ -28,7 +28,7 @@
     "website:preview": "pnpm --filter @datastar-kit/website preview",
     "examples:check": "pnpm --filter datastar-kit build && pnpm --filter './examples/*' run typecheck && pnpm --filter './examples/*' --if-present run test && pnpm --filter './examples/*' --if-present run build:only && pnpm run check:deno-search-list",
     "test": "pnpm run test:jsx-attributes && pnpm -r --if-present run test",
-    "test:jsx-attributes": "vitest run tools/datastar-jsx-check/check.test.ts",
+    "test:jsx-attributes": "vitest run tools/datastar-jsx-check",
     "check:jsx-attributes": "tsx tools/datastar-jsx-check/cli.ts",
     "typecheck": "tsc -p tools/datastar-jsx-check/tsconfig.json --noEmit && pnpm -r --if-present run typecheck && pnpm run check:deno-search-list && pnpm run check:jsx-attributes",
     "lint": "oxlint --type-aware",

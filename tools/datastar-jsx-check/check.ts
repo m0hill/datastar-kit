@@ -1,5 +1,5 @@
 import ts from "typescript"
-import { inspectDatastarAttributeName } from "../../packages/datastar-kit/src/ds/attribute-authoring.js"
+import { inspectDatastarAttributeName } from "./attribute-name.js"
 
 /** Stable diagnostic identifiers produced by the Datastar JSX checker. */
 export type DatastarJsxDiagnosticCode =

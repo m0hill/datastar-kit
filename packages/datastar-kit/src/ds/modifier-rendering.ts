@@ -59,40 +59,6 @@ export const isDatastarModifierCompatible = (
   return targets.includes(target)
 }
 
-const modifierKeysBySuffix = {
-  capture: "capture",
-  case: "case",
-  debounce: "debounce",
-  delay: "delay",
-  document: "document",
-  duration: "duration",
-  event: "event",
-  exit: "exit",
-  full: "full",
-  half: "half",
-  ifmissing: "ifMissing",
-  leading: "leading",
-  once: "once",
-  outside: "outside",
-  passive: "passive",
-  prevent: "prevent",
-  prop: "prop",
-  self: "self",
-  stop: "stop",
-  terse: "terse",
-  threshold: "threshold",
-  throttle: "throttle",
-  viewtransition: "viewTransition",
-  window: "window"
-} as const satisfies Readonly<Record<string, DatastarModifierKey>>
-
-const isModifierSuffix = (suffix: string): suffix is keyof typeof modifierKeysBySuffix =>
-  Object.hasOwn(modifierKeysBySuffix, suffix)
-
-/** @internal Resolves a rendered modifier suffix to its typed modifier key. */
-export const datastarModifierKeyForSuffix = (suffix: string): DatastarModifierKey | undefined =>
-  isModifierSuffix(suffix) ? modifierKeysBySuffix[suffix] : undefined
-
 const durationModifier = (value: unknown): string => {
   if (typeof value === "number") return `${value}ms`
   if (typeof value === "string") return /^\d+$/.test(value) ? `${value}ms` : value
