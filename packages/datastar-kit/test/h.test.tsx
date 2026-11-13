@@ -9,7 +9,8 @@ import {
   renderToString,
   signal,
   state,
-  type HtmlChild
+  type HtmlChild,
+  type HtmlNode
 } from "../src/index.js"
 
 const form = state({ email: "", agree: false })
@@ -140,4 +141,10 @@ if (false) {
   h.div({ maxLength: 40 })
   h(NoProps)
   h(Greeting, { name: "Ada" })
+  // Tags build HTML nodes; components return whatever they render.
+  const node: HtmlNode = h("my-widget", { mode: "compact" })
+  // @ts-expect-error A component's result is any HtmlChild, not necessarily a node.
+  const rendered: HtmlNode = h(Greeting, { name: "Ada" })
+  void node
+  void rendered
 }

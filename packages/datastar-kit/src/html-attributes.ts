@@ -1077,11 +1077,8 @@ type ReactAliasProps<Attributes> = {
 
 /**
  * Element attributes plus the React-style aliases of the attributes the element has.
- * Distributes over unions, such as the per-`type` input attributes.
  */
-export type WithReactAliases<Attributes> = Attributes extends unknown
-  ? Attributes & ReactAliasProps<Attributes>
-  : never
+export type WithReactAliases<Attributes> = Attributes & ReactAliasProps<Attributes>
 
 type FileBindReference = DatastarSignalReference<readonly DatastarFile[], DatastarFile[]>
 type StringBindReference = DatastarSignalReference<string, string>

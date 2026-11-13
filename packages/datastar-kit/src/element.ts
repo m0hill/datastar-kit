@@ -135,41 +135,41 @@ export type ElementTagFunctions = {
   ) => HtmlNode
 }
 
+/** A function component that `h()` can call. */
+type ElementComponent = (props: never) => HtmlChild
+
+// The arguments after the tag or component. One signature computes them from the first argument,
+// so a wrong prop reports the prop itself rather than "No overload matches this call".
+type ElementArgs<Tag> = Tag extends keyof IntrinsicElementProps
+  ? [props?: IntrinsicElementProps[Tag] | null, ...children: HtmlChild[]]
+  : Tag extends (props: infer Props) => HtmlChild
+    ? {} extends ComponentInput<Props>
+      ? [props?: ComponentInput<Props> | null, ...children: HtmlChild[]]
+      : [props: ComponentInput<Props>, ...children: HtmlChild[]]
+    : never
+
 /**
- * Builds an element from a tag name. Prefer `h.<tag>(...)` for HTML and SVG tags: TypeScript
- * cannot infer an untyped `js` expression's result inside this generic call, so typed attribute
- * slots such as `data-text` need `js<T>` here.
+ * Builds an element from a tag name, or calls a function component like `<Component />` in JSX.
+ * Prefer `h.<tag>(...)` for HTML and SVG tags: TypeScript cannot infer an untyped `js`
+ * expression's result inside this generic call, so typed attribute slots such as `data-text` need
+ * `js<T>` here.
  *
- * @param tag An HTML or SVG tag, or a hyphenated custom element name.
- * @param props Attributes, typed per element, including Datastar attributes.
- * @param children Child nodes; they replace `props.children` when given.
- * @returns An HTML node for `renderToString()` or the response helpers.
+ * @param tag An HTML or SVG tag, a hyphenated custom element name, or a function component.
+ * @param args Props, typed per element or component, then children; children replace
+ *   `props.children` when given.
+ * @returns An HTML node for a tag, or whatever the component renders.
  */
-function element<const Tag extends keyof IntrinsicElementProps>(
+function element<const Tag extends keyof IntrinsicElementProps | ElementComponent>(
   tag: Tag,
-  props?: IntrinsicElementProps[Tag] | null,
-  ...children: readonly HtmlChild[]
-): HtmlNode
-/**
- * Calls a function component with its props and children, like `<Component />` in JSX.
- *
- * @param component The function component.
- * @param args The component's props, then its children.
- * @returns Whatever the component renders.
- */
-function element<Props extends object>(
-  component: (props: Props) => HtmlChild,
-  ...args: {} extends ComponentInput<Props>
-    ? [props?: ComponentInput<Props> | null, ...children: HtmlChild[]]
-    : [props: ComponentInput<Props>, ...children: HtmlChild[]]
-): HtmlChild
+  ...args: ElementArgs<Tag>
+): Tag extends keyof IntrinsicElementProps ? HtmlNode : HtmlChild
 function element(
-  tag: string | ((props: never) => HtmlChild),
+  tag: string | ElementComponent,
   props?: {} | null,
   ...children: readonly HtmlChild[]
 ): HtmlChild {
-  // SAFETY: the overloads tie each component to its own props type, and the component receives
-  // exactly the props object its caller passed, plus children.
+  // SAFETY: ElementArgs ties each tag or component to its own props type, and the component
+  // receives exactly the props object its caller passed, plus children.
   return withChildren(tag as JsxTag, props, children)
 }
 
