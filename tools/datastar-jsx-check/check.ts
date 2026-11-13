@@ -25,7 +25,7 @@ export const diagnosticFixes = {
   "unknown-vendor-attribute":
     "Register the attribute in CustomJsxAttributes, or use a data-* attribute.",
   "invalid-html-nesting":
-    "Change a tag so the parser keeps the nesting, such as <span> instead of <div> inside <p>, or write the <tbody> or <tr> the parser would insert."
+    "Change the markup so the parser keeps it: use <span> instead of <div> inside <p>, write the <tbody> or <tr> the parser would insert, keep table parts inside a <table>, and wrap HTML inside <svg> in a <foreignObject>."
 } as const satisfies Record<string, string>
 
 /** Stable diagnostic identifiers produced by the Datastar JSX checker. */

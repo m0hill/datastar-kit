@@ -136,6 +136,8 @@ const tableParts = new Set([
 // closes, or a template, whose content may hold anything.
 const tableContexts = new Set([...Object.keys(tableChildren), "caption", "td", "th", "template"])
 
+const htmlIntegrationPoints = new Set(["foreignObject", "desc", "title"])
+
 // HTML tags that end SVG or MathML content: the parser closes the <svg> or <math> and continues in
 // HTML.
 const breaksOutOfForeignContent = new Set([
@@ -224,12 +226,13 @@ export const htmlNestingProblem = (
   child: string,
   ancestors: readonly string[]
 ): string | undefined => {
-  // SVG and MathML content parses by other rules, until a <foreignObject> switches back to HTML.
+  // SVG and MathML content parses by other rules, until an SVG <foreignObject>, <desc>, or <title>
+  // switches back to HTML.
   const foreignAt = ancestors.findIndex(
-    (tag) => tag === "svg" || tag === "math" || tag === "foreignObject"
+    (tag) => tag === "svg" || tag === "math" || htmlIntegrationPoints.has(tag)
   )
   const foreignRoot = ancestors[foreignAt]
-  if (foreignRoot !== undefined && foreignRoot !== "foreignObject") {
+  if (foreignRoot !== undefined && !htmlIntegrationPoints.has(foreignRoot)) {
     return breaksOutOfForeignContent.has(child)
       ? rewritten(child, foreignRoot, `the HTML parser closes the <${foreignRoot}> first`)
       : undefined

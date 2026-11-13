@@ -22,14 +22,16 @@ check a selected project.
   checks the rules against Chromium's parser, which decides what counts as rewritten.
 - `load-project.ts` adapts a tsconfig into a TypeScript `Program`.
 - `cli.ts` owns workspace defaults, diagnostic rendering, and the process exit code.
+- `attribute-name.ts` inspects rendered Datastar attribute names: canonical names, keys, modifier
+  suffixes, and typo suggestions, from the SDK's attribute metadata.
 - `fixtures/` and `check.test.ts` cover registrations, path mappings, runtime-safe direct and spread
-  attributes, primitive datasets, typo suggestions, keys, modifier compatibility, unregistered custom-element references, and locations.
+  attributes, primitive datasets, typo suggestions, keys, modifier compatibility, unregistered custom-element references, HTML nesting (`fixtures/nesting.tsx`), and
+  locations; `attribute-name.test.ts` covers name inspection.
 
 The checker uses TypeScript's contextual JSX types, so module-augmented `CustomJsxAttributes` and
 `CustomJsxElements` are the registration seam. It also rejects rich non-`data-*` values that the
-server renderer cannot serialize. Canonical Datastar names, keys, typo suggestions, and modifier
-compatibility come through the same attribute-authoring module used by the JSX runtime and HTML
-renderer. Modifier value-tag grammar is deferred until the runtime and checker can share one parser
+server renderer cannot serialize. Canonical Datastar names, keys, and modifier compatibility come from
+the same attribute metadata the JSX runtime and HTML renderer use. Modifier value-tag grammar is deferred until the runtime and checker can share one parser
 instead of maintaining parallel rules.
 
 The checker requires custom elements to be registered through `CustomJsxElements` before they use
@@ -127,14 +129,17 @@ Or register it with its value type in `CustomJsxAttributes`.
 unchecked.
 
 ```tsx
-;<status-widget data-ref={widget} /> // before
+<status-widget data-ref={widget} />
+```
 
+Register the element, and the same `data-ref` is typed:
+
+```tsx
 declare module "datastar-kit/jsx-runtime" {
   interface CustomJsxElements {
     "status-widget": { mode: "compact" | "full" }
   }
 }
-;<status-widget data-ref={widget} /> // after
 ```
 
 ### `unknown-vendor-attribute`
@@ -143,12 +148,17 @@ A hyphenated attribute that is not `aria-*` or `data-*`, such as one used by ano
 registered.
 
 ```tsx
+<div hx-get="/fragment" />
+```
+
+Register it to accept it:
+
+```tsx
 declare module "datastar-kit/jsx-runtime" {
   interface CustomJsxAttributes {
     "hx-get"?: string
   }
 }
-;<div hx-get="/fragment" />
 ```
 
 ### `invalid-html-nesting`
@@ -162,4 +172,10 @@ sent and Datastar patches can morph the wrong elements.
 
 <table><tr><td /></tr></table>                // before: the parser inserts a <tbody>
 <table><tbody><tr><td /></tr></tbody></table> // after
+
+<div><tr><td /></tr></div>                    // before: the parser drops <tr> outside a table
+<table><tbody><tr><td /></tr></tbody></table> // after
+
+<svg><div>Saved</div></svg>                                          // before: the parser closes the <svg>
+<svg><foreignObject><div>Saved</div></foreignObject></svg>           // after
 ```
