@@ -20,8 +20,8 @@ export type {
 } from "./html-attributes.js"
 export { Fragment, h } from "./element.js"
 export type { ElementFactory, ElementTagFunctions } from "./element.js"
-export { HtmlNameError, renderToString, unsafeHtml } from "./html.js"
-export type { HtmlChild, HtmlNode, HtmlProps, HtmlPropValue } from "./html.js"
+export { HtmlNameError, renderPage, renderToString, unsafeHtml } from "./html.js"
+export type { HtmlChild, HtmlNode, HtmlProps, HtmlPropValue, PageOptions } from "./html.js"
 /**
  * @internal The classic factory TypeScript and esbuild import for a JSX element whose `key`
  * follows a spread. It is `h()`.

@@ -152,6 +152,7 @@ Use `event.*` when one response needs multiple events or a long-lived stream.
 | `h(tag, props, ...children)`       | Build a custom element or a tag chosen at runtime.                    |
 | `Fragment`                         | Group children without a wrapper element.                             |
 | `renderToString(node)`             | Serialize Datastar Kit HTML nodes, `h()` trees, and TSX output.       |
+| `renderPage(body, options?)`       | Serialize the full HTML document `reply.page()` sends.                |
 | `unsafeHtml(html)`                 | Mark trusted HTML as already safe.                                    |
 | `dataAttrs(values)`                | Type-check a primitive custom `data-*` attribute spread bag.          |
 | `HtmlNameError`                    | Thrown when a tag or attribute name cannot render safely.             |

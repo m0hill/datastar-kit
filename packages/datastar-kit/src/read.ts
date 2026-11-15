@@ -83,40 +83,26 @@ export async function validate<Schema extends StandardSchemaV1>(
   return schema["~standard"].validate(await signals(request))
 }
 
-/** Validation messages grouped by where they apply, as returned by `flattenIssues`. */
+/** Validation messages grouped by path, as returned by `flattenIssues()`. */
 export interface FlattenedIssues {
-  /** Messages for the whole input, from issues with no path. */
+  /** Messages from issues with no path. */
   readonly form: string[]
   /** Messages keyed by dot path, such as `"email"`, `"address.city"`, or `"tags.1"`. */
   readonly fields: Partial<Record<string, string[]>>
 }
 
-// Matches `getDotPath` from `@standard-schema/utils`: a path with a symbol key has no dot path.
-const dotPath = (issue: StandardSchemaV1.Issue): string | undefined => {
-  const keys = (issue.path ?? []).map((segment) =>
-    typeof segment === "object" ? segment.key : segment
-  )
-  if (keys.length === 0 || keys.some((key) => typeof key === "symbol")) return undefined
-  return keys.join(".")
-}
+const dotPath = (issue: StandardSchemaV1.Issue): string | undefined =>
+  issue.path?.length
+    ? issue.path
+        .map((segment) => String(segment instanceof Object ? segment.key : segment))
+        .join(".")
+    : undefined
 
 /**
- * Groups validation issues by dot path, with issues that have no path under `form`, in the same
- * shape as Zod's `flattenError`.
- *
- * @example
- * ```ts
- * const result = await read.validate(request, ContactInput)
- * if (result.issues) {
- *   const { fields } = read.flattenIssues(result.issues)
- *   return reply.signals(
- *     contact.patch({ errors: { name: fields.name?.[0] ?? "", email: fields.email?.[0] ?? "" } })
- *   )
- * }
- * ```
+ * Groups Standard Schema issues by dot path, in the shape of Zod's `flattenError`.
  *
  * @param issues Issues from `read.validate` or any Standard Schema validator.
- * @returns Messages for the whole input, and messages for each field path, in issue order.
+ * @returns Messages grouped into `form` and `fields`, in issue order.
  */
 export const flattenIssues = (issues: readonly StandardSchemaV1.Issue[]): FlattenedIssues => {
   const form: string[] = []

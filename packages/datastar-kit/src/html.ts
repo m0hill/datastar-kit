@@ -242,3 +242,49 @@ export const renderToString = (child: HtmlChild): string => {
 
   return `<${child.tag}${renderedProps}>${child.children.map(renderToString).join("")}</${child.tag}>`
 }
+
+/**
+ * Options for the full HTML document rendered by `renderPage()` and `reply.page()`.
+ */
+export interface PageOptions {
+  /** Language rendered on the root `<html>` element. @defaultValue `"en"` */
+  readonly lang?: string
+  /** Children rendered into the document `<head>`. */
+  readonly head?: HtmlChild | readonly HtmlChild[]
+  /** Optional document title rendered before additional head children. */
+  readonly title?: string
+  /**
+   * Per-request CSP nonce rendered as `data-nonce` on the root `<html>` element, which turns on
+   * Datastar's CSP mode so expressions run without `unsafe-eval`. Send a matching
+   * `Content-Security-Policy` `script-src` directive, and generate a new nonce for every page.
+   * Requires Datastar 1.0.3 or newer; older runtimes ignore it.
+   *
+   * @see https://data-star.dev/reference/security#csp-mode
+   */
+  readonly nonce?: string
+}
+
+/**
+ * Renders a full HTML document, as `reply.page()` sends it.
+ *
+ * @param body Children rendered inside the document `<body>`.
+ * @param options Document rendering options.
+ * @returns Serialized HTML document markup, starting with `<!doctype html>`.
+ */
+export const renderPage = (
+  body: HtmlChild | readonly HtmlChild[],
+  options: PageOptions = {}
+): string =>
+  `<!doctype html>${renderToString(
+    htmlNode(
+      "html",
+      { lang: options.lang ?? "en", "data-nonce": options.nonce },
+      htmlNode(
+        "head",
+        {},
+        options.title === undefined ? null : htmlNode("title", {}, options.title),
+        options.head
+      ),
+      htmlNode("body", {}, body)
+    )
+  )}`

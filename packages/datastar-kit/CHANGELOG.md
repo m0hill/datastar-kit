@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- Added `renderPage(body, options?)`, which renders the full HTML document `reply.page(...)` sends, for servers that build their own responses. `PageOptions` is exported from the root.
+
 ## 0.7.1 - 2026-11-15
 
 ### Added

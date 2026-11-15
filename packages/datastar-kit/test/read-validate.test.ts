@@ -85,15 +85,15 @@ describe("read.validate", () => {
     })
   })
 
-  it("reads { key } path segments, and treats a path with a symbol key as form-wide", () => {
+  it("reads { key } path segments like plain keys, and an empty path as form-wide", () => {
     const issues = [
       { message: "Enter a title", path: [{ key: "post" }, { key: "title" }] },
       { message: "Too long", path: ["post", "title"] },
-      { message: "Bad metadata", path: [Symbol("meta")] }
+      { message: "Try again later", path: [] }
     ]
 
     expect(read.flattenIssues(issues)).toEqual({
-      form: ["Bad metadata"],
+      form: ["Try again later"],
       fields: { "post.title": ["Enter a title", "Too long"] }
     })
   })

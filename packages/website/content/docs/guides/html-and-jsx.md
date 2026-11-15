@@ -435,4 +435,6 @@ const html = renderToString(
 )
 ```
 
+`renderPage(body, options?)` renders the full document that `reply.page(...)` sends, for servers that build their own response objects.
+
 Next: [Signals](signals.md).
