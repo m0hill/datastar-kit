@@ -22,14 +22,14 @@ This is a pnpm workspace. The SDK lives in `packages/datastar-kit`, the docs sit
 
 Run these from the repository root:
 
-| Command          | What it does                                                     |
-| ---------------- | ---------------------------------------------------------------- |
-| `pnpm test`      | Run the SDK unit and browser tests (Vitest) plus example tests.  |
-| `pnpm typecheck` | Type-check the SDK, every example, and the website.              |
-| `pnpm build`     | Build the SDK and all example/website outputs.                   |
-| `pnpm lint`      | Lint with oxlint (`pnpm lint:fix` to autofix).                   |
-| `pnpm format`    | Format with oxfmt.                                               |
-| `pnpm check`     | Full gate: `build` + `typecheck` + `test`. Run this before a PR. |
+| Command          | What it does                                                                                          |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `pnpm test`      | Run the SDK unit and browser tests (Vitest) plus example tests.                                       |
+| `pnpm typecheck` | Type-check the SDK, every example, and the website.                                                   |
+| `pnpm build`     | Build the SDK and all example/website outputs.                                                        |
+| `pnpm lint`      | Lint with oxlint (`pnpm lint:fix` to autofix).                                                        |
+| `pnpm format`    | Format with oxfmt (`pnpm format:check` to only check).                                                |
+| `pnpm check`     | Full gate: `format:check` + `build` + `typecheck` + `lint` + `test`. CI runs it on every push and PR. |
 
 To work on a single package, filter to it, e.g. `pnpm --filter datastar-kit test` or `pnpm --filter datastar-kit typecheck`.
 
@@ -104,7 +104,7 @@ These keep the SDK small; please preserve them in new work:
 
 1. Branch from `main`.
 2. Make the change, with tests for new behavior.
-3. Run `pnpm check` and `pnpm lint` until clean.
+3. Run `pnpm check` until clean.
 4. If you changed public API or behavior, update the relevant docs under `packages/website/content/docs`.
 5. Open a PR with a clear description of the change and its motivation.
 

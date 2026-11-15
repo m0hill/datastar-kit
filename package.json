@@ -6,7 +6,7 @@
   "packageManager": "pnpm@10.33.4",
   "scripts": {
     "build": "pnpm --filter datastar-kit build && pnpm -r --filter '!datastar-kit' --if-present run build:only && pnpm run check:deno-search-list",
-    "check": "pnpm run build && pnpm run typecheck && pnpm run test",
+    "check": "pnpm run format:check && pnpm run build && pnpm run typecheck && pnpm run lint && pnpm run test",
     "dev:website": "pnpm --filter @datastar-kit/website dev",
     "dev:hono-counter": "pnpm --filter @datastar-kit/example-hono-counter dev",
     "dev:hono-todos": "pnpm --filter @datastar-kit/example-hono-todos dev",
@@ -33,7 +33,8 @@
     "typecheck": "tsc -p tools/datastar-jsx-check/tsconfig.json --noEmit && pnpm -r --if-present run typecheck && pnpm run check:deno-search-list && pnpm run check:jsx-attributes",
     "lint": "oxlint --type-aware",
     "lint:fix": "oxlint --fix",
-    "format": "oxfmt"
+    "format": "oxfmt",
+    "format:check": "oxfmt --check"
   },
   "devDependencies": {
     "@oxlint/plugins": "^1.88.0",
