@@ -4,6 +4,8 @@
 
 ### Added
 
+- Added `read.flattenIssues(issues)`, which groups Standard Schema issues from any validator into `{ form, fields }`: messages with no path under `form`, and the rest keyed by dot path, such as `"address.city"`. The shape matches Zod's `flattenError`.
+
 - `reply.stream(...)` accepts a function that builds the event source from an `AbortSignal`. The signal aborts when the client disconnects, on every runtime, so a generator waiting for its next event can stop instead of waiting forever.
 
 ### Fixed

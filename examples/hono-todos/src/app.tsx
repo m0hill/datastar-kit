@@ -113,9 +113,8 @@ app.post("/todos", async (c) => {
   const result = await read.validate(c.req.raw, TodoSignals)
 
   if (result.issues) {
-    return reply.signals(
-      todoForm.patch({ errors: { title: result.issues[0]?.message ?? "Enter a todo title." } })
-    )
+    const { fields } = read.flattenIssues(result.issues)
+    return reply.signals(todoForm.patch({ errors: { title: fields.title?.[0] ?? "" } }))
   }
 
   const { title } = result.value

@@ -5,7 +5,7 @@ export type { DataAttributes } from "./data-attributes.js"
 export * from "./ds/index.js"
 /** SSE event chunk helpers for `reply.stream()`. */
 export * as event from "./event.js"
-/** Request-boundary Datastar signal readers. */
+/** Request-boundary helpers: decode, validate, and group validation issues. */
 export * as read from "./read.js"
 /** Native `Response` helpers for Datastar handlers. */
 export * as reply from "./reply.js"

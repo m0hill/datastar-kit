@@ -67,9 +67,64 @@ export async function signals(request: Request): Promise<SignalState> {
   return input
 }
 
+/**
+ * Decodes Datastar signals from a request and validates them with any Standard Schema validator.
+ *
+ * @param request Native request received by a Datastar action handler.
+ * @param schema Any Standard Schema validator, such as a Zod, Valibot, or ArkType schema.
+ * @returns The schema's result: the typed output as `value`, or its `issues`.
+ * @throws {@link SignalParseError} When the Datastar signal payload is not valid JSON.
+ * @throws {@link SignalShapeError} When the parsed payload is not a JSON object signal tree.
+ */
 export async function validate<Schema extends StandardSchemaV1>(
   request: Request,
   schema: Schema
 ): Promise<StandardSchemaV1.Result<StandardSchemaV1.InferOutput<Schema>>> {
   return schema["~standard"].validate(await signals(request))
+}
+
+/** Validation messages grouped by where they apply, as returned by `flattenIssues`. */
+export interface FlattenedIssues {
+  /** Messages for the whole input, from issues with no path. */
+  readonly form: string[]
+  /** Messages keyed by dot path, such as `"email"`, `"address.city"`, or `"tags.1"`. */
+  readonly fields: Partial<Record<string, string[]>>
+}
+
+// Matches `getDotPath` from `@standard-schema/utils`: a path with a symbol key has no dot path.
+const dotPath = (issue: StandardSchemaV1.Issue): string | undefined => {
+  const keys = (issue.path ?? []).map((segment) =>
+    typeof segment === "object" ? segment.key : segment
+  )
+  if (keys.length === 0 || keys.some((key) => typeof key === "symbol")) return undefined
+  return keys.join(".")
+}
+
+/**
+ * Groups validation issues by dot path, with issues that have no path under `form`, in the same
+ * shape as Zod's `flattenError`.
+ *
+ * @example
+ * ```ts
+ * const result = await read.validate(request, ContactInput)
+ * if (result.issues) {
+ *   const { fields } = read.flattenIssues(result.issues)
+ *   return reply.signals(
+ *     contact.patch({ errors: { name: fields.name?.[0] ?? "", email: fields.email?.[0] ?? "" } })
+ *   )
+ * }
+ * ```
+ *
+ * @param issues Issues from `read.validate` or any Standard Schema validator.
+ * @returns Messages for the whole input, and messages for each field path, in issue order.
+ */
+export const flattenIssues = (issues: readonly StandardSchemaV1.Issue[]): FlattenedIssues => {
+  const form: string[] = []
+  const fields: Partial<Record<string, string[]>> = {}
+  for (const issue of issues) {
+    const path = dotPath(issue)
+    if (path === undefined) form.push(issue.message)
+    else (fields[path] ??= []).push(issue.message)
+  }
+  return { form, fields }
 }

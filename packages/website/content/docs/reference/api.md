@@ -102,6 +102,7 @@ can declare their result with `js<T>(...)`.
 | -------------------------------- | --------------------------------------------------------------- |
 | `read.signals(request)`          | Decode Datastar JSON signal state from a native `Request`.      |
 | `read.validate(request, schema)` | Decode signal state, then validate it with any Standard Schema. |
+| `read.flattenIssues(issues)`     | Group validation issues into `{ form, fields }` by dot path.    |
 | `read.SignalParseError`          | Thrown when signal payload JSON cannot be parsed.               |
 | `read.SignalShapeError`          | Thrown when parsed signals are not a JSON object signal tree.   |
 

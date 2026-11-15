@@ -30,14 +30,9 @@ async function submitContact(request: Request): Promise<Response> {
   const result = await read.validate(request, ContactInput)
 
   if (result.issues) {
-    const messageFor = (field: string) =>
-      result.issues.find((issue) => {
-        const [segment] = issue.path ?? []
-        return (typeof segment === "object" ? segment.key : segment) === field
-      })?.message ?? ""
-
+    const { fields } = read.flattenIssues(result.issues)
     return reply.signals(
-      contact.patch({ errors: { name: messageFor("name"), email: messageFor("email") } })
+      contact.patch({ errors: { name: fields.name?.[0] ?? "", email: fields.email?.[0] ?? "" } })
     )
   }
 
@@ -46,15 +41,20 @@ async function submitContact(request: Request): Promise<Response> {
 }
 ```
 
-`result.value` has the schema's output type. Validation failures are returned as `issues` instead of thrown, because they are expected input that usually becomes a UI patch. Each issue has a `message` and an optional `path`; validators report path segments either as keys or as `{ key }` objects. Send every error field in the patch, including empty ones, so errors the user has fixed disappear.
+`result.value` has the schema's output type. Validation failures are returned as `issues` instead of thrown, because they are expected input that usually becomes a UI patch.
+
+`read.flattenIssues(issues)` groups those issues by field, in the same shape as Zod's `flattenError`:
+
+```ts
+{
+  form: ["Passwords must match"], // issues on the whole input, with no path
+  fields: { email: ["Enter a valid email"], "address.city": ["Enter a city"] }
+}
+```
+
+Nested fields use dot paths, and array items use their index, such as `"tags.1"`. Which messages go into which signals is up to you. Send `""` for every valid field, because Datastar merges signal patches, so a field you leave out keeps its old error.
 
 `read.validate(request, schema)` still throws when the Datastar payload is malformed or not a JSON object signal tree. Schema validation handles valid JSON with the wrong shape or unacceptable values.
-
-To use validator-specific features, such as Zod's `flattenError`, decode with `read.signals(request)` and call the validator yourself:
-
-```tsx
-const result = ContactInput.safeParse(await read.signals(request))
-```
 
 ## Show field errors
 
