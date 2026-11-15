@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "jsxImportSource": "datastar-kit",
+    "types": ["node"],
+    "paths": {
+      "datastar-kit": ["../datastar-kit/src/index.ts"],
+      "datastar-kit/jsx-runtime": ["../datastar-kit/src/jsx-runtime.ts"],
+      "datastar-kit/jsx-dev-runtime": ["../datastar-kit/src/jsx-dev-runtime.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "test/**/*.ts", "test/**/*.tsx"],
+  "exclude": ["dist", "node_modules"]
+}

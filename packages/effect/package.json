@@ -1,0 +1,62 @@
+{
+  "name": "@datastar-kit/effect",
+  "version": "0.1.0",
+  "description": "Effect HTTP adapter for datastar-kit: decode Datastar signals with Effect Schema and return Datastar responses and streams",
+  "homepage": "https://datastar-kit.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/m0hill/datastar-kit.git",
+    "directory": "packages/effect"
+  },
+  "bugs": {
+    "url": "https://github.com/m0hill/datastar-kit/issues"
+  },
+  "author": "Mohil",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
+    "check": "pnpm run typecheck && pnpm run test && pnpm run build",
+    "test": "vitest run",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build:only": "pnpm run build",
+    "prepack": "pnpm run build",
+    "prepublishOnly": "pnpm run check"
+  },
+  "keywords": [
+    "datastar",
+    "effect",
+    "sse",
+    "hypermedia"
+  ],
+  "license": "MIT",
+  "peerDependencies": {
+    "datastar-kit": "^0.7.2",
+    "effect": "~4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "datastar-kit": "workspace:*",
+    "effect": "~4.1.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.14"
+  }
+}
