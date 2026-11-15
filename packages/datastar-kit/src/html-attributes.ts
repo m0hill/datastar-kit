@@ -1109,9 +1109,9 @@ type StringOrNumberInputBindReference =
 // Radios and single selects write back one of the values the author rendered, so a signal typed
 // as a union of those values (such as "light" | "dark") may bind, not only one that takes any string.
 type ChoiceBindReference =
-  | DatastarSignalReference<string, never>
-  | DatastarSignalReference<number, never>
-  | DatastarSignalReference<string | number, never>
+  | DatastarSignalReference<string>
+  | DatastarSignalReference<number>
+  | DatastarSignalReference<string | number>
 type BooleanOrStringInputBindReference =
   | DatastarSignalReference<boolean, boolean>
   | StringBindReference

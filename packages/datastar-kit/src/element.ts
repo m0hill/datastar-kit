@@ -145,14 +145,8 @@ function element<const Tag extends keyof IntrinsicElementProps | ElementComponen
   tag: Tag,
   ...args: ElementArgs<Tag>
 ): Tag extends keyof IntrinsicElementProps ? HtmlNode : HtmlChild
-function element(
-  tag: string | ElementComponent,
-  props?: {} | null,
-  ...children: readonly HtmlChild[]
-): HtmlChild {
-  // SAFETY: ElementArgs ties each tag or component to its own props type, and the component
-  // receives exactly the props object its caller passed, plus children.
-  return withChildren(tag as JsxTag, props, children)
+function element(tag: JsxTag, props?: {} | null, ...children: readonly HtmlChild[]): HtmlChild {
+  return withChildren(tag, props, children)
 }
 
 // SAFETY: htmlElementTags holds exactly the keys of ElementTagFunctions, and each entry builds its

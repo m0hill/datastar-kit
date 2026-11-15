@@ -11,13 +11,19 @@ import {
   toggleAll,
   type DatastarFunction
 } from "../../src/ds/index.js"
+import { z } from "zod"
 import { mount, query, signalValue } from "./datastar.js"
 import { action as registerAction } from "datastar-runtime"
 
 const inspected = (field: string): unknown => signalValue(`inspected.${field}`)
 
-// The inspect route reports query strings and bodies as JSON text; null until it has responded.
-const inspectedJson = (field: string): unknown => JSON.parse(String(inspected(field) ?? "null"))
+// The inspect route reports query strings and bodies as JSON text, so each response replaces the
+// last instead of merging into it. The field is unset until the route has responded.
+const InspectedJson = z
+  .string()
+  .transform((text): unknown => JSON.parse(text))
+  .nullish()
+const inspectedJson = (field: string): unknown => InspectedJson.parse(inspected(field)) ?? null
 
 // Real Datastar running action expressions built by the `ds` helpers. The /fixtures/inspect route
 // reports what reached the server.

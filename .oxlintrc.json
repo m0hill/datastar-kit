@@ -80,7 +80,11 @@
       }
     },
     {
-      "files": ["packages/datastar-kit/src/ds/signals.ts", "packages/datastar-kit/src/ds/state.ts"],
+      "files": [
+        "packages/datastar-kit/src/ds/signals.ts",
+        "packages/datastar-kit/src/ds/state.ts",
+        "packages/datastar-kit/src/element.ts"
+      ],
       "rules": {
         "typescript/no-unsafe-type-assertion": "off"
       }

@@ -112,14 +112,14 @@ const listItemBarriers = new Set([
 
 const tableSections = new Set(["tbody", "thead", "tfoot"])
 const scriptSupporting = ["script", "template", "style"]
-const tableChildren: Readonly<Record<string, ReadonlySet<string>>> = {
-  table: new Set(["caption", "colgroup", "thead", "tbody", "tfoot", ...scriptSupporting]),
-  tbody: new Set(["tr", ...scriptSupporting]),
-  thead: new Set(["tr", ...scriptSupporting]),
-  tfoot: new Set(["tr", ...scriptSupporting]),
-  tr: new Set(["td", "th", ...scriptSupporting]),
-  colgroup: new Set(["col", "template"])
-}
+const tableChildren = new Map([
+  ["table", new Set(["caption", "colgroup", "thead", "tbody", "tfoot", ...scriptSupporting])],
+  ["tbody", new Set(["tr", ...scriptSupporting])],
+  ["thead", new Set(["tr", ...scriptSupporting])],
+  ["tfoot", new Set(["tr", ...scriptSupporting])],
+  ["tr", new Set(["td", "th", ...scriptSupporting])],
+  ["colgroup", new Set(["col", "template"])]
+])
 
 const tableParts = new Set([
   "caption",
@@ -134,7 +134,7 @@ const tableParts = new Set([
 ])
 // A table part looks for the nearest of these: a table element to hold it, a cell or caption it
 // closes, or a template, whose content may hold anything.
-const tableContexts = new Set([...Object.keys(tableChildren), "caption", "td", "th", "template"])
+const tableContexts = new Set([...tableChildren.keys(), "caption", "td", "th", "template"])
 
 const htmlIntegrationPoints = new Set(["foreignObject", "desc", "title"])
 
@@ -200,16 +200,14 @@ const findOpen = (
 const listItems = new Set(["dd", "dt"])
 // Tags that close, or are dropped inside, an open element of the same kind. Each entry is the open
 // elements it looks for and the ancestors that hide them.
-const closedBySameTag: Readonly<
-  Record<string, readonly [ReadonlySet<string>, ReadonlySet<string>]>
-> = {
-  a: [new Set(["a"]), formattingMarkers],
-  button: [new Set(["button"]), defaultScope],
-  form: [new Set(["form"]), new Set(["template"])],
-  li: [new Set(["li"]), listItemBarriers],
-  dd: [listItems, listItemBarriers],
-  dt: [listItems, listItemBarriers]
-}
+const closedBySameTag = new Map([
+  ["a", [new Set(["a"]), formattingMarkers] as const],
+  ["button", [new Set(["button"]), defaultScope] as const],
+  ["form", [new Set(["form"]), new Set(["template"])] as const],
+  ["li", [new Set(["li"]), listItemBarriers] as const],
+  ["dd", [listItems, listItemBarriers] as const],
+  ["dt", [listItems, listItemBarriers] as const]
+])
 
 const rewritten = (child: string, ancestor: string, effect: string): string =>
   `<${child}> inside <${ancestor}>: ${effect}, so the browser's DOM will not match this markup`
@@ -245,7 +243,7 @@ export const htmlNestingProblem = (
   if (wrapper !== undefined) {
     return rewritten(child, parent, `the HTML parser inserts ${wrapper} around it`)
   }
-  const allowed = tableChildren[parent]
+  const allowed = tableChildren.get(parent)
   // A hidden input stays in a table; the checker does not read the type, so inputs are skipped.
   if (allowed !== undefined && !allowed.has(child) && child !== "input") {
     const moved = child === "form" ? "its content" : "it"
@@ -271,7 +269,7 @@ export const htmlNestingProblem = (
     return rewritten(child, "p", "the HTML parser closes the <p> first")
   }
 
-  const closer = closedBySameTag[child]
+  const closer = closedBySameTag.get(child)
   const nestedSame =
     closer === undefined ? undefined : findOpen(htmlAncestors, closer[0], closer[1])
   if (nestedSame === undefined) return undefined
@@ -285,4 +283,4 @@ export const htmlNestingProblem = (
  *
  * @param parent Tag of the element that holds the text.
  */
-export const movesTextOut = (parent: string): boolean => Object.hasOwn(tableChildren, parent)
+export const movesTextOut = (parent: string): boolean => tableChildren.has(parent)

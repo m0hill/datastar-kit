@@ -3,19 +3,19 @@ import { htmlNestingProblem, movesTextOut } from "./html-nesting.js"
 
 // The browser is the oracle: a nesting is rewritten exactly when parsing the markup gives back
 // different markup. Each parent sits in the context it needs to parse as written itself.
-const contexts: Readonly<Record<string, readonly string[]>> = {
-  li: ["ul"],
-  dd: ["dl"],
-  dt: ["dl"],
-  caption: ["table"],
-  colgroup: ["table"],
-  tbody: ["table"],
-  thead: ["table"],
-  tfoot: ["table"],
-  tr: ["table", "tbody"],
-  td: ["table", "tbody", "tr"],
-  th: ["table", "tbody", "tr"]
-}
+const contexts = new Map([
+  ["li", ["ul"]],
+  ["dd", ["dl"]],
+  ["dt", ["dl"]],
+  ["caption", ["table"]],
+  ["colgroup", ["table"]],
+  ["tbody", ["table"]],
+  ["thead", ["table"]],
+  ["tfoot", ["table"]],
+  ["tr", ["table", "tbody"]],
+  ["td", ["table", "tbody", "tr"]],
+  ["th", ["table", "tbody", "tr"]]
+])
 
 const parents = [
   "a",
@@ -113,7 +113,7 @@ describe("HTML nesting rules", () => {
   it("report exactly the nesting the browser's parser rewrites", () => {
     const cases = [
       ...parents.flatMap((parent) =>
-        children.map((child) => ({ chain: [...(contexts[parent] ?? []), parent], leaf: child }))
+        children.map((child) => ({ chain: [...(contexts.get(parent) ?? []), parent], leaf: child }))
       ),
       ...deeper.map((chain) => ({ chain: chain.slice(0, -1), leaf: chain.at(-1) ?? "" }))
     ]

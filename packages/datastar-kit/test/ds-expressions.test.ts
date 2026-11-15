@@ -13,7 +13,7 @@ describe("expression builders", () => {
   })
 
   it("renders bigints as bigint literals", () => {
-    expect(js`${10n} + $count`.toString()).toBe("10n + $count")
+    expect(js`${10n} + $count`.toDatastarExpression()).toBe("10n + $count")
   })
 
   it("rejects values with no Datastar expression form", () => {
