@@ -1,21 +1,25 @@
-const todo = state({ title: "" })
+const signup = state({ email: "", error: "", joined: false })
 
-const Composer = () => (
+const SignupInput = z.object({ email: z.email("Enter a valid email") })
+
+const SignupForm = () => (
   <form
-    data-signals={mod(todo.defaults, { ifMissing: true })}
-    data-on:submit={mod(post("/todos"), { prevent: true })}
+    data-signals={mod(signup.defaults, { ifMissing: true })}
+    data-on:submit={mod(post("/signup"), { prevent: true })}
   >
-    <input data-bind={todo.refs.title} />
-    <button type="submit">Add</button>
+    <input data-bind={signup.refs.email} />
+    <small data-text={signup.refs.error} />
+    <button type="submit">Join</button>
+    <p data-show={signup.refs.joined}>You're on the list.</p>
   </form>
 )
 
-app.post("/todos", async (c) => {
-  const { title } = TodoSignals.parse(await read.signals(c.req.raw))
-  await db.todos.insert(title)
+app.post("/signup", async (c) => {
+  const result = await read.validate(c.req.raw, SignupInput)
+  if (result.issues) {
+    return reply.signals(signup.patch({ error: result.issues[0]?.message ?? "" }))
+  }
 
-  return reply.stream([
-    event.patch(<TodoList items={await db.todos.list()} />),
-    event.signals(todo.reset())
-  ])
+  await db.subscribers.insert(result.value.email)
+  return reply.signals(signup.patch({ email: "", error: "", joined: true }))
 })
