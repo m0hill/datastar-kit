@@ -6,7 +6,7 @@ import {
   type PageOptions,
   type SignalState
 } from "datastar-kit"
-import { Effect, Stream } from "effect"
+import { Data, Effect, Stream } from "effect"
 import { HttpServerResponse } from "effect/http"
 
 const sseOptions = {
@@ -62,27 +62,38 @@ export const signals = (
   options: core.SignalsOptions = {}
 ): HttpServerResponse.HttpServerResponse => sse(event.signals(value, options))
 
+/** Error when a navigation URL is malformed, non-HTTP(S), or cross-origin without being allowlisted. */
+export class NavigationError extends Data.TaggedError("NavigationError")<{
+  readonly cause: core.NavigationUrlError
+}> {}
+
 /**
  * Creates a Datastar SSE response that safely navigates the browser.
  *
  * @param url Relative or allowlisted absolute URL to navigate to.
  * @param options Navigation and event options.
- * @throws {@link core.NavigationUrlError} When the URL is malformed, non-HTTP(S), or cross-origin
- *   without being allowlisted.
+ * @returns The response. Fails with `NavigationError` for an unsafe URL.
  */
 export const navigate = (
   url: string | URL,
   options: core.NavigateOptions = {}
-): HttpServerResponse.HttpServerResponse => sse(event.navigate(url, options))
+): Effect.Effect<HttpServerResponse.HttpServerResponse, NavigationError> =>
+  Effect.try({
+    try: () => sse(event.navigate(url, options)),
+    catch: (cause) => {
+      if (cause instanceof core.NavigationUrlError) return new NavigationError({ cause })
+      throw cause
+    }
+  })
 
 /** Creates a Datastar command-completion response with no body (`204`). */
 export const done = (): HttpServerResponse.HttpServerResponse =>
   HttpServerResponse.empty({ status: 204 })
 
-const withHeartbeat = <E, R>(
-  events: Stream.Stream<string, E, R>,
+const withHeartbeat = <R>(
+  events: Stream.Stream<string, never, R>,
   heartbeat: core.SseHeartbeatOptions
-): Stream.Stream<string, E, R> => {
+): Stream.Stream<string, never, R> => {
   const intervalMs = heartbeat.intervalMs ?? 15_000
   const comment = event.comment(heartbeat.comment ?? "heartbeat")
   const beats = Stream.fromEffect(Effect.sleep(heartbeat.initialDelayMs ?? intervalMs)).pipe(
@@ -96,12 +107,13 @@ const withHeartbeat = <E, R>(
 /**
  * Creates a Datastar SSE stream response from a stream of event chunks.
  *
- * @param events Event chunks. The stream runs with the services of the calling effect.
+ * @param events Event chunks, with failures handled: headers are sent before the stream runs.
+ *   The stream runs with the services of the calling effect.
  * @param options SSE stream options.
  * @returns The response. Client disconnect interrupts the stream.
  */
-export const stream = <E, R>(
-  events: Stream.Stream<string, E, R>,
+export const stream = <R>(
+  events: Stream.Stream<string, never, R>,
   options: core.SseStreamOptions = {}
 ): Effect.Effect<HttpServerResponse.HttpServerResponse, never, R> =>
   Effect.map(Effect.context<R>(), (context) => {

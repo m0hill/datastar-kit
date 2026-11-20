@@ -1,12 +1,13 @@
 import { event, reply as core } from "datastar-kit"
 import { Context, Deferred, Effect, Fiber, Layer, Stream } from "effect"
 import { TestClock } from "effect/testing"
-import { HttpRouter } from "effect/http"
+import { HttpRouter, HttpServerResponse } from "effect/http"
 import { describe, expect, it } from "vitest"
 import { reply } from "../src/index.js"
 
-const serve = (route: Layer.Layer<never, never, HttpRouter.HttpRouter>) =>
-  HttpRouter.toWebHandler(route, { disableLogger: true }).handler
+const serve = <R extends HttpRouter.HttpRouter | HttpRouter.Request<"Error", unknown>>(
+  route: Layer.Layer<never, never, R>
+) => HttpRouter.toWebHandler(route, { disableLogger: true }).handler
 
 const get = (handler: ReturnType<typeof serve>) => handler(new Request("http://localhost/"))
 
@@ -35,6 +36,27 @@ describe("reply", () => {
       // A route can hold one response value, so its body must survive being sent twice.
       expect(await summary(await get(handler))).toEqual(first)
     }
+  })
+
+  it("fails navigate with a catchable NavigationError for an unsafe URL", async () => {
+    const handler = serve(
+      HttpRouter.add(
+        "GET",
+        "/",
+        reply
+          .navigate("https://evil.example/")
+          .pipe(
+            Effect.catchTag("NavigationError", (error) =>
+              Effect.succeed(HttpServerResponse.text(error.cause.url, { status: 400 }))
+            )
+          )
+      )
+    )
+
+    const response = await get(handler)
+
+    expect(response.status).toBe(400)
+    expect(await response.text()).toBe("https://evil.example/")
   })
 })
 

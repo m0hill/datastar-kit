@@ -143,7 +143,8 @@ Services reach routes through `HttpRouter.provideRequest(layer)`, which builds t
 | `reply.patch(elements, options?)`  | Patch elements into the page.                                                                 |
 | `reply.signals(value, options?)`   | Patch signals.                                                                                |
 | `reply.remove(selector, options?)` | Remove elements.                                                                              |
-| `reply.navigate(url, options?)`    | Navigate the browser to a safe URL.                                                           |
+| `reply.navigate(url, options?)`    | Navigate the browser to a safe URL. Returns an Effect that fails with `NavigationError`.      |
+| `reply.NavigationError`            | The URL was malformed, non-HTTP(S), or cross-origin without being allowlisted.                |
 | `reply.done()`                     | `204` for an action with nothing to patch.                                                    |
 | `reply.stream(events, options?)`   | An SSE response from a `Stream` of event chunks, with optional heartbeats. Returns an Effect. |
 
@@ -151,4 +152,4 @@ Services reach routes through `HttpRouter.provideRequest(layer)`, which builds t
 
 ## Streams and disconnects
 
-`reply.stream` runs the stream with the services of the effect that creates the response. When the client disconnects, the stream is interrupted, so its finalizers run and subscriptions close, even while it is waiting for its next event. This works on every runtime, including Cloudflare Workers, where it does not depend on `request.signal`.
+`reply.stream` runs the stream with the services of the effect that creates the response. The stream must not fail: headers are sent before it runs, so handle or log its errors first, for example with `Stream.catch`. When the client disconnects, the stream is interrupted, so its finalizers run and subscriptions close, even while it is waiting for its next event. This works on every runtime, including Cloudflare Workers, where it does not depend on `request.signal`.
