@@ -135,9 +135,10 @@ Services reach routes through `HttpRouter.provideRequest(layer)`, which builds t
 
 | API                                | Use                                                                                           |
 | ---------------------------------- | --------------------------------------------------------------------------------------------- |
-| `read.decode(schema)`              | Read and decode them with an Effect schema, reporting every invalid field.                    |
+| `read.signals`                     | Read the current request's Datastar signals, without a schema.                                |
+| `read.decode(schema)`              | Read the signals and decode them with an Effect schema, reporting every invalid field.        |
 | `read.flattenError(error)`         | Group a `SchemaError`'s messages into `{ form, fields }` by dot path.                         |
-| `read.SignalReadError`             | The body could not be read, or the payload was not a JSON object.                             |
+| `read.SignalReadError`             | The signals were not JSON, or not a JSON object. `cause` is datastar-kit's error.             |
 | `reply.page(body, options?)`       | A full HTML document.                                                                         |
 | `reply.patch(elements, options?)`  | Patch elements into the page.                                                                 |
 | `reply.signals(value, options?)`   | Patch signals.                                                                                |
@@ -146,7 +147,7 @@ Services reach routes through `HttpRouter.provideRequest(layer)`, which builds t
 | `reply.done()`                     | `204` for an action with nothing to patch.                                                    |
 | `reply.stream(events, options?)`   | An SSE response from a `Stream` of event chunks, with optional heartbeats. Returns an Effect. |
 
-`read.decode` takes signals from the `datastar` query parameter for `GET` and `DELETE`, and from the JSON body otherwise, as datastar-kit's `read.signals` does. Set statuses and headers with Effect's combinators, such as `HttpServerResponse.setStatus` and `HttpServerResponse.setHeader`.
+`read.signals` and `read.decode` take signals from the `datastar` query parameter for `GET` and `DELETE`, and from the JSON body otherwise, as datastar-kit's `read.signals` does. They read the body through Effect, so middleware that reads it first still works. A body that cannot be read fails with Effect's `HttpServerError`. Set statuses and headers with Effect's combinators, such as `HttpServerResponse.setStatus` and `HttpServerResponse.setHeader`.
 
 ## Streams and disconnects
 

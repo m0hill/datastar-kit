@@ -30,28 +30,16 @@ export class SignalShapeError extends Error {
 }
 
 /**
- * Keeps Datastar transport details private so callers work with parsed signal state.
- */
-const rawSignals = async (request: Request): Promise<string> => {
-  const method = request.method.toUpperCase()
-  if (method === "GET" || method === "DELETE") {
-    return new URL(request.url).searchParams.get("datastar") ?? "{}"
-  }
-
-  const body = await request.text()
-  return body.length === 0 ? "{}" : body
-}
-
-/**
- * Parses Datastar signals from a request.
+ * Parses a raw Datastar signal payload, for servers that read the request themselves.
  *
- * @param request Native request received by a Datastar action handler.
+ * @param payload The `datastar` query parameter for `GET` and `DELETE`, or the request body
+ *   otherwise. Empty means no signals.
  * @returns Parsed Datastar signal state.
- * @throws {@link SignalParseError} When the Datastar signal payload is not valid JSON.
+ * @throws {@link SignalParseError} When the payload is not valid JSON.
  * @throws {@link SignalShapeError} When the parsed payload is not a JSON object signal tree.
  */
-export async function signals(request: Request): Promise<SignalState> {
-  const raw = await rawSignals(request)
+export function parseSignals(payload: string): SignalState {
+  const raw = payload.length === 0 ? "{}" : payload
   let input: SignalState
   try {
     input = JSON.parse(raw)
@@ -65,6 +53,23 @@ export async function signals(request: Request): Promise<SignalState> {
   }
 
   return input
+}
+
+/**
+ * Parses Datastar signals from a request.
+ *
+ * @param request Native request received by a Datastar action handler.
+ * @returns Parsed Datastar signal state.
+ * @throws {@link SignalParseError} When the Datastar signal payload is not valid JSON.
+ * @throws {@link SignalShapeError} When the parsed payload is not a JSON object signal tree.
+ */
+export async function signals(request: Request): Promise<SignalState> {
+  const method = request.method.toUpperCase()
+  return parseSignals(
+    method === "GET" || method === "DELETE"
+      ? (new URL(request.url).searchParams.get("datastar") ?? "")
+      : await request.text()
+  )
 }
 
 /**

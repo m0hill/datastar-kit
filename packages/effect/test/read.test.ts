@@ -1,5 +1,5 @@
 import { Effect, Layer, Schema } from "effect"
-import { HttpRouter, HttpServerResponse } from "effect/http"
+import { HttpRouter, HttpServerRequest, HttpServerResponse } from "effect/http"
 import { describe, expect, it } from "vitest"
 import { read } from "../src/index.js"
 
@@ -9,8 +9,9 @@ const Signup = Schema.Struct({
 })
 
 // Runs one route through `HttpRouter.toWebHandler`, the same path an Effect app takes on Workers.
-const serve = (route: Layer.Layer<never, never, HttpRouter.HttpRouter>) =>
-  HttpRouter.toWebHandler(route, { disableLogger: true }).handler
+const serve = <R extends HttpRouter.HttpRouter | HttpRouter.Request<"Error", unknown>>(
+  route: Layer.Layer<never, never, R>
+) => HttpRouter.toWebHandler(route, { disableLogger: true }).handler
 
 // Answers with the decoded signals as JSON, or with the error tag and its grouped messages.
 const decodeRoute = (method: "GET" | "POST") =>
@@ -22,8 +23,8 @@ const decodeRoute = (method: "GET" | "POST") =>
       Effect.catchTags({
         SchemaError: (error) =>
           Effect.succeed(HttpServerResponse.jsonUnsafe({ errors: read.flattenError(error) })),
-        SignalReadError: () =>
-          Effect.succeed(HttpServerResponse.text("unreadable", { status: 400 }))
+        SignalReadError: (error) =>
+          Effect.succeed(HttpServerResponse.text(error.cause.message, { status: 400 }))
       })
     )
   )
@@ -59,12 +60,33 @@ describe("read.decode", () => {
     })
   })
 
-  it("fails with SignalReadError when the payload is not JSON", async () => {
+  it("fails with SignalReadError carrying datastar-kit's parse error when the payload is not JSON", async () => {
     const handler = serve(decodeRoute("POST"))
     const response = await handler(
       new Request("http://localhost/signup", { method: "POST", body: "not json" })
     )
 
     expect(response.status).toBe(400)
+    expect(await response.text()).toBe("Invalid Datastar signal JSON")
+  })
+
+  it("reads a body that something else already read", async () => {
+    const handler = serve(
+      HttpRouter.add(
+        "POST",
+        "/signup",
+        Effect.gen(function* () {
+          const request = yield* HttpServerRequest.HttpServerRequest
+          const text = yield* request.text
+          const raw = yield* read.signals
+          const decoded = yield* read.decode(Signup)
+          return HttpServerResponse.jsonUnsafe({ text, raw, decoded })
+        })
+      )
+    )
+    const body = JSON.stringify(valid)
+    const response = await handler(new Request("http://localhost/signup", { method: "POST", body }))
+
+    expect(await response.json()).toEqual({ text: body, raw: valid, decoded: valid })
   })
 })

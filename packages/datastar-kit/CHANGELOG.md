@@ -6,6 +6,8 @@
 
 - Added `renderPage(body, options?)`, which renders the full HTML document `reply.page(...)` sends, for servers that build their own responses. `PageOptions` is exported from the root.
 
+- Added `read.parseSignals(payload)`, which parses a Datastar signal payload that a server has already read, such as a cached request body. `read.signals(request)` uses it, so both report the same errors.
+
 ## 0.7.1 - 2026-11-15
 
 ### Added

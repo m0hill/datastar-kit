@@ -1,36 +1,50 @@
 import { read as core, type SignalState } from "datastar-kit"
 import { Data, Effect, Schema, SchemaIssue } from "effect"
-import { HttpServerRequest } from "effect/http"
+import { HttpServerRequest, type HttpServerError } from "effect/http"
 
-/** Error when the request body cannot be read or its Datastar signals are not a JSON object. */
+/** Error when the request's Datastar signals are not JSON, or not a JSON object. */
 export class SignalReadError extends Data.TaggedError("SignalReadError")<{
-  readonly cause: unknown
+  readonly cause: core.SignalParseError | core.SignalShapeError
 }> {}
 
-// Reuses datastar-kit's reader, which owns where signals live in a request.
-const signals: Effect.Effect<SignalState, SignalReadError, HttpServerRequest.HttpServerRequest> =
-  Effect.gen(function* () {
-    const request = yield* HttpServerRequest.HttpServerRequest
-    const webRequest = yield* HttpServerRequest.toWeb(request).pipe(
-      Effect.mapError((cause) => new SignalReadError({ cause }))
-    )
-    return yield* Effect.tryPromise({
-      try: () => core.signals(webRequest),
-      catch: (cause) => new SignalReadError({ cause })
-    })
+/**
+ * Reads the current request's Datastar signals. The body is read through Effect, so other
+ * readers of the same request still work.
+ *
+ * Fails with `SignalReadError`, or with `HttpServerError` when the body cannot be read.
+ */
+export const signals: Effect.Effect<
+  SignalState,
+  SignalReadError | HttpServerError.HttpServerError,
+  HttpServerRequest.HttpServerRequest
+> = Effect.gen(function* () {
+  const request = yield* HttpServerRequest.HttpServerRequest
+  const payload =
+    request.method === "GET" || request.method === "DELETE"
+      ? (new URL(request.url, "http://localhost").searchParams.get("datastar") ?? "")
+      : yield* request.text
+  return yield* Effect.try({
+    try: () => core.parseSignals(payload),
+    catch: (cause) => {
+      if (cause instanceof core.SignalParseError || cause instanceof core.SignalShapeError) {
+        return new SignalReadError({ cause })
+      }
+      throw cause
+    }
   })
+})
 
 /**
  * Reads the current request's Datastar signals and decodes them with an Effect schema.
  *
  * @param schema Effect schema for the signal state. Decoding reports every issue.
- * @returns The decoded value. Fails with `SignalReadError` or `SchemaError`.
+ * @returns The decoded value. Fails like `signals`, or with `SchemaError`.
  */
 export const decode = <S extends Schema.Constraint>(
   schema: S
 ): Effect.Effect<
   S["Type"],
-  SignalReadError | Schema.SchemaError,
+  SignalReadError | HttpServerError.HttpServerError | Schema.SchemaError,
   HttpServerRequest.HttpServerRequest | S["DecodingServices"]
 > => Effect.flatMap(signals, Schema.decodeUnknownEffect(schema, { errors: "all" }))
 
