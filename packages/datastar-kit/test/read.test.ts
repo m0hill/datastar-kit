@@ -35,3 +35,15 @@ describe("read.signals", () => {
     await expect(read.signals(sameRequest)).rejects.toBeInstanceOf(read.SignalParseError)
   })
 })
+
+describe("read.parseSignals", () => {
+  it("reads the datastar query for GET and DELETE in any case, and the body otherwise", () => {
+    const url = `/todos?${new URLSearchParams({ datastar: JSON.stringify({ from: "query" }) })}`
+    const body = JSON.stringify({ from: "body" })
+
+    expect(read.parseSignals({ method: "get", url, body })).toEqual({ from: "query" })
+    expect(read.parseSignals({ method: "DELETE", url, body })).toEqual({ from: "query" })
+    expect(read.parseSignals({ method: "POST", url, body })).toEqual({ from: "body" })
+    expect(read.parseSignals({ method: "GET", url: "/todos", body })).toEqual({})
+  })
+})

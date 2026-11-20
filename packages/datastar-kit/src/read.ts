@@ -29,17 +29,35 @@ export class SignalShapeError extends Error {
   }
 }
 
+const sendsSignalsInQuery = (method: string): boolean => {
+  const upper = method.toUpperCase()
+  return upper === "GET" || upper === "DELETE"
+}
+
+/** The parts of a request that can carry Datastar signals. */
+export interface SignalSource {
+  /** HTTP method, in any case. */
+  readonly method: string
+  /** Absolute URL or path with query string; only its `datastar` query parameter is read. */
+  readonly url: string
+  /** Body text, ignored for `GET` and `DELETE`. Empty means no signals. */
+  readonly body: string
+}
+
 /**
- * Parses a raw Datastar signal payload, for servers that read the request themselves.
+ * Parses Datastar signals from a request a server has already read: the `datastar` query
+ * parameter for `GET` and `DELETE`, or the body otherwise.
  *
- * @param payload The `datastar` query parameter for `GET` and `DELETE`, or the request body
- *   otherwise. Empty means no signals.
+ * @param source The request's method, URL, and body text.
  * @returns Parsed Datastar signal state.
- * @throws {@link SignalParseError} When the payload is not valid JSON.
+ * @throws {@link SignalParseError} When the Datastar signal payload is not valid JSON.
  * @throws {@link SignalShapeError} When the parsed payload is not a JSON object signal tree.
  */
-export function parseSignals(payload: string): SignalState {
-  const raw = payload.length === 0 ? "{}" : payload
+export function parseSignals(source: SignalSource): SignalState {
+  const payload = sendsSignalsInQuery(source.method)
+    ? new URL(source.url, "http://localhost").searchParams.get("datastar")
+    : source.body
+  const raw = payload === null || payload.length === 0 ? "{}" : payload
   let input: SignalState
   try {
     input = JSON.parse(raw)
@@ -64,12 +82,8 @@ export function parseSignals(payload: string): SignalState {
  * @throws {@link SignalShapeError} When the parsed payload is not a JSON object signal tree.
  */
 export async function signals(request: Request): Promise<SignalState> {
-  const method = request.method.toUpperCase()
-  return parseSignals(
-    method === "GET" || method === "DELETE"
-      ? (new URL(request.url).searchParams.get("datastar") ?? "")
-      : await request.text()
-  )
+  const body = sendsSignalsInQuery(request.method) ? "" : await request.text()
+  return parseSignals({ method: request.method, url: request.url, body })
 }
 
 /**

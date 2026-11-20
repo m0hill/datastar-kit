@@ -91,20 +91,18 @@ const TodoPage = ({ todos }: { todos: readonly Todo[] }) => (
 
 const page = Effect.gen(function* () {
   const todos = yield* Todos
-  return reply.page(<TodoPage todos={yield* todos.list} />, { title: "Todos" })
+  return yield* reply.page(<TodoPage todos={yield* todos.list} />, { title: "Todos" })
 })
 
 const add = Effect.gen(function* () {
   const input = yield* read.decode(TodoInput)
   const todos = yield* Todos
   yield* todos.add(input.title)
-  return reply.signals(todoForm.reset())
+  return yield* reply.signals(todoForm.reset())
 }).pipe(
   Effect.catchTag("SchemaError", (error) => {
     const { fields } = read.flattenError(error)
-    return Effect.succeed(
-      reply.signals(todoForm.patch({ errors: { title: fields.title?.[0] ?? "" } }))
-    )
+    return reply.signals(todoForm.patch({ errors: { title: fields.title?.[0] ?? "" } }))
   })
 )
 
@@ -133,21 +131,22 @@ Services reach routes through `HttpRouter.provideRequest(layer)`, which builds t
 
 ## API
 
-| API                                | Use                                                                                           |
-| ---------------------------------- | --------------------------------------------------------------------------------------------- |
-| `read.signals`                     | Read the current request's Datastar signals, without a schema.                                |
-| `read.decode(schema)`              | Read the signals and decode them with an Effect schema, reporting every invalid field.        |
-| `read.flattenError(error)`         | Group a `SchemaError`'s messages into `{ form, fields }` by dot path.                         |
-| `read.SignalReadError`             | The signals were not JSON, or not a JSON object. `cause` is datastar-kit's error.             |
-| `reply.page(body, options?)`       | A full HTML document.                                                                         |
-| `reply.patch(elements, options?)`  | Patch elements into the page.                                                                 |
-| `reply.signals(value, options?)`   | Patch signals.                                                                                |
-| `reply.remove(selector, options?)` | Remove elements.                                                                              |
-| `reply.navigate(url, options?)`    | Navigate the browser to a safe URL. Returns an Effect that fails with `NavigationError`.      |
-| `reply.NavigationError`            | The URL was malformed, non-HTTP(S), or cross-origin without being allowlisted.                |
-| `reply.done()`                     | `204` for an action with nothing to patch.                                                    |
-| `reply.stream(events, options?)`   | An SSE response from a `Stream` of event chunks, with optional heartbeats. Returns an Effect. |
+| API                                | Use                                                                                    |
+| ---------------------------------- | -------------------------------------------------------------------------------------- |
+| `read.signals`                     | Read the current request's Datastar signals, without a schema.                         |
+| `read.decode(schema)`              | Read the signals and decode them with an Effect schema, reporting every invalid field. |
+| `read.flattenError(error)`         | Group a `SchemaError`'s messages into `{ form, fields }` by dot path.                  |
+| `read.SignalReadError`             | The signals were not JSON, or not a JSON object. `cause` is datastar-kit's error.      |
+| `reply.page(body, options?)`       | A full HTML document.                                                                  |
+| `reply.patch(elements, options?)`  | Patch elements into the page.                                                          |
+| `reply.signals(value, options?)`   | Patch signals.                                                                         |
+| `reply.remove(selector, options?)` | Remove elements.                                                                       |
+| `reply.navigate(url, options?)`    | Navigate the browser to a safe URL. Fails with `NavigationError` for an unsafe one.    |
+| `reply.NavigationError`            | The URL was malformed, non-HTTP(S), or cross-origin without being allowlisted.         |
+| `reply.done()`                     | `204` for an action with nothing to patch.                                             |
+| `reply.stream(events, options?)`   | An SSE response from a `Stream` of event chunks, with optional heartbeats.             |
 
+Every `reply.*` returns an Effect of the same `Response` datastar-kit builds, converted with `HttpServerResponse.fromWeb`.
 `read.signals` and `read.decode` take signals from the `datastar` query parameter for `GET` and `DELETE`, and from the JSON body otherwise, as datastar-kit's `read.signals` does. They read the body through Effect, so middleware that reads it first still works. A body that cannot be read fails with Effect's `HttpServerError`. Set statuses and headers with Effect's combinators, such as `HttpServerResponse.setStatus` and `HttpServerResponse.setHeader`.
 
 ## Streams and disconnects

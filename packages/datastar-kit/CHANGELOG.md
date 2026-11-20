@@ -4,9 +4,9 @@
 
 ### Added
 
-- Added `renderPage(body, options?)`, which renders the full HTML document `reply.page(...)` sends, for servers that build their own responses. `PageOptions` is exported from the root.
+- Added `read.parseSignals({ method, url, body })`, which parses Datastar signals from a request a server has already read, such as one with a cached body. `read.signals(request)` uses it, so both find signals in the same place and report the same errors.
 
-- Added `read.parseSignals(payload)`, which parses a Datastar signal payload that a server has already read, such as a cached request body. `read.signals(request)` uses it, so both report the same errors.
+- Added `reply.RemoveOptions`, the options type of `reply.remove(...)`.
 
 ## 0.7.1 - 2026-11-15
 

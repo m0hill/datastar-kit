@@ -13,7 +13,6 @@ const serve = <R extends HttpRouter.HttpRouter | HttpRouter.Request<"Error", unk
   route: Layer.Layer<never, never, R>
 ) => HttpRouter.toWebHandler(route, { disableLogger: true }).handler
 
-// Answers with the decoded signals as JSON, or with the error tag and its grouped messages.
 const decodeRoute = (method: "GET" | "POST") =>
   HttpRouter.add(
     method,
@@ -60,15 +59,21 @@ describe("read.decode", () => {
     })
   })
 
-  it("fails with SignalReadError carrying datastar-kit's parse error when the payload is not JSON", async () => {
-    const handler = serve(decodeRoute("POST"))
-    const response = await handler(
-      new Request("http://localhost/signup", { method: "POST", body: "not json" })
-    )
+  it.each([
+    ["not JSON", "not json", "Invalid Datastar signal JSON"],
+    ["not a JSON object", "[]", "Datastar signals must be a JSON object"]
+  ])(
+    "fails with SignalReadError carrying datastar-kit's error when the payload is %s",
+    async (_, body, message) => {
+      const handler = serve(decodeRoute("POST"))
+      const response = await handler(
+        new Request("http://localhost/signup", { method: "POST", body })
+      )
 
-    expect(response.status).toBe(400)
-    expect(await response.text()).toBe("Invalid Datastar signal JSON")
-  })
+      expect(response.status).toBe(400)
+      expect(await response.text()).toBe(message)
+    }
+  )
 
   it("reads a body that something else already read", async () => {
     const handler = serve(

@@ -1,6 +1,5 @@
 import { event, reply as core } from "datastar-kit"
-import { Context, Deferred, Effect, Fiber, Layer, Stream } from "effect"
-import { TestClock } from "effect/testing"
+import { Context, Deferred, Effect, Layer, Stream } from "effect"
 import { HttpRouter, HttpServerResponse } from "effect/http"
 import { describe, expect, it } from "vitest"
 import { reply } from "../src/index.js"
@@ -60,8 +59,6 @@ describe("reply", () => {
   })
 })
 
-const pause = (ms: number) => Stream.fromEffect(Effect.sleep(ms)).pipe(Stream.drain)
-
 class Greeting extends Context.Service<Greeting, string>()("test/Greeting") {}
 
 describe("reply.stream", () => {
@@ -85,21 +82,19 @@ describe("reply.stream", () => {
     expect(body).toBe(event.patch(<p id="greeting">Hello</p>))
   })
 
-  it("sends heartbeats after the initial delay and then on each interval, ending with the events", () =>
-    Effect.gen(function* () {
-      const response = yield* reply.stream(
-        pause(5).pipe(Stream.concat(Stream.make("event: first\n\n")), Stream.concat(pause(55))),
-        { heartbeat: { initialDelayMs: 10, intervalMs: 40, comment: "tick" } }
-      )
-      if (response.body._tag !== "Stream") throw new Error("expected a streamed body")
-      const body = yield* Effect.forkChild(Stream.mkString(Stream.decodeText(response.body.stream)))
+  it("passes stream options to datastar-kit, so an idle stream gets heartbeats", async () => {
+    const route = HttpRouter.add(
+      "GET",
+      "/",
+      reply.stream(Stream.never, { heartbeat: { initialDelayMs: 1, comment: "tick" } })
+    )
 
-      yield* Effect.yieldNow
-      yield* TestClock.adjust(60)
+    const reader = (await get(serve(route))).body!.getReader()
+    const { value } = await reader.read()
+    await reader.cancel()
 
-      // The event comes at 5, beats at 10 and 50, and the events end at 60, before the beat due at 90.
-      expect(yield* Fiber.join(body)).toBe("event: first\n\n: tick\n\n: tick\n\n")
-    }).pipe(Effect.provide(TestClock.layer()), Effect.runPromise))
+    expect(new TextDecoder().decode(value)).toBe(": tick\n\n")
+  })
 
   it("interrupts an idle stream when the client disconnects, so its finalizers run", async () => {
     const finalized = Effect.runSync(Deferred.make<void>())

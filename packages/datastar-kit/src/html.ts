@@ -244,7 +244,7 @@ export const renderToString = (child: HtmlChild): string => {
 }
 
 /**
- * Options for the full HTML document rendered by `renderPage()` and `reply.page()`.
+ * Options for the full HTML document rendered by `reply.page()`.
  */
 export interface PageOptions {
   /** Language rendered on the root `<html>` element. @defaultValue `"en"` */

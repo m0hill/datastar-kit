@@ -38,6 +38,9 @@ export type PatchOptions = PatchElementsOptions
 /** Signal patch options for `reply.signals()`. */
 export type SignalsOptions = PatchSignalsOptions
 
+/** Element removal options for `reply.remove()`. */
+export type RemoveOptions = event.RemoveOptions
+
 /**
  * SSE stream options for `reply.stream()`.
  */
@@ -202,7 +205,7 @@ export const patch = (
  */
 export const remove = (
   selector: string,
-  options: event.RemoveOptions = {},
+  options: RemoveOptions = {},
   init: StreamResponseInit = {}
 ): Response => sseResponse(event.remove(selector, options), init)
 

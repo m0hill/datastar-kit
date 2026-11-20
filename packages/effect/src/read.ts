@@ -19,12 +19,9 @@ export const signals: Effect.Effect<
   HttpServerRequest.HttpServerRequest
 > = Effect.gen(function* () {
   const request = yield* HttpServerRequest.HttpServerRequest
-  const payload =
-    request.method === "GET" || request.method === "DELETE"
-      ? (new URL(request.url, "http://localhost").searchParams.get("datastar") ?? "")
-      : yield* request.text
+  const body = yield* request.text
   return yield* Effect.try({
-    try: () => core.parseSignals(payload),
+    try: () => core.parseSignals({ method: request.method, url: request.url, body }),
     catch: (cause) => {
       if (cause instanceof core.SignalParseError || cause instanceof core.SignalShapeError) {
         return new SignalReadError({ cause })
@@ -50,6 +47,6 @@ export const decode = <S extends Schema.Constraint>(
 
 const standardIssues = SchemaIssue.makeFormatterStandardSchemaV1()
 
-/** Groups a `SchemaError`'s messages by dot path, as datastar-kit's `read.flattenIssues()` does. */
+/** Groups a `SchemaError`'s messages by dot path, in the shape of Zod's `flattenError`. */
 export const flattenError = (error: Schema.SchemaError): core.FlattenedIssues =>
   core.flattenIssues(standardIssues(error.issue).issues)

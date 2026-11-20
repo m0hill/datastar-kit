@@ -98,13 +98,14 @@ can declare their result with `js<T>(...)`.
 
 `read` contains request-boundary helpers.
 
-| API                              | Use                                                             |
-| -------------------------------- | --------------------------------------------------------------- |
-| `read.signals(request)`          | Decode Datastar JSON signal state from a native `Request`.      |
-| `read.validate(request, schema)` | Decode signal state, then validate it with any Standard Schema. |
-| `read.flattenIssues(issues)`     | Group validation issues into `{ form, fields }` by dot path.    |
-| `read.SignalParseError`          | Thrown when signal payload JSON cannot be parsed.               |
-| `read.SignalShapeError`          | Thrown when parsed signals are not a JSON object signal tree.   |
+| API                                        | Use                                                             |
+| ------------------------------------------ | --------------------------------------------------------------- |
+| `read.signals(request)`                    | Decode Datastar JSON signal state from a native `Request`.      |
+| `read.validate(request, schema)`           | Decode signal state, then validate it with any Standard Schema. |
+| `read.flattenIssues(issues)`               | Group validation issues into `{ form, fields }` by dot path.    |
+| `read.parseSignals({ method, url, body })` | Parse signal state from a request the server already read.      |
+| `read.SignalParseError`                    | Thrown when signal payload JSON cannot be parsed.               |
+| `read.SignalShapeError`                    | Thrown when parsed signals are not a JSON object signal tree.   |
 
 `GET` and `DELETE` actions read the `datastar` query parameter. Other methods read the request body as JSON.
 
@@ -152,7 +153,6 @@ Use `event.*` when one response needs multiple events or a long-lived stream.
 | `h(tag, props, ...children)`       | Build a custom element or a tag chosen at runtime.                    |
 | `Fragment`                         | Group children without a wrapper element.                             |
 | `renderToString(node)`             | Serialize Datastar Kit HTML nodes, `h()` trees, and TSX output.       |
-| `renderPage(body, options?)`       | Serialize the full HTML document `reply.page()` sends.                |
 | `unsafeHtml(html)`                 | Mark trusted HTML as already safe.                                    |
 | `dataAttrs(values)`                | Type-check a primitive custom `data-*` attribute spread bag.          |
 | `HtmlNameError`                    | Thrown when a tag or attribute name cannot render safely.             |
