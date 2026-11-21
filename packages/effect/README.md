@@ -10,7 +10,7 @@ It covers only the two edges of a request. Views, `state()`, `event.*`, and `dat
 npm i @datastar-kit/effect datastar-kit effect
 ```
 
-`effect/http` is marked unstable and can change in minor releases, so this package supports one Effect minor at a time: `effect ~4.1.0`. It needs datastar-kit 0.7.2 or newer.
+`effect/http` is marked unstable and can change in minor releases, so this package supports one Effect minor at a time: `effect ~4.1.0`. It needs datastar-kit 0.8.0 or newer.
 
 ## Example
 
@@ -151,4 +151,4 @@ Every `reply.*` returns an Effect of the same `Response` datastar-kit builds, co
 
 ## Streams and disconnects
 
-`reply.stream` runs the stream with the services of the effect that creates the response. The stream must not fail: headers are sent before it runs, so handle or log its errors first, for example with `Stream.catch`. When the client disconnects, the stream is interrupted, so its finalizers run and subscriptions close, even while it is waiting for its next event. This works on every runtime, including Cloudflare Workers, where it does not depend on `request.signal`.
+`reply.stream` runs the stream with the services of the effect that creates the response. The stream must not fail: headers are sent before it runs, so handle or log its errors first, for example with `Stream.catch`. When the client disconnects, the stream is interrupted, so its finalizers run and subscriptions close, even while it is waiting for its next event. This works on every runtime and does not depend on `request.signal`. On Cloudflare Workers, give a stream that can sit idle a heartbeat: workerd cancels a request whose code is waiting on nothing, and the stream's finalizers do not run.
